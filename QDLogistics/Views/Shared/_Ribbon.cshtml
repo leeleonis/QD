@@ -1,0 +1,12 @@
+﻿<div id="ribbon">
+    <ol class="breadcrumb">
+        <li><a href="@Url.RouteUrl("Main")">出貨管理系統</a></li>
+        @if (ViewBag.Breadcrumb != null)
+        {
+            foreach (string name in ViewBag.Breadcrumb)
+            {
+                <li>@name</li>
+            }
+        }
+    </ol>
+</div>

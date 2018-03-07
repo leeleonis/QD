@@ -1,0 +1,2189 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+    <Schema Namespace="QDLogisticsModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="ActionLog">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="AdminID" Type="int" />
+          <Property Name="AdminName" Type="nvarchar" MaxLength="50" />
+          <Property Name="TableName" Type="nchar" MaxLength="50" />
+          <Property Name="TargetID" Type="nvarchar" MaxLength="50" />
+          <Property Name="ActionName" Type="nvarchar" MaxLength="50" />
+          <Property Name="CreateDate" Type="datetime" />
+        </EntityType>
+        <EntityType Name="Addresses">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="IsEnable" Type="bit" />
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="FirstName" Type="nvarchar" MaxLength="100" />
+          <Property Name="MiddleInitial" Type="nvarchar" MaxLength="100" />
+          <Property Name="LastName" Type="nvarchar" MaxLength="100" />
+          <Property Name="CompanyName" Type="nvarchar" MaxLength="100" />
+          <Property Name="HomePhone" Type="nvarchar" MaxLength="50" />
+          <Property Name="PhoneNumber" Type="nvarchar" MaxLength="50" />
+          <Property Name="FaxNumber" Type="nvarchar" MaxLength="50" />
+          <Property Name="EmailAddress" Type="nvarchar" MaxLength="100" />
+          <Property Name="CountryName" Type="nvarchar" MaxLength="50" />
+          <Property Name="CountryCode" Type="nvarchar" MaxLength="50" />
+          <Property Name="City" Type="nvarchar" MaxLength="50" />
+          <Property Name="StateCode" Type="nvarchar" MaxLength="50" />
+          <Property Name="StateName" Type="nvarchar" MaxLength="50" />
+          <Property Name="PostalCode" Type="nvarchar" MaxLength="50" />
+          <Property Name="StreetLine1" Type="nvarchar(max)" />
+          <Property Name="StreetLine2" Type="nvarchar(max)" />
+          <Property Name="AddressSource" Type="int" />
+          <Property Name="AddressStatus" Type="int" />
+          <Property Name="Notes" Type="nvarchar(max)" />
+        </EntityType>
+        <EntityType Name="AdminGroups">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="IsEnable" Type="bit" Nullable="false" />
+          <Property Name="IsVisible" Type="bit" Nullable="false" />
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Name" Type="nvarchar" MaxLength="50" />
+          <Property Name="Auth" Type="nvarchar(max)" />
+          <Property Name="Order" Type="int" />
+        </EntityType>
+        <EntityType Name="AdminUsers">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="IsEnable" Type="bit" Nullable="false" />
+          <Property Name="IsVisible" Type="bit" Nullable="false" />
+          <Property Name="IsLogin" Type="bit" Nullable="false" />
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="GroupId" Type="int" Nullable="false" />
+          <Property Name="Name" Type="nvarchar" MaxLength="50" />
+          <Property Name="Account" Type="nvarchar" MaxLength="50" />
+          <Property Name="Password" Type="nvarchar" MaxLength="50" />
+          <Property Name="ApiUserName" Type="nvarchar" MaxLength="50" />
+          <Property Name="ApiPassword" Type="nvarchar" MaxLength="50" />
+          <Property Name="Warehouse" Type="nvarchar(max)" />
+          <Property Name="TimeZone" Type="int" Nullable="false" />
+          <Property Name="Auth" Type="nvarchar(max)" />
+          <Property Name="LLT" Type="datetime" />
+        </EntityType>
+        <EntityType Name="BundleItems">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="IsEnable" Type="bit" />
+          <Property Name="ID" Type="int" Nullable="false" />
+          <Property Name="OrderID" Type="int" />
+          <Property Name="OrderItemId" Type="int" />
+          <Property Name="PackageID" Type="int" />
+          <Property Name="ProductID" Type="nvarchar" MaxLength="50" />
+          <Property Name="ProductName" Type="nvarchar" MaxLength="150" />
+          <Property Name="Qty" Type="int" />
+          <Property Name="QtyReturned" Type="int" />
+          <Property Name="BackOrderOty" Type="int" />
+        </EntityType>
+        <EntityType Name="CarrierAPI">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="IsEnable" Type="bit" Nullable="false" />
+          <Property Name="IsTest" Type="bit" Nullable="false" />
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Name" Type="nvarchar" MaxLength="50" />
+          <Property Name="Type" Type="tinyint" />
+          <Property Name="AccountID" Type="nvarchar" MaxLength="50" />
+          <Property Name="ApiKey" Type="nvarchar" MaxLength="50" />
+          <Property Name="ApiPassword" Type="nvarchar" MaxLength="50" />
+          <Property Name="ApiAccount" Type="nvarchar" MaxLength="50" />
+          <Property Name="ApiMeter" Type="nvarchar" MaxLength="50" />
+          <Property Name="ApiHub" Type="nvarchar" MaxLength="50" />
+        </EntityType>
+        <EntityType Name="Carriers">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="IsEnable" Type="bit" />
+          <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Name" Type="nvarchar" MaxLength="50" />
+          <Property Name="Carrier" Type="nvarchar" MaxLength="50" />
+          <Property Name="Email" Type="nvarchar" MaxLength="150" />
+          <Property Name="ShippingMethod" Type="int" />
+          <Property Name="BoxType" Type="int" />
+          <Property Name="Api" Type="int" />
+          <Property Name="PrinterName" Type="nvarchar" MaxLength="50" />
+          <Property Name="IsExport" Type="bit" />
+          <Property Name="IsBattery" Type="bit" />
+          <Property Name="CountryData" Type="nvarchar(max)" />
+          <Property Name="SyncOn" Type="datetime" />
+        </EntityType>
+        <EntityType Name="Companies">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="int" Nullable="false" />
+          <Property Name="CompanyName" Type="nvarchar" MaxLength="100" />
+          <Property Name="TimeZone" Type="int" />
+        </EntityType>
+        <EntityType Name="Items">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="IsEnable" Type="bit" />
+          <Property Name="ID" Type="int" Nullable="false" />
+          <Property Name="OrderID" Type="int" />
+          <Property Name="PackageID" Type="int" />
+          <Property Name="SKU" Type="nvarchar" MaxLength="50" />
+          <Property Name="OriginalSKU" Type="nvarchar" MaxLength="50" />
+          <Property Name="ProductID" Type="nvarchar" MaxLength="50" />
+          <Property Name="ProductIDOriginal" Type="nvarchar" MaxLength="50" />
+          <Property Name="ProductIDRequest" Type="nvarchar" MaxLength="50" />
+          <Property Name="DeclaredValue" Type="decimal" Precision="18" Scale="2" Nullable="false" />
+          <Property Name="Qty" Type="int" />
+          <Property Name="QtyReturned" Type="int" />
+          <Property Name="QtyShipped" Type="int" />
+          <Property Name="DisplayName" Type="nvarchar" MaxLength="200" />
+          <Property Name="LineTotal" Type="decimal" Precision="18" Scale="2" />
+          <Property Name="KitItemCount" Type="int" />
+          <Property Name="eBayItemID" Type="nvarchar" MaxLength="50" />
+          <Property Name="eBayTransactionId" Type="nvarchar" MaxLength="50" />
+          <Property Name="SalesRecordNumber" Type="nvarchar" MaxLength="50" />
+          <Property Name="BackOrderQty" Type="int" />
+          <Property Name="UnitPrice" Type="decimal" Precision="18" Scale="2" />
+          <Property Name="SerialNumber" Type="nvarchar" MaxLength="50" />
+          <Property Name="ShipFromWarehouseID" Type="int" />
+          <Property Name="ReturnedToWarehouseID" Type="int" />
+          <Property Name="Weight" Type="float" />
+        </EntityType>
+        <EntityType Name="Manufacturers">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="IsEnable" Type="bit" />
+          <Property Name="ID" Type="int" Nullable="false" />
+          <Property Name="CompanyID" Type="int" />
+          <Property Name="ManufacturerName" Type="nvarchar" MaxLength="50" />
+        </EntityType>
+        <EntityType Name="Menu">
+          <Key>
+            <PropertyRef Name="MenuId" />
+          </Key>
+          <Property Name="IsEnable" Type="bit" Nullable="false" />
+          <Property Name="MenuId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Name" Type="nvarchar" MaxLength="50" />
+          <Property Name="PrevId" Type="int" Nullable="false" />
+          <Property Name="Route" Type="nvarchar" MaxLength="50" />
+          <Property Name="Controller" Type="nvarchar" MaxLength="50" />
+          <Property Name="Action" Type="nvarchar" MaxLength="50" />
+          <Property Name="Order" Type="int" />
+        </EntityType>
+        <EntityType Name="Orders">
+          <Key>
+            <PropertyRef Name="OrderID" />
+          </Key>
+          <Property Name="OrderID" Type="int" Nullable="false" />
+          <Property Name="ParentOrderID" Type="int" />
+          <Property Name="ClientID" Type="int" />
+          <Property Name="CompanyID" Type="int" />
+          <Property Name="UserID" Type="int" />
+          <Property Name="UserName" Type="nvarchar" MaxLength="100" />
+          <Property Name="SiteCode" Type="int" />
+          <Property Name="TimeOfOrder" Type="datetime2" Precision="7" />
+          <Property Name="SubTotal" Type="decimal" Precision="18" Scale="2" />
+          <Property Name="ShippingTotal" Type="decimal" Precision="18" Scale="2" />
+          <Property Name="OrderDiscountsTotal" Type="decimal" Precision="18" Scale="2" />
+          <Property Name="GrandTotal" Type="decimal" Precision="18" Scale="2" />
+          <Property Name="StatusCode" Type="int" />
+          <Property Name="PaymentStatus" Type="int" />
+          <Property Name="ShippingStatus" Type="int" />
+          <Property Name="ShipDate" Type="datetime2" Precision="7" />
+          <Property Name="FinalShippingFee" Type="decimal" Precision="18" Scale="2" />
+          <Property Name="ShippingAddress" Type="int" />
+          <Property Name="OrderCurrencyCode" Type="int" />
+          <Property Name="OrderSource" Type="int" />
+          <Property Name="OrderSourceOrderId" Type="nvarchar" MaxLength="50" />
+          <Property Name="OrderSourceOrderTotal" Type="decimal" Precision="18" Scale="2" />
+          <Property Name="eBayUserID" Type="nvarchar" MaxLength="50" />
+          <Property Name="eBaySalesRecordNumber" Type="nvarchar" MaxLength="50" />
+          <Property Name="ShippingServiceSelected" Type="nvarchar" MaxLength="150" />
+          <Property Name="RushOrder" Type="bit" />
+          <Property Name="InvoicePrinted" Type="bit" />
+          <Property Name="InvoicePrintedDate" Type="datetime2" Precision="7" />
+          <Property Name="ShippingCarrier" Type="nvarchar" MaxLength="50" />
+          <Property Name="ShippingCountry" Type="nvarchar" MaxLength="50" />
+          <Property Name="PackageType" Type="nvarchar" MaxLength="50" />
+          <Property Name="StationID" Type="int" />
+          <Property Name="CustomerServiceStatus" Type="int" />
+          <Property Name="TaxRate" Type="decimal" Precision="18" Scale="2" />
+          <Property Name="TaxTotal" Type="decimal" Precision="18" Scale="2" />
+          <Property Name="GoogleOrderNumber" Type="nvarchar" MaxLength="50" />
+          <Property Name="IsInDispute" Type="bit" />
+          <Property Name="DisputeStartedOn" Type="datetime2" Precision="7" />
+          <Property Name="PaypalFeeTotal" Type="decimal" Precision="18" Scale="2" />
+          <Property Name="PostingFeeTotal" Type="decimal" Precision="18" Scale="2" />
+          <Property Name="FinalValueTotal" Type="decimal" Precision="18" Scale="2" />
+          <Property Name="OrderItemCount" Type="int" />
+          <Property Name="OrderQtyTotal" Type="int" />
+          <Property Name="ShippingWeightTotalOz" Type="int" />
+          <Property Name="IsConfirmed" Type="bit" />
+          <Property Name="ConfirmBy" Type="int" />
+          <Property Name="ConfirmOn" Type="datetime2" Precision="7" />
+          <Property Name="MarkettingSourceID" Type="int" />
+          <Property Name="ShippedBy" Type="int" />
+          <Property Name="Instructions" Type="nvarchar(max)" />
+          <Property Name="SyncOn" Type="datetime" />
+        </EntityType>
+        <EntityType Name="Packages">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="IsEnable" Type="bit" />
+          <Property Name="ID" Type="int" Nullable="false" />
+          <Property Name="OrderID" Type="int" />
+          <Property Name="OrderItemID" Type="int" />
+          <Property Name="BundleItemID" Type="int" />
+          <Property Name="ProcessStatus" Type="tinyint" Nullable="false" />
+          <Property Name="ProcessBack" Type="bit" Nullable="false" />
+          <Property Name="DeclaredTotal" Type="decimal" Precision="18" Scale="2" Nullable="false" />
+          <Property Name="Qty" Type="int" />
+          <Property Name="ShipDate" Type="datetime2" Precision="7" />
+          <Property Name="ShippingMethodName" Type="nvarchar" MaxLength="150" />
+          <Property Name="ShippingServiceCode" Type="nvarchar" MaxLength="50" />
+          <Property Name="CarrierID" Type="int" />
+          <Property Name="Export" Type="tinyint" />
+          <Property Name="ExportMethod" Type="tinyint" />
+          <Property Name="EstimatedDeliveryDate" Type="datetime2" Precision="7" />
+          <Property Name="PickUpDate" Type="datetime2" Precision="7" />
+          <Property Name="DeliveryDate" Type="datetime2" Precision="7" />
+          <Property Name="DeliveryStatus" Type="int" />
+          <Property Name="DeliveryNote" Type="nvarchar" MaxLength="150" />
+          <Property Name="WinitNo" Type="nvarchar" MaxLength="50" />
+          <Property Name="FinalShippingFee" Type="decimal" Precision="18" Scale="2" />
+          <Property Name="UploadTracking" Type="bit" Nullable="false" />
+          <Property Name="TrackingNumber" Type="nvarchar" MaxLength="50" />
+          <Property Name="POId" Type="int" />
+          <Property Name="POInvoice" Type="nvarchar" MaxLength="50" />
+          <Property Name="RMAId" Type="int" />
+          <Property Name="FilePath" Type="nvarchar" MaxLength="100" />
+          <Property Name="Comment" Type="nvarchar(max)" />
+          <Property Name="SupplierComment" Type="nvarchar(max)" />
+          <Property Name="Weight" Type="float" />
+          <Property Name="Length" Type="float" />
+          <Property Name="Width" Type="float" />
+          <Property Name="Height" Type="float" />
+        </EntityType>
+        <EntityType Name="Payments">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="IsEnable" Type="bit" />
+          <Property Name="ID" Type="int" Nullable="false" />
+          <Property Name="OrderID" Type="int" />
+          <Property Name="CurrentApplicationID" Type="int" />
+          <Property Name="PaymentMethod" Type="int" />
+          <Property Name="PaymentStatus" Type="int" />
+          <Property Name="PaymentType" Type="int" />
+          <Property Name="AuditDate" Type="datetime2" Precision="7" />
+          <Property Name="Amount" Type="decimal" Precision="18" Scale="2" />
+          <Property Name="TransactionReferenceNumber" Type="nvarchar" MaxLength="150" />
+          <Property Name="Note" Type="nvarchar(max)" />
+        </EntityType>
+        <EntityType Name="PickProduct">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="IsEnable" Type="bit" Nullable="false" />
+          <Property Name="IsPicked" Type="bit" Nullable="false" />
+          <Property Name="IsMail" Type="bit" Nullable="false" />
+          <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="OrderID" Type="int" />
+          <Property Name="PackageID" Type="int" />
+          <Property Name="ItemID" Type="int" />
+          <Property Name="ProductID" Type="nvarchar" MaxLength="50" />
+          <Property Name="ProductName" Type="nvarchar" MaxLength="200" />
+          <Property Name="UPC" Type="nvarchar" MaxLength="50" />
+          <Property Name="WarehouseID" Type="int" />
+          <Property Name="Qty" Type="int" />
+          <Property Name="QtyPicked" Type="int" Nullable="false" />
+          <Property Name="PickUpDate" Type="datetime" />
+          <Property Name="PickUpBy" Type="int" />
+        </EntityType>
+        <EntityType Name="Preset">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="IsEnable" Type="bit" Nullable="false" />
+          <Property Name="IsVisible" Type="bit" Nullable="false" />
+          <Property Name="IsDispatch" Type="bit" Nullable="false" />
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Type" Type="tinyint" Nullable="false" />
+          <Property Name="Value" Type="decimal" Precision="18" Scale="2" Nullable="false" />
+          <Property Name="ValueType" Type="tinyint" Nullable="false" />
+          <Property Name="Total" Type="decimal" Precision="18" Scale="2" Nullable="false" />
+          <Property Name="TotalType" Type="tinyint" Nullable="false" />
+          <Property Name="Country" Type="nchar" MaxLength="2" />
+          <Property Name="CompanyID" Type="int" Nullable="false" />
+          <Property Name="SourceID" Type="int" Nullable="false" />
+          <Property Name="Amount" Type="int" Nullable="false" />
+          <Property Name="AmountType" Type="tinyint" Nullable="false" />
+          <Property Name="ShippingMethod" Type="nvarchar" MaxLength="100" />
+          <Property Name="Sku" Type="nvarchar" MaxLength="10" />
+          <Property Name="Weight" Type="int" Nullable="false" />
+          <Property Name="WeightType" Type="tinyint" Nullable="false" />
+          <Property Name="WarehouseID" Type="int" Nullable="false" />
+          <Property Name="CarrierID" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="ProductType">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="IsEnable" Type="bit" Nullable="false" />
+          <Property Name="ID" Type="int" Nullable="false" />
+          <Property Name="ProductTypeName" Type="nvarchar" MaxLength="100" />
+          <Property Name="ChtName" Type="nvarchar" MaxLength="100" />
+        </EntityType>
+        <EntityType Name="PurchaseItemReceive">
+          <Key>
+            <PropertyRef Name="ProductID" />
+            <PropertyRef Name="SerialNumber" />
+          </Key>
+          <Property Name="IsRequireSerialScan" Type="bit" Nullable="false" />
+          <Property Name="OrderID" Type="int" />
+          <Property Name="OrderItemID" Type="int" />
+          <Property Name="ProductID" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="SerialNumber" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="PurchaseID" Type="int" />
+          <Property Name="PurchaseReceiveID" Type="int" />
+          <Property Name="RMAId" Type="int" />
+          <Property Name="CreditMemoID" Type="int" />
+          <Property Name="CreditMemoReason" Type="nvarchar" MaxLength="50" />
+          <Property Name="WarehouseID" Type="int" />
+          <Property Name="WarehouseName" Type="nvarchar" MaxLength="50" />
+          <Property Name="LocationBinID" Type="int" />
+          <Property Name="BinName" Type="nvarchar" MaxLength="50" />
+        </EntityType>
+        <EntityType Name="SerialNumbers">
+          <Key>
+            <PropertyRef Name="SerialNumber" />
+            <PropertyRef Name="OrderItemID" />
+          </Key>
+          <Property Name="OrderID" Type="int" />
+          <Property Name="ProductID" Type="nvarchar" MaxLength="50" />
+          <Property Name="SerialNumber" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="OrderItemID" Type="int" Nullable="false" />
+          <Property Name="KitItemID" Type="int" />
+        </EntityType>
+        <EntityType Name="Services">
+          <Key>
+            <PropertyRef Name="ServiceCode" />
+          </Key>
+          <Property Name="IsEnable" Type="bit" />
+          <Property Name="ServiceCode" Type="nvarchar" MaxLength="150" Nullable="false" />
+          <Property Name="ServiceName" Type="nvarchar" MaxLength="150" />
+          <Property Name="CarrierID" Type="int" />
+        </EntityType>
+        <EntityType Name="Skus">
+          <Key>
+            <PropertyRef Name="Sku" />
+          </Key>
+          <Property Name="IsEnable" Type="bit" />
+          <Property Name="Sku" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="ProductName" Type="nvarchar" MaxLength="200" />
+          <Property Name="ProductTypeID" Type="int" />
+          <Property Name="ParentShadow" Type="nvarchar" MaxLength="50" />
+          <Property Name="ParentKit" Type="nvarchar" MaxLength="50" />
+          <Property Name="UPC" Type="nvarchar" MaxLength="50" />
+          <Property Name="Brand" Type="int" />
+          <Property Name="Origin" Type="nvarchar(max)" />
+          <Property Name="Battery" Type="bit" />
+          <Property Name="Export" Type="tinyint" />
+          <Property Name="ExportMethod" Type="tinyint" />
+          <Property Name="PurchaseInvoice" Type="nvarchar" MaxLength="150" />
+          <Property Name="Weight" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="TaskLog">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="TaskID" Type="int" />
+          <Property Name="Status" Type="tinyint" />
+          <Property Name="CreateDate" Type="datetime" />
+        </EntityType>
+        <EntityType Name="TaskScheduler">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Status" Type="tinyint" Nullable="false" />
+          <Property Name="Description" Type="nvarchar" MaxLength="100" />
+          <Property Name="Message" Type="ntext" />
+          <Property Name="UpdateBy" Type="int" />
+          <Property Name="UpdateDate" Type="datetime" />
+          <Property Name="CreateDate" Type="datetime" />
+        </EntityType>
+        <EntityType Name="Warehouses">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="IsEnable" Type="bit" />
+          <Property Name="IsDefault" Type="bit" />
+          <Property Name="IsSellable" Type="bit" />
+          <Property Name="AllowUseQtyForFBAShipments" Type="bit" />
+          <Property Name="EnforceBins" Type="bit" />
+          <Property Name="ID" Type="int" Nullable="false" />
+          <Property Name="CompanyID" Type="int" />
+          <Property Name="Name" Type="nvarchar" MaxLength="50" />
+          <Property Name="QBWarehouseName" Type="nvarchar" MaxLength="50" />
+          <Property Name="WarehouseType" Type="int" />
+          <Property Name="WinitWarehouseID" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="DropShipCentralWarehouseCode" Type="nvarchar" MaxLength="50" />
+          <Property Name="CarrierData" Type="nvarchar(max)" />
+          <Property Name="CreatedBy" Type="int" />
+          <Property Name="CreatedOn" Type="datetime2" Precision="7" />
+        </EntityType>
+        <Association Name="FK_admin_user_admin_group">
+          <End Role="AdminGroups" Type="Self.AdminGroups" Multiplicity="1" />
+          <End Role="AdminUsers" Type="Self.AdminUsers" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="AdminGroups">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="AdminUsers">
+              <PropertyRef Name="GroupId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_BundleItems_Items">
+          <End Role="Items" Type="Self.Items" Multiplicity="0..1" />
+          <End Role="BundleItems" Type="Self.BundleItems" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Items">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="BundleItems">
+              <PropertyRef Name="OrderItemId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_BundleItems_Skus">
+          <End Role="Skus" Type="Self.Skus" Multiplicity="0..1" />
+          <End Role="BundleItems" Type="Self.BundleItems" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Skus">
+              <PropertyRef Name="Sku" />
+            </Principal>
+            <Dependent Role="BundleItems">
+              <PropertyRef Name="ProductID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Carriers_CarrierAPI">
+          <End Role="CarrierAPI" Type="Self.CarrierAPI" Multiplicity="0..1" />
+          <End Role="Carriers" Type="Self.Carriers" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="CarrierAPI">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="Carriers">
+              <PropertyRef Name="Api" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Items_Orders">
+          <End Role="Orders" Type="Self.Orders" Multiplicity="0..1" />
+          <End Role="Items" Type="Self.Items" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Orders">
+              <PropertyRef Name="OrderID" />
+            </Principal>
+            <Dependent Role="Items">
+              <PropertyRef Name="OrderID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Items_Packages">
+          <End Role="Packages" Type="Self.Packages" Multiplicity="0..1" />
+          <End Role="Items" Type="Self.Items" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Packages">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="Items">
+              <PropertyRef Name="PackageID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Items_ReturnWarehouses">
+          <End Role="Warehouses" Type="Self.Warehouses" Multiplicity="0..1" />
+          <End Role="Items" Type="Self.Items" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Warehouses">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="Items">
+              <PropertyRef Name="ReturnedToWarehouseID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Items_ShipWarehouses">
+          <End Role="Warehouses" Type="Self.Warehouses" Multiplicity="0..1" />
+          <End Role="Items" Type="Self.Items" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Warehouses">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="Items">
+              <PropertyRef Name="ShipFromWarehouseID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Items_Skus">
+          <End Role="Skus" Type="Self.Skus" Multiplicity="0..1" />
+          <End Role="Items" Type="Self.Items" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Skus">
+              <PropertyRef Name="Sku" />
+            </Principal>
+            <Dependent Role="Items">
+              <PropertyRef Name="ProductID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Menu_Menu">
+          <End Role="Menu" Type="Self.Menu" Multiplicity="1" />
+          <End Role="Menu1" Type="Self.Menu" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Menu">
+              <PropertyRef Name="MenuId" />
+            </Principal>
+            <Dependent Role="Menu1">
+              <PropertyRef Name="PrevId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Orders_Addresses">
+          <End Role="Addresses" Type="Self.Addresses" Multiplicity="0..1" />
+          <End Role="Orders" Type="Self.Orders" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Addresses">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="Orders">
+              <PropertyRef Name="ShippingAddress" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Orders_Companies">
+          <End Role="Companies" Type="Self.Companies" Multiplicity="0..1" />
+          <End Role="Orders" Type="Self.Orders" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Companies">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="Orders">
+              <PropertyRef Name="CompanyID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Orders_Services">
+          <End Role="Services" Type="Self.Services" Multiplicity="0..1" />
+          <End Role="Orders" Type="Self.Orders" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Services">
+              <PropertyRef Name="ServiceCode" />
+            </Principal>
+            <Dependent Role="Orders">
+              <PropertyRef Name="ShippingServiceSelected" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Packages_Carriers">
+          <End Role="Carriers" Type="Self.Carriers" Multiplicity="0..1" />
+          <End Role="Packages" Type="Self.Packages" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Carriers">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="Packages">
+              <PropertyRef Name="CarrierID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Packages_Orders">
+          <End Role="Orders" Type="Self.Orders" Multiplicity="0..1" />
+          <End Role="Packages" Type="Self.Packages" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Orders">
+              <PropertyRef Name="OrderID" />
+            </Principal>
+            <Dependent Role="Packages">
+              <PropertyRef Name="OrderID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Payments_Orders">
+          <End Role="Orders" Type="Self.Orders" Multiplicity="0..1" />
+          <End Role="Payments" Type="Self.Payments" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Orders">
+              <PropertyRef Name="OrderID" />
+            </Principal>
+            <Dependent Role="Payments">
+              <PropertyRef Name="OrderID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_SerialNumbers_Items1">
+          <End Role="Items" Type="Self.Items" Multiplicity="1" />
+          <End Role="SerialNumbers" Type="Self.SerialNumbers" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Items">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="SerialNumbers">
+              <PropertyRef Name="OrderItemID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Services_Carriers">
+          <End Role="Carriers" Type="Self.Carriers" Multiplicity="0..1" />
+          <End Role="Services" Type="Self.Services" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Carriers">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="Services">
+              <PropertyRef Name="CarrierID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Skus_Manufacturers">
+          <End Role="Manufacturers" Type="Self.Manufacturers" Multiplicity="0..1" />
+          <End Role="Skus" Type="Self.Skus" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Manufacturers">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="Skus">
+              <PropertyRef Name="Brand" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Skus_ProductType">
+          <End Role="ProductType" Type="Self.ProductType" Multiplicity="0..1" />
+          <End Role="Skus" Type="Self.Skus" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ProductType">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="Skus">
+              <PropertyRef Name="ProductTypeID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Skus_Skus">
+          <End Role="Skus" Type="Self.Skus" Multiplicity="0..1" />
+          <End Role="Skus1" Type="Self.Skus" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Skus">
+              <PropertyRef Name="Sku" />
+            </Principal>
+            <Dependent Role="Skus1">
+              <PropertyRef Name="ParentShadow" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TaskLog_TaskScheduler">
+          <End Role="TaskScheduler" Type="Self.TaskScheduler" Multiplicity="0..1" />
+          <End Role="TaskLog" Type="Self.TaskLog" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="TaskScheduler">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="TaskLog">
+              <PropertyRef Name="TaskID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="QDLogisticsModelStoreContainer">
+          <EntitySet Name="ActionLog" EntityType="Self.ActionLog" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Addresses" EntityType="Self.Addresses" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="AdminGroups" EntityType="Self.AdminGroups" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="AdminUsers" EntityType="Self.AdminUsers" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="BundleItems" EntityType="Self.BundleItems" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="CarrierAPI" EntityType="Self.CarrierAPI" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Carriers" EntityType="Self.Carriers" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Companies" EntityType="Self.Companies" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Items" EntityType="Self.Items" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Manufacturers" EntityType="Self.Manufacturers" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Menu" EntityType="Self.Menu" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Orders" EntityType="Self.Orders" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Packages" EntityType="Self.Packages" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Payments" EntityType="Self.Payments" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="PickProduct" EntityType="Self.PickProduct" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Preset" EntityType="Self.Preset" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="ProductType" EntityType="Self.ProductType" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="PurchaseItemReceive" EntityType="Self.PurchaseItemReceive" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="SerialNumbers" EntityType="Self.SerialNumbers" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Services" EntityType="Self.Services" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Skus" EntityType="Self.Skus" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="TaskLog" EntityType="Self.TaskLog" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="TaskScheduler" EntityType="Self.TaskScheduler" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Warehouses" EntityType="Self.Warehouses" Schema="dbo" store:Type="Tables" />
+          <AssociationSet Name="FK_admin_user_admin_group" Association="Self.FK_admin_user_admin_group">
+            <End Role="AdminGroups" EntitySet="AdminGroups" />
+            <End Role="AdminUsers" EntitySet="AdminUsers" />
+          </AssociationSet>
+          <AssociationSet Name="FK_BundleItems_Items" Association="Self.FK_BundleItems_Items">
+            <End Role="Items" EntitySet="Items" />
+            <End Role="BundleItems" EntitySet="BundleItems" />
+          </AssociationSet>
+          <AssociationSet Name="FK_BundleItems_Skus" Association="Self.FK_BundleItems_Skus">
+            <End Role="Skus" EntitySet="Skus" />
+            <End Role="BundleItems" EntitySet="BundleItems" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Carriers_CarrierAPI" Association="Self.FK_Carriers_CarrierAPI">
+            <End Role="CarrierAPI" EntitySet="CarrierAPI" />
+            <End Role="Carriers" EntitySet="Carriers" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Items_Orders" Association="Self.FK_Items_Orders">
+            <End Role="Orders" EntitySet="Orders" />
+            <End Role="Items" EntitySet="Items" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Items_Packages" Association="Self.FK_Items_Packages">
+            <End Role="Packages" EntitySet="Packages" />
+            <End Role="Items" EntitySet="Items" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Items_ReturnWarehouses" Association="Self.FK_Items_ReturnWarehouses">
+            <End Role="Warehouses" EntitySet="Warehouses" />
+            <End Role="Items" EntitySet="Items" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Items_ShipWarehouses" Association="Self.FK_Items_ShipWarehouses">
+            <End Role="Warehouses" EntitySet="Warehouses" />
+            <End Role="Items" EntitySet="Items" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Items_Skus" Association="Self.FK_Items_Skus">
+            <End Role="Skus" EntitySet="Skus" />
+            <End Role="Items" EntitySet="Items" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Menu_Menu" Association="Self.FK_Menu_Menu">
+            <End Role="Menu" EntitySet="Menu" />
+            <End Role="Menu1" EntitySet="Menu" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Orders_Addresses" Association="Self.FK_Orders_Addresses">
+            <End Role="Addresses" EntitySet="Addresses" />
+            <End Role="Orders" EntitySet="Orders" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Orders_Companies" Association="Self.FK_Orders_Companies">
+            <End Role="Companies" EntitySet="Companies" />
+            <End Role="Orders" EntitySet="Orders" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Orders_Services" Association="Self.FK_Orders_Services">
+            <End Role="Services" EntitySet="Services" />
+            <End Role="Orders" EntitySet="Orders" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Packages_Carriers" Association="Self.FK_Packages_Carriers">
+            <End Role="Carriers" EntitySet="Carriers" />
+            <End Role="Packages" EntitySet="Packages" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Packages_Orders" Association="Self.FK_Packages_Orders">
+            <End Role="Orders" EntitySet="Orders" />
+            <End Role="Packages" EntitySet="Packages" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Payments_Orders" Association="Self.FK_Payments_Orders">
+            <End Role="Orders" EntitySet="Orders" />
+            <End Role="Payments" EntitySet="Payments" />
+          </AssociationSet>
+          <AssociationSet Name="FK_SerialNumbers_Items1" Association="Self.FK_SerialNumbers_Items1">
+            <End Role="Items" EntitySet="Items" />
+            <End Role="SerialNumbers" EntitySet="SerialNumbers" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Services_Carriers" Association="Self.FK_Services_Carriers">
+            <End Role="Carriers" EntitySet="Carriers" />
+            <End Role="Services" EntitySet="Services" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Skus_Manufacturers" Association="Self.FK_Skus_Manufacturers">
+            <End Role="Manufacturers" EntitySet="Manufacturers" />
+            <End Role="Skus" EntitySet="Skus" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Skus_ProductType" Association="Self.FK_Skus_ProductType">
+            <End Role="ProductType" EntitySet="ProductType" />
+            <End Role="Skus" EntitySet="Skus" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Skus_Skus" Association="Self.FK_Skus_Skus">
+            <End Role="Skus" EntitySet="Skus" />
+            <End Role="Skus1" EntitySet="Skus" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TaskLog_TaskScheduler" Association="Self.FK_TaskLog_TaskScheduler">
+            <End Role="TaskScheduler" EntitySet="TaskScheduler" />
+            <End Role="TaskLog" EntitySet="TaskLog" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema></edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="QDLogisticsModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityContainer Name="QDLogisticsEntities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="Addresses" EntityType="QDLogisticsModel.Addresses" />
+          <EntitySet Name="BundleItems" EntityType="QDLogisticsModel.BundleItems" />
+          <EntitySet Name="CarrierAPI" EntityType="QDLogisticsModel.CarrierAPI" />
+          <EntitySet Name="Items" EntityType="QDLogisticsModel.Items" />
+          <EntitySet Name="Manufacturers" EntityType="QDLogisticsModel.Manufacturers" />
+          <EntitySet Name="Orders" EntityType="QDLogisticsModel.Orders" />
+          <EntitySet Name="Packages" EntityType="QDLogisticsModel.Packages" />
+          <EntitySet Name="Payments" EntityType="QDLogisticsModel.Payments" />
+          <EntitySet Name="Skus" EntityType="QDLogisticsModel.Skus" />
+          <EntitySet Name="Warehouses" EntityType="QDLogisticsModel.Warehouses" />
+          <AssociationSet Name="FK_Orders_Addresses" Association="QDLogisticsModel.FK_Orders_Addresses">
+            <End Role="Addresses" EntitySet="Addresses" />
+            <End Role="Orders" EntitySet="Orders" />
+          </AssociationSet>
+          <AssociationSet Name="FK_BundleItems_Items" Association="QDLogisticsModel.FK_BundleItems_Items">
+            <End Role="Items" EntitySet="Items" />
+            <End Role="BundleItems" EntitySet="BundleItems" />
+          </AssociationSet>
+          <AssociationSet Name="FK_BundleItems_Skus" Association="QDLogisticsModel.FK_BundleItems_Skus">
+            <End Role="Skus" EntitySet="Skus" />
+            <End Role="BundleItems" EntitySet="BundleItems" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Items_Orders" Association="QDLogisticsModel.FK_Items_Orders">
+            <End Role="Orders" EntitySet="Orders" />
+            <End Role="Items" EntitySet="Items" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Items_Packages" Association="QDLogisticsModel.FK_Items_Packages">
+            <End Role="Packages" EntitySet="Packages" />
+            <End Role="Items" EntitySet="Items" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Items_ReturnWarehouses" Association="QDLogisticsModel.FK_Items_ReturnWarehouses">
+            <End Role="Warehouses" EntitySet="Warehouses" />
+            <End Role="Items" EntitySet="Items" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Items_ShipWarehouses" Association="QDLogisticsModel.FK_Items_ShipWarehouses">
+            <End Role="Warehouses" EntitySet="Warehouses" />
+            <End Role="Items" EntitySet="Items" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Items_Skus" Association="QDLogisticsModel.FK_Items_Skus">
+            <End Role="Skus" EntitySet="Skus" />
+            <End Role="Items" EntitySet="Items" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Skus_Manufacturers" Association="QDLogisticsModel.FK_Skus_Manufacturers">
+            <End Role="Manufacturers" EntitySet="Manufacturers" />
+            <End Role="Skus" EntitySet="Skus" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Packages_Orders" Association="QDLogisticsModel.FK_Packages_Orders">
+            <End Role="Orders" EntitySet="Orders" />
+            <End Role="Packages" EntitySet="Packages" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Payments_Orders" Association="QDLogisticsModel.FK_Payments_Orders">
+            <End Role="Orders" EntitySet="Orders" />
+            <End Role="Payments" EntitySet="Payments" />
+          </AssociationSet>
+          <EntitySet Name="Services" EntityType="QDLogisticsModel.Services" />
+          <AssociationSet Name="FK_Orders_Services" Association="QDLogisticsModel.FK_Orders_Services">
+            <End Role="Services" EntitySet="Services" />
+            <End Role="Orders" EntitySet="Orders" />
+          </AssociationSet>
+          <EntitySet Name="AdminGroups" EntityType="QDLogisticsModel.AdminGroups" />
+          <EntitySet Name="AdminUsers" EntityType="QDLogisticsModel.AdminUsers" />
+          <AssociationSet Name="FK_admin_user_admin_group" Association="QDLogisticsModel.FK_admin_user_admin_group">
+            <End Role="AdminGroups" EntitySet="AdminGroups" />
+            <End Role="AdminUsers" EntitySet="AdminUsers" />
+          </AssociationSet>
+          <EntitySet Name="Menu" EntityType="QDLogisticsModel.Menu" />
+          <AssociationSet Name="FK_Menu_Menu" Association="QDLogisticsModel.FK_Menu_Menu">
+            <End Role="Menu" EntitySet="Menu" />
+            <End Role="Menu1" EntitySet="Menu" />
+          </AssociationSet>
+          <EntitySet Name="PickProduct" EntityType="QDLogisticsModel.PickProduct" />
+          <EntitySet Name="ProductType" EntityType="QDLogisticsModel.ProductType" />
+          <AssociationSet Name="FK_Skus_ProductType" Association="QDLogisticsModel.FK_Skus_ProductType">
+            <End Role="ProductType" EntitySet="ProductType" />
+            <End Role="Skus" EntitySet="Skus" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Skus_Skus" Association="QDLogisticsModel.FK_Skus_Skus">
+            <End Role="Skus" EntitySet="Skus" />
+            <End Role="Skus1" EntitySet="Skus" />
+          </AssociationSet>
+          <EntitySet Name="TaskLog" EntityType="QDLogisticsModel.TaskLog" />
+          <EntitySet Name="ActionLog" EntityType="QDLogisticsModel.ActionLog" />
+          <EntitySet Name="Companies" EntityType="QDLogisticsModel.Companies" />
+          <AssociationSet Name="FK_Orders_Companies" Association="QDLogisticsModel.FK_Orders_Companies">
+            <End Role="Companies" EntitySet="Companies" />
+            <End Role="Orders" EntitySet="Orders" />
+          </AssociationSet>
+          <EntitySet Name="SerialNumbers" EntityType="QDLogisticsModel.SerialNumbers" />
+          <AssociationSet Name="FK_SerialNumbers_Items1" Association="QDLogisticsModel.FK_SerialNumbers_Items1">
+            <End Role="Items" EntitySet="Items" />
+            <End Role="SerialNumbers" EntitySet="SerialNumbers" />
+          </AssociationSet>
+          <EntitySet Name="PurchaseItemReceive" EntityType="QDLogisticsModel.PurchaseItemReceive" />
+          <EntitySet Name="TaskScheduler" EntityType="QDLogisticsModel.TaskScheduler" />
+          <AssociationSet Name="FK_TaskLog_TaskScheduler" Association="QDLogisticsModel.FK_TaskLog_TaskScheduler">
+            <End Role="TaskScheduler" EntitySet="TaskScheduler" />
+            <End Role="TaskLog" EntitySet="TaskLog" />
+          </AssociationSet>
+          <EntitySet Name="Carriers" EntityType="QDLogisticsModel.Carriers" />
+          <AssociationSet Name="FK_Carriers_CarrierAPI" Association="QDLogisticsModel.FK_Carriers_CarrierAPI">
+            <End Role="CarrierAPI" EntitySet="CarrierAPI" />
+            <End Role="Carriers" EntitySet="Carriers" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Packages_Carriers" Association="QDLogisticsModel.FK_Packages_Carriers">
+            <End Role="Carriers" EntitySet="Carriers" />
+            <End Role="Packages" EntitySet="Packages" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Services_Carriers" Association="QDLogisticsModel.FK_Services_Carriers">
+            <End Role="Carriers" EntitySet="Carriers" />
+            <End Role="Services" EntitySet="Services" />
+          </AssociationSet>
+          <EntitySet Name="Preset" EntityType="QDLogisticsModel.Preset" />
+        </EntityContainer>
+        <EntityType Name="Addresses">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="IsEnable" Type="Boolean" />
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="FirstName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="MiddleInitial" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="LastName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="CompanyName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="HomePhone" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="PhoneNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="FaxNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="EmailAddress" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="CountryName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="CountryCode" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="City" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="StateCode" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="StateName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="PostalCode" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="StreetLine1" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="StreetLine2" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="AddressSource" Type="Int32" />
+          <Property Name="AddressStatus" Type="Int32" />
+          <Property Name="Notes" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="Orders" Relationship="QDLogisticsModel.FK_Orders_Addresses" FromRole="Addresses" ToRole="Orders" />
+        </EntityType>
+        <EntityType Name="BundleItems">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="IsEnable" Type="Boolean" />
+          <Property Name="ID" Type="Int32" Nullable="false" />
+          <Property Name="OrderID" Type="Int32" />
+          <Property Name="OrderItemId" Type="Int32" />
+          <Property Name="PackageID" Type="Int32" />
+          <Property Name="ProductID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="ProductName" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
+          <Property Name="Qty" Type="Int32" />
+          <Property Name="QtyReturned" Type="Int32" />
+          <Property Name="BackOrderOty" Type="Int32" />
+          <NavigationProperty Name="Items" Relationship="QDLogisticsModel.FK_BundleItems_Items" FromRole="BundleItems" ToRole="Items" />
+          <NavigationProperty Name="Skus" Relationship="QDLogisticsModel.FK_BundleItems_Skus" FromRole="BundleItems" ToRole="Skus" />
+        </EntityType>
+        <EntityType Name="CarrierAPI">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="IsEnable" Type="Boolean" Nullable="false" />
+          <Property Name="IsTest" Type="Boolean" Nullable="false" />
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Name" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Type" Type="Byte" />
+          <Property Name="AccountID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="ApiKey" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="ApiPassword" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="ApiAccount" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="ApiMeter" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="ApiHub" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="Carriers" Relationship="QDLogisticsModel.FK_Carriers_CarrierAPI" FromRole="CarrierAPI" ToRole="Carriers" />
+        </EntityType>
+        <EntityType Name="Items">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="IsEnable" Type="Boolean" />
+          <Property Name="ID" Type="Int32" Nullable="false" />
+          <Property Name="OrderID" Type="Int32" />
+          <Property Name="PackageID" Type="Int32" />
+          <Property Name="SKU" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="OriginalSKU" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="ProductID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="ProductIDOriginal" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="ProductIDRequest" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="DeclaredValue" Type="Decimal" Nullable="false" Precision="18" Scale="2" DefaultValue="0" />
+          <Property Name="Qty" Type="Int32" />
+          <Property Name="QtyReturned" Type="Int32" />
+          <Property Name="QtyShipped" Type="Int32" />
+          <Property Name="DisplayName" Type="String" MaxLength="200" FixedLength="false" Unicode="true" />
+          <Property Name="LineTotal" Type="Decimal" Precision="18" Scale="2" />
+          <Property Name="KitItemCount" Type="Int32" />
+          <Property Name="eBayItemID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="eBayTransactionId" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="SalesRecordNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="BackOrderQty" Type="Int32" />
+          <Property Name="UnitPrice" Type="Decimal" Precision="18" Scale="2" />
+          <Property Name="SerialNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="ShipFromWarehouseID" Type="Int32" />
+          <Property Name="ReturnedToWarehouseID" Type="Int32" />
+          <NavigationProperty Name="BundleItems" Relationship="QDLogisticsModel.FK_BundleItems_Items" FromRole="Items" ToRole="BundleItems" />
+          <NavigationProperty Name="Orders" Relationship="QDLogisticsModel.FK_Items_Orders" FromRole="Items" ToRole="Orders" />
+          <NavigationProperty Name="Packages" Relationship="QDLogisticsModel.FK_Items_Packages" FromRole="Items" ToRole="Packages" />
+          <NavigationProperty Name="ReturnWarehouses" Relationship="QDLogisticsModel.FK_Items_ReturnWarehouses" FromRole="Items" ToRole="Warehouses" />
+          <NavigationProperty Name="ShipWarehouses" Relationship="QDLogisticsModel.FK_Items_ShipWarehouses" FromRole="Items" ToRole="Warehouses" />
+          <NavigationProperty Name="Skus" Relationship="QDLogisticsModel.FK_Items_Skus" FromRole="Items" ToRole="Skus" />
+          <Property Name="Weight" Type="Double" />
+          <NavigationProperty Name="SerialNumbers" Relationship="QDLogisticsModel.FK_SerialNumbers_Items1" FromRole="Items" ToRole="SerialNumbers" />
+          </EntityType>
+        <EntityType Name="Manufacturers">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="IsEnable" Type="Boolean" />
+          <Property Name="ID" Type="Int32" Nullable="false" />
+          <Property Name="CompanyID" Type="Int32" />
+          <Property Name="ManufacturerName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="Skus" Relationship="QDLogisticsModel.FK_Skus_Manufacturers" FromRole="Manufacturers" ToRole="Skus" />
+        </EntityType>
+        <EntityType Name="Orders">
+          <Key>
+            <PropertyRef Name="OrderID" />
+          </Key>
+          <Property Name="OrderID" Type="Int32" Nullable="false" />
+          <Property Name="ParentOrderID" Type="Int32" />
+          <Property Name="ClientID" Type="Int32" />
+          <Property Name="CompanyID" Type="Int32" />
+          <Property Name="UserID" Type="Int32" />
+          <Property Name="UserName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="SiteCode" Type="Int32" />
+          <Property Name="TimeOfOrder" Type="DateTime" Precision="7" />
+          <Property Name="SubTotal" Type="Decimal" Precision="18" Scale="2" />
+          <Property Name="ShippingTotal" Type="Decimal" Precision="18" Scale="2" />
+          <Property Name="OrderDiscountsTotal" Type="Decimal" Precision="18" Scale="2" />
+          <Property Name="GrandTotal" Type="Decimal" Precision="18" Scale="2" />
+          <Property Name="StatusCode" Type="Int32" />
+          <Property Name="PaymentStatus" Type="Int32" />
+          <Property Name="ShippingStatus" Type="Int32" />
+          <Property Name="ShipDate" Type="DateTime" Precision="7" />
+          <Property Name="FinalShippingFee" Type="Decimal" Precision="18" Scale="2" />
+          <Property Name="ShippingAddress" Type="Int32" />
+          <Property Name="OrderCurrencyCode" Type="Int32" />
+          <Property Name="OrderSource" Type="Int32" />
+          <Property Name="OrderSourceOrderId" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="OrderSourceOrderTotal" Type="Decimal" Precision="18" Scale="2" />
+          <Property Name="eBayUserID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="eBaySalesRecordNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="ShippingServiceSelected" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
+          <Property Name="RushOrder" Type="Boolean" />
+          <Property Name="InvoicePrinted" Type="Boolean" />
+          <Property Name="InvoicePrintedDate" Type="DateTime" Precision="7" />
+          <Property Name="ShippingCarrier" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="ShippingCountry" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="PackageType" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="StationID" Type="Int32" />
+          <Property Name="CustomerServiceStatus" Type="Int32" />
+          <Property Name="TaxRate" Type="Decimal" Precision="18" Scale="2" />
+          <Property Name="TaxTotal" Type="Decimal" Precision="18" Scale="2" />
+          <Property Name="GoogleOrderNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="IsInDispute" Type="Boolean" />
+          <Property Name="DisputeStartedOn" Type="DateTime" Precision="7" />
+          <Property Name="PaypalFeeTotal" Type="Decimal" Precision="18" Scale="2" />
+          <Property Name="PostingFeeTotal" Type="Decimal" Precision="18" Scale="2" />
+          <Property Name="FinalValueTotal" Type="Decimal" Precision="18" Scale="2" />
+          <Property Name="OrderItemCount" Type="Int32" />
+          <Property Name="OrderQtyTotal" Type="Int32" />
+          <Property Name="ShippingWeightTotalOz" Type="Int32" />
+          <Property Name="IsConfirmed" Type="Boolean" />
+          <Property Name="ConfirmBy" Type="Int32" />
+          <Property Name="ConfirmOn" Type="DateTime" Precision="7" />
+          <Property Name="MarkettingSourceID" Type="Int32" />
+          <Property Name="ShippedBy" Type="Int32" />
+          <Property Name="Instructions" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="SyncOn" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="Addresses" Relationship="QDLogisticsModel.FK_Orders_Addresses" FromRole="Orders" ToRole="Addresses" />
+          <NavigationProperty Name="Items" Relationship="QDLogisticsModel.FK_Items_Orders" FromRole="Orders" ToRole="Items" />
+          <NavigationProperty Name="Packages" Relationship="QDLogisticsModel.FK_Packages_Orders" FromRole="Orders" ToRole="Packages" />
+          <NavigationProperty Name="Payments" Relationship="QDLogisticsModel.FK_Payments_Orders" FromRole="Orders" ToRole="Payments" />
+          <NavigationProperty Name="Services" Relationship="QDLogisticsModel.FK_Orders_Services" FromRole="Orders" ToRole="Services" />
+          <NavigationProperty Name="Companies" Relationship="QDLogisticsModel.FK_Orders_Companies" FromRole="Orders" ToRole="Companies" />
+        </EntityType>
+        <EntityType Name="Packages">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="IsEnable" Type="Boolean" />
+          <Property Name="ID" Type="Int32" Nullable="false" />
+          <Property Name="OrderID" Type="Int32" />
+          <Property Name="OrderItemID" Type="Int32" />
+          <Property Name="BundleItemID" Type="Int32" />
+          <Property Name="ProcessStatus" Type="Byte" Nullable="false" />
+          <Property Name="ProcessBack" Type="Boolean" Nullable="false" />
+          <Property Name="DeclaredTotal" Type="Decimal" Nullable="false" Precision="18" Scale="2" DefaultValue="0" />
+          <Property Name="Qty" Type="Int32" />
+          <Property Name="ShipDate" Type="DateTime" Precision="7" />
+          <Property Name="ShippingMethodName" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
+          <Property Name="ShippingServiceCode" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="CarrierID" Type="Int32" />
+          <Property Name="Export" Type="Byte" />
+          <Property Name="ExportMethod" Type="Byte" />
+          <Property Name="EstimatedDeliveryDate" Type="DateTime" Precision="7" />
+          <Property Name="PickUpDate" Type="DateTime" Precision="7" />
+          <Property Name="DeliveryDate" Type="DateTime" Precision="7" />
+          <Property Name="DeliveryStatus" Type="Int32" />
+          <Property Name="DeliveryNote" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
+          <Property Name="WinitNo" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="FinalShippingFee" Type="Decimal" Precision="18" Scale="2" />
+          <Property Name="UploadTracking" Type="Boolean" Nullable="false" DefaultValue="True" />
+          <Property Name="TrackingNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="POId" Type="Int32" />
+          <Property Name="POInvoice" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="RMAId" Type="Int32" />
+          <Property Name="FilePath" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="Comment" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="SupplierComment" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="Items" Relationship="QDLogisticsModel.FK_Items_Packages" FromRole="Packages" ToRole="Items" />
+          <NavigationProperty Name="Orders" Relationship="QDLogisticsModel.FK_Packages_Orders" FromRole="Packages" ToRole="Orders" />
+          <Property Name="Weight" Type="Double" />
+          <Property Name="Length" Type="Double" />
+          <Property Name="Width" Type="Double" />
+          <Property Name="Height" Type="Double" />
+          <NavigationProperty Name="Carriers" Relationship="QDLogisticsModel.FK_Packages_Carriers" FromRole="Packages" ToRole="Carriers" />
+        </EntityType>
+        <EntityType Name="Payments">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="IsEnable" Type="Boolean" />
+          <Property Name="ID" Type="Int32" Nullable="false" />
+          <Property Name="OrderID" Type="Int32" />
+          <Property Name="CurrentApplicationID" Type="Int32" />
+          <Property Name="PaymentMethod" Type="Int32" />
+          <Property Name="PaymentStatus" Type="Int32" />
+          <Property Name="PaymentType" Type="Int32" />
+          <Property Name="AuditDate" Type="DateTime" Precision="7" />
+          <Property Name="Amount" Type="Decimal" Precision="18" Scale="2" />
+          <Property Name="TransactionReferenceNumber" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
+          <Property Name="Note" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="Orders" Relationship="QDLogisticsModel.FK_Payments_Orders" FromRole="Payments" ToRole="Orders" />
+        </EntityType>
+        <EntityType Name="Skus">
+          <Key>
+            <PropertyRef Name="Sku" />
+          </Key>
+          <Property Name="IsEnable" Type="Boolean" />
+          <Property Name="Sku" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="ProductName" Type="String" MaxLength="200" FixedLength="false" Unicode="true" />
+          <Property Name="ProductTypeID" Type="Int32" />
+          <Property Name="ParentShadow" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="ParentKit" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="UPC" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Origin" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" DefaultValue="CN" />
+          <Property Name="Brand" Type="Int32" />
+          <Property Name="Battery" Type="Boolean" />
+          <Property Name="Export" Type="Byte" />
+          <Property Name="ExportMethod" Type="Byte" />
+          <NavigationProperty Name="BundleItems" Relationship="QDLogisticsModel.FK_BundleItems_Skus" FromRole="Skus" ToRole="BundleItems" />
+          <NavigationProperty Name="Items" Relationship="QDLogisticsModel.FK_Items_Skus" FromRole="Skus" ToRole="Items" />
+          <NavigationProperty Name="Manufacturers" Relationship="QDLogisticsModel.FK_Skus_Manufacturers" FromRole="Skus" ToRole="Manufacturers" />
+          <NavigationProperty Name="ProductType" Relationship="QDLogisticsModel.FK_Skus_ProductType" FromRole="Skus" ToRole="ProductType" />
+          <NavigationProperty Name="ShadowSku" Relationship="QDLogisticsModel.FK_Skus_Skus" FromRole="Skus" ToRole="Skus1" />
+          <NavigationProperty Name="ParentSku" Relationship="QDLogisticsModel.FK_Skus_Skus" FromRole="Skus1" ToRole="Skus" />
+          <Property Name="PurchaseInvoice" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
+          <Property Name="Weight" Type="Int32" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Warehouses">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="IsEnable" Type="Boolean" />
+          <Property Name="IsDefault" Type="Boolean" />
+          <Property Name="IsSellable" Type="Boolean" />
+          <Property Name="AllowUseQtyForFBAShipments" Type="Boolean" />
+          <Property Name="EnforceBins" Type="Boolean" />
+          <Property Name="ID" Type="Int32" Nullable="false" />
+          <Property Name="CompanyID" Type="Int32" />
+          <Property Name="Name" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="QBWarehouseName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="WarehouseType" Type="Int32" DefaultValue="0" />
+          <Property Name="WinitWarehouseID" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="DropShipCentralWarehouseCode" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="CarrierData" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="CreatedBy" Type="Int32" />
+          <Property Name="CreatedOn" Type="DateTime" Precision="7" />
+          <NavigationProperty Name="ReturnWarehouses" Relationship="QDLogisticsModel.FK_Items_ReturnWarehouses" FromRole="Warehouses" ToRole="Items" />
+          <NavigationProperty Name="ShipWarehouses" Relationship="QDLogisticsModel.FK_Items_ShipWarehouses" FromRole="Warehouses" ToRole="Items" />
+        </EntityType>
+        <Association Name="FK_Orders_Addresses">
+          <End Type="QDLogisticsModel.Addresses" Role="Addresses" Multiplicity="0..1" />
+          <End Type="QDLogisticsModel.Orders" Role="Orders" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Addresses">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="Orders">
+              <PropertyRef Name="ShippingAddress" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_BundleItems_Items">
+          <End Type="QDLogisticsModel.Items" Role="Items" Multiplicity="0..1" />
+          <End Type="QDLogisticsModel.BundleItems" Role="BundleItems" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Items">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="BundleItems">
+              <PropertyRef Name="OrderItemId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_BundleItems_Skus">
+          <End Type="QDLogisticsModel.Skus" Role="Skus" Multiplicity="0..1" />
+          <End Type="QDLogisticsModel.BundleItems" Role="BundleItems" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Skus">
+              <PropertyRef Name="Sku" />
+            </Principal>
+            <Dependent Role="BundleItems">
+              <PropertyRef Name="ProductID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Items_Orders">
+          <End Type="QDLogisticsModel.Orders" Role="Orders" Multiplicity="0..1" />
+          <End Type="QDLogisticsModel.Items" Role="Items" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Orders">
+              <PropertyRef Name="OrderID" />
+            </Principal>
+            <Dependent Role="Items">
+              <PropertyRef Name="OrderID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Items_Packages">
+          <End Type="QDLogisticsModel.Packages" Role="Packages" Multiplicity="0..1" />
+          <End Type="QDLogisticsModel.Items" Role="Items" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Packages">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="Items">
+              <PropertyRef Name="PackageID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Items_ReturnWarehouses">
+          <End Type="QDLogisticsModel.Warehouses" Role="Warehouses" Multiplicity="0..1" />
+          <End Type="QDLogisticsModel.Items" Role="Items" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Warehouses">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="Items">
+              <PropertyRef Name="ReturnedToWarehouseID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Items_ShipWarehouses">
+          <End Type="QDLogisticsModel.Warehouses" Role="Warehouses" Multiplicity="0..1" />
+          <End Type="QDLogisticsModel.Items" Role="Items" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Warehouses">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="Items">
+              <PropertyRef Name="ShipFromWarehouseID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Items_Skus">
+          <End Type="QDLogisticsModel.Skus" Role="Skus" Multiplicity="0..1" />
+          <End Type="QDLogisticsModel.Items" Role="Items" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Skus">
+              <PropertyRef Name="Sku" />
+            </Principal>
+            <Dependent Role="Items">
+              <PropertyRef Name="ProductID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Skus_Manufacturers">
+          <End Type="QDLogisticsModel.Manufacturers" Role="Manufacturers" Multiplicity="0..1" />
+          <End Type="QDLogisticsModel.Skus" Role="Skus" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Manufacturers">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="Skus">
+              <PropertyRef Name="Brand" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Packages_Orders">
+          <End Type="QDLogisticsModel.Orders" Role="Orders" Multiplicity="0..1" />
+          <End Type="QDLogisticsModel.Packages" Role="Packages" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Orders">
+              <PropertyRef Name="OrderID" />
+            </Principal>
+            <Dependent Role="Packages">
+              <PropertyRef Name="OrderID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Payments_Orders">
+          <End Type="QDLogisticsModel.Orders" Role="Orders" Multiplicity="0..1" />
+          <End Type="QDLogisticsModel.Payments" Role="Payments" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Orders">
+              <PropertyRef Name="OrderID" />
+            </Principal>
+            <Dependent Role="Payments">
+              <PropertyRef Name="OrderID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityType Name="Services">
+          <Key>
+            <PropertyRef Name="ServiceCode" />
+          </Key>
+          <Property Name="IsEnable" Type="Boolean" />
+          <Property Name="ServiceCode" Type="String" Nullable="false" MaxLength="150" FixedLength="false" Unicode="true" />
+          <Property Name="ServiceName" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
+          <Property Name="CarrierID" Type="Int32" />
+          <NavigationProperty Name="Orders" Relationship="QDLogisticsModel.FK_Orders_Services" FromRole="Services" ToRole="Orders" />
+          <NavigationProperty Name="Carriers" Relationship="QDLogisticsModel.FK_Services_Carriers" FromRole="Services" ToRole="Carriers" />
+        </EntityType>
+        <Association Name="FK_Orders_Services">
+          <End Type="QDLogisticsModel.Services" Role="Services" Multiplicity="0..1" />
+          <End Type="QDLogisticsModel.Orders" Role="Orders" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Services">
+              <PropertyRef Name="ServiceCode" />
+            </Principal>
+            <Dependent Role="Orders">
+              <PropertyRef Name="ShippingServiceSelected" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityType Name="AdminGroups">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="IsEnable" Type="Boolean" Nullable="false" />
+          <Property Name="IsVisible" Type="Boolean" Nullable="false" />
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Name" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Auth" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="AdminUsers" Relationship="QDLogisticsModel.FK_admin_user_admin_group" FromRole="AdminGroups" ToRole="AdminUsers" />
+          <Property Name="Order" Type="Int32" />
+        </EntityType>
+        <EntityType Name="AdminUsers">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="IsEnable" Type="Boolean" Nullable="false" />
+          <Property Name="IsVisible" Type="Boolean" Nullable="false" />
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="GroupId" Type="Int32" Nullable="false" />
+          <Property Name="Name" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Account" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Password" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="ApiUserName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="ApiPassword" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Warehouse" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="TimeZone" Type="Int32" Nullable="false" DefaultValue="0" />
+          <Property Name="Auth" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="LLT" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="AdminGroups" Relationship="QDLogisticsModel.FK_admin_user_admin_group" FromRole="AdminUsers" ToRole="AdminGroups" />
+          <Property Name="IsLogin" Type="Boolean" Nullable="false" />
+        </EntityType>
+        <Association Name="FK_admin_user_admin_group">
+          <End Type="QDLogisticsModel.AdminGroups" Role="AdminGroups" Multiplicity="1" />
+          <End Type="QDLogisticsModel.AdminUsers" Role="AdminUsers" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="AdminGroups">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="AdminUsers">
+              <PropertyRef Name="GroupId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityType Name="Menu">
+          <Key>
+            <PropertyRef Name="MenuId" />
+          </Key>
+          <Property Name="IsEnable" Type="Boolean" Nullable="false" />
+          <Property Name="MenuId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Name" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="PrevId" Type="Int32" Nullable="false" />
+          <Property Name="Route" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Controller" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Action" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Order" Type="Int32" />
+          <NavigationProperty Name="SubMenu" Relationship="QDLogisticsModel.FK_Menu_Menu" FromRole="Menu" ToRole="Menu1" />
+          <NavigationProperty Name="ParentMenu" Relationship="QDLogisticsModel.FK_Menu_Menu" FromRole="Menu1" ToRole="Menu" />
+        </EntityType>
+        <Association Name="FK_Menu_Menu">
+          <End Type="QDLogisticsModel.Menu" Role="Menu" Multiplicity="1" />
+          <End Type="QDLogisticsModel.Menu" Role="Menu1" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Menu">
+              <PropertyRef Name="MenuId" />
+            </Principal>
+            <Dependent Role="Menu1">
+              <PropertyRef Name="PrevId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityType Name="PickProduct">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="IsEnable" Type="Boolean" Nullable="false" DefaultValue="True" />
+          <Property Name="IsPicked" Type="Boolean" Nullable="false" DefaultValue="False" />
+          <Property Name="IsMail" Type="Boolean" Nullable="false" DefaultValue="False" />
+          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="OrderID" Type="Int32" />
+          <Property Name="PackageID" Type="Int32" />
+          <Property Name="ItemID" Type="Int32" />
+          <Property Name="ProductID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="ProductName" Type="String" MaxLength="200" FixedLength="false" Unicode="true" />
+          <Property Name="UPC" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="WarehouseID" Type="Int32" />
+          <Property Name="Qty" Type="Int32" />
+          <Property Name="QtyPicked" Type="Int32" Nullable="false" DefaultValue="0" />
+          <Property Name="PickUpDate" Type="DateTime" Precision="3" />
+          <Property Name="PickUpBy" Type="Int32" />
+        </EntityType>
+        <EntityType Name="ProductType">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="IsEnable" Type="Boolean" Nullable="false" DefaultValue="True" />
+          <Property Name="ID" Type="Int32" Nullable="false" />
+          <Property Name="ProductTypeName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="true" />
+          <NavigationProperty Name="Skus" Relationship="QDLogisticsModel.FK_Skus_ProductType" FromRole="ProductType" ToRole="Skus" />
+          <Property Name="ChtName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <Association Name="FK_Skus_ProductType">
+          <End Type="QDLogisticsModel.ProductType" Role="ProductType" Multiplicity="0..1" />
+          <End Type="QDLogisticsModel.Skus" Role="Skus" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ProductType">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="Skus">
+              <PropertyRef Name="ProductTypeID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Skus_Skus">
+          <End Type="QDLogisticsModel.Skus" Role="Skus" Multiplicity="0..1" />
+          <End Type="QDLogisticsModel.Skus" Role="Skus1" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Skus">
+              <PropertyRef Name="Sku" />
+            </Principal>
+            <Dependent Role="Skus1">
+              <PropertyRef Name="ParentShadow" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityType Name="TaskLog">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="TaskID" Type="Int32" />
+          <Property Name="Status" Type="Byte" />
+          <Property Name="CreateDate" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="TaskScheduler" Relationship="QDLogisticsModel.FK_TaskLog_TaskScheduler" FromRole="TaskLog" ToRole="TaskScheduler" />
+        </EntityType>
+        <EntityType Name="ActionLog">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="AdminID" Type="Int32" />
+          <Property Name="AdminName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="TableName" Type="String" MaxLength="50" FixedLength="true" Unicode="true" />
+          <Property Name="TargetID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="ActionName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="CreateDate" Type="DateTime" Precision="3" />
+        </EntityType>
+        <EntityType Name="Companies">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" />
+          <Property Name="CompanyName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="Orders" Relationship="QDLogisticsModel.FK_Orders_Companies" FromRole="Companies" ToRole="Orders" />
+          <Property Name="TimeZone" Type="Int32" />
+        </EntityType>
+        <Association Name="FK_Orders_Companies">
+          <End Type="QDLogisticsModel.Companies" Role="Companies" Multiplicity="0..1" />
+          <End Type="QDLogisticsModel.Orders" Role="Orders" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Companies">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="Orders">
+              <PropertyRef Name="CompanyID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityType Name="SerialNumbers">
+          <Key>
+            <PropertyRef Name="SerialNumber" />
+            <PropertyRef Name="OrderItemID" />
+          </Key>
+          <Property Name="OrderID" Type="Int32" />
+          <Property Name="ProductID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="SerialNumber" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="OrderItemID" Type="Int32" Nullable="false" />
+          <Property Name="KitItemID" Type="Int32" />
+          <NavigationProperty Name="Items" Relationship="QDLogisticsModel.FK_SerialNumbers_Items1" FromRole="SerialNumbers" ToRole="Items" />
+        </EntityType>
+        <Association Name="FK_SerialNumbers_Items1">
+          <End Type="QDLogisticsModel.Items" Role="Items" Multiplicity="1" />
+          <End Type="QDLogisticsModel.SerialNumbers" Role="SerialNumbers" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Items">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="SerialNumbers">
+              <PropertyRef Name="OrderItemID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityType Name="PurchaseItemReceive">
+          <Key>
+            <PropertyRef Name="ProductID" />
+            <PropertyRef Name="SerialNumber" />
+          </Key>
+          <Property Name="IsRequireSerialScan" Type="Boolean" Nullable="false" />
+          <Property Name="OrderID" Type="Int32" />
+          <Property Name="OrderItemID" Type="Int32" />
+          <Property Name="ProductID" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="SerialNumber" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="PurchaseID" Type="Int32" />
+          <Property Name="PurchaseReceiveID" Type="Int32" />
+          <Property Name="RMAId" Type="Int32" />
+          <Property Name="CreditMemoID" Type="Int32" />
+          <Property Name="CreditMemoReason" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="WarehouseID" Type="Int32" />
+          <Property Name="WarehouseName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="LocationBinID" Type="Int32" />
+          <Property Name="BinName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <EntityType Name="TaskScheduler">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Status" Type="Byte" Nullable="false" />
+          <Property Name="Description" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="Message" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="UpdateBy" Type="Int32" />
+          <Property Name="UpdateDate" Type="DateTime" Precision="3" />
+          <Property Name="CreateDate" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="TaskLog" Relationship="QDLogisticsModel.FK_TaskLog_TaskScheduler" FromRole="TaskScheduler" ToRole="TaskLog" />
+        </EntityType>
+        <Association Name="FK_TaskLog_TaskScheduler">
+          <End Type="QDLogisticsModel.TaskScheduler" Role="TaskScheduler" Multiplicity="0..1" />
+          <End Type="QDLogisticsModel.TaskLog" Role="TaskLog" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="TaskScheduler">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="TaskLog">
+              <PropertyRef Name="TaskID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityType Name="Carriers">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="IsEnable" Type="Boolean" />
+          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Name" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Carrier" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Email" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
+          <Property Name="ShippingMethod" Type="Int32" />
+          <Property Name="BoxType" Type="Int32" />
+          <Property Name="Api" Type="Int32" />
+          <Property Name="PrinterName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="IsExport" Type="Boolean" />
+          <Property Name="IsBattery" Type="Boolean" />
+          <Property Name="CountryData" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="SyncOn" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="CarrierAPI" Relationship="QDLogisticsModel.FK_Carriers_CarrierAPI" FromRole="Carriers" ToRole="CarrierAPI" />
+          <NavigationProperty Name="Packages" Relationship="QDLogisticsModel.FK_Packages_Carriers" FromRole="Carriers" ToRole="Packages" />
+          <NavigationProperty Name="Services" Relationship="QDLogisticsModel.FK_Services_Carriers" FromRole="Carriers" ToRole="Services" />
+        </EntityType>
+        <Association Name="FK_Carriers_CarrierAPI">
+          <End Type="QDLogisticsModel.CarrierAPI" Role="CarrierAPI" Multiplicity="0..1" />
+          <End Type="QDLogisticsModel.Carriers" Role="Carriers" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="CarrierAPI">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="Carriers">
+              <PropertyRef Name="Api" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Packages_Carriers">
+          <End Type="QDLogisticsModel.Carriers" Role="Carriers" Multiplicity="0..1" />
+          <End Type="QDLogisticsModel.Packages" Role="Packages" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Carriers">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="Packages">
+              <PropertyRef Name="CarrierID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Services_Carriers">
+          <End Type="QDLogisticsModel.Carriers" Role="Carriers" Multiplicity="0..1" />
+          <End Type="QDLogisticsModel.Services" Role="Services" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Carriers">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="Services">
+              <PropertyRef Name="CarrierID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityType Name="Preset">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="IsEnable" Type="Boolean" Nullable="false" />
+          <Property Name="IsVisible" Type="Boolean" Nullable="false" />
+          <Property Name="IsDispatch" Type="Boolean" Nullable="false" />
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Type" Type="Byte" Nullable="false" />
+          <Property Name="Value" Type="Decimal" Nullable="false" Precision="18" Scale="2" />
+          <Property Name="ValueType" Type="Byte" Nullable="false" />
+          <Property Name="Total" Type="Decimal" Nullable="false" Precision="18" Scale="2" />
+          <Property Name="TotalType" Type="Byte" Nullable="false" />
+          <Property Name="Country" Type="String" MaxLength="2" FixedLength="true" Unicode="true" />
+          <Property Name="CompanyID" Type="Int32" Nullable="false" />
+          <Property Name="SourceID" Type="Int32" Nullable="false" />
+          <Property Name="Amount" Type="Int32" Nullable="false" />
+          <Property Name="AmountType" Type="Byte" Nullable="false" />
+          <Property Name="ShippingMethod" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="Sku" Type="String" MaxLength="10" FixedLength="false" Unicode="true" />
+          <Property Name="Weight" Type="Int32" Nullable="false" />
+          <Property Name="WeightType" Type="Byte" Nullable="false" />
+          <Property Name="WarehouseID" Type="Int32" Nullable="false" />
+          <Property Name="CarrierID" Type="Int32" Nullable="false" />
+        </EntityType>
+        </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="QDLogisticsModelStoreContainer" CdmEntityContainer="QDLogisticsEntities">
+          <EntitySetMapping Name="Addresses">
+            <EntityTypeMapping TypeName="QDLogisticsModel.Addresses">
+              <MappingFragment StoreEntitySet="Addresses">
+                <ScalarProperty Name="Notes" ColumnName="Notes" />
+                <ScalarProperty Name="AddressStatus" ColumnName="AddressStatus" />
+                <ScalarProperty Name="AddressSource" ColumnName="AddressSource" />
+                <ScalarProperty Name="StreetLine2" ColumnName="StreetLine2" />
+                <ScalarProperty Name="StreetLine1" ColumnName="StreetLine1" />
+                <ScalarProperty Name="PostalCode" ColumnName="PostalCode" />
+                <ScalarProperty Name="StateName" ColumnName="StateName" />
+                <ScalarProperty Name="StateCode" ColumnName="StateCode" />
+                <ScalarProperty Name="City" ColumnName="City" />
+                <ScalarProperty Name="CountryCode" ColumnName="CountryCode" />
+                <ScalarProperty Name="CountryName" ColumnName="CountryName" />
+                <ScalarProperty Name="EmailAddress" ColumnName="EmailAddress" />
+                <ScalarProperty Name="FaxNumber" ColumnName="FaxNumber" />
+                <ScalarProperty Name="PhoneNumber" ColumnName="PhoneNumber" />
+                <ScalarProperty Name="HomePhone" ColumnName="HomePhone" />
+                <ScalarProperty Name="CompanyName" ColumnName="CompanyName" />
+                <ScalarProperty Name="LastName" ColumnName="LastName" />
+                <ScalarProperty Name="MiddleInitial" ColumnName="MiddleInitial" />
+                <ScalarProperty Name="FirstName" ColumnName="FirstName" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="IsEnable" ColumnName="IsEnable" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="BundleItems">
+            <EntityTypeMapping TypeName="QDLogisticsModel.BundleItems">
+              <MappingFragment StoreEntitySet="BundleItems">
+                <ScalarProperty Name="BackOrderOty" ColumnName="BackOrderOty" />
+                <ScalarProperty Name="QtyReturned" ColumnName="QtyReturned" />
+                <ScalarProperty Name="Qty" ColumnName="Qty" />
+                <ScalarProperty Name="ProductName" ColumnName="ProductName" />
+                <ScalarProperty Name="ProductID" ColumnName="ProductID" />
+                <ScalarProperty Name="PackageID" ColumnName="PackageID" />
+                <ScalarProperty Name="OrderItemId" ColumnName="OrderItemId" />
+                <ScalarProperty Name="OrderID" ColumnName="OrderID" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="IsEnable" ColumnName="IsEnable" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="CarrierAPI">
+            <EntityTypeMapping TypeName="QDLogisticsModel.CarrierAPI">
+              <MappingFragment StoreEntitySet="CarrierAPI">
+                <ScalarProperty Name="IsTest" ColumnName="IsTest" />
+                <ScalarProperty Name="AccountID" ColumnName="AccountID" />
+                <ScalarProperty Name="Type" ColumnName="Type" />
+                <ScalarProperty Name="ApiHub" ColumnName="ApiHub" />
+                <ScalarProperty Name="ApiMeter" ColumnName="ApiMeter" />
+                <ScalarProperty Name="ApiAccount" ColumnName="ApiAccount" />
+                <ScalarProperty Name="ApiPassword" ColumnName="ApiPassword" />
+                <ScalarProperty Name="ApiKey" ColumnName="ApiKey" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="IsEnable" ColumnName="IsEnable" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Items">
+            <EntityTypeMapping TypeName="QDLogisticsModel.Items">
+              <MappingFragment StoreEntitySet="Items">
+                <ScalarProperty Name="SalesRecordNumber" ColumnName="SalesRecordNumber" />
+                <ScalarProperty Name="eBayTransactionId" ColumnName="eBayTransactionId" />
+                <ScalarProperty Name="DeclaredValue" ColumnName="DeclaredValue" />
+                <ScalarProperty Name="Weight" ColumnName="Weight" />
+                <ScalarProperty Name="ReturnedToWarehouseID" ColumnName="ReturnedToWarehouseID" />
+                <ScalarProperty Name="ShipFromWarehouseID" ColumnName="ShipFromWarehouseID" />
+                <ScalarProperty Name="SerialNumber" ColumnName="SerialNumber" />
+                <ScalarProperty Name="UnitPrice" ColumnName="UnitPrice" />
+                <ScalarProperty Name="BackOrderQty" ColumnName="BackOrderQty" />
+                <ScalarProperty Name="eBayItemID" ColumnName="eBayItemID" />
+                <ScalarProperty Name="KitItemCount" ColumnName="KitItemCount" />
+                <ScalarProperty Name="LineTotal" ColumnName="LineTotal" />
+                <ScalarProperty Name="DisplayName" ColumnName="DisplayName" />
+                <ScalarProperty Name="QtyShipped" ColumnName="QtyShipped" />
+                <ScalarProperty Name="QtyReturned" ColumnName="QtyReturned" />
+                <ScalarProperty Name="Qty" ColumnName="Qty" />
+                <ScalarProperty Name="ProductIDRequest" ColumnName="ProductIDRequest" />
+                <ScalarProperty Name="ProductIDOriginal" ColumnName="ProductIDOriginal" />
+                <ScalarProperty Name="ProductID" ColumnName="ProductID" />
+                <ScalarProperty Name="OriginalSKU" ColumnName="OriginalSKU" />
+                <ScalarProperty Name="SKU" ColumnName="SKU" />
+                <ScalarProperty Name="PackageID" ColumnName="PackageID" />
+                <ScalarProperty Name="OrderID" ColumnName="OrderID" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="IsEnable" ColumnName="IsEnable" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Manufacturers">
+            <EntityTypeMapping TypeName="QDLogisticsModel.Manufacturers">
+              <MappingFragment StoreEntitySet="Manufacturers">
+                <ScalarProperty Name="ManufacturerName" ColumnName="ManufacturerName" />
+                <ScalarProperty Name="CompanyID" ColumnName="CompanyID" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="IsEnable" ColumnName="IsEnable" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Orders">
+            <EntityTypeMapping TypeName="QDLogisticsModel.Orders">
+              <MappingFragment StoreEntitySet="Orders">
+                <ScalarProperty Name="SyncOn" ColumnName="SyncOn" />
+                <ScalarProperty Name="Instructions" ColumnName="Instructions" />
+                <ScalarProperty Name="ShippedBy" ColumnName="ShippedBy" />
+                <ScalarProperty Name="MarkettingSourceID" ColumnName="MarkettingSourceID" />
+                <ScalarProperty Name="ConfirmOn" ColumnName="ConfirmOn" />
+                <ScalarProperty Name="ConfirmBy" ColumnName="ConfirmBy" />
+                <ScalarProperty Name="IsConfirmed" ColumnName="IsConfirmed" />
+                <ScalarProperty Name="ShippingWeightTotalOz" ColumnName="ShippingWeightTotalOz" />
+                <ScalarProperty Name="OrderQtyTotal" ColumnName="OrderQtyTotal" />
+                <ScalarProperty Name="OrderItemCount" ColumnName="OrderItemCount" />
+                <ScalarProperty Name="FinalValueTotal" ColumnName="FinalValueTotal" />
+                <ScalarProperty Name="PostingFeeTotal" ColumnName="PostingFeeTotal" />
+                <ScalarProperty Name="PaypalFeeTotal" ColumnName="PaypalFeeTotal" />
+                <ScalarProperty Name="DisputeStartedOn" ColumnName="DisputeStartedOn" />
+                <ScalarProperty Name="IsInDispute" ColumnName="IsInDispute" />
+                <ScalarProperty Name="GoogleOrderNumber" ColumnName="GoogleOrderNumber" />
+                <ScalarProperty Name="TaxTotal" ColumnName="TaxTotal" />
+                <ScalarProperty Name="TaxRate" ColumnName="TaxRate" />
+                <ScalarProperty Name="CustomerServiceStatus" ColumnName="CustomerServiceStatus" />
+                <ScalarProperty Name="StationID" ColumnName="StationID" />
+                <ScalarProperty Name="PackageType" ColumnName="PackageType" />
+                <ScalarProperty Name="ShippingCountry" ColumnName="ShippingCountry" />
+                <ScalarProperty Name="ShippingCarrier" ColumnName="ShippingCarrier" />
+                <ScalarProperty Name="InvoicePrintedDate" ColumnName="InvoicePrintedDate" />
+                <ScalarProperty Name="InvoicePrinted" ColumnName="InvoicePrinted" />
+                <ScalarProperty Name="RushOrder" ColumnName="RushOrder" />
+                <ScalarProperty Name="ShippingServiceSelected" ColumnName="ShippingServiceSelected" />
+                <ScalarProperty Name="eBaySalesRecordNumber" ColumnName="eBaySalesRecordNumber" />
+                <ScalarProperty Name="eBayUserID" ColumnName="eBayUserID" />
+                <ScalarProperty Name="OrderSourceOrderTotal" ColumnName="OrderSourceOrderTotal" />
+                <ScalarProperty Name="OrderSourceOrderId" ColumnName="OrderSourceOrderId" />
+                <ScalarProperty Name="OrderSource" ColumnName="OrderSource" />
+                <ScalarProperty Name="OrderCurrencyCode" ColumnName="OrderCurrencyCode" />
+                <ScalarProperty Name="ShippingAddress" ColumnName="ShippingAddress" />
+                <ScalarProperty Name="FinalShippingFee" ColumnName="FinalShippingFee" />
+                <ScalarProperty Name="ShipDate" ColumnName="ShipDate" />
+                <ScalarProperty Name="ShippingStatus" ColumnName="ShippingStatus" />
+                <ScalarProperty Name="PaymentStatus" ColumnName="PaymentStatus" />
+                <ScalarProperty Name="StatusCode" ColumnName="StatusCode" />
+                <ScalarProperty Name="GrandTotal" ColumnName="GrandTotal" />
+                <ScalarProperty Name="OrderDiscountsTotal" ColumnName="OrderDiscountsTotal" />
+                <ScalarProperty Name="ShippingTotal" ColumnName="ShippingTotal" />
+                <ScalarProperty Name="SubTotal" ColumnName="SubTotal" />
+                <ScalarProperty Name="TimeOfOrder" ColumnName="TimeOfOrder" />
+                <ScalarProperty Name="SiteCode" ColumnName="SiteCode" />
+                <ScalarProperty Name="UserName" ColumnName="UserName" />
+                <ScalarProperty Name="UserID" ColumnName="UserID" />
+                <ScalarProperty Name="CompanyID" ColumnName="CompanyID" />
+                <ScalarProperty Name="ClientID" ColumnName="ClientID" />
+                <ScalarProperty Name="ParentOrderID" ColumnName="ParentOrderID" />
+                <ScalarProperty Name="OrderID" ColumnName="OrderID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Packages">
+            <EntityTypeMapping TypeName="QDLogisticsModel.Packages">
+              <MappingFragment StoreEntitySet="Packages">
+                <ScalarProperty Name="POInvoice" ColumnName="POInvoice" />
+                <ScalarProperty Name="POId" ColumnName="POId" />
+                <ScalarProperty Name="SupplierComment" ColumnName="SupplierComment" />
+                <ScalarProperty Name="RMAId" ColumnName="RMAId" />
+                <ScalarProperty Name="WinitNo" ColumnName="WinitNo" />
+                <ScalarProperty Name="DeliveryNote" ColumnName="DeliveryNote" />
+                <ScalarProperty Name="PickUpDate" ColumnName="PickUpDate" />
+                <ScalarProperty Name="DeclaredTotal" ColumnName="DeclaredTotal" />
+                <ScalarProperty Name="FilePath" ColumnName="FilePath" />
+                <ScalarProperty Name="UploadTracking" ColumnName="UploadTracking" />
+                <ScalarProperty Name="ProcessBack" ColumnName="ProcessBack" />
+                <ScalarProperty Name="ProcessStatus" ColumnName="ProcessStatus" />
+                <ScalarProperty Name="Height" ColumnName="Height" />
+                <ScalarProperty Name="Width" ColumnName="Width" />
+                <ScalarProperty Name="Length" ColumnName="Length" />
+                <ScalarProperty Name="Weight" ColumnName="Weight" />
+                <ScalarProperty Name="Comment" ColumnName="Comment" />
+                <ScalarProperty Name="TrackingNumber" ColumnName="TrackingNumber" />
+                <ScalarProperty Name="FinalShippingFee" ColumnName="FinalShippingFee" />
+                <ScalarProperty Name="DeliveryStatus" ColumnName="DeliveryStatus" />
+                <ScalarProperty Name="DeliveryDate" ColumnName="DeliveryDate" />
+                <ScalarProperty Name="EstimatedDeliveryDate" ColumnName="EstimatedDeliveryDate" />
+                <ScalarProperty Name="ExportMethod" ColumnName="ExportMethod" />
+                <ScalarProperty Name="Export" ColumnName="Export" />
+                <ScalarProperty Name="CarrierID" ColumnName="CarrierID" />
+                <ScalarProperty Name="ShippingServiceCode" ColumnName="ShippingServiceCode" />
+                <ScalarProperty Name="ShippingMethodName" ColumnName="ShippingMethodName" />
+                <ScalarProperty Name="ShipDate" ColumnName="ShipDate" />
+                <ScalarProperty Name="Qty" ColumnName="Qty" />
+                <ScalarProperty Name="BundleItemID" ColumnName="BundleItemID" />
+                <ScalarProperty Name="OrderItemID" ColumnName="OrderItemID" />
+                <ScalarProperty Name="OrderID" ColumnName="OrderID" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="IsEnable" ColumnName="IsEnable" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Payments">
+            <EntityTypeMapping TypeName="QDLogisticsModel.Payments">
+              <MappingFragment StoreEntitySet="Payments">
+                <ScalarProperty Name="Note" ColumnName="Note" />
+                <ScalarProperty Name="TransactionReferenceNumber" ColumnName="TransactionReferenceNumber" />
+                <ScalarProperty Name="Amount" ColumnName="Amount" />
+                <ScalarProperty Name="AuditDate" ColumnName="AuditDate" />
+                <ScalarProperty Name="PaymentType" ColumnName="PaymentType" />
+                <ScalarProperty Name="PaymentStatus" ColumnName="PaymentStatus" />
+                <ScalarProperty Name="PaymentMethod" ColumnName="PaymentMethod" />
+                <ScalarProperty Name="CurrentApplicationID" ColumnName="CurrentApplicationID" />
+                <ScalarProperty Name="OrderID" ColumnName="OrderID" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="IsEnable" ColumnName="IsEnable" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Skus">
+            <EntityTypeMapping TypeName="QDLogisticsModel.Skus">
+              <MappingFragment StoreEntitySet="Skus">
+                <ScalarProperty Name="Weight" ColumnName="Weight" />
+                <ScalarProperty Name="PurchaseInvoice" ColumnName="PurchaseInvoice" />
+                <ScalarProperty Name="Origin" ColumnName="Origin" />
+                <ScalarProperty Name="ProductTypeID" ColumnName="ProductTypeID" />
+                <ScalarProperty Name="ExportMethod" ColumnName="ExportMethod" />
+                <ScalarProperty Name="Export" ColumnName="Export" />
+                <ScalarProperty Name="Battery" ColumnName="Battery" />
+                <ScalarProperty Name="Brand" ColumnName="Brand" />
+                <ScalarProperty Name="UPC" ColumnName="UPC" />
+                <ScalarProperty Name="ParentKit" ColumnName="ParentKit" />
+                <ScalarProperty Name="ParentShadow" ColumnName="ParentShadow" />
+                <ScalarProperty Name="ProductName" ColumnName="ProductName" />
+                <ScalarProperty Name="Sku" ColumnName="Sku" />
+                <ScalarProperty Name="IsEnable" ColumnName="IsEnable" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Warehouses">
+            <EntityTypeMapping TypeName="QDLogisticsModel.Warehouses">
+              <MappingFragment StoreEntitySet="Warehouses">
+                <ScalarProperty Name="WinitWarehouseID" ColumnName="WinitWarehouseID" />
+                <ScalarProperty Name="CreatedOn" ColumnName="CreatedOn" />
+                <ScalarProperty Name="CreatedBy" ColumnName="CreatedBy" />
+                <ScalarProperty Name="CarrierData" ColumnName="CarrierData" />
+                <ScalarProperty Name="DropShipCentralWarehouseCode" ColumnName="DropShipCentralWarehouseCode" />
+                <ScalarProperty Name="WarehouseType" ColumnName="WarehouseType" />
+                <ScalarProperty Name="QBWarehouseName" ColumnName="QBWarehouseName" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="CompanyID" ColumnName="CompanyID" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="EnforceBins" ColumnName="EnforceBins" />
+                <ScalarProperty Name="AllowUseQtyForFBAShipments" ColumnName="AllowUseQtyForFBAShipments" />
+                <ScalarProperty Name="IsSellable" ColumnName="IsSellable" />
+                <ScalarProperty Name="IsDefault" ColumnName="IsDefault" />
+                <ScalarProperty Name="IsEnable" ColumnName="IsEnable" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Services">
+            <EntityTypeMapping TypeName="QDLogisticsModel.Services">
+              <MappingFragment StoreEntitySet="Services">
+                <ScalarProperty Name="CarrierID" ColumnName="CarrierID" />
+                <ScalarProperty Name="ServiceName" ColumnName="ServiceName" />
+                <ScalarProperty Name="ServiceCode" ColumnName="ServiceCode" />
+                <ScalarProperty Name="IsEnable" ColumnName="IsEnable" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="AdminGroups">
+            <EntityTypeMapping TypeName="QDLogisticsModel.AdminGroups">
+              <MappingFragment StoreEntitySet="AdminGroups">
+                <ScalarProperty Name="Order" ColumnName="Order" />
+                <ScalarProperty Name="Auth" ColumnName="Auth" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="IsVisible" ColumnName="IsVisible" />
+                <ScalarProperty Name="IsEnable" ColumnName="IsEnable" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="AdminUsers">
+            <EntityTypeMapping TypeName="QDLogisticsModel.AdminUsers">
+              <MappingFragment StoreEntitySet="AdminUsers">
+                <ScalarProperty Name="ApiUserName" ColumnName="ApiUserName" />
+                <ScalarProperty Name="ApiPassword" ColumnName="ApiPassword" />
+                <ScalarProperty Name="TimeZone" ColumnName="TimeZone" />
+                <ScalarProperty Name="IsLogin" ColumnName="IsLogin" />
+                <ScalarProperty Name="Warehouse" ColumnName="Warehouse" />
+                <ScalarProperty Name="LLT" ColumnName="LLT" />
+                <ScalarProperty Name="Auth" ColumnName="Auth" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="Password" ColumnName="Password" />
+                <ScalarProperty Name="Account" ColumnName="Account" />
+                <ScalarProperty Name="GroupId" ColumnName="GroupId" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="IsVisible" ColumnName="IsVisible" />
+                <ScalarProperty Name="IsEnable" ColumnName="IsEnable" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Menu">
+            <EntityTypeMapping TypeName="QDLogisticsModel.Menu">
+              <MappingFragment StoreEntitySet="Menu">
+                <ScalarProperty Name="Order" ColumnName="Order" />
+                <ScalarProperty Name="Action" ColumnName="Action" />
+                <ScalarProperty Name="Controller" ColumnName="Controller" />
+                <ScalarProperty Name="Route" ColumnName="Route" />
+                <ScalarProperty Name="PrevId" ColumnName="PrevId" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="MenuId" ColumnName="MenuId" />
+                <ScalarProperty Name="IsEnable" ColumnName="IsEnable" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="PickProduct">
+            <EntityTypeMapping TypeName="QDLogisticsModel.PickProduct">
+              <MappingFragment StoreEntitySet="PickProduct">
+                <ScalarProperty Name="IsMail" ColumnName="IsMail" />
+                <ScalarProperty Name="PickUpBy" ColumnName="PickUpBy" />
+                <ScalarProperty Name="PickUpDate" ColumnName="PickUpDate" />
+                <ScalarProperty Name="QtyPicked" ColumnName="QtyPicked" />
+                <ScalarProperty Name="Qty" ColumnName="Qty" />
+                <ScalarProperty Name="WarehouseID" ColumnName="WarehouseID" />
+                <ScalarProperty Name="UPC" ColumnName="UPC" />
+                <ScalarProperty Name="ProductName" ColumnName="ProductName" />
+                <ScalarProperty Name="ProductID" ColumnName="ProductID" />
+                <ScalarProperty Name="ItemID" ColumnName="ItemID" />
+                <ScalarProperty Name="PackageID" ColumnName="PackageID" />
+                <ScalarProperty Name="OrderID" ColumnName="OrderID" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="IsPicked" ColumnName="IsPicked" />
+                <ScalarProperty Name="IsEnable" ColumnName="IsEnable" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="ProductType">
+            <EntityTypeMapping TypeName="QDLogisticsModel.ProductType">
+              <MappingFragment StoreEntitySet="ProductType">
+                <ScalarProperty Name="ChtName" ColumnName="ChtName" />
+                <ScalarProperty Name="ProductTypeName" ColumnName="ProductTypeName" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="IsEnable" ColumnName="IsEnable" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="TaskLog">
+            <EntityTypeMapping TypeName="QDLogisticsModel.TaskLog">
+              <MappingFragment StoreEntitySet="TaskLog">
+                <ScalarProperty Name="CreateDate" ColumnName="CreateDate" />
+                <ScalarProperty Name="Status" ColumnName="Status" />
+                <ScalarProperty Name="TaskID" ColumnName="TaskID" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="ActionLog">
+            <EntityTypeMapping TypeName="QDLogisticsModel.ActionLog">
+              <MappingFragment StoreEntitySet="ActionLog">
+                <ScalarProperty Name="AdminID" ColumnName="AdminID" />
+                <ScalarProperty Name="AdminName" ColumnName="AdminName" />
+                <ScalarProperty Name="CreateDate" ColumnName="CreateDate" />
+                <ScalarProperty Name="ActionName" ColumnName="ActionName" />
+                <ScalarProperty Name="TargetID" ColumnName="TargetID" />
+                <ScalarProperty Name="TableName" ColumnName="TableName" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Companies">
+            <EntityTypeMapping TypeName="QDLogisticsModel.Companies">
+              <MappingFragment StoreEntitySet="Companies">
+                <ScalarProperty Name="TimeZone" ColumnName="TimeZone" />
+                <ScalarProperty Name="CompanyName" ColumnName="CompanyName" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="SerialNumbers">
+            <EntityTypeMapping TypeName="QDLogisticsModel.SerialNumbers">
+              <MappingFragment StoreEntitySet="SerialNumbers">
+                <ScalarProperty Name="KitItemID" ColumnName="KitItemID" />
+                <ScalarProperty Name="OrderItemID" ColumnName="OrderItemID" />
+                <ScalarProperty Name="SerialNumber" ColumnName="SerialNumber" />
+                <ScalarProperty Name="ProductID" ColumnName="ProductID" />
+                <ScalarProperty Name="OrderID" ColumnName="OrderID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="PurchaseItemReceive">
+            <EntityTypeMapping TypeName="QDLogisticsModel.PurchaseItemReceive">
+              <MappingFragment StoreEntitySet="PurchaseItemReceive">
+                <ScalarProperty Name="BinName" ColumnName="BinName" />
+                <ScalarProperty Name="LocationBinID" ColumnName="LocationBinID" />
+                <ScalarProperty Name="WarehouseName" ColumnName="WarehouseName" />
+                <ScalarProperty Name="WarehouseID" ColumnName="WarehouseID" />
+                <ScalarProperty Name="CreditMemoReason" ColumnName="CreditMemoReason" />
+                <ScalarProperty Name="CreditMemoID" ColumnName="CreditMemoID" />
+                <ScalarProperty Name="RMAId" ColumnName="RMAId" />
+                <ScalarProperty Name="PurchaseReceiveID" ColumnName="PurchaseReceiveID" />
+                <ScalarProperty Name="PurchaseID" ColumnName="PurchaseID" />
+                <ScalarProperty Name="SerialNumber" ColumnName="SerialNumber" />
+                <ScalarProperty Name="ProductID" ColumnName="ProductID" />
+                <ScalarProperty Name="OrderItemID" ColumnName="OrderItemID" />
+                <ScalarProperty Name="OrderID" ColumnName="OrderID" />
+                <ScalarProperty Name="IsRequireSerialScan" ColumnName="IsRequireSerialScan" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="TaskScheduler">
+            <EntityTypeMapping TypeName="QDLogisticsModel.TaskScheduler">
+              <MappingFragment StoreEntitySet="TaskScheduler">
+                <ScalarProperty Name="CreateDate" ColumnName="CreateDate" />
+                <ScalarProperty Name="UpdateDate" ColumnName="UpdateDate" />
+                <ScalarProperty Name="UpdateBy" ColumnName="UpdateBy" />
+                <ScalarProperty Name="Message" ColumnName="Message" />
+                <ScalarProperty Name="Description" ColumnName="Description" />
+                <ScalarProperty Name="Status" ColumnName="Status" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Carriers">
+            <EntityTypeMapping TypeName="QDLogisticsModel.Carriers">
+              <MappingFragment StoreEntitySet="Carriers">
+                <ScalarProperty Name="Email" ColumnName="Email" />
+                <ScalarProperty Name="SyncOn" ColumnName="SyncOn" />
+                <ScalarProperty Name="CountryData" ColumnName="CountryData" />
+                <ScalarProperty Name="IsBattery" ColumnName="IsBattery" />
+                <ScalarProperty Name="IsExport" ColumnName="IsExport" />
+                <ScalarProperty Name="PrinterName" ColumnName="PrinterName" />
+                <ScalarProperty Name="Api" ColumnName="Api" />
+                <ScalarProperty Name="BoxType" ColumnName="BoxType" />
+                <ScalarProperty Name="ShippingMethod" ColumnName="ShippingMethod" />
+                <ScalarProperty Name="Carrier" ColumnName="Carrier" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="IsEnable" ColumnName="IsEnable" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Preset">
+            <EntityTypeMapping TypeName="QDLogisticsModel.Preset">
+              <MappingFragment StoreEntitySet="Preset">
+                <ScalarProperty Name="CarrierID" ColumnName="CarrierID" />
+                <ScalarProperty Name="WarehouseID" ColumnName="WarehouseID" />
+                <ScalarProperty Name="WeightType" ColumnName="WeightType" />
+                <ScalarProperty Name="Weight" ColumnName="Weight" />
+                <ScalarProperty Name="Sku" ColumnName="Sku" />
+                <ScalarProperty Name="ShippingMethod" ColumnName="ShippingMethod" />
+                <ScalarProperty Name="AmountType" ColumnName="AmountType" />
+                <ScalarProperty Name="Amount" ColumnName="Amount" />
+                <ScalarProperty Name="SourceID" ColumnName="SourceID" />
+                <ScalarProperty Name="CompanyID" ColumnName="CompanyID" />
+                <ScalarProperty Name="Country" ColumnName="Country" />
+                <ScalarProperty Name="TotalType" ColumnName="TotalType" />
+                <ScalarProperty Name="Total" ColumnName="Total" />
+                <ScalarProperty Name="ValueType" ColumnName="ValueType" />
+                <ScalarProperty Name="Value" ColumnName="Value" />
+                <ScalarProperty Name="Type" ColumnName="Type" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="IsDispatch" ColumnName="IsDispatch" />
+                <ScalarProperty Name="IsVisible" ColumnName="IsVisible" />
+                <ScalarProperty Name="IsEnable" ColumnName="IsEnable" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="false" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="無" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>

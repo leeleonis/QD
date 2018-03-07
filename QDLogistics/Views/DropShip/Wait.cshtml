@@ -1,0 +1,448 @@
+﻿@using QDLogistics.Commons
+@using QDLogistics.Models
+@using QDLogistics.OrderService
+
+@section styles{
+    <link href="~/Content/themes/default/easyui.css" rel="stylesheet" />
+    <link href="~/Content/themes/icon.css" rel="stylesheet" />
+}
+<style>
+    table tbody tr td {
+        vertical-align: middle !important;
+    }
+</style>
+<div id="content">
+    <section id="widget-grid" class="">
+        <div class="row table-parent">
+            <div class="tool-content table-row col-xs-12">
+                <div class="search-input table-cell col-xs-10">
+                    <div class="table-parent">
+                        <div class="table-cell form-horizontal col-xs-11 no-padding">
+                            <div class="col-xs-12 no-padding">
+                                <label class="col-xs-4 col-md-3 col-md-offset-2 control-label">Shipping Method</label>
+                                <div class="col-xs-8 col-md-3">
+                                    <select class="form-control input-sm" id="search-carrier" style="margin-top: 4px;">
+                                        <option value="">全部</option>
+                                    </select>
+                                </div>
+                                <label class="col-xs-4 col-md-1 control-label">Tracking</label>
+                                <div class="col-xs-8 col-md-3">
+                                    <input class="form-control input-sm" type="text" id="search-tracking">
+                                </div>
+                            </div>
+                            <div class="col-xs-12 no-padding">
+                                <label class="col-xs-4 col-md-1 control-label">Order ID</label>
+                                <div class="col-xs-8 col-md-3">
+                                    <input class="form-control input-sm" type="text" id="search-orderID">
+                                </div>
+                                <label class="col-xs-4 col-md-1 control-label">Status</label>
+                                <div class="col-xs-8 col-md-3">
+                                    <select class="form-control input-sm" id="search-status" style="margin-top: 4px;">
+                                        <option value="">全部</option>
+                                        @foreach (int status in Enum.GetValues(typeof(OrderStatusCode)))
+                                        {
+                                            <option value="@status">@Enum.GetName(typeof(OrderStatusCode), status)</option>
+                                        }
+                                    </select>
+                                </div>
+                                <label class="col-xs-4 col-md-1 control-label">Item</label>
+                                <div class="col-xs-8 col-md-3">
+                                    <input class="form-control input-sm" type="text" id="search-item">
+                                </div>
+                            </div>
+                            <div class="col-xs-12 no-padding">
+                                <label class="col-xs-4 col-md-1 control-label">User ID</label>
+                                <div class="col-xs-8 col-md-3">
+                                    <input class="form-control input-sm" type="text" id="search-userID">
+                                </div>
+                                <label class="col-xs-4 col-md-1 control-label">Country</label>
+                                <div class="col-xs-8 col-md-3">
+                                    <select class="form-control input-sm" id="search-country" style="margin-top: 4px;">
+                                        <option value="">全部</option>
+                                        @foreach (var country in MyHelp.GetCountries())
+                                        {
+                                            <option value="@country.ID">@country.Name</option>
+                                        }
+                                    </select>
+                                </div>
+                                <label class="col-xs-4 col-md-1 control-label">Date From</label>
+                                <div class="col-xs-8 col-md-3">
+                                    <input class="form-control input-sm datepicker" type="text" id="search-dateFrom" data-dateformat="yy-mm-dd" placeholder="選擇日期">
+                                </div>
+                            </div>
+                            <div class="col-xs-12 no-padding">
+                                <label class="col-xs-4 col-md-1 control-label">Source ID</label>
+                                <div class="col-xs-8 col-md-3">
+                                    <input class="form-control input-sm" type="text" id="search-sourceID">
+                                </div>
+                                <label class="col-xs-4 col-md-1 control-label">Channel</label>
+                                <div class="col-xs-8 col-md-3">
+                                    <select class="form-control input-sm" id="search-channel" style="margin-top: 4px;">
+                                        <option value="">全部</option>
+                                        @foreach (int source in Enum.GetValues(typeof(OrderSource)))
+                                        {
+                                            <option value="@source">@Enum.GetName(typeof(OrderSource), source)</option>
+                                        }
+                                    </select>
+                                </div>
+                                <label class="col-xs-4 col-md-1 control-label">Date To</label>
+                                <div class="col-xs-8 col-md-3">
+                                    <input class="form-control input-sm datepicker" type="text" id="search-dateTo" data-dateformat="yy-mm-dd" placeholder="選擇日期">
+                                </div>
+                            </div>
+                            <div class="col-xs-12 no-padding">
+                            </div>
+                        </div>
+                        <div class="table-cell col-xs-1">
+                            <button type="button" id="btn-search" class="btn btn-info btn-lg">Search</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="action-button table-cell col-xs-2">
+                    <button type="button" class="btn btn-default btn-sm btn-block" id="btn-import">匯入 Import</button>
+                    <button type="button" class="btn btn-default btn-sm btn-block" id="btn-export">匯出 Export</button>
+                    <form id="form-data" method="post">
+                        <input type="hidden" name="type" value="dropShip" />
+                        <input type="hidden" name="action" id="input-action" />
+                        <input type="hidden" name="IDs" id="input-IDs" />
+                        <input class="hidden" type="file" name="file" id="file-import" />
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <article class="col-xs-12">
+                <table id="DataGrid"></table>
+            </article>
+        </div>
+    </section>
+</div>
+@section pagespecific {
+    <script src="~/scripts/jquery.easyui-1.4.3.min.js"></script>
+    <script src="~/scripts/datagrid-detailview.js"></script>
+    <script src="~/scripts/jquery.edatagrid.js"></script>
+    <script type="text/javascript">
+        var pager, pageSize = 100;
+        var selected = false, orderColumOption;
+        var $dataGrid;
+        var $searchBtn = $('#btn-search'), $importBtn = $("#btn-import"), $importFile = $("#file-import"), $exportBtn = $("#btn-export");
+        var $orderIDSearch = $("#search-orderID"), $userIDSearch = $("#search-userID"), $sourceIDSearch = $("#search-sourceID"),
+            $carrierStatus = $("#search-carrier"), $statusSearch = $("#search-status"), $countrySearch = $("#search-country"), $channelSearch = $("#search-channel"),
+            $trackingSearch = $("#search-tracking"), $itemSearch = $("#search-item"), $dateFromSearch = $("#search-dateFrom"), $dateToSearch = $("#search-dateTo");
+
+        $(function () {
+            getOption("@Url.Action("ajaxCarrierOption", "dropShip")").done(function (response) {
+                orderColumOption = response;
+                $carrierStatus.append(getSelectOption(orderColumOption.carrier));
+
+                dataInit();
+            });
+
+            $searchBtn.click(function () {
+                $dataGrid.datagrid("clearChecked");
+                $dataGrid.datagrid('reload');
+            });
+
+            $(".search-input").on('change', 'input, select', function () {
+                $searchBtn.trigger('click');
+            });
+
+            $importBtn.click(function () {
+                document.getElementById("form-data").reset();
+                $importFile.trigger("click");
+            });
+
+            $importFile.change(function () {
+                $("#input-action").val("import");
+                var form = document.querySelector("#form-data");
+                var data = new FormData(form);
+
+                $.ajax({
+                    url: "@Url.Action("upload", "file")",
+                    type: "POST",
+                    data: data,
+                    dataType: "JSON",
+                    contentType: false,
+                    processData: false,
+                    success: function (response) {
+                        if (response.Result) {
+                            alert('Import tesk begin!');
+                        } else {
+                            alert(response.Msg);
+                        }
+                    }
+                });
+            });
+
+            $exportBtn.click(function () {
+                var packageIDs = [];
+
+                var rows = $dataGrid.datagrid('getSelections');
+                if (rows.length == 0) {
+                    rows = $dataGrid.datagrid('getRows');
+                }
+
+                if (rows.length > 0) {
+                    for (var i in rows) {
+                        packageIDs[i] = rows[i].PackageID;
+                    }
+
+                    $("#input-IDs").val(packageIDs);
+                    $("#form-data").attr("action", "@Url.Action("export", "file")").submit();
+                }
+            });
+        });
+
+        function dataInit() {
+            $dataGrid = $("#DataGrid").edatagrid({
+                title: "訂單 列表",
+                idField: "PackageID",
+                url: "@Url.Action("ajaxWaitingData", "dropShip")",
+                queryParams: {},
+                width: "100%",
+                height: "700",
+                checkOnSelect: false,
+                selectOnCheck: false,
+                singleSelect: false,
+                frozenColumns: [[
+                    { field: "ck", checkbox: true },
+                    { field: "OrderID", title: "Order ID<br />訂單號碼", width: 100, align: "center", sortable: true },
+                    { field: "POId", title: "PO#", width: 100, align: "center", sortable: true }
+                ]],
+                columns: [[
+                    { field: "PaymentDate", title: "Payment Date<br />付款日", width: 120, align: "center", sortable: false },
+                    { field: "Sku", title: "SKU<br />品號", width: 110, align: "center", sortable: false },
+                    { field: "DisplayName", title: "Item Name<br />品名", width: 440, align: "center", sortable: false },
+                    { field: "OrderQtyTotal", title: "QTY<br />數量", width: 60, align: "center", sortable: false },
+                    { field: "ShippingCountry", title: "Country<br />國家", width: 120, align: "center", sortable: false },
+                    {
+                        field: "CarrierID", title: "Shipping Method<br />運輸方式", width: 150, align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            return "<select class='form-control input-sm' id='CarrierID' onchange='onDataChange(" + row.PackageID + ")'>" + getSelectOption(orderColumOption.carrier, value) + "</select>";
+                        }
+                    },
+                    { field: "StatusCode", title: "Status<br />訂單狀態", width: 120, align: "center", sortable: false },
+                    { field: "Comment", title: "Comment<br />出貨備註", width: 200, align: "center", sortable: false },
+                    {
+                        field: "SupplierComment", title: "Supplier Comment", width: 200, align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            return "<input type='text' class='form-control input-sm' id='SupplierComment' value='" + value + "' onchange='onDataChange(" + row.PackageID + ")'>";
+                        }
+                    }, {
+                        field: "SerialNumber", title: "Serial Number<br />產品序號", width: 180, align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            if (value != 'Multi') {
+                                return "<input type='text' class='form-control input-sm' id='SerialNumber-" + row.PackageID + "' data-id='" + row.ItemID + "' value='" + value + "' onchange='changeSerial(" + row.PackageID + ")'>";
+                            } else {
+                                return value;
+                            }
+                        }
+                    }, {
+                        field: "TrackingNumber", title: "Tracking<br />提單號碼", width: 180, align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            return "<input type='text' class='form-control input-sm' id='TrackingNumber' value='" + value + "' onchange='onDataChange(" + row.PackageID + ")'>";
+                        }
+                    }, {
+                        field: "POInvoice", title: "Invoice#", width: 150, align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            return "<input type='text' class='form-control input-sm' id='POInvoice' value='" + value + "' onchange='onDataChange(" + row.PackageID + ")'>";
+                        }
+                    }, {
+                        field: "save", title: "<button type='button' class='btn btn-default btn-sm' onclick='saveData()'>SAVE</button>", width: "60", sortable: false,
+                        formatter: function (value, row, index) {
+                            return "<button type='button' class='btn btn-default btn-sm' id='btn-save' onclick='saveData(" + row.PackageID + ")' disabled>SAVE</button>"
+                        }
+                    }
+                ]],
+                onLoadSuccess: function (data) {
+                    $dataGrid.datagrid('uncheckAll');
+                    $('div.datagrid-body').unbind('dblclick');
+                },
+                onBeforeLoad: function (param) {
+                    param.OrderID = $orderIDSearch.val();
+                    param.UserID = $userIDSearch.val();
+                    param.SourceID = $sourceIDSearch.val();
+                    param.CarrierID = $carrierStatus.val();
+                    param.StatusCode = $statusSearch.val();
+                    param.Country = $countrySearch.val();
+                    param.Source = $channelSearch.val();
+                    param.Tracking = $trackingSearch.val();
+                    param.ItemName = $itemSearch.val();
+                    param.DateFrom = $dateFromSearch.val();
+                    param.DateTo = $dateToSearch.val();
+                },
+                onBeforeSelect: selectAction,
+                onBeforeUnselect: selectAction,
+                onCheck: onCheck,
+                onUncheck: onUncheck,
+                onCheckAll: onCheckAll,
+                onUncheckAll: onUncheckAll,
+                view: detailview,
+                detailFormatter: function (index, row) {
+                    return '<div id="order-' + index + '"></div>';
+                },
+                onExpandRow: function (index, row) {
+                    if (row.SerialNumber != 'Multi') {
+                        $dataGrid.datagrid("collapseRow", index);
+                    } else {
+                        $("#order-" + index).panel({
+                            border: false,
+                            cache: false,
+                            href: "@Html.Raw(Url.Action("orderProductList", "ajax", new { PackageID = "_id_", Type = "dropShip", Index = "_index_" }))".replace("_id_", row.PackageID).replace("_index_", index),
+                            onLoad: function (response) {
+                                $("#datagrid-row-r1-1-" + index).next("tr").find(".datagrid-row-detail").html($("#order-" + index).find("table:hidden").remove().removeClass("hidden"));
+                            }
+                        });
+
+                        $dataGrid.datagrid("fixDetailRowHeight", index);
+                    }
+                },
+                pagination: true,
+                pagePosition: "bottom",
+                pageSize: pageSize
+            });
+
+            pager = $dataGrid.datagrid("getPager");
+            $(pager).pagination({
+                pageSize: pageSize,
+                showPageList: true,
+                pageList: [100, 200, 300, 500],
+                beforePageTest: "第",
+                afterPageTest: "頁，共 {pages} 頁",
+                displayMsg: "顯示 {from} 到 {to} 筆資料，共 {total} 筆資料"
+            });
+        }
+
+        function selectAction(index, row) {
+            if (selected) {
+                selected = false;
+                return true;
+            }
+
+            return false;
+        }
+
+        function onDataChange(PackageID) {
+            var index = $dataGrid.datagrid("getRowIndex", PackageID);
+
+            $dataGrid.datagrid('checkRow', index);
+            $("button#btn-save:eq(" + index + ")").removeAttr("disabled");
+        }
+
+        function onSelect(index) {
+            $dataGrid.datagrid('checkRow', index);
+        }
+
+        function onCheck(index, row) {
+            selected = true;
+            $dataGrid.datagrid('selectRow', index);
+        }
+
+        function onUncheck(index, row) {
+            selected = true;
+            $dataGrid.datagrid('unselectRow', index);
+        }
+
+        function onCheckAll(rows) {
+            $dataGrid.datagrid('selectAll');
+        }
+
+        function onUncheckAll(rows) {
+            $dataGrid.datagrid('unselectAll');
+        }
+
+        function changeSerial(PackageID) {
+            var index = $dataGrid.datagrid("getRowIndex", PackageID);
+            var row = $dataGrid.datagrid("getRows")[index];
+            var $serialList = $("input#SerialNumber-" + PackageID);
+
+            row.Serials = {};
+            $serialList.each(function () {
+                if (row.Serials[$(this).data('id')] == undefined) {
+                    row.Serials[$(this).data('id')] = [];
+                }
+
+                row.Serials[$(this).data('id')].push($(this).val());
+            });
+
+            onDataChange(PackageID);
+        }
+
+        function saveData(PackageID) {
+            var data = [];
+            var saveAll = PackageID == undefined;
+
+            if (saveAll) {
+                var rows = $dataGrid.datagrid('getSelections');
+                for (var i in rows) {
+                    index = $dataGrid.datagrid('getRowIndex', rows[i]);
+                    if (!$("button#btn-save:eq(" + index + ")").is("[disabled]")) {
+                        data.push(setData(rows[i], index));
+                        $("button#btn-save:eq(" + index + ")").attr("disabled", "disabled");
+                    }
+                }
+            } else {
+                var index = $dataGrid.datagrid("getRowIndex", PackageID);
+                row = $dataGrid.datagrid("getRows")[index];
+                data.push(setData(row, index));
+                $("button#btn-save:eq(" + index + ")").attr("disabled", "disabled");
+            }
+
+            if (data.length > 0) {
+                updateData(data).done(function (response) {
+                    if (response['status']) {
+                        alert("Success!");
+                    } else {
+                        alert(response['message']);
+                    }
+                    $dataGrid.datagrid('reload');
+                });
+            }
+        }
+
+        function setData(row, index) {
+            return {
+                OrderID: row.OrderID,
+                PackageID: row.PackageID,
+                Serials: row.Serials,
+                CarrierID: $("select#CarrierID:eq(" + index + ")").val(),
+                SupplierComment: $("input#SupplierComment:eq(" + index + ")").val(),
+                TrackingNumber: $("input#TrackingNumber:eq(" + index + ")").val(),
+                POInvoice: $("input#POInvoice:eq(" + index + ")").val()
+            }
+        }
+
+        function updateData(data) {
+            return $.ajax({
+                url: "@Url.Action("ajaxOrderUpdate", "dropShip")",
+                type: "post",
+                data: { data: data },
+                dataType: "json"
+            });
+        }
+
+        function getSelectOption(optionList, value) {
+            var option = "";
+
+            if (optionList.length > 0) {
+                for (var i in optionList) {
+                    option += "<option value='" + optionList[i]["value"] + "' " + (optionList[i]["value"] == value ? "selected" : "") + ">" + optionList[i]["text"] + "</option>";
+                }
+            }
+
+            return option;
+        }
+
+        function getOption(url) {
+            return $.ajax({
+                url: url,
+                dataType: "json"
+            });
+        }
+
+        function isEmpty(value) {
+            return (value == undefined) || (value == null) || (value == "");
+        }
+    </script>
+}

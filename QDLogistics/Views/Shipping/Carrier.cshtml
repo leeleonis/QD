@@ -1,0 +1,195 @@
+﻿@section styles{
+    <link href="~/Content/themes/default/easyui.css" rel="stylesheet" />
+}
+<div id="content">
+    <section id="widget-grid" class="">
+        <div class="row">
+            <div class="table-parent tool-content col-xs-12">
+                <div class="action-button col-xs-2 col-xs-offset-10">
+                    <a class="btn btn-default" id="btn-add" href="@Url.Action("carriercreate", "shipping")">新增運輸廠商</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <article class="col-xs-12">
+                <table id="DataGrid"></table>
+            </article>
+        </div>
+    </section>
+</div>
+@section pagespecific {
+    <script src="~/scripts/jquery.easyui-1.4.3.min.js"></script>
+    <script type="text/javascript">
+        var selected = false, ShippingMethodOption, BoxTypeOption;
+        var $dataGrid;
+
+        $(function () {
+            getOption("@Url.Action("CarrierOption", "ajax")").done(function (response) {
+                ShippingMethodOption = response['shippingMethod'];
+                BoxTypeOption = response['boxType'];
+                dataInit();
+            });
+        });
+
+        function dataInit() {
+            $dataGrid = $("#DataGrid").datagrid({
+                title: "運送廠商 列表",
+                url: "@Url.Action("CarrierData", "ajax")",
+                queryParams: {
+                },
+                width: "100%",
+                height: "700",
+                columns: [[
+                    { field: "ID", title: "Carrier ID<br />運輸商 ID", width: "10%", align: "center", sortable: false },
+                    {
+                        field: "Name", title: "Name<br />運輸名稱", width: "20%", align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            return "<input type='text' class='form-control input-sm' id='Name-" + index + "' value='" + value + "' onchange='onSelect(" + index + ")'>";
+                        }
+                    }, {
+                        field: "Carrier", title: "Carrier<br />運輸商", width: "10%", align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            return "<input type='text' class='form-control input-sm' id='Carrier-" + index + "' value='" + value + "' onchange='onSelect(" + index + ")'>";
+                        }
+                    }, {
+                        field: "ShippingMethod", title: "Shipping Method<br />運輸方式", width: "25%", align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            var option = getSelectOption(ShippingMethodOption['TWN'], value, 'TWN') + getSelectOption(ShippingMethodOption['Winit'], value, 'Winit');
+                            return "<select class='form-control input-sm' id='Method-" + index + "' onchange='onSelect(" + index + ")'>" + option + "</select>";
+                        }
+                    }, {
+                        field: "BoxType", title: "Box Type<br />貨物類型", width: "15%", align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            var option = getSelectOption(BoxTypeOption, value);
+                            return "<select class='form-control input-sm' id='BoxType-" + index + "' onchange='onSelect(" + index + ")'>" + option + "</select>";
+                        }
+                    }, {
+                        field: "IsExport", title: "Export<br />出口報關", width: "7%", align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            return setCheckBox(index, this.field, value);
+                        }
+                    }, {
+                        field: "IsBattery", title: "運電池", width: "7%", align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            return setCheckBox(index, this.field, value);
+                        }
+                    }, {
+                        field: "edit", title: "", width: "56", sortable: false,
+                        formatter: function (value, row, index) {
+                            return "<a class='btn btn-default btn-sm' href='@Url.Action("carrieredit", "shipping")/" + row.ID + "'>EDIT</a>"
+                        }
+                    }, {
+                        field: "save", title: "<button type='button' class='btn btn-default btn-sm' onclick='saveData()'>SAVE</button>", width: "60", sortable: false,
+                        formatter: function (value, row, index) {
+                            return "<button type='button' class='btn btn-default btn-sm' id='btn-" + index + "' onclick='saveData(" + index + ")' disabled>SAVE</button>"
+                        }
+                    }
+                ]],
+                onBeforeSelect: selectAction,
+                onBeforeUnselect: selectAction,
+                onSelect: function (index, row) {
+                    $("#btn-" + index).removeAttr("disabled");
+                }
+            });
+        }
+
+        function selectAction(index, row) {
+            if (selected) {
+                selected = false;
+                return true;
+            }
+
+            return false;
+        }
+
+        function onSelect(index) {
+            selected = true;
+            $dataGrid.datagrid('selectRow', index);
+        }
+
+        function saveData(index) {
+            var data = [];
+
+            if (index == undefined) {
+                var rows = $dataGrid.datagrid('getSelections');
+                for (var i in rows) {
+                    index = $dataGrid.datagrid('getRowIndex', rows[i]);
+                    data.push(setData(rows[i], index));
+                    $("#btn-" + index).attr("disabled", "disabled");
+                }
+                $dataGrid.datagrid("clearSelections");
+            } else {
+                row = $dataGrid.datagrid("getRows")[index];
+                data.push(setData(row, index));
+                $("#btn-" + index).attr("disabled", "disabled");
+
+                selected = true;
+                $dataGrid.datagrid('unselectRow', index);
+            }
+
+            if (data.length > 0) {
+                updateData(data).done(function (response) {
+                    if (response['status']) {
+                        alert("Success!");
+                    } else {
+                        alert(response['message']);
+                    }
+                });
+            }
+        }
+
+        function setData(row, index) {
+            return {
+                ID: row.ID,
+                Name: $("#Name-" + index).val(),
+                Carrier: $("#Carrier-" + index).val(),
+                ShippingMethod: $("#Method-" + index).val(),
+                BoxType: $("#BoxType-" + index).val(),
+                IsExport: $("#IsExport-" + index).prop("checked"),
+                IsBattery: $("#IsBattery-" + index).prop("checked")
+            }
+        }
+
+        function updateData(data) {
+            return $.ajax({
+                url: "@Url.Action("CarrierUpdate", "ajax")",
+                type: "post",
+                data: { data: data },
+                dataType: "json"
+            });
+        }
+
+        function setCheckBox(index, field, value) {
+            var name = field + "-" + index;
+            return "<input type='checkbox' class='form-control' id='" + name + "' " + (value ? "checked" : "") + " onchange='onSelect(" + index + ")'>";
+        }
+
+        function getSelectOption(optionList, value, group) {
+            var option = "";
+
+            if (group != undefined) {
+                option += "<optgroup label='" + group + "'>";
+            }
+
+            if (optionList.length > 0) {
+                for (var i in optionList) {
+                    option += "<option value='" + optionList[i]["value"] + "' " + (optionList[i]["value"] == value ? "selected" : "") + ">" + optionList[i]["text"] + "</option>";
+                }
+            }
+            
+            if (group != undefined) {
+                option += "</optgroup>";
+            }
+
+            return option;
+        }
+
+        function getOption(url) {
+            return $.ajax({
+                url: url,
+                dataType: "json"
+            });
+        }
+    </script>
+}

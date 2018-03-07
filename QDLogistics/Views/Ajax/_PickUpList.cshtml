@@ -1,0 +1,62 @@
+﻿@using QDLogistics.Models;
+@{ List<IGrouping<int?, Items>> itemList = ViewBag.itemList; }
+
+<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'center'">
+        <div class="easyui-tabs">
+            <div title="單件產品" style="padding:10px;height:100%">
+                <table title="單件產品" class="easyui-datagrid" style="width:100%;height:370px;" data-options="onBeforeSelect:function(){return false;}">
+                    <thead>
+                        <tr>
+                            <th data-options="field:'ProductID',width:'18%',align:'center'">SKU</th>
+                            <th data-options="field:'DisplayName',width:'50%',align:'center'">品名</th>
+                            <th data-options="field:'Qty',width:'10%',align:'center'">數量</th>
+                            <th data-options="field:'PickUpDate',width:'22%',align:'center'">撿貨日期</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in itemList.Where(i => i.Sum(ii => ii.Qty) == 1).SelectMany(i => i))
+                        {
+                            <tr>
+                                <td>@item.ProductID</td>
+                                <td>@item.DisplayName</td>
+                                <td>@item.Qty</td>
+                                <td></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div title="多件產品" style="padding:10px">
+                <table title="多件產品" class="easyui-datagrid" style="width:100%;height:370px;" data-options="onBeforeSelect:function(){return false;}">
+                    <thead>
+                        <tr>
+                            <th data-options="field:'ProductID',width:'18%',align:'center'">SKU</th>
+                            <th data-options="field:'DisplayName',width:'50%',align:'center'">品名</th>
+                            <th data-options="field:'Qty',width:'10%',align:'center'">數量</th>
+                            <th data-options="field:'PickUpDate',width:'22%',align:'center'">撿貨日期</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (Items item in itemList.Where(i => i.Sum(ii => ii.Qty) > 1).SelectMany(i => i))
+                        {
+                            <tr>
+                                <td>@item.ProductID</td>
+                                <td>@item.DisplayName</td>
+                                <td>@item.Qty</td>
+                                <td></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+        @if (itemList.Any())
+        {
+            <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" onclick="printPickUpList();" style="width:80px">Ok</a>
+        }
+        <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" onclick="$pickWin.window('close');" style="width:80px">Cancel</a>
+    </div>
+</div>

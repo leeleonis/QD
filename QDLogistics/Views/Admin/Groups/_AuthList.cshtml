@@ -1,0 +1,21 @@
+﻿@using QDLogistics.Models
+@model Menu
+@{
+    Dictionary<int, List<bool>> auth = ViewBag.auth;
+}
+
+<li class="dd-item dd3-item">
+    <div class="dd-handle dd3-handle">..</div>
+    @{ Html.RenderPartial("~/Views/Admin/Groups/_ActionList.cshtml", Model, new ViewDataDictionary() { { "auth", auth } }); }
+
+    @if (Model.SubMenu.Any())
+    {
+        <ol class="dd-list">
+            @{foreach (Menu sub in Model.SubMenu)
+                {
+                    Html.RenderPartial("~/Views/Admin/Groups/_AuthList.cshtml", sub, new ViewDataDictionary() { { "auth", auth } });
+                }
+            }
+        </ol>
+                }
+</li>

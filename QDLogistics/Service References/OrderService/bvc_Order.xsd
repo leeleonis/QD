@@ -1,0 +1,456 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns="http://tempuri.org/bvc_Order.xsd" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" xmlns:mstns="http://tempuri.org/bvc_Order.xsd" attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://tempuri.org/bvc_Order.xsd" id="bvc_Order" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msdata:EnforceConstraints="False" name="bvc_Order">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element msprop:Generator_UserTableName="bvc_Order" msprop:Generator_TablePropName="_bvc_Order" name="bvc_Order">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element msdata:ReadOnly="true" msdata:AutoIncrement="true" msdata:AutoIncrementSeed="-1" msdata:AutoIncrementStep="-1" name="ID" type="xs:int" />
+              <xs:element minOccurs="0" name="CompletedOrderID">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="50" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="UserID" type="xs:int" />
+              <xs:element name="UserName">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="100" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="SubTotal" type="xs:double" />
+              <xs:element minOccurs="0" name="TaxTotal" type="xs:double" />
+              <xs:element minOccurs="0" name="ShippingTotal" type="xs:double" />
+              <xs:element minOccurs="0" name="OrderDiscountsTotal" type="xs:double" />
+              <xs:element minOccurs="0" name="ShippingDiscountsTotal" type="xs:double" />
+              <xs:element minOccurs="0" name="GrandTotal" type="xs:double" />
+              <xs:element minOccurs="0" name="TimeOfOrder" type="xs:dateTime" />
+              <xs:element minOccurs="0" name="StatusCode" type="xs:int" />
+              <xs:element minOccurs="0" name="PaymentStatus" type="xs:int" />
+              <xs:element minOccurs="0" name="AffiliateID" type="xs:int" />
+              <xs:element name="HandlingFee" type="xs:double" />
+              <xs:element minOccurs="0" name="DownloadKey">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="50" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="LastUpdated" type="xs:dateTime" />
+              <xs:element minOccurs="0" name="Salt">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="50" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="GiftWrapCharge" type="xs:double" />
+              <xs:element minOccurs="0" name="Instructions">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="1073741823" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="BillingAddress">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="1073741823" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="ShippingStatus" type="xs:int" />
+              <xs:element minOccurs="0" name="OrderSource" type="xs:int" />
+              <xs:element minOccurs="0" name="OrderSourceOrderID">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="100" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="ShippingMethodSelected">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="100" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="ShippingServiceCost" type="xs:double" />
+              <xs:element minOccurs="0" name="ShippingAddress">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="1073741823" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="bExported" type="xs:boolean" />
+              <xs:element minOccurs="0" name="ExportedToRMS" type="xs:boolean" />
+              <xs:element minOccurs="0" name="PaymentDate" type="xs:dateTime" />
+              <xs:element minOccurs="0" name="bRushOrder" type="xs:boolean" />
+              <xs:element minOccurs="0" name="IseBayUpdatedForShipping" type="xs:boolean" />
+              <xs:element minOccurs="0" name="IsShippingDelivered" type="xs:boolean" />
+              <xs:element minOccurs="0" name="IsFeedBackReceived" type="xs:boolean" />
+              <xs:element minOccurs="0" name="InvoicePrinted" type="xs:boolean" />
+              <xs:element minOccurs="0" name="ShippingCarrier">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="50" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="CompanyID" type="xs:int" />
+              <xs:element minOccurs="0" name="SrcUpdatedForShipping" type="xs:boolean" />
+              <xs:element minOccurs="0" name="SrcUpdatedOnForShipping" type="xs:dateTime" />
+              <xs:element minOccurs="0" name="SrcMarkedAsPaid" type="xs:boolean" />
+              <xs:element minOccurs="0" name="OrderConfirmationSentToBuyer" type="xs:boolean" />
+              <xs:element minOccurs="0" name="PaymentConfirmationSentToBuyer" type="xs:boolean" />
+              <xs:element minOccurs="0" name="ShippingConfirmationSentToBuyer" type="xs:boolean" />
+              <xs:element minOccurs="0" name="TotalPaymentRemindersSent" type="xs:int" />
+              <xs:element minOccurs="0" name="TrackingNumberProvided">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="50" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="OrderSourceOrderTotal" type="xs:double" />
+              <xs:element minOccurs="0" name="PackageSize" type="xs:int" />
+              <xs:element minOccurs="0" name="FeedBackID">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="50" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="ShippingWeightTotalOz" type="xs:int" />
+              <xs:element minOccurs="0" name="LockedForeBay" type="xs:boolean" />
+              <xs:element minOccurs="0" name="FinalValueTotal" type="xs:double" />
+              <xs:element minOccurs="0" name="PostingFeeTotal" type="xs:double" />
+              <xs:element minOccurs="0" name="PaypalFeeTotal" type="xs:double" />
+              <xs:element minOccurs="0" name="LockForBundlItems" type="xs:boolean" />
+              <xs:element minOccurs="0" name="ShippingLocationID" type="xs:int" />
+              <xs:element minOccurs="0" name="InventoryAdjusted" type="xs:boolean" />
+              <xs:element minOccurs="0" name="StationID" type="xs:int" />
+              <xs:element minOccurs="0" name="eBayCheckoutStatus" type="xs:int" />
+              <xs:element minOccurs="0" name="eBayPaymentStatus" type="xs:int" />
+              <xs:element minOccurs="0" name="MarkettingSourceID" type="xs:int" />
+              <xs:element minOccurs="0" name="CustomerServiceStatus" type="xs:int" />
+              <xs:element minOccurs="0" name="StatusDetails">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="4000" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="InvoicePreprintedDate" type="xs:dateTime" />
+              <xs:element minOccurs="0" name="InvoicePrintedDate" type="xs:dateTime" />
+              <xs:element minOccurs="0" name="GoogleOrderNumber">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="50" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="SiteCode" type="xs:int" />
+              <xs:element minOccurs="0" name="IsInDispute" type="xs:boolean" />
+              <xs:element minOccurs="0" name="DisputeStartedOn" type="xs:dateTime" />
+              <xs:element minOccurs="0" name="SrcMarkedAsPaidErrCount" type="xs:int" />
+              <xs:element minOccurs="0" name="SrcUpdatedForShippingErrCount" type="xs:int" />
+              <xs:element minOccurs="0" name="TaxRate" type="xs:double" />
+              <xs:element minOccurs="0" name="CustomerServiceStatusDate" type="xs:dateTime" />
+              <xs:element minOccurs="0" name="BackOrderNotifiedByEmail" type="xs:boolean" />
+              <xs:element minOccurs="0" name="BackOrderNotifiedByPhone" type="xs:boolean" />
+              <xs:element minOccurs="0" name="CustomerIP">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="50" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="DeclaredValue" type="xs:double" />
+              <xs:element minOccurs="0" name="RequireDeliveryConfirmation" type="xs:boolean" />
+              <xs:element minOccurs="0" name="RequireSignatureConfirmation" type="xs:boolean" />
+              <xs:element minOccurs="0" name="ShipViaEndicia" type="xs:boolean" />
+              <xs:element minOccurs="0" name="ShippingWeight" type="xs:double" />
+              <xs:element minOccurs="0" name="InsuranceTotal" type="xs:double" />
+              <xs:element minOccurs="0" name="InsuranceID" type="xs:int" />
+              <xs:element minOccurs="0" name="FeedBackRemindersCount" type="xs:int" />
+              <xs:element minOccurs="0" name="FeedBackRemindersLastSentOn" type="xs:dateTime" />
+              <xs:element minOccurs="0" name="PaymentRemindersLastSentOn" type="xs:dateTime" />
+              <xs:element minOccurs="0" name="PaymentRemindersCount" type="xs:int" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="Order">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element msdata:ReadOnly="true" msdata:AutoIncrement="true" msdata:AutoIncrementSeed="-1" msdata:AutoIncrementStep="-1" name="ID" type="xs:int" />
+              <xs:element minOccurs="0" name="CompletedOrderID">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="50" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="UserID" type="xs:int" />
+              <xs:element name="UserName">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="100" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="SubTotal" type="xs:double" />
+              <xs:element minOccurs="0" name="TaxTotal" type="xs:double" />
+              <xs:element minOccurs="0" name="ShippingTotal" type="xs:double" />
+              <xs:element minOccurs="0" name="OrderDiscountsTotal" type="xs:double" />
+              <xs:element minOccurs="0" name="ShippingDiscountsTotal" type="xs:double" />
+              <xs:element minOccurs="0" name="GrandTotal" type="xs:double" />
+              <xs:element minOccurs="0" name="TimeOfOrder" type="xs:dateTime" />
+              <xs:element minOccurs="0" name="StatusCode" type="xs:int" />
+              <xs:element minOccurs="0" name="PaymentStatus" type="xs:int" />
+              <xs:element minOccurs="0" name="AffiliateID" type="xs:int" />
+              <xs:element name="HandlingFee" type="xs:double" />
+              <xs:element minOccurs="0" name="DownloadKey">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="50" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="LastUpdated" type="xs:dateTime" />
+              <xs:element minOccurs="0" name="Salt">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="50" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="GiftWrapCharge" type="xs:double" />
+              <xs:element minOccurs="0" name="Instructions">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="1073741823" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="BillingAddress">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="1073741823" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="ShippingStatus" type="xs:int" />
+              <xs:element minOccurs="0" name="OrderSource" type="xs:int" />
+              <xs:element minOccurs="0" name="OrderSourceOrderID">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="100" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="ShippingMethodSelected">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="100" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="ShippingServiceCost" type="xs:double" />
+              <xs:element minOccurs="0" name="ShippingAddress">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="1073741823" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="bExported" type="xs:boolean" />
+              <xs:element minOccurs="0" name="ExportedToRMS" type="xs:boolean" />
+              <xs:element minOccurs="0" name="PaymentDate" type="xs:dateTime" />
+              <xs:element minOccurs="0" name="bRushOrder" type="xs:boolean" />
+              <xs:element minOccurs="0" name="IseBayUpdatedForShipping" type="xs:boolean" />
+              <xs:element minOccurs="0" name="IsShippingDelivered" type="xs:boolean" />
+              <xs:element minOccurs="0" name="IsFeedBackReceived" type="xs:boolean" />
+              <xs:element minOccurs="0" name="InvoicePrinted" type="xs:boolean" />
+              <xs:element minOccurs="0" name="ShippingCarrier">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="50" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="CompanyID" type="xs:int" />
+              <xs:element minOccurs="0" name="SrcUpdatedForShipping" type="xs:boolean" />
+              <xs:element minOccurs="0" name="SrcUpdatedOnForShipping" type="xs:dateTime" />
+              <xs:element minOccurs="0" name="SrcMarkedAsPaid" type="xs:boolean" />
+              <xs:element minOccurs="0" name="OrderConfirmationSentToBuyer" type="xs:boolean" />
+              <xs:element minOccurs="0" name="PaymentConfirmationSentToBuyer" type="xs:boolean" />
+              <xs:element minOccurs="0" name="ShippingConfirmationSentToBuyer" type="xs:boolean" />
+              <xs:element minOccurs="0" name="TotalPaymentRemindersSent" type="xs:int" />
+              <xs:element minOccurs="0" name="TrackingNumberProvided">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="50" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="OrderSourceOrderTotal" type="xs:double" />
+              <xs:element minOccurs="0" name="PackageSize" type="xs:int" />
+              <xs:element minOccurs="0" name="FeedBackID">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="50" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="ShippingWeightTotalOz" type="xs:int" />
+              <xs:element minOccurs="0" name="LockedForeBay" type="xs:boolean" />
+              <xs:element minOccurs="0" name="FinalValueTotal" type="xs:double" />
+              <xs:element minOccurs="0" name="PostingFeeTotal" type="xs:double" />
+              <xs:element minOccurs="0" name="PaypalFeeTotal" type="xs:double" />
+              <xs:element minOccurs="0" name="LockForBundlItems" type="xs:boolean" />
+              <xs:element minOccurs="0" name="ShippingLocationID" type="xs:int" />
+              <xs:element minOccurs="0" name="InventoryAdjusted" type="xs:boolean" />
+              <xs:element minOccurs="0" name="StationID" type="xs:int" />
+              <xs:element minOccurs="0" name="eBayCheckoutStatus" type="xs:int" />
+              <xs:element minOccurs="0" name="eBayPaymentStatus" type="xs:int" />
+              <xs:element minOccurs="0" name="MarkettingSourceID" type="xs:int" />
+              <xs:element minOccurs="0" name="CustomerServiceStatus" type="xs:int" />
+              <xs:element minOccurs="0" name="StatusDetails">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="4000" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="InvoicePreprintedDate" type="xs:dateTime" />
+              <xs:element minOccurs="0" name="InvoicePrintedDate" type="xs:dateTime" />
+              <xs:element minOccurs="0" name="GoogleOrderNumber">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="50" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="SiteCode" type="xs:int" />
+              <xs:element minOccurs="0" name="IsInDispute" type="xs:boolean" />
+              <xs:element minOccurs="0" name="DisputeStartedOn" type="xs:dateTime" />
+              <xs:element minOccurs="0" name="SrcMarkedAsPaidErrCount" type="xs:int" />
+              <xs:element minOccurs="0" name="SrcUpdatedForShippingErrCount" type="xs:int" />
+              <xs:element minOccurs="0" name="TaxRate" type="xs:double" />
+              <xs:element minOccurs="0" name="CustomerServiceStatusDate" type="xs:dateTime" />
+              <xs:element minOccurs="0" name="BackOrderNotifiedByEmail" type="xs:boolean" />
+              <xs:element minOccurs="0" name="BackOrderNotifiedByPhone" type="xs:boolean" />
+              <xs:element minOccurs="0" name="CustomerIP">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="50" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="DeclaredValue" type="xs:double" />
+              <xs:element minOccurs="0" name="RequireDeliveryConfirmation" type="xs:boolean" />
+              <xs:element minOccurs="0" name="RequireSignatureConfirmation" type="xs:boolean" />
+              <xs:element minOccurs="0" name="ShipViaEndicia" type="xs:boolean" />
+              <xs:element minOccurs="0" name="ShippingWeight" type="xs:double" />
+              <xs:element minOccurs="0" name="InsuranceTotal" type="xs:double" />
+              <xs:element minOccurs="0" name="InsuranceID" type="xs:int" />
+              <xs:element minOccurs="0" name="FeedBackRemindersCount" type="xs:int" />
+              <xs:element minOccurs="0" name="FeedBackRemindersLastSentOn" type="xs:dateTime" />
+              <xs:element minOccurs="0" name="PaymentRemindersLastSentOn" type="xs:dateTime" />
+              <xs:element minOccurs="0" name="PaymentRemindersCount" type="xs:int" />
+              <xs:element minOccurs="0" name="IsWholeSaleOrder" type="xs:boolean" />
+              <xs:element minOccurs="0" name="IsConfirmed" type="xs:boolean" />
+              <xs:element minOccurs="0" name="ConfirmedBy" type="xs:int" />
+              <xs:element minOccurs="0" name="ConfirmedOn" type="xs:dateTime" />
+              <xs:element minOccurs="0" name="AllowCombineShipping" type="xs:boolean" />
+              <xs:element minOccurs="0" name="DropShipStatus" type="xs:int" />
+              <xs:element minOccurs="0" name="SalesRepId" type="xs:int" />
+              <xs:element minOccurs="0" name="ReadyToShip" type="xs:int" />
+              <xs:element minOccurs="0" name="ReadyToProcess" type="xs:int" />
+              <xs:element minOccurs="0" name="ReferralURL">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="150" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="HowHeard" type="xs:int" />
+              <xs:element minOccurs="0" name="ParentOrderID" type="xs:int" />
+              <xs:element minOccurs="0" name="eBaySellingManagerSalesRecordNumber">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="50" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="IsGiftOrder" type="xs:boolean" />
+              <xs:element minOccurs="0" name="ShippingPhoneNumber">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="50" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="ShippingZipCode">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="50" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="ImportSourceUniqueID">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="50" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="OrderSiteCode" type="xs:int" />
+              <xs:element minOccurs="0" name="OrderCurrencyCode" type="xs:int" />
+              <xs:element minOccurs="0" name="FBAShippingStatus" type="xs:int" />
+              <xs:element minOccurs="0" name="ShippingSource" type="xs:int" />
+              <xs:element minOccurs="0" name="AddressVerified" type="xs:boolean" />
+              <xs:element minOccurs="0" name="AddressVerificationError">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="500" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="AddressVerificationFailureCount" type="xs:int" />
+              <xs:element minOccurs="0" name="ShippingMethodRequested">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="50" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="UniqueOrderSourceOrderID">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="100" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element minOccurs="0" name="ShippedBy" type="xs:int" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+    <xs:unique msdata:PrimaryKey="true" name="Constraint1">
+      <xs:selector xpath=".//mstns:bvc_Order" />
+      <xs:field xpath="mstns:ID" />
+    </xs:unique>
+    <xs:unique msdata:ConstraintName="Constraint1" msdata:PrimaryKey="true" name="Order_Constraint1">
+      <xs:selector xpath=".//mstns:Order" />
+      <xs:field xpath="mstns:ID" />
+    </xs:unique>
+  </xs:element>
+</xs:schema>

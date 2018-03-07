@@ -1,0 +1,164 @@
+﻿@using QDLogistics.Models
+@using QDLogistics.Commons
+@using Newtonsoft.Json
+@model AdminUsers
+@{
+    List<Warehouses> warehouseList = ViewBag.warehouseList;
+    Dictionary<EnumData.TimeZone, string> timeZoneList = ViewBag.timeZoneList as Dictionary<EnumData.TimeZone, string>;
+}
+<style>
+    #warehouse-list label {
+    min-width: 300px;
+    margin-left: 0px;
+}
+</style>
+<div id="content">
+    <section id="widget-grid" class="">
+        <div class="row">
+            <article class="col-xs-12">
+                <div class="jarviswidget" data-widget-colorbutton="false" data-widget-editbutton="false" data-widget-togglebutton="false"
+                     data-widget-deletebutton="false" data-widget-fullscreenbutton="false" data-widget-custombutton="false" data-widget-sortable="false">
+
+                    <header>
+                        <span class="widget-icon"> <i class="fa fa-edit"></i> </span>
+
+                        <h2>編輯</h2>
+                        <ul class="nav nav-tabs pull-right">
+                            <li><a data-toggle="tab" href="#hb1">基本資料</a></li>
+                            <li><a data-toggle="tab" href="#hb2">出貨倉庫</a></li>
+                        </ul>
+                    </header>
+
+                    <div>
+                        <div class="widget-body no-padding">
+                            <form id="data-form" class="form-horizontal" method="post" enctype="multipart/form-data">
+                                <input type="hidden" name="isEnable" value="true">
+
+                                <div id="content" class="tab-content">
+                                    <div class="tab-pane" id="hb1">
+                                        <fieldset>
+                                            <legend>基本資料</legend>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-1 control-label">顯示</label>
+
+                                                <div class="col-sm-10">
+                                                    <label class="radio radio-inline">
+                                                        <input type="radio" class="radiobox" name="isVisible" value="true" @(Model.IsVisible ? "checked" : "")>
+                                                        <span>是</span>
+                                                    </label>
+
+                                                    <label class="radio radio-inline">
+                                                        <input type="radio" class="radiobox" name="isVisible" value="false" @(!Model.IsVisible ? "checked" : "")>
+                                                        <span>否</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-1 control-label">名稱</label>
+
+                                                <div class="col-sm-10 col-lg-4">
+                                                    <input type="text" class="form-control" name="name" value="@Model.Name" required>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-1 control-label">群組</label>
+
+                                                <div class="col-sm-10 col-lg-3">
+                                                    @Html.DropDownListFor(Model => Model.GroupId, (SelectList)ViewData["groupList"], new Dictionary<string, object>() { { "class", "form-control" } })
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-1 control-label">時區</label>
+
+                                                <div class="col-sm-10 col-lg-3">
+                                                    <select class="form-control" id="timeZone" name="timeZone">
+                                                        @foreach(var zone in timeZoneList)
+                                                        {
+                                                            int zoneID = (int)zone.Key;
+                                                            <option value="@zoneID" @(zoneID == Model.TimeZone ? "selected" : "")>@zone.Value</option>
+                                                        }
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-1 control-label" for="account">帳號</label>
+
+                                                <div class="col-sm-10 col-lg-4">
+                                                    <input type="text" class="form-control" id="account" name="account" value="@Model.Account" required>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-1 control-label" for="password">密碼</label>
+
+                                                <div class="col-sm-10 col-lg-4">
+                                                    <input type="text" class="form-control" id="password" name="password" @(string.IsNullOrEmpty(Model.Password) ? "required" : "")>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-1 control-label" for="apiUserName">Api帳號</label>
+
+                                                <div class="col-sm-10 col-lg-4">
+                                                    <input type="text" class="form-control" id="apiUserName" name="apiUserName" value="@Model.ApiUserName">
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-1 control-label" for="apiPassword">Api密碼</label>
+
+                                                <div class="col-sm-10 col-lg-4">
+                                                    <input type="text" class="form-control" id="apiPassword" name="apiPassword" value="@Model.ApiPassword">
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                    </div>
+
+                                    <div class="tab-pane" id="hb2">
+                                        <fieldset>
+                                            <legend>出貨倉庫</legend>
+
+                                            <div class="form-group">
+                                                <div class="col-sm-12" id="warehouse-list">
+                                                    @{ var userWarehouse = !string.IsNullOrEmpty(Model.Warehouse) ? JsonConvert.DeserializeObject<List<int>>(Model.Warehouse) : new List<int>(); }
+                                                    @foreach (Warehouses warehouse in warehouseList)
+                                                    {
+                                                        <label class="radio radio-inline">
+                                                            <input  type="checkbox" class="checkbox" name="warehouse[]" value="@warehouse.ID" @(userWarehouse.Any(w => w == warehouse.ID) ? "checked" : "")>
+                                                            <span>@warehouse.Name</span>
+                                                        </label>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                    </div>
+                                </div>
+
+                                <div class="widget-footer">
+                                    <button type="submit" class="btn btn-primary" id="save">儲存</button>
+                                    <!-- <button type="submit" class="btn btn-primary" id="back" onclick="$('#data-form').attr('action', '?back=1');">儲存後返回</button> -->
+                                    <button type="button" class="btn btn-default" onclick="location.href='@Url.Action("index", "user", ViewBag.routeValue)'">返回</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </section>
+</div>
+@section pagespecific {
+    <script type="text/javascript">
+        var hash = window.location.hash;
+        $('ul.nav-tabs li').eq(hash.substr(1)).addClass('active');
+        $('.tab-pane').eq(hash.substr(1)).addClass('active');
+
+        $(document).ready(function () {
+        });
+    </script>
+}

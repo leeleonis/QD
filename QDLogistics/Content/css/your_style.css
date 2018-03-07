@@ -1,0 +1,130 @@
+/*
+ * It is advised not to edit the smartadmin_production.css
+ * as this will override any changes you make in the 
+ * later versions of this theme. 
+ * 
+ * We advise that you use use this CSS to override 
+ * SmartAdmin styles. 
+ * 
+ * Rename the stylesheet to whatever your liking so it will stay
+ * unique to you with each update of SmartAdmin.
+ */
+
+/*
+ * INDEX
+ * 
+ * - HTML
+ * - BODY
+ * - CUSTOM STYLES
+ */
+
+
+@media (min-width: 979px) {
+    .menu-on-top aside#left-panel {
+        width: auto !important;
+        max-width: 650px !important;
+        height: 48px;
+        padding-top: 0px;
+        right: 96px;
+        left: initial;
+        z-index: 1000;
+    }
+
+        .menu-on-top aside#left-panel nav ul li ul {
+            width: 150px;
+        }
+
+        .menu-on-top aside#left-panel nav ul li a {
+            height: auto;
+        }
+
+            .menu-on-top aside#left-panel nav ul li a:after {
+                line-height: 0.5;
+            }
+}
+
+.menu-on-top #header {
+    min-width: 360px !important;
+    background-image: linear-gradient(to bottom,#f3f3f3,#e2e2e2);
+}
+
+    .menu-on-top #header #logo-group {
+        width: 220px !important;
+    }
+
+        .menu-on-top #header #logo-group .ajax-dropdown {
+            top: 50px;
+            left: 20px;
+            height: 400px;
+            display: none;
+        }
+
+            .menu-on-top #header #logo-group .ajax-dropdown .ajax-notifications {
+                height: 360px;
+            }
+
+@media (max-width: 479px) {
+    .menu-on-top #header #logo-group .ajax-dropdown:before {
+        margin-left: 15px;
+    }
+
+    .menu-on-top #header #logo-group .ajax-dropdown:after {
+        margin-left: 16px;
+    }
+}
+
+.menu-on-top #main {
+    margin-top: 0px !important;
+}
+
+
+table tbody .datagrid-row {
+    height: 37px;
+}
+
+    table tbody .datagrid-row input[type=checkbox] {
+        height: 18px;
+    }
+
+.table-parent {
+    display: table;
+    width: 100%;
+    padding: 0 !important;
+}
+
+.table-row {
+    display: table-row;
+    padding: 0 !important;
+}
+
+.table-cell {
+    display: table-cell;
+    float: none;
+    vertical-align: bottom;
+}
+
+.tool-content {
+    margin-bottom: 10px;
+}
+
+.filter-select select + select, .filter-select button + button {
+    margin-top: 5px;
+}
+
+.search-input input, .search-input label {
+    margin-top: 4px;
+    padding-right: 0;
+}
+
+.action-button {
+    text-align: right;
+}
+
+    .action-button .btn {
+        max-width: 170px;
+        display: inline-block;
+    }
+
+        .action-button .btn + .btn {
+            margin-top: 3px;
+        }

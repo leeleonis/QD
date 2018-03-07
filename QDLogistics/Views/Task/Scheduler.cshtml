@@ -1,0 +1,21 @@
+﻿@using QDLogistics.Models
+@{
+    List<TaskScheduler> TaskList = ViewData["TaskList"] as List<TaskScheduler>;
+}
+<table class="table table-bordered table-striped text-center">
+    <thead>
+        <tr>
+            <th width="100" class="text-center">Task ID</th>
+            <th class="text-center">工作名稱</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (TaskScheduler task in TaskList)
+        {
+            <tr>
+                <td>@task.ID</td>
+                <td>@task.Description</td>
+            </tr>
+        }
+    </tbody>
+</table>

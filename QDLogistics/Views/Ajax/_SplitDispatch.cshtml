@@ -1,0 +1,51 @@
+﻿@using QDLogistics.Models;
+@{
+    Packages package = (Packages)ViewBag.package;
+    int amount = (int)ViewBag.amount;
+}
+<style>
+    #table-split tr td {
+        vertical-align: middle;
+    }
+</style>
+<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'center'" style="padding:5px; font-size:larger;">
+        <table id="table-split" class="table table-bordered text-center" style="width:100%;height:auto;" data-id="@package.ID" data-amount="@amount">
+            <thead>
+                <tr>
+                    @{ int width = 80 / (amount + 2); }
+                    <td width="@(103 - width*(amount+2))%">SKU</td>
+                    <td width="@width%" class="">總數(原)</td>
+                    @{
+                        for (int i = 1; i <= amount; i++)
+                        {
+                            <td width="@width%">包裏-@i</td>           }
+                    }
+                    <td width="@width%">總數</td>
+                </tr>
+            </thead>
+            <tbody>
+                @{  List<Items> itemList = package.Items.Where(i => i.IsEnable == true).ToList();
+                    foreach (Items item in itemList)
+                    {
+                        int index = itemList.IndexOf(item);
+
+                        <tr id="item-@item.ID" data-sku="@item.ProductID" data-qty="@item.Qty">
+                            <td>@item.ProductID</td>
+                            <td>@item.Qty</td>
+                            @for (int i = 1; i <= amount; i++)
+                            {
+                                <td><input class="form-control input-sm" type="number" id="Qty-@i" data-id="@item.ID" value="0" /></td>
+                            }
+                            <td id="Total">0</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+    <div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+        <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" onclick="splitPackage();" style="width:80px">Ok</a>
+        <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" onclick="$splitWin.window('close');" style="width:80px">Cancel</a>
+    </div>
+</div>

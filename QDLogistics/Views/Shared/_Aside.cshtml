@@ -1,0 +1,50 @@
+﻿@using QDLogistics.Commons;
+@using QDLogistics.Models;
+@using QDLogistics.Models.Repositiry;
+
+<aside id="left-panel">
+    <nav>
+        <ul>
+            @{
+                string actionName = HttpContext.Current.Request.RequestContext.RouteData.Values["action"].ToString().ToLower();
+                string controllerName = HttpContext.Current.Request.RequestContext.RouteData.Values["controller"].ToString().ToLower();
+
+                actionName = String.IsNullOrEmpty(actionName) ? "index" : actionName;
+
+                IRepository<Menu> Menu = new GenericRepository<Menu>(new QDLogisticsEntities());
+                var menuList = Menu.GetAll().Where(m => m.IsEnable == true && m.PrevId == 0).OrderBy(m => m.Order).ToList();
+            }
+
+            @foreach (Menu menu in menuList)
+            {
+                if (MyHelp.CheckAuth(menu.Controller, menu.Action, EnumData.AuthType.View, menu))
+                {
+                    bool active = menu.Controller.Equals(controllerName) ? (menu.Controller.Equals("order") ? menu.Action == actionName : true) : menu.SubMenu.Any(m => m.Controller == controllerName && m.Action == actionName);
+
+                    <li class="@(active ? "active" : "")">
+                        <a href="@(!menu.SubMenu.Any() ? Url.Action(menu.Action, menu.Controller) : "#")" title="@menu.Name">
+                            <span class="">@menu.Name</span>
+                        </a>
+                        @if (menu.SubMenu.Any())
+                        {
+                            <ul>
+                                @foreach (Menu sub in menu.SubMenu)
+                                {
+                                    if (MyHelp.CheckAuth(sub.Controller, sub.Action, EnumData.AuthType.View, sub))
+                                    {
+                                        <li>
+                                            <a href="@Url.Action(sub.Action, sub.Controller)" title="@sub.Name">
+                                                <span class="">@sub.Name</span>
+                                            </a>
+                                        </li>
+                                    }
+                                }
+                            </ul>
+                        }
+                    </li>
+                }
+            }
+        </ul>
+    </nav>
+    <span class="minifyme" data-action="minifyMenu" style=""> <i class="fa fa-arrow-circle-left hit"></i> </span>
+</aside>

@@ -1,0 +1,210 @@
+ActionName : 直發商訂單【5431186】更新失敗
+Message : Error Test!
+StackTrace : 於 QDLogistics.Controllers.DropShipController.AjaxOrderUpdate(List`1 data, Int32 reTry)
+Date : 2017/11/24 下午 01:30:39
+
+-----------------------------------------------------------------------------
+
+ActionName : 直發商訂單【5431186】更新失敗
+Message : Error Test!
+StackTrace : 於 QDLogistics.Controllers.DropShipController.AjaxOrderUpdate(List`1 data, Int32 reTry)
+Date : 2017/11/24 下午 01:36:48
+
+-----------------------------------------------------------------------------
+
+ActionName : 直發商訂單【5431186】更新失敗
+Message : Error Test!
+StackTrace : 於 QDLogistics.Controllers.DropShipController.AjaxOrderUpdate(List`1 data, Int32 reTry)
+Date : 2017/11/24 下午 01:38:34
+
+-----------------------------------------------------------------------------
+
+ActionName : 直發商訂單【5431186】更新失敗
+Message : Error Test!
+StackTrace : 於 QDLogistics.Controllers.DropShipController.AjaxOrderUpdate(List`1 data, Int32 reTry)
+Date : 2017/11/24 下午 01:39:15
+
+-----------------------------------------------------------------------------
+
+ActionName : 直發商訂單【5431186】更新失敗
+Message : Error Test!
+StackTrace : 於 QDLogistics.Controllers.DropShipController.AjaxOrderUpdate(List`1 data, Int32 reTry) 於 D:\web\QDLogistics\QDLogistics\Controllers\DropShipController.cs: 行 315
+Date : 2017/11/24 下午 01:44:20
+
+-----------------------------------------------------------------------------
+
+ActionName : 直發商訂單【5431135】更新失敗
+Message : Error Test!
+StackTrace : 於 QDLogistics.Controllers.DropShipController.AjaxOrderUpdate(List`1 data, Int32 reTry) 於 D:\web\QDLogistics\QDLogistics\Controllers\DropShipController.cs: 行 315
+Date : 2017/11/24 下午 01:45:04
+
+-----------------------------------------------------------------------------
+
+ActionName : 直發商訂單【5431135】更新失敗
+Message : Error Test!
+StackTrace : 於 QDLogistics.Controllers.DropShipController.AjaxOrderUpdate(List`1 data, Int32 reTry, List`1 message) 於 D:\web\QDLogistics\QDLogistics\Controllers\DropShipController.cs: 行 316
+Date : 2017/11/24 下午 02:26:46
+
+-----------------------------------------------------------------------------
+
+ActionName : 直發商訂單【5431186】更新失敗
+Message : Error Test!
+StackTrace : 於 QDLogistics.Controllers.DropShipController.AjaxOrderUpdate(List`1 data, Int32 reTry, List`1 message) 於 D:\web\QDLogistics\QDLogistics\Controllers\DropShipController.cs: 行 316
+Date : 2017/11/24 下午 02:27:21
+
+-----------------------------------------------------------------------------
+
+ActionName : 直發商訂單【5431186】以及PO【8609】更新至SC失敗
+Message : Error Test!
+StackTrace : 於 QDLogistics.Controllers.DropShipController.UpdatePurchaseOrder(Packages package, Int32 reTry)
+   於 QDLogistics.Controllers.DropShipController.UpdatePurchaseOrder(Packages package, Int32 reTry)
+   於 QDLogistics.Controllers.DropShipController.UpdatePurchaseOrder(Packages package, Int32 reTry)
+   於 QDLogistics.Controllers.DropShipController.UpdatePurchaseOrder(Packages package, Int32 reTry)
+   於 QDLogistics.Controllers.DropShipController.AjaxOrderUpdate(List`1 data, Int32 reTry, List`1 message)
+Date : 2017/11/24 下午 02:28:20
+
+-----------------------------------------------------------------------------
+
+ActionName : 直發商訂單【5431186】以及PO【8609】更新至SC失敗
+Message : Error Test!
+StackTrace : 於 QDLogistics.Controllers.DropShipController.UpdatePurchaseOrder(Packages package, Int32 reTry)
+   於 QDLogistics.Controllers.DropShipController.UpdatePurchaseOrder(Packages package, Int32 reTry)
+   於 QDLogistics.Controllers.DropShipController.UpdatePurchaseOrder(Packages package, Int32 reTry)
+   於 QDLogistics.Controllers.DropShipController.UpdatePurchaseOrder(Packages package, Int32 reTry)
+   於 QDLogistics.Controllers.DropShipController.AjaxOrderUpdate(List`1 data, Int32 reTry, List`1 message)
+Date : 2017/11/24 下午 02:30:09
+
+-----------------------------------------------------------------------------
+
+ActionName : 直發商訂單【5431186】以及PO【8609】更新至SC失敗
+Message : Error Test!
+StackTrace : 於 QDLogistics.Controllers.DropShipController.UpdatePurchaseOrder(Packages package, Int32 reTry) 於 D:\web\QDLogistics\QDLogistics\Controllers\DropShipController.cs: 行 394
+   於 QDLogistics.Controllers.DropShipController.UpdatePurchaseOrder(Packages package, Int32 reTry) 於 D:\web\QDLogistics\QDLogistics\Controllers\DropShipController.cs: 行 392
+   於 QDLogistics.Controllers.DropShipController.UpdatePurchaseOrder(Packages package, Int32 reTry) 於 D:\web\QDLogistics\QDLogistics\Controllers\DropShipController.cs: 行 392
+   於 QDLogistics.Controllers.DropShipController.UpdatePurchaseOrder(Packages package, Int32 reTry) 於 D:\web\QDLogistics\QDLogistics\Controllers\DropShipController.cs: 行 392
+   於 QDLogistics.Controllers.DropShipController.AjaxOrderUpdate(List`1 data, Int32 reTry, List`1 message) 於 D:\web\QDLogistics\QDLogistics\Controllers\DropShipController.cs: 行 339
+Date : 2017/11/24 下午 02:34:36
+
+-----------------------------------------------------------------------------
+
+ActionName : 直發商訂單【5431135】以及PO【8604】更新至SC失敗
+Message : Error Test!
+StackTrace : 於 QDLogistics.Controllers.DropShipController.UpdatePurchaseOrder(Packages package, Int32 reTry) 於 D:\web\QDLogistics\QDLogistics\Controllers\DropShipController.cs: 行 394
+   於 QDLogistics.Controllers.DropShipController.UpdatePurchaseOrder(Packages package, Int32 reTry) 於 D:\web\QDLogistics\QDLogistics\Controllers\DropShipController.cs: 行 392
+   於 QDLogistics.Controllers.DropShipController.UpdatePurchaseOrder(Packages package, Int32 reTry) 於 D:\web\QDLogistics\QDLogistics\Controllers\DropShipController.cs: 行 392
+   於 QDLogistics.Controllers.DropShipController.UpdatePurchaseOrder(Packages package, Int32 reTry) 於 D:\web\QDLogistics\QDLogistics\Controllers\DropShipController.cs: 行 392
+   於 QDLogistics.Controllers.DropShipController.AjaxOrderUpdate(List`1 data, Int32 reTry, List`1 message) 於 D:\web\QDLogistics\QDLogistics\Controllers\DropShipController.cs: 行 339
+Date : 2017/11/24 下午 02:34:36
+
+-----------------------------------------------------------------------------
+
+ActionName : 直發商訂單【5431186】以及PO【8609】更新至SC失敗
+Message : Error Test!
+StackTrace : 於 QDLogistics.Controllers.DropShipController.UpdatePurchaseOrder(Packages package, Int32 reTry) 於 D:\web\QDLogistics\QDLogistics\Controllers\DropShipController.cs: 行 394
+   於 QDLogistics.Controllers.DropShipController.UpdatePurchaseOrder(Packages package, Int32 reTry) 於 D:\web\QDLogistics\QDLogistics\Controllers\DropShipController.cs: 行 392
+   於 QDLogistics.Controllers.DropShipController.UpdatePurchaseOrder(Packages package, Int32 reTry) 於 D:\web\QDLogistics\QDLogistics\Controllers\DropShipController.cs: 行 392
+   於 QDLogistics.Controllers.DropShipController.UpdatePurchaseOrder(Packages package, Int32 reTry) 於 D:\web\QDLogistics\QDLogistics\Controllers\DropShipController.cs: 行 392
+   於 QDLogistics.Controllers.DropShipController.AjaxOrderUpdate(List`1 data, Int32 reTry, List`1 message) 於 D:\web\QDLogistics\QDLogistics\Controllers\DropShipController.cs: 行 339
+Date : 2017/11/24 下午 02:35:49
+
+-----------------------------------------------------------------------------
+
+ActionName : 直發商訂單【5431135】以及PO【8604】更新至SC失敗
+Message : Error Test!
+StackTrace : 於 QDLogistics.Controllers.DropShipController.UpdatePurchaseOrder(Packages package, Int32 reTry) 於 D:\web\QDLogistics\QDLogistics\Controllers\DropShipController.cs: 行 394
+   於 QDLogistics.Controllers.DropShipController.UpdatePurchaseOrder(Packages package, Int32 reTry) 於 D:\web\QDLogistics\QDLogistics\Controllers\DropShipController.cs: 行 392
+   於 QDLogistics.Controllers.DropShipController.UpdatePurchaseOrder(Packages package, Int32 reTry) 於 D:\web\QDLogistics\QDLogistics\Controllers\DropShipController.cs: 行 392
+   於 QDLogistics.Controllers.DropShipController.UpdatePurchaseOrder(Packages package, Int32 reTry) 於 D:\web\QDLogistics\QDLogistics\Controllers\DropShipController.cs: 行 392
+   於 QDLogistics.Controllers.DropShipController.AjaxOrderUpdate(List`1 data, Int32 reTry, List`1 message) 於 D:\web\QDLogistics\QDLogistics\Controllers\DropShipController.cs: 行 339
+Date : 2017/11/24 下午 02:35:49
+
+-----------------------------------------------------------------------------
+
+ActionName : PO【8604】更新失敗
+Message : Error Test!
+StackTrace : 於 QDLogistics.Commons.SyncProcess.SyncProcess.Update_PurchaseOrder(Int32 PackageID, Int32 reTry) 於 D:\web\QDLogistics\QDLogistics\Commons\SyncProcess.cs: 行 503
+   於 QDLogistics.Commons.SyncProcess.SyncProcess.Update_PurchaseOrder(Int32 PackageID, Int32 reTry) 於 D:\web\QDLogistics\QDLogistics\Commons\SyncProcess.cs: 行 501
+   於 QDLogistics.Commons.SyncProcess.SyncProcess.Update_PurchaseOrder(Int32 PackageID, Int32 reTry) 於 D:\web\QDLogistics\QDLogistics\Commons\SyncProcess.cs: 行 501
+   於 QDLogistics.Commons.SyncProcess.SyncProcess.Update_PurchaseOrder(Int32 PackageID, Int32 reTry) 於 D:\web\QDLogistics\QDLogistics\Commons\SyncProcess.cs: 行 501
+   於 QDLogistics.Controllers.DropShipController.<>c__DisplayClass19_0.<UpdatePurchaseOrder>b__0(Object session) 於 D:\web\QDLogistics\QDLogistics\Controllers\DropShipController.cs: 行 377
+Date : 2017/11/24 下午 03:24:11
+
+-----------------------------------------------------------------------------
+
+ActionName : 匯入訂單資料失敗
+Message : Error Test!
+StackTrace : 於 QDLogistics.Controllers.Import.<>c__DisplayClass10_0.<CheckImportData>b__0() 於 D:\web\QDLogistics\QDLogistics\Controllers\FileController.cs: 行 438
+Date : 2017/11/24 下午 04:18:44
+
+-----------------------------------------------------------------------------
+
+ActionName : 直發商訂單【5431117】更新失敗
+Message : Error Test!
+StackTrace : 於 QDLogistics.Controllers.Import.<>c__DisplayClass10_0.<CheckImportData>b__0()
+Date : 2017/11/24 下午 04:22:09
+
+-----------------------------------------------------------------------------
+
+ActionName : 直發商訂單【5431135】更新失敗
+Message : Error Test!
+StackTrace : 於 QDLogistics.Controllers.Import.<>c__DisplayClass10_0.<CheckImportData>b__0()
+Date : 2017/11/24 下午 04:23:20
+
+-----------------------------------------------------------------------------
+
+ActionName : PO【8603】更新失敗
+Message : Error Test!
+StackTrace : 於 QDLogistics.Controllers.Import.UploadPO(ThreadTask threadTask, HttpSessionStateBase session, Packages package) 於 D:\web\QDLogistics\QDLogistics\Controllers\FileController.cs: 行 551
+Date : 2017/11/24 下午 04:28:29
+
+-----------------------------------------------------------------------------
+
+ActionName : PO【8604】更新失敗
+Message : Error Test!
+StackTrace : 於 QDLogistics.Controllers.Import.UploadPO(ThreadTask threadTask, HttpSessionStateBase session, Packages package) 於 D:\web\QDLogistics\QDLogistics\Controllers\FileController.cs: 行 551
+Date : 2017/11/24 下午 04:28:33
+
+-----------------------------------------------------------------------------
+
+ActionName : 訂單【5431172】出貨失敗
+Message : Error Test!
+StackTrace : 於 QDLogistics.Controllers.AjaxController.UpdatePicked(List`1 picked, Dictionary`2 serial, Int32 reTry, AjaxResult result) 於 D:\web\QDLogistics\QDLogistics\Controllers\AjaxController.cs: 行 791
+Date : 2017/11/24 下午 05:20:20
+
+-----------------------------------------------------------------------------
+
+ActionName : 訂單【5431172】出貨失敗
+Message : 訂單【5431172】無法出貨因為並非待出貨的狀態
+StackTrace : 於 QDLogistics.Controllers.AjaxController.UpdatePicked(List`1 picked, Dictionary`2 serial, Int32 reTry, AjaxResult result)
+Date : 2017/11/24 下午 05:22:18
+
+-----------------------------------------------------------------------------
+
+ActionName : 訂單【5431153】出貨失敗
+Message : 訂單【5431153】無法出貨因為並非待出貨的狀態
+StackTrace : 於 QDLogistics.Controllers.AjaxController.UpdatePicked(List`1 picked, Dictionary`2 serial, Int32 reTry, AjaxResult result)
+Date : 2017/11/24 下午 05:24:38
+
+-----------------------------------------------------------------------------
+
+ActionName : 訂單【5431168】出貨失敗
+Message : 訂單【5431168】無法出貨因為並非待出貨的狀態
+StackTrace : 於 QDLogistics.Controllers.AjaxController.UpdatePicked(List`1 picked, Dictionary`2 serial, Int32 reTry, AjaxResult result)
+Date : 2017/11/24 下午 05:26:55
+
+-----------------------------------------------------------------------------
+
+ActionName : 訂單【5431168】出貨失敗
+Message : Error Test!
+StackTrace : 於 QDLogistics.Controllers.AjaxController.UpdatePicked(List`1 picked, Dictionary`2 serial, Int32 reTry, AjaxResult result) 於 D:\web\QDLogistics\QDLogistics\Controllers\AjaxController.cs: 行 843
+Date : 2017/11/24 下午 05:31:32
+
+-----------------------------------------------------------------------------
+
+ActionName : 訂單【5431178】出貨失敗
+Message : Error Test!
+StackTrace : 於 QDLogistics.Controllers.AjaxController.UpdatePicked(List`1 picked, Dictionary`2 serial, Int32 reTry, AjaxResult result) 於 D:\web\QDLogistics\QDLogistics\Controllers\AjaxController.cs: 行 843
+Date : 2017/11/24 下午 05:33:16
+
+-----------------------------------------------------------------------------
+

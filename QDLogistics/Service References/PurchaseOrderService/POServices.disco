@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<discovery xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.xmlsoap.org/disco/">
+  <contractRef ref="http://dm.ws.sellercloud.com/POServices.asmx?wsdl" docRef="http://dm.ws.sellercloud.com/POServices.asmx" xmlns="http://schemas.xmlsoap.org/disco/scl/" />
+  <soap address="http://dm.ws.sellercloud.com/POServices.asmx" xmlns:q1="http://api.sellercloud.com/" binding="q1:POServicesSoap" xmlns="http://schemas.xmlsoap.org/disco/soap/" />
+  <soap address="http://dm.ws.sellercloud.com/POServices.asmx" xmlns:q2="http://api.sellercloud.com/" binding="q2:POServicesSoap12" xmlns="http://schemas.xmlsoap.org/disco/soap/" />
+</discovery>

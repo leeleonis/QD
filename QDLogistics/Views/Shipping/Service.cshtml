@@ -1,0 +1,247 @@
+﻿@section styles{
+    <link href="~/Content/themes/default/easyui.css" rel="stylesheet" />
+    <style>
+        button:not(.processing) > span:nth-child(1) + span {
+            display: none;
+        }
+
+        button.processing span:nth-child(1) {
+            display: none;
+        }
+    </style>
+}
+<div id="content">
+    <section id="widget-grid" class="">
+        <div class="row table-parent">
+            <div class="tool-content col-xs-12">
+                <div class="filter-select col-xs-3"></div>
+                <div class="search-input col-xs-7"></div>
+                <div class="col-xs-2">
+                    <div class="action-button col-xs-12">
+                        <button class="btn btn-default btn-sm btn-block" id="btn-sync" data-href="@Url.Action("checkService", "orderSync")">
+                            <span>資料同步 Sync</span><span>同步中，請稍等</span>
+                        </button>
+                        <button class="btn btn-default btn-sm btn-block" id="btn-import">導入 Import</button>
+                        <button class="btn btn-default btn-sm btn-block" id="btn-export">導出 Export</button>
+                        <form id="form-data" method="post" enctype="multipart/form-data">
+                            <input type="hidden" name="type" value="service" />
+                            <input type="hidden" name="action" id="input-action" />
+                            <input type="hidden" name="IDs" id="input-IDs" />
+                            <input class="hidden" type="file" name="file" id="file-import" />
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <article class="col-xs-12">
+                <table id="DataGrid"></table>
+            </article>
+        </div>
+    </section>
+</div>
+@section pagespecific {
+    <script src="~/scripts/jquery.easyui-1.4.3.min.js"></script>
+    <script type="text/javascript">
+        var pager, pageSize = 100;
+        var selected = false, CarrierOption;
+        var $dataGrid, $syncBtn = $("#btn-sync"), $importBtn = $("#btn-import"), $importFile = $("#file-import"), $exportBtn = $("#btn-export");
+
+        $(function () {
+            getOption("@Url.Action("CarrierOption", "ajax")").done(function (response) {
+                CarrierOption = response['carrier'];
+                dataInit();
+            });
+
+            $syncBtn.click(function () {
+                if ($(this).is(".processing")) return;
+
+                getOption($(this).data("href")).done(function (response) {
+                    alert(response['message']);
+                });
+            });
+
+            $importBtn.click(function () {
+                document.getElementById("form-data").reset();
+                $importFile.trigger("click");
+            });
+
+            $importFile.change(function () {
+                $("#input-action").val("import");
+                var form = document.querySelector("#form-data");
+                var data = new FormData(form);
+
+                $.ajax({
+                    url: "@Url.Action("upload", "file")",
+                    type: "POST",
+                    data: data,
+                    dataType: "JSON",
+                    contentType: false,
+                    processData: false,
+                    success: function (response) {
+                        alert(response.Msg);
+
+                        if (response.Result) {
+                            $dataGrid.datagrid('reload');
+                        }
+                    }
+                });
+            });
+
+            $exportBtn.click(function () {
+                var codes = [];
+                var rows = $dataGrid.datagrid('getRows');
+
+                if (rows.length > 0) {
+                    for (var i in rows) {
+                        codes[i] = rows[i].ServiceCode;
+                    }
+
+                    $("#input-IDs").val(codes);
+                    $("#form-data").attr("action", "@Url.Action("export", "file")").submit();
+                }
+            });
+        });
+
+        function dataInit() {
+            $dataGrid = $("#DataGrid").datagrid({
+                title: "運輸方式  列表",
+                url: "@Url.Action("ServiceData", "ajax")",
+                queryParams: {},
+                width: "100%",
+                height: "700",
+                columns: [[
+                    { field: "ServiceCode", title: "Service Code", width: "35%", align: "center", sortable: false },
+                    { field: "ServiceName", title: "Display Name", width: "35%", align: "center", sortable: false },
+                    {
+                        field: "CarrierID", title: "Shipping Method", width: "26%", align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            return "<select class='form-control input-sm' id='CarrierID-" + index + "' onchange='onSelect(" + index + ")'>" + getSelectOption(CarrierOption, value) + "</select>";
+                        }
+                    }, {
+                        field: "save", title: "<button type='button' class='btn btn-default btn-sm' onclick='saveData()'>SAVE</button>", width: "60", sortable: false,
+                        formatter: function (value, row, index) {
+                            return "<button type='button' class='btn btn-default btn-sm' id='btn-" + index + "' onclick='saveData(" + index + ")' disabled>SAVE</button>"
+                        }
+                    }
+                ]],
+                onBeforeSelect: selectAction,
+                onBeforeUnselect: selectAction,
+                pagination: true,
+                pagePosition: "bottom",
+                pageSize: pageSize
+            });
+
+            pager = $dataGrid.datagrid("getPager");
+            $(pager).pagination({
+                pageSize: pageSize,
+                showPageList: true,
+                pageList: [100, 200, 300, 500],
+                beforePageTest: "第",
+                afterPageTest: "頁，共 {pages} 頁",
+                displayMsg: "顯示 {from} 到 {to} 筆資料，共 {total} 筆資料"
+            });
+        }
+
+        function selectAction(index, row) {
+            if (selected) {
+                selected = false;
+                $("#btn-" + index).removeAttr("disabled");
+                return true;
+            }
+
+            return false;
+        }
+
+        function onSelect(index) {
+            selected = true;
+            $dataGrid.datagrid('selectRow', index);
+        }
+
+        function saveData(index) {
+            var data = [];
+            var saveAll = index == undefined;
+
+            if (saveAll) {
+                var rows = $dataGrid.datagrid('getSelections');
+                for (var i in rows) {
+                    index = $dataGrid.datagrid('getRowIndex', rows[i]);
+                    data.push(setData(rows[i], index));
+                    $("#btn-" + index).attr("disabled", "disabled");
+                }
+                $dataGrid.datagrid("clearSelections");
+            } else {
+                row = $dataGrid.datagrid("getRows")[index];
+                data.push(setData(row, index));
+                $("#btn-" + index).attr("disabled", "disabled");
+
+                selected = true;
+                $dataGrid.datagrid('unselectRow', index);
+            }
+
+            if (data.length > 0) {
+                updateData(data).done(function (response) {
+                    if (response['status']) {
+                        alert("Success!");
+                    }
+
+                    if (saveAll) $dataGrid.datagrid('reload');
+                });
+            }
+        }
+
+        function setData(row, index) {
+            return {
+                ServiceCode: row.ServiceCode,
+                CarrierID: $("#CarrierID-" + index).val()
+            }
+        }
+
+        function updateData(data) {
+            return $.ajax({
+                url: "@Url.Action("ServiceUpdate", "ajax")",
+                type: "post",
+                data: { data: data },
+                dataType: "json"
+            });
+        }
+
+        function getSelectOption(optionList, value) {
+            var option = "";
+
+            if (optionList.length > 0) {
+                for (var i in optionList) {
+                    option += "<option value='" + optionList[i]["value"] + "' " + (optionList[i]["value"] == value ? "selected" : "") + ">" + optionList[i]["text"] + "</option>";
+                }
+            }
+
+            return option;
+        }
+
+        function checkProcess(id) {
+            var url = "@Url.Action("checkProcessStatus", "orderSync")/" + id;
+
+            getOption(url).done(function (response) {
+                if (!response['success']) {
+                    alert(response['message']);
+                    return;
+                } else {
+                    if (response['status']) {
+                        alert(response['message']);
+                        $syncBtn.removeClass("processing");
+                        $dataGrid.datagrid('reload');
+                        return;
+                    }
+                }
+            });
+        }
+
+        function getOption(url) {
+            return $.ajax({
+                url: url,
+                dataType: "json"
+            });
+        }
+    </script>
+}

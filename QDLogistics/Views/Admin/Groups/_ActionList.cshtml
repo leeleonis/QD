@@ -1,0 +1,68 @@
+﻿@using QDLogistics.Models
+@model Menu
+@{
+    Dictionary<int, List<bool>> auth = ViewBag.auth;
+
+    List<bool> action;
+    if (!auth.TryGetValue(Model.MenuId, out action))
+    {
+        action = new List<bool>();
+    }
+}
+
+<div class="dd3-content">
+    @Model.Name
+    <div class="pull-right hidden-xs">
+        <label for="auth[@Model.MenuId][0]">
+            <span>瀏覽</span>
+
+            <div class="onoffswitch">
+                <input type="checkbox" name="auth[@Model.MenuId][0]" class="onoffswitch-checkbox" id="auth[@Model.MenuId][0]" value="true" @(action.Any() && action[0] ? "checked" : "")>
+                <label class="onoffswitch-label" for="auth[@Model.MenuId][0]">
+                    <span class="onoffswitch-inner" data-swchon-text="Yes" data-swchoff-text="No"></span>
+                    <span class="onoffswitch-switch"></span>
+                </label>
+                <input type="hidden" name="auth[@Model.MenuId][0]" value="false">
+            </div>
+        </label>
+
+        <label for="auth[@Model.MenuId][1]">
+            <span>編輯</span>
+
+            <div class="onoffswitch">
+                <input type="checkbox" name="auth[@Model.MenuId][1]" class="onoffswitch-checkbox" id="auth[@Model.MenuId][1]" value="true" @(action.Any() && action[1] ? "checked" : "") @(Model.SubMenu.Any() ? "disabled" : "")>
+                <label class="onoffswitch-label" for="auth[@Model.MenuId][1]">
+                    <span class="onoffswitch-inner" data-swchon-text="Yes" data-swchoff-text="No"></span>
+                    <span class="onoffswitch-switch"></span>
+                </label>
+                <input type="hidden" name="auth[@Model.MenuId][1]" value="false">
+            </div>
+        </label>
+
+        <label for="auth[@Model.MenuId][2]">
+            <span>新增</span>
+
+            <div class="onoffswitch">
+                <input type="checkbox" name="auth[@Model.MenuId][2]" class="onoffswitch-checkbox" id="auth[@Model.MenuId][2]" value="true" @(action.Any() && action[2] ? "checked" : "") @(Model.SubMenu.Any() ? "disabled" : "")>
+                <label class="onoffswitch-label" for="auth[@Model.MenuId][2]">
+                    <span class="onoffswitch-inner" data-swchon-text="Yes" data-swchoff-text="No"></span>
+                    <span class="onoffswitch-switch"></span>
+                </label>
+                <input type="hidden" name="auth[@Model.MenuId][2]" value="false">
+            </div>
+        </label>
+
+        <label for="auth[@Model.MenuId].delete">
+            <span>刪除</span>
+
+            <div class="onoffswitch">
+                <input type="checkbox" name="auth[@Model.MenuId][3]" class="onoffswitch-checkbox" id="auth[@Model.MenuId][3]" value="true" @(action.Any() && action[3] ? "checked" : "") @(Model.SubMenu.Any() ? "disabled" : "")>
+                <label class="onoffswitch-label" for="auth[@Model.MenuId][3]">
+                    <span class="onoffswitch-inner" data-swchon-text="Yes" data-swchoff-text="No"></span>
+                    <span class="onoffswitch-switch"></span>
+                </label>
+                <input type="hidden" name="auth[@Model.MenuId][3]" value="false">
+            </div>
+        </label>
+    </div>
+</div>

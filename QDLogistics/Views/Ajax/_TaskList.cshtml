@@ -1,0 +1,26 @@
+﻿@using QDLogistics.Models
+@using QDLogistics.Commons
+@{
+    var viewData = ViewData;
+    var viewBag = ViewBag;
+    List<TaskScheduler> schedulers = ViewData["schedulers"] as List<TaskScheduler>;
+
+    if (schedulers.Any())
+    {
+        var adminNames = ViewData["admins"] as Dictionary<int, string>;
+        TimeZoneConvert timeZoneConvert = new TimeZoneConvert();
+        EnumData.TimeZone TimeZone = MyHelp.GetTimeZone((int)Session["TimeZone"]);
+
+        foreach (TaskScheduler task in schedulers.OrderByDescending(s => s.ID))
+        {
+            <li>
+                <span>
+                    <div class="bar-holder no-padding">
+                        <p class="margin-bottom-5"><strong>@adminNames[task.UpdateBy.Value]:</strong> <i>@task.Description</i> <span class="pull-right semi-bold text-muted">@Enum.GetName(typeof(EnumData.TaskStatus), task.Status)</span></p>
+                        <em class="note no-margin">last updated on @timeZoneConvert.InitDateTime(task.UpdateDate.Value, EnumData.TimeZone.UTC).ConvertDateTime(TimeZone).ToString("MM/dd/yyyy hh:mm tt")</em>
+                    </div>
+                </span>
+            </li>
+        }
+    }
+}

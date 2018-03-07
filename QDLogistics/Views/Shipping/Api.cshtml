@@ -1,0 +1,101 @@
+﻿<style>
+    #content tr td {
+        vertical-align: middle;
+    }
+
+    table tbody .datagrid-row {
+        height: 37px;
+    }
+
+    .dataTables_filter {
+        float: none;
+    }
+</style>
+<div id="content">
+    <section id="widget-grid" class="">
+        <div class="row">
+            <article class="col-xs-12">
+                <div class="jarviswidget jarviswidget-color-darken" data-widget-colorbutton="false" data-widget-editbutton="false" data-widget-togglebutton="false"
+                     data-widget-deletebutton="false" data-widget-fullscreenbutton="false" data-widget-custombutton="false" data-widget-sortable="false">
+
+                    <header>
+                        <span class="widget-icon"><i class="fa fa-table"></i></span>
+
+                        <h2>API 列表</h2>
+                    </header>
+
+                    <div>
+                        <div class="widget-body no-padding">
+                            <div class="table-responsive">
+                                <table id="dt_basic" class="table table-bordered table-striped text-center">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center">名稱</th>
+                                            <th width="140" class="text-center">功能</th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </section>
+</div>
+@section pagespecific {
+    <script type="text/javascript">
+        var $Table;
+
+        $(document).ready(function () {
+            var responsiveHelper_dt_basic = undefined;
+            var breakpointDefinition = {
+                tablet: 1024,
+                phone: 480
+            };
+
+            $Table = $('#dt_basic').DataTable({
+                "displayStart": @ViewBag.routeValue.start,
+                "pageLength": @ViewBag.routeValue.length,
+                "oSearch": {"sSearch": "@ViewBag.routeValue.search"},
+                "autoWidth": false,
+                "ordering": false,
+                "serverSide": true,
+                "sDom": "<'dt-toolbar'<'col-sm-7 hidden-xs' f><'col-xs-12 col-sm-5'Tl>>" + "t" + "<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
+                "oTableTools": {
+                    "aButtons": [{
+                        "sExtends": "text",
+                        "sButtonText": '<i class="fa fa-plus"></i> <span class="hidden-mobile">新增API</span>',
+                        "sButtonClass": "btn-lg",
+                        "fnInit": function (nButton, oConfig) {
+                            $(nButton).css('margin-left', 5).attr('href', '@Url.Action("apicreate", "shipping")');
+                        }
+                    }]
+                },
+                "ajax": {
+                    "url": "@Url.Action("shippingApiData", "ajax")",
+                    "data": function (data) {
+                    }
+                },
+                "columns": [
+                    { class: "", data: "name" },
+                    { class: "", data: "action" }
+                ],
+                "preDrawCallback": function () {
+                    // Initialize the responsive datatables helper once.
+                    if (!responsiveHelper_dt_basic) {
+                        responsiveHelper_dt_basic = new ResponsiveDatatablesHelper($('#dt_basic'), breakpointDefinition);
+                    }
+                },
+                "rowCallback": function (nRow) {
+                    responsiveHelper_dt_basic.createExpandIcon(nRow);
+                },
+                "drawCallback": function (oSettings) {
+                    responsiveHelper_dt_basic.respond();
+                },
+                "initComplete": function () {
+                }
+            });
+        });
+    </script>
+}

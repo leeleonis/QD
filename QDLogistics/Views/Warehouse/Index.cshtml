@@ -1,0 +1,202 @@
+﻿@using QDLogistics.Models
+
+@section styles{
+    <link href="~/Content/themes/default/easyui.css" rel="stylesheet" />
+<style>
+    button:not(.processing) > span:nth-child(1) + span {
+        display: none;
+    }
+
+    button.processing span:nth-child(1) {
+        display: none;
+    }
+</style>
+}
+@{
+    IEnumerable<Carriers> carriers = ViewBag.carriers;
+}
+<div id="content">
+    <section id="widget-grid" class="">
+        <div class="row table-parent">
+            <div class="tool-content col-xs-12">
+                <div class="filter-select col-xs-3"></div>
+                <div class="search-input col-xs-7"></div>
+                <div class="col-xs-2">
+                    <div class="action-button col-xs-12">
+                        <button class="btn btn-default" id="btn-sync" data-href="@Url.Action("checkWarehouse", "orderSync")">
+                            <span>資料同步 Sync</span><span>同步中，請稍等</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <article class="col-xs-12">
+                <table id="DataGrid"></table>
+            </article>
+        </div>
+    </section>
+</div>
+@section pagespecific {
+    <script src="~/scripts/jquery.easyui-1.4.3.min.js"></script>
+    <script type="text/javascript">
+        var selected = false, WinitWarehouseOption;
+        var $dataGrid, $syncBtn = $("#btn-sync");
+
+        $(function () {
+            getOption("@Url.Action("winitWarehouseOption", "ajax")").done(function (response) {
+                WinitWarehouseOption = response['WinitWarehouse'];
+                dataInit();
+            });
+
+            $syncBtn.click(function () {
+                getOption($(this).data("href")).done(function (response) {
+                    alert(response['message']);
+                });
+            });
+        });
+
+        function dataInit(){
+            $dataGrid = $("#DataGrid").datagrid({
+                title: "倉庫 列表",
+                url: "@Url.Action("warehouseData", "ajax")",
+                queryParams: {},
+                width: "100%",
+                height: "700",
+                columns: [[
+                    { field: "ID", title: "ID", width: "100", align: "center", sortable: false },
+                    { field: "Name", title: "Warehouse Name", width: "200", align: "center", sortable: false },
+                    { field: "WarehouseType", title: "Type", width: "100", align: "center", sortable: false },
+                    {
+                        field: "IsSellable", title: "Sellable", width: "80", align: "center", sortable: false, formatter: function (value, row, index) {
+                            var checkbox = setCheckBox(index, this.field, value);
+                            return $("<div>").append($(checkbox).attr("id", "IsSellable-" + index).clone()).html();
+                        }
+                    }, {
+                        field: "WinitWarehouseID", title: "Winit Warehouse", width: "200", align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            var option = getSelectOption(WinitWarehouseOption, value);
+                            return "<select class='form-control input-sm' id='WinitWarehouse-" + index + "' onchange='onSelect(" + index + ")'>" + option + "</select>";
+                        }
+                    },
+                    @foreach(Carriers carrier in carriers){
+                        @Html.Raw("{field:'Carrier" + carrier.ID + "',title:'" + carrier.Name + "',width:'100',align:'center',sortable:false,formatter:function(value,row,index){return setCheckBox(index," + carrier.ID + ",row.CarrierData[" + carrier.ID + "]);}},\n");
+                    }
+                    {
+                        field: "save", title: "<button type='button' class='btn btn-default btn-sm' onclick='saveData()'>SAVE</button>", width: "60", sortable: false,
+                        formatter: function (value, row, index) {
+                            return "<button type='button' class='btn btn-default btn-sm' id='btn-" + index + "' onclick='saveData(" + index + ")' disabled>SAVE</button>"
+                        }
+                    }
+                ]],
+                onBeforeSelect: selectAction,
+                onBeforeUnselect: selectAction,
+                onSelect: function (index, row) {
+                    $("#btn-" + index).removeAttr("disabled");
+                }
+            });
+        }
+
+        function selectAction(index, row) {
+            if (selected) {
+                selected = false;
+                return true;
+            }
+
+            return false;
+        }
+
+        function onSelect(index) {
+            selected = true;
+            $dataGrid.datagrid('selectRow', index);
+        }
+
+        function saveData(index) {
+            var index;
+            var data = [];
+
+            if (index == undefined) {
+                var rows = $dataGrid.datagrid('getSelections');
+                for (var i in rows) {
+                    index = $dataGrid.datagrid('getRowIndex', rows[i]);
+                    data.push(setData(rows[i], index));
+                    $("#btn-" + index).attr("disabled", "disabled");
+                }
+                $dataGrid.datagrid("clearSelections");
+            } else {
+                row = $dataGrid.datagrid("getRows")[index];
+                data.push(setData(row, index));
+                $("#btn-" + index).attr("disabled", "disabled");
+
+                selected = true;
+                $dataGrid.datagrid('unselectRow', index);
+            }
+
+            if (data.length > 0) {
+                updateData(data).done(function (response) {
+                    if (response['status']) {
+                        alert("Success!");
+                    }
+
+                    $dataGrid.datagrid('reload');
+                });
+            }
+        }
+
+        function setData(row, index) {
+            var carrierData = {};
+            $(":checkbox").filter("#Carrier-" + index).each(function (index, element) {
+                carrierData[$(element).data("field")] = $(element).prop("checked");
+            });
+
+            return {
+                ID: row.ID,
+                IsSellable: $("#IsSellable-" + index).prop("checked"),
+                WinitWarehouseID: $("#WinitWarehouse-" + index).val(),
+                CarrierData: JSON.stringify(carrierData)
+            }
+        }
+
+        function updateData(data) {
+            return $.ajax({
+                url: "@Url.Action("WarehouseUpdate", "ajax")",
+                type: "post",
+                data: { data: data },
+                dataType: "json"
+            });
+        }
+
+        function setCheckBox(index, field, value) {
+            var name = "Carrier-" + index;
+            return "<input type='checkbox' class='form-control' id='" + name + "' data-field='" + field + "' " + (value ? "checked" : "") + " onchange='onSelect(" + index + ")'>"
+        }
+
+        function getSelectOption(optionList, value, group) {
+            var option = "";
+
+            if (group != undefined) {
+                option += "<optgroup label='" + group + "'>";
+            }
+
+            if (optionList.length > 0) {
+                for (var i in optionList) {
+                    option += "<option value='" + optionList[i]["value"] + "' " + (optionList[i]["value"] == value ? "selected" : "") + ">" + optionList[i]["text"] + "</option>";
+                }
+            }
+
+            if (group != undefined) {
+                option += "</optgroup>";
+            }
+
+            return option;
+        }
+
+        function getOption(url) {
+            return $.ajax({
+                url: url,
+                dataType: "json"
+            });
+        }
+    </script>
+}

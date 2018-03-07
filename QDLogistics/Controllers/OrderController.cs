@@ -1,0 +1,833 @@
+﻿using AutoMapper;
+using CarrierApi.Winit;
+using ClosedXML.Excel;
+using Ionic.Zip;
+using Neodynamic.SDK.Web;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using NPOI.HSSF.UserModel;
+using NPOI.SS.UserModel;
+using QDLogistics.Commons;
+using QDLogistics.Filters;
+using QDLogistics.Models;
+using QDLogistics.Models.Repositiry;
+using QDLogistics.OrderService;
+using SellerCloud_WebService;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.Entity.Core.Objects;
+using System.Data.Entity.Validation;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Web;
+using System.Web.Hosting;
+using System.Web.Mvc;
+
+namespace QDLogistics.Controllers
+{
+    public class OrderController : Controller
+    {
+        private QDLogisticsEntities db;
+        private IRepository<Orders> Orders;
+        private IRepository<Payments> Payments;
+        private IRepository<Packages> Packages;
+        private IRepository<Items> Items;
+        private IRepository<SerialNumbers> SerialNumbers;
+        private IRepository<Carriers> Carriers;
+        private IRepository<PickProduct> PickProduct;
+        private IRepository<Warehouses> Warehouses;
+
+        private SCServiceSoapClient OS_sellerCloud;
+        private AuthHeader OS_authHeader;
+        private ServiceOptions OS_options;
+        private SerializableDictionaryOfStringString OS_filters;
+
+        private OrderCreationService.OrderCreationServiceSoapClient OCS_sellerCloud;
+        private OrderCreationService.AuthHeader OCS_authHeader;
+
+        private DateTime SyncOn;
+        private DateTime Today;
+
+        public OrderController()
+        {
+            db = new QDLogisticsEntities();
+        }
+
+        [CheckSession]
+        public ActionResult Index()
+        {
+            return View();
+        }
+        
+        [HttpPost]
+        public ActionResult OrderToWaiting(List<string> packageIDs)
+        {
+            if (!MyHelp.CheckAuth("order", "index", EnumData.AuthType.Edit))
+            {
+                return Content(JsonConvert.SerializeObject(new { status = false, message = "你沒有權限執行這個動作!" }), "appllication/json");
+            }
+
+            Orders = new GenericRepository<Orders>(db);
+            Packages = new GenericRepository<Packages>(db);
+            List<Packages> packageList = Packages.GetAll(true).Where(p => p.IsEnable == true && packageIDs.Contains(p.ID.ToString())).ToList();
+            List<Orders> orderList = Orders.GetAll(true).Where(o => packageList.Select(p => p.OrderID.Value).Contains(o.OrderID)).ToList();
+
+            if (packageList.Any())
+            {
+                try
+                {
+                    List<string> errorMessages = new List<string>();
+                    if (packageList.Any(p => !p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.訂單管理)))
+                        errorMessages.AddRange(packageList.Where(p => !p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.訂單管理)).Select(p => string.Format("訂單【{0}】無法提交因為已在【{1}】的狀態", p.OrderID, Enum.GetName(typeof(EnumData.ProcessStatus), p.ProcessStatus))).ToList());
+
+                    if (orderList.Any(o => !o.StatusCode.Equals((int)OrderStatusCode.InProcess)))
+                        errorMessages.AddRange(orderList.Where(o => !o.StatusCode.Equals((int)OrderStatusCode.InProcess)).Select(o => string.Format("訂單【{0}】無法提交因為並非InProcess的狀態", o.OrderID)).ToList());
+
+                    if (orderList.Any(o => !o.PaymentStatus.Equals((int)OrderPaymentStatus.Charged)))
+                        errorMessages.AddRange(orderList.Where(o => !o.PaymentStatus.Equals((int)OrderPaymentStatus.Charged)).Select(o => string.Format("訂單【{0}】無法提交因為並非Payment的狀態", o.OrderID)).ToList());
+
+                    TaskFactory factory = System.Web.HttpContext.Current.Application.Get("TaskFactory") as TaskFactory;
+
+                    orderList = orderList.Where(o => o.StatusCode.Equals((int)OrderStatusCode.InProcess) && o.PaymentStatus.Equals((int)OrderPaymentStatus.Charged)).ToList();
+                    foreach (Packages package in packageList.Where(p => p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.訂單管理) && orderList.Any(o => o.OrderID.Equals(p.OrderID))).ToList())
+                    {
+                        ThreadTask threadTask = new ThreadTask(string.Format("訂單管理區 - 提交訂單【{0}】至待出貨區", package.OrderID));
+
+                        package.ProcessStatus = (int)EnumData.ProcessStatus.鎖定中;
+                        Packages.Update(package, package.ID);
+
+                        lock (factory)
+                        {
+                            threadTask.AddWork(factory.StartNew(Session =>
+                            {
+                                threadTask.Start();
+
+                                string message = "";
+                                Packages packageData = Packages.Get(package.ID);
+
+                                try
+                                {
+                                    HttpSessionStateBase session = (HttpSessionStateBase)Session;
+                                    SC_WebService SCWS = new SC_WebService(session["ApiUserName"].ToString(), session["ApiPassword"].ToString());
+
+                                    if (!SCWS.Is_login) throw new Exception("SC is not login");
+
+                                    OrderStateInfo order = SCWS.Get_OrderStatus(packageData.OrderID.Value);
+
+                                    if ((int)order.PaymentStatus == package.Orders.PaymentStatus)
+                                    {
+                                        ShipProcess shipProcess = new ShipProcess(SCWS);
+
+                                        MyHelp.Log("Orders", packageData.OrderID, "提交至待出貨區", session);
+
+                                        /***** 上傳Item出貨倉 *****/
+                                        var SC_order = SCWS.Get_OrderData(packageData.OrderID.Value).Order;
+                                        var SC_items = SC_order.Items.Where(i => packageData.Items.Where(dbItem => dbItem.IsEnable == true).Select(dbItem => dbItem.ID).Contains(i.ID)).ToArray();
+                                        foreach (var item in SC_items)
+                                        {
+                                            item.ShipFromWareHouseID = packageData.Items.First(i => i.IsEnable == true && i.ID == item.ID).ShipFromWarehouseID.Value;
+                                        }
+                                        SCWS.Update_OrderItem(SC_items);
+                                        MyHelp.Log("Orders", packageData.OrderID, "更新訂單包裏的出貨倉", session);
+
+                                        /***** 更新客戶地址 *****/
+                                        var address = SC_order.ShippingAddress;
+                                        DataProcess.SetAddressData(packageData.Orders.Addresses, address, SC_order.BillingAddress);
+
+                                        shipProcess.Init(packageData);
+                                        var result = shipProcess.Dispatch();
+
+                                        if (result.Status)
+                                        {
+                                            MyHelp.Log("Orders", packageData.OrderID, "訂單提交完成", session);
+
+                                            byte[] carrierType = new byte[] { (byte)EnumData.CarrierType.DHL, (byte)EnumData.CarrierType.FedEx };
+                                            if (!shipProcess.isDropShip && carrierType.Contains(package.Carriers.CarrierAPI.Type.Value))
+                                            {
+                                                PickProduct = new GenericRepository<PickProduct>(db);
+
+                                                List<PickProduct> pickList = PickProduct.GetAll(true).Where(p => packageData.Items.Where(i => i.IsEnable == true).Select(i => i.ID).Contains(p.ItemID.Value)).ToList();
+                                                foreach (Items item in packageData.Items.Where(i => i.IsEnable == true))
+                                                {
+                                                    PickProduct pick = pickList.FirstOrDefault(pk => pk.ItemID == item.ID);
+
+                                                    if (pick != null)
+                                                    {
+                                                        pick.IsEnable = true;
+                                                        pick.IsPicked = false;
+                                                        pick.IsMail = false;
+                                                        pick.QtyPicked = 0;
+                                                        DataProcess.setPickProductData(pick, item);
+                                                        PickProduct.Update(pick, pick.ID);
+                                                    }
+                                                    else
+                                                    {
+                                                        pick = new PickProduct() { IsEnable = true };
+                                                        DataProcess.setPickProductData(pick, item);
+                                                        PickProduct.Create(pick);
+                                                    }
+                                                }
+                                                PickProduct.SaveChanges();
+                                            }
+
+                                            packageData.ProcessStatus = (int)EnumData.ProcessStatus.待出貨;
+                                        }
+                                        else {
+                                            message = result.Message;
+                                            packageData.ProcessStatus = (int)EnumData.ProcessStatus.訂單管理;
+                                        }
+                                    }
+                                    else {
+                                        message = "Payment status is different";
+                                        packageData.Orders.StatusCode = (int)OrderStatusCode.OnHold;
+                                        packageData.ProcessStatus = (int)EnumData.ProcessStatus.訂單管理;
+                                    }
+
+                                    Packages.Update(packageData, packageData.ID);
+                                    Packages.SaveChanges();
+
+                                    if (packageData.ProcessStatus.Equals((int)EnumData.ProcessStatus.待出貨))
+                                        using (Hubs.ServerHub server = new Hubs.ServerHub())
+                                            server.BroadcastOrderChange(packageData.OrderID.Value, EnumData.OrderChangeStatus.提交至待出貨區);
+                                }
+                                catch (Exception e)
+                                {
+                                    message = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+                                    packageData.ProcessStatus = (int)EnumData.ProcessStatus.訂單管理;
+
+                                    if (!string.IsNullOrEmpty(package.WinitNo))
+                                    {
+                                        Winit_API winit = new Winit_API(package.Carriers.CarrierAPI);
+                                        Received received = winit.Void(package.WinitNo);
+                                        package.WinitNo = null;
+                                    }
+
+                                    Packages.Update(packageData, packageData.ID);
+                                    Packages.SaveChanges();
+                                }
+
+                                return message;
+                            }, HttpContext.Session));
+                        }
+                    }
+
+                    Packages.SaveChanges();
+
+                    if (errorMessages.Any())
+                        return Content(JsonConvert.SerializeObject(new { status = true, message = string.Join("\n", errorMessages) }), "appllication/json");
+                }
+                catch (DbEntityValidationException ex)
+                {
+                    var errorMessages = ex.EntityValidationErrors.SelectMany(x => x.ValidationErrors).Select(x => x.ErrorMessage);
+                    return Content(JsonConvert.SerializeObject(new { status = false, message = string.Join("\n", errorMessages) }), "appllication/json");
+                }
+                catch (Exception e)
+                {
+                    return Content(JsonConvert.SerializeObject(new { status = false, message = e.Message }), "appllication/json");
+                }
+
+                return Content(JsonConvert.SerializeObject(new { status = true, message = "訂單提交開始執行!" }), "appllication/json");
+            }
+
+            return Content(JsonConvert.SerializeObject(new { status = false, message = "沒有找到訂單!" }), "appllication/json");
+        }
+
+        public ActionResult SplitPackage(int PackageID, List<Dictionary<string, int>> splitItems)
+        {
+            if (!MyHelp.CheckAuth("order", "index", EnumData.AuthType.Edit))
+            {
+                return Content(JsonConvert.SerializeObject(new { status = false, message = "你沒有權限執行這個動作!" }), "appllication/json");
+            }
+
+            Packages = new GenericRepository<Packages>(db);
+            Items = new GenericRepository<Items>(db);
+
+            Packages package = Packages.Get(PackageID);
+            if (package == null) return Content(JsonConvert.SerializeObject(new { status = false, message = "找不到包裏!" }), "appllication /json");
+
+            try
+            {
+                TaskFactory factory = System.Web.HttpContext.Current.Application.Get("TaskFactory") as TaskFactory;
+                ThreadTask threadTask = new ThreadTask(string.Format("訂單管理區 - 訂單【{0}】分批寄送", package.OrderID.ToString()));
+
+                lock (factory)
+                {
+                    threadTask.AddWork(factory.StartNew(Session =>
+                    {
+                        threadTask.Start();
+
+                        string message = "";
+
+                        try
+                        {
+                            HttpSessionStateBase session = (HttpSessionStateBase)Session;
+                            SC_WebService SCWS = new SC_WebService(session["ApiUserName"].ToString(), session["ApiPassword"].ToString());
+                            MyHelp.Log("Packages", package.ID, "分批寄送", session);
+
+                            if (!SCWS.Is_login) throw new Exception("SC is not login");
+
+                            Order order = SCWS.Get_OrderData(package.OrderID.Value).Order;
+                            if (order.ShippingStatus.Equals(OrderShippingStatus2.FullyShipped))
+                            {
+                                throw new Exception("Order is FullyShipped. Please unship the order first.");
+                            }
+
+                            Package oldPackage = order.Packages.First(p => p.ID == PackageID);
+                            List<OrderItem> oldItems = order.Items.Where(i => i.PackageID == PackageID).ToList();
+                            List<OrderPackage> orderPackages = SCWS.Get_OrderPackage_All(package.OrderID.Value).ToList();
+
+                            Dictionary<string, int> itemQty = splitItems.First();
+                            oldPackage.Qty = itemQty.Sum(item => item.Value);
+                            SCWS.Update_PackageData(oldPackage);
+                            Packages.Update(DataProcess.SetPackageData(package, oldPackage), oldPackage.ID);
+                            foreach (OrderItem item in oldItems)
+                            {
+                                item.Qty = itemQty[item.ID.ToString()];
+                                Items oldItem = package.Items.First(i => i.ID == item.ID);
+                                oldItem.IsEnable = !item.Qty.Equals(0);
+                                if (oldItem.IsEnable.Value)
+                                {
+                                    SCWS.Update_ItemData(item);
+                                }
+                                else
+                                {
+                                    SCWS.Delete_Items(item.OrderID, item.ID);
+                                    orderPackages.First(op => op.PackageID == oldPackage.ID && op.OrderItemID == item.ID).Qty = item.Qty;
+                                }
+                                Items.Update(DataProcess.SetItemData(oldItem, item), item.ID);
+                            }
+
+                            MapperConfiguration packageConfig = new MapperConfiguration(cfg => cfg.CreateMap<Package, Package>());
+                            packageConfig.AssertConfigurationIsValid();//←證驗應對
+                            IMapper packageMapper = packageConfig.CreateMapper();
+
+                            MapperConfiguration itemConfig = new MapperConfiguration(cfg => cfg.CreateMap<OrderItem, OrderItem>());
+                            itemConfig.AssertConfigurationIsValid();//←證驗應對
+                            IMapper itemMapper = itemConfig.CreateMapper();
+
+                            foreach (var qty in splitItems.Skip(1).ToArray())
+                            {
+                                Tuple<Package, List<OrderItem>> newData = Create_Package(oldPackage, oldItems, qty, packageMapper, itemMapper);
+                                newData.Item1.Qty = newData.Item2.Sum(i => i.Qty);
+                                Package newPackage = SCWS.Add_OrderNewPackage(newData.Item1);
+                                Packages.Create(DataProcess.SetPackageData(new Packages() { IsEnable = true, ID = newPackage.ID }, newPackage));
+                                foreach (OrderItem item in newData.Item2)
+                                {
+                                    OrderItem newItem = SCWS.Add_OrderNewItem(item);
+                                    item.ID = newItem.ID;
+                                    newItem.PackageID = item.PackageID = newPackage.ID;
+                                    Items.Create(DataProcess.SetItemData(new Items() { IsEnable = true, ID = newItem.ID }, newItem));
+                                    SCWS.Update_ItemData(newItem);
+                                }
+                                newPackage.OrderItemID = newData.Item2.First().ID;
+                                SCWS.Update_PackageData(newPackage);
+
+                                orderPackages.Add(new OrderPackage()
+                                {
+                                    ID = -1,
+                                    OrderID = newPackage.OrderID,
+                                    PackageID = newPackage.ID,
+                                    OrderItemID = newPackage.OrderItemID,
+                                    OrderItemBundleItemID = newPackage.OrderItemBundleItemID,
+                                    ProductID = newData.Item2.First().ProductID,
+                                    Qty = newPackage.Qty
+                                });
+                            }
+
+                            SCWS.Update_OrderPackage(orderPackages.ToArray());
+                            Packages.SaveChanges();
+                        }
+                        catch (Exception e)
+                        {
+                            message = e.Message;
+                        }
+
+                        return message;
+                    }, HttpContext.Session));
+                }
+            }
+            catch (Exception e)
+            {
+                return Content(JsonConvert.SerializeObject(new { status = false, message = e.Message }), "appllication/json");
+            }
+
+            return Content(JsonConvert.SerializeObject(new { status = true, message = "訂單分批開始執行!" }), "appllication /json");
+        }
+
+        private Tuple<Package, List<OrderItem>> Create_Package(Package oldPackage, List<OrderItem> oldItems, Dictionary<string, int> itemQty, IMapper packageMapper, IMapper itemMapper)
+        {
+            Package newPackage = packageMapper.Map<Package>(oldPackage);
+            List<OrderItem> newItems = new List<OrderItem>();
+
+            foreach (var qty in itemQty.Where(qty => !qty.Value.Equals(0)).ToArray())
+            {
+                OrderItem item = itemMapper.Map<OrderItem>(oldItems.First(i => i.ID == int.Parse(qty.Key)));
+                item.Qty = qty.Value;
+                newItems.Add(item);
+            }
+
+            return Tuple.Create(newPackage, newItems);
+        }
+
+        [CheckSession]
+        public ActionResult Waiting()
+        {
+            Warehouses = new GenericRepository<Warehouses>(db);
+
+            ViewBag.warehouseList = Warehouses.GetAll(true).Where(w => w.IsEnable == true && w.IsSellable == true).OrderByDescending(w => w.IsDefault).OrderBy(w => w.ID).ToList();
+            return View();
+        }
+
+        [CheckSession]
+        public ActionResult Package()
+        {
+            int warehouseId;
+            List<Carriers> CarrierList = new List<Carriers>();
+
+            if (int.TryParse(Session["warehouseId"].ToString(), out warehouseId))
+            {
+                Warehouses = new GenericRepository<Warehouses>(db);
+
+                Warehouses warehouse = Warehouses.Get(warehouseId);
+                if (warehouse != null && !string.IsNullOrEmpty(warehouse.CarrierData))
+                {
+                    Dictionary<string, bool> CarrierData = JsonConvert.DeserializeObject<Dictionary<string, bool>>(warehouse.CarrierData);
+                    string[] CarrierIDs = CarrierData.Where(cData => cData.Value).Select(cData => cData.Key).ToArray();
+                    CarrierList = db.Carriers.AsNoTracking().Where(c => c.IsEnable.Value && CarrierIDs.Contains(c.ID.ToString())).ToList();
+                }
+            }
+
+            string packageSelect = string.Format("SELECT * FROM Packages WHERE IsEnable = 1 AND ProcessStatus = {0}", (byte)EnumData.ProcessStatus.待出貨);
+            string orderSelect = string.Format("SELECT * FROM Orders WHERE StatusCode = {0}", (int)OrderStatusCode.InProcess);
+            string itemSelect = string.Format("SELECT * FROM Items WHERE IsEnable = 1 AND ShipFromWarehouseID = {0}", warehouseId);
+
+            ObjectContext context = new ObjectContext("name=QDLogisticsEntities");
+            var ProductList = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨)).ToList()
+                .Join(context.ExecuteStoreQuery<Orders>(orderSelect).ToList(), p => p.OrderID, o => o.OrderID, (package, order) => new { order, package })
+                .OrderBy(data => data.order.TimeOfOrder).OrderByDescending(data => data.order.RushOrder)
+                .Join(context.ExecuteStoreQuery<Items>(itemSelect).ToList(), op => op.package.ID, i => i.PackageID, (op, item) => op.package).Distinct().ToList();
+
+            ViewBag.packageList = ProductList;
+            ViewBag.carrierList = CarrierList;
+            ViewBag.WCPScript = WebClientPrint.CreateScript(Url.Action("ProcessRequest", "WebClientPrintAPI", null, HttpContext.Request.Url.Scheme), Url.Action("PrintFile", "File", null, HttpContext.Request.Url.Scheme), HttpContext.Session.SessionID);
+            ViewData["warehouseId"] = (int)Session["WarehouseID"];
+            ViewData["adminId"] = (int)Session["AdminId"];
+            ViewData["adminName"] = Session["AdminName"].ToString();
+            ViewData["total"] = ProductList.Sum(p => p.Items.Where(i => i.IsEnable == true).Count());
+            return View();
+        }
+
+        [CheckSession]
+        public ActionResult Shipped()
+        {
+            Warehouses = new GenericRepository<Warehouses>(db);
+
+
+            ViewBag.warehouseList = Warehouses.GetAll(true).Where(w => w.IsEnable == true && w.IsSellable == true).OrderByDescending(w => w.IsDefault).OrderBy(w => w.ID).ToList();
+            return View();
+        }
+
+        public ActionResult TrackOrder()
+        {
+            Orders = new GenericRepository<Orders>(db);
+            Packages = new GenericRepository<Packages>(db);
+            Items = new GenericRepository<Items>(db);
+            PickProduct = new GenericRepository<PickProduct>(db);
+            Payments = new GenericRepository<Payments>(db);
+            Carriers = new GenericRepository<Carriers>(db);
+
+            try
+            {
+                TaskFactory factory = System.Web.HttpContext.Current.Application.Get("TaskFactory") as TaskFactory;
+
+                lock (factory)
+                {
+                    ThreadTask threadTask = new ThreadTask("已出貨區 - 追蹤已出貨訂單");
+                    threadTask.AddWork(factory.StartNew(Session =>
+                    {
+                        threadTask.Start();
+
+                        string message = "";
+
+                        try
+                        {
+                            HttpSessionStateBase session = (HttpSessionStateBase)Session;
+                            MyHelp.Log("Orders", null, "追蹤已出貨訂單", session);
+
+                            TrackResult result;
+                            TrackOrder track = new TrackOrder();
+                            List<PickProduct> pickList = PickProduct.GetAll(true).Where(pick => pick.IsEnable == true && pick.IsPicked == true).OrderByDescending(pick => pick.PickUpDate).ToList();
+                            List<Packages> packageList = pickList
+                                .Join(Packages.GetAll(true).Where(p => p.IsEnable == true && p.DeliveryStatus != (int)DeliveryStatusType.Delivered && p.CarrierID != 0 && !string.IsNullOrEmpty(p.TrackingNumber)), pick => pick.PackageID, p => p.ID, (pick, p) => p).ToList()
+                                .Join(Carriers.GetAll(true), p => p.CarrierID, carrier => carrier.ID, (p, carrier) => p).ToList()
+                                .Join(Payments.GetAll(true), p => p.OrderID, payment => payment.OrderID, (p, payment) => p).ToList();
+
+                            foreach (var data in packageList.Join(Orders.GetAll(true), p => p.OrderID, o => o.OrderID, (p, o) => new { order = o, package = p }).ToList())
+                            {
+                                track.setOrder(data.order, data.package);
+                                result = track.track();
+
+                                data.package.PickUpDate = result.PickUpDate;
+                                data.package.DeliveryDate = result.DeliveryDate;
+                                data.package.DeliveryStatus = result.DeliveryStatus;
+                                data.package.DeliveryNote = result.DeliveryNote;
+
+                                Packages.Update(data.package, data.package.ID);
+                            }
+
+                            Packages.SaveChanges();
+                        }
+                        catch (DbEntityValidationException ex)
+                        {
+                            var errorMessages = ex.EntityValidationErrors.SelectMany(x => x.ValidationErrors).Select(x => x.ErrorMessage);
+                            message = string.Join("; ", errorMessages);
+                        }
+                        catch (Exception e)
+                        {
+                            message = e.Message;
+                        }
+
+                        return message;
+                    }, HttpContext.Session));
+                }
+
+                lock (factory)
+                {
+                    ThreadTask threadTask = new ThreadTask("已出貨區 - 追蹤Winit訂單");
+                    threadTask.AddWork(factory.StartNew(Session =>
+                    {
+                        threadTask.Start();
+
+                        string message = "";
+
+                        try
+                        {
+                            HttpSessionStateBase session = (HttpSessionStateBase)Session;
+                            MyHelp.Log("Orders", null, "追蹤Winit訂單", session);
+
+                            Winit_API winit = new Winit_API();
+
+                            Received searchOrder = null;
+                            List<outboundOrderListData> trackList = new List<outboundOrderListData>();
+                            int page = 1, size = 100, total = 0;
+
+                            do
+                            {
+                                searchOrder = winit.SearchOrder(page.ToString(), size.ToString(), 14);
+
+                                if (searchOrder.code != "0") throw new Exception(searchOrder.msg);
+
+                                outboundOrderListResult result = searchOrder.data.ToObject<outboundOrderListResult>();
+
+                                if (total == 0) total = result.total;
+
+                                trackList.AddRange(result.list.ToList());
+                            } while (page++ * size < total);
+
+                            if (trackList.Any())
+                            {
+                                var dataList = Orders.GetAll(true).Where(o => trackList.Any(track => track.sellerOrderNo.Contains(o.OrderID.ToString()))).ToList()
+                                    .Join(Packages.GetAll(true).Where(p => p.IsEnable == true && p.DeliveryStatus != (int)DeliveryStatusType.Delivered).ToList(), o => o.OrderID, p => p.OrderID, (o, p) => new { order = o, package = p }).ToList();
+
+                                if (dataList.Any())
+                                {
+                                    TrackResult result;
+                                    TrackOrder track = new TrackOrder();
+
+                                    List<int> uploadTracking = new List<int>();
+
+                                    foreach (var data in dataList)
+                                    {
+                                        track.setOrder(data.order, data.package);
+                                        outboundOrderListData trackData = trackList.First(t => t.sellerOrderNo == data.order.OrderID.ToString());
+                                        result = track.track(trackData.warehouseId, trackData.documentNo, trackData.trackingNo);
+
+                                        if (string.IsNullOrEmpty(data.package.TrackingNumber) && !string.IsNullOrEmpty(trackData.trackingNo))
+                                        {
+                                            data.package.TrackingNumber = trackData.trackingNo;
+                                            data.package.ProcessStatus = (int)EnumData.ProcessStatus.已出貨;
+
+                                            Carriers carrier = Carriers.GetAll(true).FirstOrDefault(c => c.ShippingMethod == int.Parse(trackData.deliverywayId));
+                                            if (carrier != null)
+                                            {
+                                                data.package.CarrierID = carrier.ID;
+                                            }
+
+                                            int warehouseId = winit.warehouseIDs.First(w => w.Value == trackData.warehouseId).Key;
+                                            foreach (Items item in data.package.Items.ToArray())
+                                            {
+                                                item.ShipFromWarehouseID = warehouseId;
+                                                Items.Update(item, item.ID);
+                                            }
+
+                                            uploadTracking.Add(data.package.ID);
+                                        }
+
+                                        data.package.WinitNo = trackData.documentNo;
+                                        data.package.PickUpDate = result.PickUpDate;
+                                        data.package.DeliveryDate = result.DeliveryDate;
+                                        data.package.DeliveryStatus = result.DeliveryStatus;
+                                        data.package.DeliveryNote = result.DeliveryNote;
+
+                                        Packages.Update(data.package, data.package.ID);
+                                    }
+
+                                    Packages.SaveChanges();
+
+                                    if (uploadTracking.Any())
+                                    {
+                                        SyncProcess Sync = new SyncProcess(session);
+                                        List<string> error = new List<string>();
+
+                                        foreach (int packageID in uploadTracking)
+                                        {
+                                            error.Add(Sync.Update_Tracking(Packages.Get(packageID)));
+                                        }
+
+                                        if (error.Any(e => !string.IsNullOrEmpty(e)))
+                                        {
+                                            message = string.Join("; ", error.Where(e => !string.IsNullOrEmpty(e)));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        catch (DbEntityValidationException ex)
+                        {
+                            var errorMessages = ex.EntityValidationErrors.SelectMany(x => x.ValidationErrors).Select(x => x.ErrorMessage);
+                            message = string.Join("; ", errorMessages);
+                        }
+                        catch (Exception e)
+                        {
+                            message = e.Message;
+                        }
+
+                        return message;
+                    }, HttpContext.Session));
+                }
+            }
+            catch (DbEntityValidationException ex)
+            {
+                var errorMessages = ex.EntityValidationErrors.SelectMany(x => x.ValidationErrors).Select(x => x.ErrorMessage);
+                return Content(JsonConvert.SerializeObject(new { status = false, message = string.Join("; ", errorMessages) }), "appllication/json");
+            }
+            catch (Exception e)
+            {
+                return Content(JsonConvert.SerializeObject(new { status = false, message = e.Message }), "appllication/json");
+            }
+
+            return Content(JsonConvert.SerializeObject(new { status = true, message = "提單追踨開始執行!" }), "appllication/json");
+        }
+        
+        private void WebServiceInit(HttpSessionStateBase session)
+        {
+            OS_sellerCloud = new SCServiceSoapClient();
+            OS_sellerCloud.InnerChannel.OperationTimeout = new TimeSpan(0, 15, 0);
+            OS_authHeader = new AuthHeader();
+            OS_options = new ServiceOptions();
+
+            OCS_sellerCloud = new OrderCreationService.OrderCreationServiceSoapClient();
+            OCS_sellerCloud.InnerChannel.OperationTimeout = new TimeSpan(0, 15, 0);
+            OCS_authHeader = new OrderCreationService.AuthHeader();
+
+            OS_authHeader.UserName = OCS_authHeader.UserName = session["ApiUserName"].ToString();
+            OS_authHeader.Password = OCS_authHeader.Password = session["ApiPassword"].ToString();
+
+            SyncOn = DateTime.UtcNow;
+        }
+
+        public ActionResult SendMailToCarrier()
+        {
+            PickProduct = new GenericRepository<PickProduct>(db);
+
+            List<PickProduct> pickList = db.PickProduct.AsNoTracking().Where(p => p.IsEnable && p.IsPicked && !p.IsMail).ToList();
+            if (pickList.Any())
+            {
+                int[] packageIDs = pickList.Select(p => p.PackageID.Value).ToArray();
+                List<Packages> packageList = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.已出貨) && packageIDs.Contains(p.ID)).ToList();
+                var groupList = packageList.GroupBy(p => p.Carriers.Carrier).ToDictionary(p => p.Key, p => p);
+
+                DateTime now = new TimeZoneConvert().ConvertDateTime(EnumData.TimeZone.TST);
+                DateTime noon = new DateTime(now.Year, now.Month, now.Day, 12, 0, 0);
+                DateTime evening = new DateTime(now.Year, now.Month, now.Day, 18, 0, 0);
+
+                string basePath = HostingEnvironment.MapPath("~/FileUploads");
+                string filePath;
+
+                string sendMail = "dispatch-qd@hotmail.com";
+                string mailTitle;
+                string mailBody;
+                string[] receiveMails;
+                string[] ccMails = new string[] { "peter0626@hotmail.com", "kellyyang82@hotmail.com", "demi@qd.com.tw" };
+
+                foreach (var serviceCode in groupList.Keys)
+                {
+                    switch (serviceCode)
+                    {
+                        case "DHL":
+                            MyHelp.Log("PickProduct", null, "寄送DHL出口報單");
+
+                            string[] ProductIDs = groupList[serviceCode].SelectMany(p => p.Items.Where(i => i.IsEnable.Value).Select(i => i.ProductID)).Distinct().ToArray();
+                            Dictionary<string, string> skuList = db.Skus.AsNoTracking().Where(sku => sku.IsEnable.Value && ProductIDs.Contains(sku.Sku)).ToDictionary(sku => sku.Sku, sku => sku.PurchaseInvoice);
+
+                            XLWorkbook DHL_workbook = new XLWorkbook();
+                            JArray jObjects = new JArray();
+                            List<string> DHLFile = new List<string>();
+
+                            foreach (Packages package in groupList[serviceCode])
+                            {
+                                Orders order = package.Orders;
+                                Addresses address = order.Addresses;
+                                string name = string.Join(" ", new string[] { address.FirstName, address.MiddleInitial, address.LastName });
+
+                                List<Items> itemList = package.Items.Where(i => i.IsEnable.Value).ToList();
+                                foreach (Items item in itemList)
+                                {
+                                    JObject jo = new JObject();
+                                    jo.Add("1", package.ExportMethod.Value.Equals(0) ? "G3" : "G5");
+                                    jo.Add("2", package.ExportMethod.Value.Equals(0) ? "81" : "02");
+                                    jo.Add("3", skuList[item.ProductID]);
+                                    jo.Add("4", name);
+                                    jo.Add("5", string.Join(" - ", new string[] { item.Skus.ProductType.ProductTypeName, item.Skus.ProductName }));
+                                    jo.Add("6", package.TrackingNumber);
+                                    jo.Add("7", Enum.GetName(typeof(CurrencyCodeType), order.OrderCurrencyCode));
+                                    jo.Add("8", (item.DeclaredValue * item.Qty.Value).ToString("N"));
+                                    jo.Add("9", address.StreetLine1);
+                                    jo.Add("10", address.City);
+                                    jo.Add("11", address.StateName);
+                                    jo.Add("12", address.PostalCode);
+                                    jo.Add("13", address.CountryName);
+                                    jo.Add("14", address.PhoneNumber);
+                                    if (item.Qty > 1) jo.Add("15", item.Qty);
+                                    jObjects.Add(jo);
+                                }
+                            }
+
+                            var DHL_sheet = DHL_workbook.Worksheets.Add(JsonConvert.DeserializeObject<DataTable>(jObjects.ToString()), "檢核表");
+                            DHL_sheet.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+                            DHL_sheet.Style.Font.FontName = "Times New Roman";
+                            DHL_sheet.Style.Font.FontSize = 11;
+                            DHL_sheet.Row(1).Hide();
+                            DHL_sheet.Column(1).Width = 10;
+                            DHL_sheet.Column(2).Width = 10;
+                            DHL_sheet.Column(3).Width = 17;
+                            DHL_sheet.Column(4).Width = 24;
+                            DHL_sheet.Column(5).Width = 70;
+                            DHL_sheet.Column(6).Width = 15;
+                            DHL_sheet.Column(7).Width = 13;
+                            DHL_sheet.Column(8).Width = 13;
+                            DHL_sheet.Column(9).Width = 50;
+                            DHL_sheet.Column(10).Width = 20;
+                            DHL_sheet.Column(11).Width = 20;
+                            DHL_sheet.Column(12).Width = 20;
+                            DHL_sheet.Column(13).Width = 20;
+                            DHL_sheet.Column(14).Width = 20;
+
+                            filePath = Path.Combine(basePath, "mail", now.ToString("yyyy/MM/dd"));
+                            if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
+
+                            string fileName = string.Format("DHL 出口報關表格 第{0}批.xlsx", DateTime.Compare(now, noon.AddHours(3)) <= 0 ? "1" : "2");
+                            DHL_workbook.SaveAs(Path.Combine(filePath, fileName));
+
+                            receiveMails = new string[] { "twtxwisa@dhl.com" };
+                            mailTitle = string.Format("至優網 {0} 第{1}批 {2}筆提單 正式出口報關資料", now.ToString("yyyy-MM-dd"), DateTime.Compare(now, noon.AddHours(3)) <= 0 ? "1" : "2", groupList[serviceCode].Count());
+
+                            mailBody = string.Join("<br />", groupList[serviceCode].Select(p => p.TrackingNumber).ToArray());
+
+                            DHLFile.Add(Path.Combine(filePath, fileName));
+                            bool DHL_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, DHLFile.ToArray(), null, false);
+
+                            if (DHL_Status)
+                            {
+                                MyHelp.Log("", null, mailTitle);
+                                foreach (PickProduct pick in pickList.Where(pick => groupList[serviceCode].Select(p => p.ID).ToArray().Contains(pick.PackageID.Value)).ToList())
+                                {
+                                    pick.IsMail = true;
+                                    PickProduct.Update(pick, pick.ID);
+                                }
+                            }
+                            break;
+                        case "FedEx":
+                            MyHelp.Log("PickProduct", null, "寄送FedEx出口報單");
+
+                            List<Tuple<Stream, string>> FedExFile = new List<Tuple<Stream, string>>();
+
+                            foreach (Packages package in groupList[serviceCode])
+                            {
+                                filePath = string.Join("", package.FilePath.Skip(package.FilePath.IndexOf("export")));
+
+                                decimal declaredTotal = package.DeclaredTotal;
+                                List<Items> itemList = package.Items.Where(i => i.IsEnable.Value).ToList();
+                                int lastItemID = itemList.Last().ID;
+
+                                using (FileStream fsIn = new FileStream(Path.Combine(basePath, filePath, "Invoice.xls"), FileMode.Open))
+                                {
+                                    HSSFWorkbook FedEx_workbook = new HSSFWorkbook(fsIn);
+                                    fsIn.Close();
+
+                                    ISheet FedEx_sheet = FedEx_workbook.GetSheetAt(0);
+
+                                    int rowIndex = 26;
+                                    foreach (Items item in itemList)
+                                    {
+                                        Country country = MyHelp.GetCountries().FirstOrDefault(c => c.ID == item.Skus.Origin);
+                                        FedEx_sheet.GetRow(rowIndex).GetCell(1).SetCellValue(country.OriginName);
+                                        string productName = item.Skus.ProductType.ProductTypeName + " - " + item.Skus.ProductName;
+                                        FedEx_sheet.GetRow(rowIndex).GetCell(5).SetCellValue(productName);
+                                        FedEx_sheet.GetRow(rowIndex).GetCell(8).SetCellValue(item.Qty.Value);
+                                        FedEx_sheet.GetRow(rowIndex).GetCell(9).SetCellValue("pieces");
+                                        FedEx_sheet.GetRow(rowIndex).GetCell(10).SetCellValue(item.Qty * ((double)item.Skus.Weight / 1000) + "kg");
+                                        FedEx_sheet.GetRow(rowIndex).GetCell(11).SetCellValue(item.DeclaredValue.ToString("N"));
+                                        FedEx_sheet.GetRow(rowIndex).GetCell(16).SetCellValue((item.DeclaredValue * item.Qty.Value).ToString("N"));
+                                        FedEx_sheet.GetRow(rowIndex).HeightInPoints = (productName.Length / 30 + 1) * FedEx_sheet.DefaultRowHeight / 20;
+                                        FedEx_sheet.GetRow(rowIndex++).RowStyle.VerticalAlignment = VerticalAlignment.Center;
+                                    }
+
+                                    using (FileStream fsOut = new FileStream(Path.Combine(basePath, filePath, "Invoice2.xls"), FileMode.Create))
+                                    {
+                                        FedEx_workbook.Write(fsOut);
+                                        fsOut.Close();
+                                    }
+                                }
+
+                                var memoryStream = new MemoryStream();
+
+                                using (var file = new ZipFile())
+                                {
+                                    file.AddFile(Path.Combine(basePath, filePath, "Invoice2.xls"), "");
+                                    file.AddFile(Path.Combine(basePath, filePath, "CheckList.xlsx"), "");
+                                    file.AddFile(Path.Combine(basePath, "sample", "Fedex_Recognizances.pdf"), "");
+
+                                    file.Save(memoryStream);
+                                }
+
+                                memoryStream.Seek(0, SeekOrigin.Begin);
+                                FedExFile.Add(new Tuple<Stream, string>(memoryStream, package.TrackingNumber + ".zip"));
+                            }
+
+                            receiveMails = new string[] { "edd@fedex.com" };
+                            mailTitle = string.Format("至優網 {0} 第{1}批 {2}筆提單 正式出口報關資料", now.ToString("yyyy-MM-dd"), DateTime.Compare(now, noon.AddHours(3)) <= 0 ? "1" : "2", groupList[serviceCode].Count());
+
+                            bool FedEx_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, "", true, null, FedExFile, false);
+
+                            if (FedEx_Status)
+                            {
+                                MyHelp.Log("", null, mailTitle);
+                                foreach (PickProduct pick in pickList.Where(pick => groupList[serviceCode].Select(p => p.ID).ToArray().Contains(pick.PackageID.Value)).ToList())
+                                {
+                                    pick.IsMail = true;
+                                    PickProduct.Update(pick, pick.ID);
+                                }
+                            }
+                            break;
+                    }
+                }
+                PickProduct.SaveChanges();
+            }
+
+            return Content("");
+        }
+    }
+}

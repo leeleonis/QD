@@ -1,0 +1,275 @@
+﻿@using QDLogistics.Commons
+@using QDLogistics.Models
+@using QDLogistics.OrderService
+
+@section styles{
+    <link href="~/Content/themes/default/easyui.css" rel="stylesheet" />
+    <link href="~/Content/themes/icon.css" rel="stylesheet" />
+}
+<style>
+    table tbody tr td {
+        vertical-align: middle !important;
+    }
+</style>
+<div id="content">
+    <section id="widget-grid" class="">
+        <div class="row table-parent">
+            <div class="tool-content table-row col-xs-12">
+                <div class="search-input table-cell col-xs-10">
+                    <div class="table-parent">
+                        <div class="table-cell form-horizontal col-xs-11 no-padding">
+                            <div class="col-xs-12 no-padding">
+                                <label class="col-xs-4 col-md-3 col-md-offset-2 control-label">Shipping Method</label>
+                                <div class="col-xs-8 col-md-3">
+                                    <select class="form-control input-sm" id="search-carrier" style="margin-top: 4px;">
+                                        <option value="">全部</option>
+                                    </select>
+                                </div>
+                                <label class="col-xs-4 col-md-1 control-label">Tracking</label>
+                                <div class="col-xs-8 col-md-3">
+                                    <input class="form-control input-sm" type="text" id="search-tracking">
+                                </div>
+                            </div>
+                            <div class="col-xs-12 no-padding">
+                                <label class="col-xs-4 col-md-1 control-label">Order ID</label>
+                                <div class="col-xs-8 col-md-3">
+                                    <input class="form-control input-sm" type="text" id="search-orderID">
+                                </div>
+                                <label class="col-xs-4 col-md-1 control-label">Status</label>
+                                <div class="col-xs-8 col-md-3">
+                                    <select class="form-control input-sm" id="search-status" style="margin-top: 4px;">
+                                        <option value="">全部</option>
+                                        @foreach (int status in Enum.GetValues(typeof(OrderShippingStatus)))
+                                        {
+                                            <option value="@status">@Enum.GetName(typeof(OrderShippingStatus), status)</option>
+                                        }
+                                    </select>
+                                </div>
+                                <label class="col-xs-4 col-md-1 control-label">Item</label>
+                                <div class="col-xs-8 col-md-3">
+                                    <input class="form-control input-sm" type="text" id="search-item">
+                                </div>
+                            </div>
+                            <div class="col-xs-12 no-padding">
+                                <label class="col-xs-4 col-md-1 control-label">User ID</label>
+                                <div class="col-xs-8 col-md-3">
+                                    <input class="form-control input-sm" type="text" id="search-userID">
+                                </div>
+                                <label class="col-xs-4 col-md-1 control-label">Country</label>
+                                <div class="col-xs-8 col-md-3">
+                                    <select class="form-control input-sm" id="search-country" style="margin-top: 4px;">
+                                        <option value="">全部</option>
+                                        @foreach (var country in MyHelp.GetCountries())
+                                        {
+                                            <option value="@country.ID">@country.Name</option>
+                                        }
+                                    </select>
+                                </div>
+                                <label class="col-xs-4 col-md-1 control-label">Date From</label>
+                                <div class="col-xs-8 col-md-3">
+                                    <input class="form-control input-sm datepicker" type="text" id="search-dateFrom" data-dateformat="yy-mm-dd" placeholder="選擇日期">
+                                </div>
+                            </div>
+                            <div class="col-xs-12 no-padding">
+                                <label class="col-xs-4 col-md-1 control-label">Source ID</label>
+                                <div class="col-xs-8 col-md-3">
+                                    <input class="form-control input-sm" type="text" id="search-sourceID">
+                                </div>
+                                <label class="col-xs-4 col-md-1 control-label">Channel</label>
+                                <div class="col-xs-8 col-md-3">
+                                    <select class="form-control input-sm" id="search-channel" style="margin-top: 4px;">
+                                        <option value="">全部</option>
+                                        @foreach (int source in Enum.GetValues(typeof(OrderSource)))
+                                        {
+                                            <option value="@source">@Enum.GetName(typeof(OrderSource), source)</option>
+                                        }
+                                    </select>
+                                </div>
+                                <label class="col-xs-4 col-md-1 control-label">Date To</label>
+                                <div class="col-xs-8 col-md-3">
+                                    <input class="form-control input-sm datepicker" type="text" id="search-dateTo" data-dateformat="yy-mm-dd" placeholder="選擇日期">
+                                </div>
+                            </div>
+                            <div class="col-xs-12 no-padding">
+                            </div>
+                        </div>
+                        <div class="table-cell col-xs-1">
+                            <button type="button" id="btn-search" class="btn btn-info btn-lg">Search</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="action-button table-cell col-xs-2">
+                    <!--
+                    <button type="button" class="btn btn-default btn-sm btn-block" id="btn-import">匯入 Import</button>
+                    <button type="button" class="btn btn-default btn-sm btn-block" id="btn-export">匯出 Export</button>
+                    <form id="form-data" method="post">
+                        <input type="hidden" name="type" value="dropShip" />
+                        <input type="hidden" name="action" id="input-action" />
+                        <input type="hidden" name="IDs" id="input-IDs" />
+                        <input class="hidden" type="file" name="file" id="file-import" />
+                    </form>
+                    -->
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <article class="col-xs-12">
+                <table id="DataGrid"></table>
+            </article>
+        </div>
+    </section>
+</div>
+@section pagespecific {
+    <script src="~/scripts/jquery.easyui-1.4.3.min.js"></script>
+    <script src="~/scripts/datagrid-detailview.js"></script>
+    <script src="~/scripts/jquery.edatagrid.js"></script>
+    <script type="text/javascript">
+        var pager, pageSize = 100;
+        var selected = false, orderColumOption;
+        var $dataGrid;
+        var $searchBtn = $('#btn-search'), $importBtn = $("#btn-import"), $importFile = $("#file-import"), $exportBtn = $("#btn-export");
+        var $orderIDSearch = $("#search-orderID"), $userIDSearch = $("#search-userID"), $sourceIDSearch = $("#search-sourceID"),
+            $carrierStatus = $("#search-carrier"), $statusSearch = $("#search-status"), $countrySearch = $("#search-country"), $channelSearch = $("#search-channel"),
+            $trackingSearch = $("#search-tracking"), $itemSearch = $("#search-item"), $dateFromSearch = $("#search-dateFrom"), $dateToSearch = $("#search-dateTo");
+
+        $(function () {
+            getOption("@Url.Action("ajaxCarrierOption", "dropShip")").done(function (response) {
+                orderColumOption = response;
+                $carrierStatus.append(getSelectOption(orderColumOption.carrier));
+
+                dataInit();
+            });
+
+            $searchBtn.click(function () {
+                $dataGrid.datagrid("clearChecked");
+                $dataGrid.datagrid('reload');
+            });
+
+            $(".search-input").on('change', 'input, select', function () {
+                $searchBtn.trigger('click');
+            });
+        });
+
+        function dataInit() {
+            $dataGrid = $("#DataGrid").edatagrid({
+                title: "訂單 列表",
+                idField: "PackageID",
+                url: "@Url.Action("ajaxShippedData", "dropShip")",
+                queryParams: {},
+                width: "100%",
+                height: "700",
+                checkOnSelect: false,
+                selectOnCheck: false,
+                singleSelect: false,
+                frozenColumns: [[
+                    { field: "ck", checkbox: true },
+                    { field: "OrderID", title: "Order ID<br />訂單號碼", width: 100, align: "center", sortable: true },
+                    { field: "POId", title: "PO#", width: 100, align: "center", sortable: true }
+                ]],
+                columns: [[
+                    { field: "PaymentDate", title: "Payment Date<br />付款日", width: 120, align: "center", sortable: false },
+                    { field: "Sku", title: "SKU<br />品號", width: 110, align: "center", sortable: false },
+                    { field: "DisplayName", title: "Item Name<br />品名", width: 440, align: "center", sortable: false },
+                    { field: "OrderQtyTotal", title: "QTY<br />數量", width: 60, align: "center", sortable: false },
+                    { field: "ShippingCountry", title: "Country<br />國家", width: 120, align: "center", sortable: false },
+                    { field: "CarrierID", title: "Shipping Method<br />運輸方式", width: 150, align: "center", sortable: false },
+                    { field: "StatusCode", title: "Status<br />訂單狀態", width: 120, align: "center", sortable: false },
+                    { field: "Comment", title: "Comment<br />出貨備註", width: 200, align: "center", sortable: false },
+                    { field: "SupplierComment", title: "Supplier Comment", width: 200, align: "center", sortable: false },
+                    { field: "SerialNumber", title: "Serial Number<br />產品序號", width: 180, align: "center", sortable: false },
+                    { field: "TrackingNumber", title: "Tracking<br />提單號碼", width: 180, align: "center", sortable: false },
+                    { field: "POInvoice", title: "Invoice#", width: 180, align: "center", sortable: false }
+                ]],
+                onLoadSuccess: function (data) {
+                    $dataGrid.datagrid('uncheckAll');
+                },
+                onBeforeLoad: function (param) {
+                    param.ShippingStatus = $statusSearch.val();
+                    param.OrderID = $orderIDSearch.val();
+                    param.UserID = $userIDSearch.val();
+                    param.SourceID = $sourceIDSearch.val();
+                    param.Country = $countrySearch.val();
+                    param.Source = $channelSearch.val();
+                    param.Tracking = $trackingSearch.val();
+                    param.ItemName = $itemSearch.val();
+                    param.DateFrom = $dateFromSearch.val();
+                    param.DateTo = $dateToSearch.val();
+                },
+                onBeforeSelect: selectAction,
+                onBeforeUnselect: selectAction,
+                onCheck: onCheck,
+                onUncheck: onUncheck,
+                onCheckAll: onCheckAll,
+                onUncheckAll: onUncheckAll,
+                pagination: true,
+                pagePosition: "bottom",
+                pageSize: pageSize
+            });
+
+            pager = $dataGrid.datagrid("getPager");
+            $(pager).pagination({
+                pageSize: pageSize,
+                showPageList: true,
+                pageList: [100, 200, 300, 500],
+                beforePageTest: "第",
+                afterPageTest: "頁，共 {pages} 頁",
+                displayMsg: "顯示 {from} 到 {to} 筆資料，共 {total} 筆資料"
+            });
+        }
+
+        function selectAction(index, row) {
+            if (selected) {
+                selected = false;
+                return true;
+            }
+
+            return false;
+        }
+
+        function onSelect(index) {
+            $dataGrid.datagrid('checkRow', index);
+        }
+
+        function onCheck(index, row) {
+            selected = true;
+            $dataGrid.datagrid('selectRow', index);
+        }
+
+        function onUncheck(index, row) {
+            selected = true;
+            $dataGrid.datagrid('unselectRow', index);
+        }
+
+        function onCheckAll(rows) {
+            $dataGrid.datagrid('selectAll');
+        }
+
+        function onUncheckAll(rows) {
+            $dataGrid.datagrid('unselectAll');
+        }
+        
+        function getSelectOption(optionList, value) {
+            var option = "";
+
+            if (optionList.length > 0) {
+                for (var i in optionList) {
+                    option += "<option value='" + optionList[i]["value"] + "' " + (optionList[i]["value"] == value ? "selected" : "") + ">" + optionList[i]["text"] + "</option>";
+                }
+            }
+
+            return option;
+        }
+
+        function getOption(url) {
+            return $.ajax({
+                url: url,
+                dataType: "json"
+            });
+        }
+
+        function isEmpty(value) {
+            return (value == undefined) || (value == null) || (value == "");
+        }
+    </script>
+}

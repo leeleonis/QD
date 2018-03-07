@@ -1,0 +1,124 @@
+﻿<style>
+    #content tr td {
+        vertical-align: middle;
+    }
+
+    .dataTables_filter {
+        float: none;
+    }
+
+    .group-select {
+        padding-left: 5px;
+        padding-bottom: 5px;
+    }
+</style>
+<div id="content">
+    <section id="widget-grid" class="">
+        <div class="row">
+            <article class="col-xs-12">
+                <div class="jarviswidget jarviswidget-color-darken" data-widget-colorbutton="false" data-widget-editbutton="false" data-widget-togglebutton="false"
+                     data-widget-deletebutton="false" data-widget-fullscreenbutton="false" data-widget-custombutton="false" data-widget-sortable="false">
+
+                    <header>
+                        <span class="widget-icon"><i class="fa fa-table"></i></span>
+
+                        <h2>管理員 列表</h2>
+                    </header>
+
+                    <div>
+                        <div class="widget-body no-padding">
+                            <div class="table-responsive">
+                                <table id="dt_basic" class="table table-bordered table-striped text-center">
+                                    <thead>
+                                        <tr>
+                                            <th width="30" class="text-center hidden-mobile">啟用</th>
+                                            <th class="text-center">名稱</th>
+                                            <th width="200" class="text-center hidden-xs">群組名稱</th>
+                                            <th width="140" class="text-center">功能</th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </section>
+</div>
+@section pagespecific {
+    <script type="text/javascript">
+        var $Table, $groupSelect;
+
+        $(document).ready(function () {
+            var responsiveHelper_dt_basic = undefined;
+            var breakpointDefinition = {
+                tablet: 1024,
+                phone: 480
+            };
+
+            $Table = $('#dt_basic').DataTable({
+                "displayStart": @ViewBag.routeValue.start,
+                "pageLength": @ViewBag.routeValue.length,
+                "oSearch": {"sSearch": "@ViewBag.routeValue.search"},
+                "autoWidth": false,
+                "ordering": false,
+                "serverSide": true,
+                "sDom": "<'dt-toolbar'<'col-sm-7 hidden-xs' f<'group-select input-group'>><'col-xs-12 col-sm-5'Tl>>" + "t" + "<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
+                "oTableTools": {
+                    "aButtons": [{
+                        "sExtends": "text",
+                        "sButtonText": '<i class="fa fa-plus"></i> <span class="hidden-mobile">新增管理員</span>',
+                        "sButtonClass": "btn-lg",
+                        "fnInit": function (nButton, oConfig) {
+                            $(nButton).css('margin-left', 5).attr('href', '@Url.RouteUrl("admin", new {controller = "user", action = "create"})');
+                        }
+                    }]
+                },
+                "ajax": {
+                    "url": "@Url.Action("adminUserData", "ajax")",
+                    "data": function (data) {
+                        var gId = $('div.group-select select').val();
+                        data.gId = gId != undefined ? gId : '@ViewBag.routeValue.gId';
+                    }
+                },
+                "columns": [
+                    { class: "hidden-mobile", data: "isVisible" },
+                    { class: "", data: "name" },
+                    { class: "hidden-xs", data: "groupName" },
+                    { class: "", data: "action" }
+                ],
+                "preDrawCallback": function () {
+                    // Initialize the responsive datatables helper once.
+                    if (!responsiveHelper_dt_basic) {
+                        responsiveHelper_dt_basic = new ResponsiveDatatablesHelper($('#dt_basic'), breakpointDefinition);
+                    }
+                },
+                "rowCallback": function (nRow) {
+                    responsiveHelper_dt_basic.createExpandIcon(nRow);
+                },
+                "drawCallback": function (oSettings) {
+                    responsiveHelper_dt_basic.respond();
+                },
+                "initComplete": function () {
+                    $groupSelect = $('div.group-select').html('<span class="input-group-addon">群組</span><select class="form-control"></select>')
+                        .find('select').html("<option value=''>全部</option>").change(function () {
+                            $Table.draw();
+                        });
+
+                    getGroupOption().done(function (response) {
+                        $groupSelect.append(response['option']).val('@ViewBag.routeValue.gId');
+                    });
+                }
+            });
+        });
+
+        function getGroupOption() {
+            return $.ajax({
+                url: '@Url.Action("adminGroupOption", "ajax")',
+                type: 'GET',
+                dataType: 'JSON'
+            });
+        }
+    </script>
+}

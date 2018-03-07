@@ -1,0 +1,48 @@
+ActionName : 同步1天訂單資料失敗
+Message : System.Web.Services.Protocols.SoapException: Server was unable to process request. ---> System.Exception: Could not load order ID #5447014 (user does not have access to company or drop ship is selected)
+   at BRSWebServices.SCService.Orders_GetData_Options(GetDataOptions options) in C:\DATA\CORE\Framework\BRSWebServices\SCService\OrdersWindowsService.vb:line 6090
+   at BRSWebServices.SCService.Orders_GetDataExtended(Int32 orderId, Boolean enforce) in C:\DATA\CORE\Framework\BRSWebServices\SCService\OrdersWindowsService.vb:line 5987
+   at BRSWebServices.SCService.Orders_GetData(Int32 orderId) in C:\DATA\CORE\Framework\BRSWebServices\SCService\OrdersWindowsService.vb:line 5686
+   --- End of inner exception stack trace ---
+StackTrace : Server stack trace: 
+   於 System.ServiceModel.Channels.ServiceChannel.HandleReply(ProxyOperationRuntime operation, ProxyRpc& rpc)
+   於 System.ServiceModel.Channels.ServiceChannel.Call(String action, Boolean oneway, ProxyOperationRuntime operation, Object[] ins, Object[] outs, TimeSpan timeout)
+   於 System.ServiceModel.Channels.ServiceChannelProxy.InvokeService(IMethodCallMessage methodCall, ProxyOperationRuntime operation)
+   於 System.ServiceModel.Channels.ServiceChannelProxy.Invoke(IMessage message)
+
+Exception rethrown at [0]: 
+   於 System.Runtime.Remoting.Proxies.RealProxy.HandleReturnMessage(IMessage reqMsg, IMessage retMsg)
+   於 System.Runtime.Remoting.Proxies.RealProxy.PrivateInvoke(MessageData& msgData, Int32 type)
+   於 QDLogistics.OrderService.SCServiceSoap.Orders_GetData(Orders_GetDataRequest request)
+   於 QDLogistics.OrderService.SCServiceSoapClient.QDLogistics.OrderService.SCServiceSoap.Orders_GetData(Orders_GetDataRequest request) 於 D:\web\QDLogistics\QDLogistics\Service References\OrderService\Reference.cs: 行 206403
+   於 QDLogistics.OrderService.SCServiceSoapClient.Orders_GetData(AuthHeader AuthHeader, ServiceOptions ServiceOptions, Int32 orderId) 於 D:\web\QDLogistics\QDLogistics\Service References\OrderService\Reference.cs: 行 206411
+   於 SellerCloud_WebService.SC_WebService.Get_OrderData(Int32 OrderID) 於 D:\web\QDLogistics\QDLogistics\App_Code\SC_WebService.cs: 行 98
+   於 QDLogistics.Commons.SyncProcess.Sync_Orders(Int32 day) 於 D:\web\QDLogistics\QDLogistics\Commons\SyncProcess.cs: 行 84
+Date : 2018/1/31 上午 11:02:30
+
+-----------------------------------------------------------------------------
+
+ActionName : 同步1天訂單資料失敗
+Message : System.Web.Services.Protocols.SoapException: Server was unable to process request. ---> System.Exception: Could not load order ID #5446998 (user does not have access to company or drop ship is selected)
+   at BRSWebServices.SCService.Orders_GetData_Options(GetDataOptions options) in C:\DATA\CORE\Framework\BRSWebServices\SCService\OrdersWindowsService.vb:line 6090
+   at BRSWebServices.SCService.Orders_GetDataExtended(Int32 orderId, Boolean enforce) in C:\DATA\CORE\Framework\BRSWebServices\SCService\OrdersWindowsService.vb:line 5987
+   at BRSWebServices.SCService.Orders_GetData(Int32 orderId) in C:\DATA\CORE\Framework\BRSWebServices\SCService\OrdersWindowsService.vb:line 5686
+   --- End of inner exception stack trace ---
+StackTrace : Server stack trace: 
+   於 System.ServiceModel.Channels.ServiceChannel.HandleReply(ProxyOperationRuntime operation, ProxyRpc& rpc)
+   於 System.ServiceModel.Channels.ServiceChannel.Call(String action, Boolean oneway, ProxyOperationRuntime operation, Object[] ins, Object[] outs, TimeSpan timeout)
+   於 System.ServiceModel.Channels.ServiceChannelProxy.InvokeService(IMethodCallMessage methodCall, ProxyOperationRuntime operation)
+   於 System.ServiceModel.Channels.ServiceChannelProxy.Invoke(IMessage message)
+
+Exception rethrown at [0]: 
+   於 System.Runtime.Remoting.Proxies.RealProxy.HandleReturnMessage(IMessage reqMsg, IMessage retMsg)
+   於 System.Runtime.Remoting.Proxies.RealProxy.PrivateInvoke(MessageData& msgData, Int32 type)
+   於 QDLogistics.OrderService.SCServiceSoap.Orders_GetData(Orders_GetDataRequest request)
+   於 QDLogistics.OrderService.SCServiceSoapClient.QDLogistics.OrderService.SCServiceSoap.Orders_GetData(Orders_GetDataRequest request) 於 D:\web\QDLogistics\QDLogistics\Service References\OrderService\Reference.cs: 行 208541
+   於 QDLogistics.OrderService.SCServiceSoapClient.Orders_GetData(AuthHeader AuthHeader, ServiceOptions ServiceOptions, Int32 orderId) 於 D:\web\QDLogistics\QDLogistics\Service References\OrderService\Reference.cs: 行 208549
+   於 SellerCloud_WebService.SC_WebService.Get_OrderData(Int32 OrderID) 於 D:\web\QDLogistics\QDLogistics\App_Code\SC_WebService.cs: 行 98
+   於 QDLogistics.Commons.SyncProcess.Sync_Orders(Int32 day) 於 D:\web\QDLogistics\QDLogistics\Commons\SyncProcess.cs: 行 84
+Date : 2018/1/31 上午 11:13:01
+
+-----------------------------------------------------------------------------
+

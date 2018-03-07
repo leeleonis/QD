@@ -1,0 +1,119 @@
+﻿@using QDLogistics.Commons;
+@using QDLogistics.Models
+@model CarrierAPI
+
+<div id="content">
+    <section id="widget-grid" class="">
+        <div class="row">
+            <article class="col-xs-12">
+                <div class="jarviswidget" data-widget-colorbutton="false" data-widget-editbutton="false" data-widget-togglebutton="false"
+                     data-widget-deletebutton="false" data-widget-fullscreenbutton="false" data-widget-custombutton="false" data-widget-sortable="false">
+
+                    <header>
+                        <span class="widget-icon"> <i class="fa fa-edit"></i> </span>
+
+                        <h2>編輯</h2>
+                        <ul class="nav nav-tabs pull-right">
+                            <li><a data-toggle="tab" href="#hb1">基本資料</a></li>
+                        </ul>
+                    </header>
+
+                    <div>
+                        <div class="widget-body no-padding">
+                            <form id="data-form" class="form-horizontal" method="post" enctype="multipart/form-data">
+                                <input type="hidden" name="isEnable" value="True">
+
+                                <div id="content" class="tab-content">
+                                    <div class="tab-pane" id="hb1">
+                                        <fieldset>
+                                            <legend>基本資料</legend>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label" for="name">名稱</label>
+
+                                                <div class="col-sm-9 col-lg-3">
+                                                    <input type="text" class="form-control" id="name" name="name" value="@Model.Name" required>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label" for="type">類型</label>
+
+                                                <div class="col-sm-9 col-lg-3">
+                                                    <select class="form-control" id="type" name="type">
+                                                        @{
+                                                            foreach (int code in Enum.GetValues(typeof(EnumData.CarrierType)))
+                                                            {
+                                                                <option value="@code" @((Model.Type == code) ? "selected" : "")>@Enum.GetName(typeof(EnumData.CarrierType), code)</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label" for="apiKey">Key / Site ID</label>
+
+                                                <div class="col-sm-9 col-lg-4">
+                                                    <input type="text" class="form-control" id="apiKey" name="apiKey" value="@Model.ApiKey">
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label" for="apiPassword">Password</label>
+
+                                                <div class="col-sm-9 col-lg-4">
+                                                    <input type="text" class="form-control" id="apiPassword" name="apiPassword" value="@Model.ApiPassword">
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label" for="apiAccount">Account Number</label>
+
+                                                <div class="col-sm-9 col-lg-4">
+                                                    <input type="text" class="form-control" id="apiAccount" name="apiAccount" value="@Model.ApiAccount">
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label" for="apiMeter">Meter Number / User Identifier</label>
+
+                                                <div class="col-sm-9 col-lg-4">
+                                                    <input type="text" class="form-control" id="apiMeter" name="apiMeter" value="@Model.ApiMeter">
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label" for="apiHub">SmartPost Hub</label>
+
+                                                <div class="col-sm-9 col-lg-4">
+                                                    <input type="text" class="form-control" id="apiHub" name="apiHub" value="@Model.ApiHub">
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                    </div>
+                                </div>
+
+                                <div class="widget-footer">
+                                    <button type="submit" class="btn btn-primary" id="save">儲存</button>
+                                    <!-- <button type="submit" class="btn btn-primary" id="back" onclick="$('#data-form').attr('action', '?back=1');">儲存後返回</button> -->
+                                    <button type="button" class="btn btn-default" onclick="location.href='@Url.Action("api", "shipping", ViewBag.routeValue)'">返回</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </section>
+</div>
+@section pagespecific {
+    <script type="text/javascript">
+        var hash = window.location.hash;
+        $('ul.nav-tabs li').eq(hash.substr(1)).addClass('active');
+        $('.tab-pane').eq(hash.substr(1)).addClass('active');
+
+        $(document).ready(function () {
+        });
+    </script>
+}

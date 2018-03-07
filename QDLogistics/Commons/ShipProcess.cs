@@ -1,0 +1,728 @@
+﻿using CarrierApi.DHL;
+using CarrierApi.FedEx;
+using CarrierApi.Winit;
+using Newtonsoft.Json.Linq;
+using NPOI.HSSF.UserModel;
+using NPOI.SS.UserModel;
+using NPOI.XSSF.UserModel;
+using Postmen_sdk_NET;
+using QDLogistics.FedExShipService;
+using QDLogistics.Models;
+using QDLogistics.OrderCreationService;
+using QDLogistics.OrderService;
+using QDLogistics.PurchaseOrderService;
+using SellerCloud_WebService;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Web;
+using System.Web.Hosting;
+
+namespace QDLogistics.Commons
+{
+    public class ShipProcess
+    {
+        private Orders order;
+        private Packages package;
+        private SC_WebService SCWS;
+
+        public bool isSplitShip;
+        public bool isDropShip;
+
+        private Warehouses warehouse;
+
+        public ShipProcess(SC_WebService SCWS)
+        {
+            this.SCWS = SCWS;
+        }
+
+        public void Init(Packages package)
+        {
+            this.order = package.Orders;
+            this.package = package;
+            this.isSplitShip = order.Packages.Count(p => p.IsEnable == true) >= 2;
+            this.warehouse = package.Items.Where(i => i.IsEnable == true).First().ShipWarehouses;
+            this.isDropShip = warehouse.WarehouseType.Equals((int)OrderService.WarehouseTypeType.DropShip);
+        }
+
+        public ShipResult Dispatch()
+        {
+            ShipResult result = new ShipResult(false);
+
+            if (isDropShip) return DropShip();
+
+            switch (warehouse.Name)
+            {
+                case "TWN":
+                    result = TWN_Carrier();
+                    break;
+
+                case "Winit US WC":
+                case "Winit AU":
+                    result = Winit_Carrier();
+                    break;
+
+                case "4PX":
+                case "USA":
+                    break;
+
+                case "Amazon.com":
+                case "Amazon.co.jp":
+                case "Amazon.co.uk":
+                    break;
+            }
+
+            return result;
+        }
+
+        private ShipResult DropShip()
+        {
+            try
+            {
+                int CompanyID = SCWS.Get_CurrentCompanyID();
+                POVendor VendorData = SCWS.Get_Vendor_All(CompanyID).FirstOrDefault(v => v.DisplayName.Equals(warehouse.Name));
+
+                Purchase newPurchase = SCWS.Create_PurchaseOrder(new Purchase()
+                {
+                    ID = 0,
+                    CompanyID = CompanyID,
+                    Priority = PriorityCodeType.Normal,
+                    Status = PurchaseOrderService.PurchaseStatus.Ordered,
+                    PurchaseTitle = string.Format("{0} dropship {1} {2}", warehouse.Name, package.OrderID.Value, SCWS.SyncOn.ToString("MMddyyyy")),
+                    VendorID = VendorData != null ? VendorData.ID : 0,
+                    VendorInvoiceNumber = "",
+                    Memo = !string.IsNullOrEmpty(package.SupplierComment) ? package.SupplierComment : "",
+                    DefaultWarehouseID = warehouse.ID,
+                    CreatedBy = SCWS.UserID,
+                    CreatedOn = SCWS.SyncOn
+                });
+
+                foreach (Items item in package.Items.Where(i => i.IsEnable.Equals(true)).ToList())
+                {
+                    PurchaseItem newPurchaseItem = SCWS.Create_PurchaseOrder_Item(new PurchaseItem()
+                    {
+                        PurchaseID = newPurchase.ID,
+                        ProductID = item.ProductID,
+                        ProductName = item.DisplayName,
+                        QtyOrdered = item.Qty.Value,
+                        QtyReceived = 0,
+                        QtyReceivedToDate = 0,
+                        DefaultWarehouseID = warehouse.ID
+                    });
+                }
+
+                package.POId = newPurchase.ID;
+                package.TrackingNumber = "";
+                MyHelp.Log("PurchaseOrder", package.OrderID, string.Format("開啟 Purchase Order【{0}】成功", package.POId));
+            }
+            catch (Exception e)
+            {
+                return new ShipResult(false, e.Message);
+            }
+
+            return new ShipResult(true);
+        }
+
+        private ShipResult TWN_Carrier()
+        {
+            Carriers carrier = package.Carriers;
+            CarrierAPI api = carrier.CarrierAPI;
+
+            switch (api.Type)
+            {
+                case (int)EnumData.CarrierType.DHL:
+                    try
+                    {
+                        DHL_API DHL = new DHL_API(api);
+                        ShipmentValidateResponse result = DHL.Create(package);
+
+                        package.TrackingNumber = result.AirwayBillNumber;
+                        package.ShipDate = SCWS.SyncOn;
+                        package.ShippingServiceCode = carrier.Carrier;
+
+                        if (package.Export == (byte)EnumData.Export.正式)
+                        {
+                            DHL_SaveFile(result);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        return new ShipResult(false, e.Message);
+                    }
+                    break;
+                case (int)EnumData.CarrierType.FedEx:
+                    try
+                    {
+                        FedEx_API FedEx = new FedEx_API(api);
+                        ProcessShipmentReply result = FedEx.Create(package);
+
+                        if (!result.HighestSeverity.Equals(NotificationSeverityType.SUCCESS))
+                        {
+                            throw new Exception(string.Join("\n", result.Notifications.Select(n => n.Message).ToArray()));
+                        }
+
+                        CompletedPackageDetail data = result.CompletedShipmentDetail.CompletedPackageDetails.First();
+                        package.TrackingNumber = data.TrackingIds.Select(t => t.TrackingNumber).First();
+                        package.ShipDate = SCWS.SyncOn;
+                        package.ShippingServiceCode = carrier.Carrier;
+
+                        if (package.Export == (byte)EnumData.Export.正式)
+                        {
+                            FedEx_SaveFile(data);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        return new ShipResult(false, e.Message);
+                    }
+                    break;
+            }
+
+            return new ShipResult(true);
+        }
+
+        private void DHL_SaveFile(ShipmentValidateResponse result)
+        {
+            DateTime date = package.ShipDate.Value;
+            string basePath = HostingEnvironment.MapPath("~/FileUploads");
+            package.FilePath = Path.Combine("export", date.ToString("yyyy/MM/dd"), package.ID.ToString());
+            string filePath = Path.Combine(basePath, package.FilePath);
+            if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
+
+            /***** Air Waybill *****/
+            File.WriteAllBytes(Path.Combine(filePath, "AirWaybill.pdf"), Crop(result.LabelImage.First().OutputImage, 97f, 30f, 356f, 553f));
+            
+            /***** Commercial Invoice *****/
+            TWN_CreateInvoice(basePath, filePath, date);
+        }
+
+        private void FedEx_SaveFile(CompletedPackageDetail data)
+        {
+            DateTime date = package.ShipDate.Value;
+            string basePath = HostingEnvironment.MapPath("~/FileUploads");
+            package.FilePath = Path.Combine("export", date.ToString("yyyy/MM/dd"), package.ID.ToString());
+            string filePath = Path.Combine(basePath, package.FilePath);
+            if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
+
+            /***** Air Waybill *****/
+            byte[] zpl = data.Label.Parts.First().Image;
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://api.labelary.com/v1/printers/8dpmm/labels/4x6/");
+            request.Method = "POST";
+            request.Accept = "application/pdf";
+            request.ContentType = "application/x-www-form-urlencoded";
+            request.ContentLength = zpl.Length;
+
+            using (Stream requestStream = request.GetRequestStream())
+            {
+                requestStream.Write(zpl, 0, zpl.Length);
+
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                using (Stream responseStream = response.GetResponseStream())
+                {
+                    using (FileStream fileStream = File.Create(Path.Combine(filePath, "pdf_temp.pdf")))
+                    {
+                        responseStream.CopyTo(fileStream);
+                    }
+                }
+            }
+
+            iTextSharp.text.pdf.PdfReader.unethicalreading = true;
+            // Reads the PDF document
+            using (iTextSharp.text.pdf.PdfReader pdfReader = new iTextSharp.text.pdf.PdfReader(Path.Combine(filePath, "pdf_temp.pdf")))
+            {
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    // Create a new document
+                    //using (iTextSharp.text.Document doc = 
+                    //	new iTextSharp.text.Document(new iTextSharp.text.Rectangle(288f,432f)))
+                    using (iTextSharp.text.Document doc = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4))
+                    {
+                        // Make a copy of the document
+                        iTextSharp.text.pdf.PdfSmartCopy smartCopy = new iTextSharp.text.pdf.PdfSmartCopy(doc, ms)
+                        {
+                            PdfVersion = iTextSharp.text.pdf.PdfWriter.VERSION_1_7
+                        };
+                        smartCopy.CloseStream = false;
+                        // Open the newly created document                        
+                        doc.Open();
+                        // Loop through all pages of the source document
+                        for (int i = pdfReader.NumberOfPages; i >= 1; i--)
+                        {
+                            doc.NewPage();// net necessary line
+                                          // Get a page
+                            var page = pdfReader.GetPageN(i);
+                            // Copy the content and insert into the new document
+                            var copiedPage = smartCopy.GetImportedPage(pdfReader, i);
+                            smartCopy.AddPage(copiedPage);
+
+                            if (i.Equals(1))
+                            {
+                                doc.NewPage();
+                                smartCopy.AddPage(copiedPage);
+                            }
+                        }
+                        smartCopy.FreeReader(pdfReader);
+                        smartCopy.Close();
+                        ms.Position = 0;
+                        File.WriteAllBytes(Path.Combine(filePath, "AirWaybill.pdf"), ms.GetBuffer());
+                        // Close the output document
+                        doc.Close();
+                    }
+                }
+            }
+            File.Delete(Path.Combine(filePath, "pdf_temp.pdf"));
+
+            /***** Commercial Invoice *****/
+            TWN_CreateInvoice(basePath, filePath, date);
+
+            /***** Recognizance Book *****/
+            var CheckList = new { fileName = "CheckList.xlsx", samplePath = Path.Combine(basePath, "sample", "Fedex_CheckList.xlsx") };
+            using (FileStream fsIn = new FileStream(CheckList.samplePath, FileMode.Open))
+            {
+                XSSFWorkbook workbook = new XSSFWorkbook(fsIn);
+                fsIn.Close();
+
+                ISheet sheet = workbook.GetSheetAt(0);
+                sheet.GetRow(5).GetCell(3).SetCellValue(package.TrackingNumber);
+
+                if (package.ExportMethod == (int)EnumData.ExportMethod.國貨出口)
+                {
+                    sheet.GetRow(9).GetCell(2).SetCellValue("✔");
+                    sheet.GetRow(19).GetCell(2).SetCellValue("✔");
+                }
+                else if (package.ExportMethod == (int)EnumData.ExportMethod.外貨復出口)
+                {
+                    sheet.GetRow(9).GetCell(11).SetCellValue("✔");
+                    sheet.GetRow(19).GetCell(13).SetCellValue("✔");
+                }
+
+                string[] productType = package.Items.Where(i => i.IsEnable == true).Select(i => i.Skus.ProductType.ChtName).Distinct().ToArray();
+                sheet.GetRow(26).GetCell(6).SetCellValue(string.Join(", ", productType));
+
+                string[] brandName = package.Items.Where(i => i.IsEnable == true).Select(i => i.Skus.Manufacturers.ManufacturerName).Distinct().ToArray();
+                sheet.GetRow(28).GetCell(brandName.Any() ? 8 : 4).SetCellValue("✔");
+                sheet.GetRow(28).GetCell(11).SetCellValue(string.Join(", ", brandName));
+
+                sheet.GetRow(32).GetCell(9).SetCellValue(package.Items.Where(i => i.IsEnable == true).Sum(i => i.Qty.Value * i.DeclaredValue).ToString("N"));
+                sheet.GetRow(32).GetCell(10).SetCellValue(Enum.GetName(typeof(OrderService.CurrencyCodeType2), package.Orders.OrderCurrencyCode.Value));
+
+                using (FileStream fsOut = new FileStream(Path.Combine(filePath, CheckList.fileName), FileMode.Create))
+                {
+                    workbook.Write(fsOut);
+                    fsOut.Close();
+                }
+            }
+        }
+
+        private void TWN_CreateInvoice(string basePath, string filePath, DateTime date)
+        {
+            var Invoice = new { fileName = "Invoice.xls", samplePath = Path.Combine(basePath, "sample", "Invoice.xls") };
+            using (FileStream fsIn = new FileStream(Invoice.samplePath, FileMode.Open))
+            {
+                HSSFWorkbook workbook = new HSSFWorkbook(fsIn);
+                fsIn.Close();
+
+                ISheet sheet = workbook.GetSheetAt(0);
+                sheet.GetRow(4).GetCell(3).SetCellValue(package.TrackingNumber);
+                sheet.GetRow(7).GetCell(1).SetCellValue(date.ToString("MMM dd, yyyy", CultureInfo.CreateSpecificCulture("en-US")));
+                sheet.GetRow(7).GetCell(8).SetCellValue(package.OrderID.Value);
+
+                sheet.GetRow(10).GetCell(1).SetCellValue("Zhi You Wan LTD (53362065)");
+                sheet.GetRow(11).GetCell(1).SetCellValue("51 Section 3 Jianguo North Road");
+                sheet.GetRow(12).GetCell(1).SetCellValue("Taichung City West District");
+                sheet.GetRow(13).GetCell(1).SetCellValue("Taiwan (R.O.C) 40243");
+
+                int rowIndex = 10;
+                Addresses address = package.Orders.Addresses;
+                string fullName = string.Join(" ", new string[] { address.FirstName, address.MiddleInitial, address.LastName });
+                if (!string.IsNullOrWhiteSpace(fullName))
+                    sheet.GetRow(rowIndex++).GetCell(5).SetCellValue(fullName);
+                if (!string.IsNullOrWhiteSpace(address.CompanyName))
+                    sheet.GetRow(rowIndex++).GetCell(5).SetCellValue(address.CompanyName);
+                if (!string.IsNullOrWhiteSpace(address.StreetLine1))
+                    sheet.GetRow(rowIndex++).GetCell(5).SetCellValue(address.StreetLine1);
+                if (!string.IsNullOrWhiteSpace(address.StreetLine2))
+                    sheet.GetRow(rowIndex++).GetCell(5).SetCellValue(address.StreetLine2);
+                string cityArea = address.City + " " + address.StateName + " " + address.PostalCode;
+                if (!string.IsNullOrWhiteSpace(cityArea))
+                    sheet.GetRow(rowIndex++).GetCell(5).SetCellValue(cityArea);
+                if (!string.IsNullOrWhiteSpace(address.CountryName))
+                    sheet.GetRow(rowIndex).GetCell(5).SetCellValue(address.CountryName);
+
+                sheet.GetRow(17).GetCell(1).SetCellValue("Taiwan");
+                sheet.GetRow(21).GetCell(1).SetCellValue(address.CountryName);
+
+                rowIndex = 26;
+                foreach (Items item in package.Items.Where(i => i.IsEnable == true))
+                {
+                    Country country = MyHelp.GetCountries().FirstOrDefault(c => c.ID == item.Skus.Origin);
+                    sheet.GetRow(rowIndex).GetCell(1).SetCellValue(country.OriginName);
+                    sheet.GetRow(rowIndex).GetCell(5).SetCellValue(item.Skus.ProductType.ProductTypeName);
+                    sheet.GetRow(rowIndex).GetCell(8).SetCellValue(item.Qty.Value);
+                    sheet.GetRow(rowIndex).GetCell(9).SetCellValue("pieces");
+                    sheet.GetRow(rowIndex).GetCell(10).SetCellValue(item.Qty.Value * ((double)item.Skus.Weight / 1000) + "kg");
+                    sheet.GetRow(rowIndex).GetCell(11).SetCellValue(item.DeclaredValue.ToString("N"));
+                    sheet.GetRow(rowIndex++).GetCell(16).SetCellValue((item.DeclaredValue * item.Qty.Value).ToString("N"));
+                }
+                sheet.GetRow(49).GetCell(3).SetCellValue(1);
+                sheet.GetRow(49).GetCell(10).SetCellValue(package.Items.Where(i => i.IsEnable == true).Sum(i => i.Qty.Value * ((double)i.Skus.Weight / 1000)) + "kg");
+                sheet.GetRow(49).GetCell(11).SetCellValue(Enum.GetName(typeof(OrderService.CurrencyCodeType2), package.Orders.OrderCurrencyCode.Value));
+                sheet.GetRow(49).GetCell(16).SetCellValue(package.Items.Where(i => i.IsEnable == true).Sum(i => i.Qty.Value * i.DeclaredValue).ToString("N"));
+                sheet.GetRow(59).GetCell(9).SetCellValue(date.ToString("yyyy-MM-dd"));
+
+                using (FileStream fsOut = new FileStream(Path.Combine(filePath, Invoice.fileName), FileMode.Create))
+                {
+                    workbook.Write(fsOut);
+
+                    fsOut.Close();
+                }
+            }
+        }
+
+        private JObject TWN_CreateShipment(JObject account, Packages package, string accountID)
+        {
+            JArray parcels = new JArray();
+            JArray items = new JArray();
+            double totalWeight = 0;
+            List<string> productType = new List<string>();
+
+            foreach (Items item in package.Items.Where(i => i.IsEnable == true))
+            {
+                if (item.Skus == null) throw new Exception(string.Format("未找到品號{0}資料，請先同步品號資料", item.ProductID));
+
+                double weight = (double)item.Skus.Weight / 1000;
+                string type = item.Skus.ProductType.ProductTypeName;
+                productType.Add(type);
+
+                items.Add(new JObject()
+                {
+                    { "description", type},
+                    { "quantity", item.Qty },
+                    { "price", new JObject() { { "amount", item.DeclaredValue }, { "currency", Enum.GetName(typeof(OrderService.CurrencyCodeType2), item.Orders.OrderCurrencyCode.Value) } } },
+                    { "weight", new JObject { { "unit", "kg" }, { "value", weight } } },
+                    { "item_id", item.ID.ToString() },
+                    { "origin_country", new Country(item.Skus.Origin).ThreeCode },
+                    { "sku", item.ProductID }
+                });
+
+                totalWeight += weight * item.Qty.Value;
+            }
+
+            parcels.Add(new JObject()
+            {
+                { "box_type", "custom" },
+                { "dimension", new JObject(){ { "width", package.Width != 0 ? package.Width : 1 }, { "height", package.Height != 0 ? package.Height : 1 }, { "depth", package.Length != 0 ? package.Length : 1 }, { "unit", "cm" } } },
+                { "items", items },
+                { "description", string.Join(",", productType.Distinct().OrderBy(t => t)) },
+                { "weight", new JObject { { "unit", "kg" }, { "value", totalWeight } } }
+            });
+
+            var shipperAddress = account.SelectToken("data.address");
+            shipperAddress["contact_name"] = "Demi Tian"; //this.adminName;
+
+            JObject shipment = new JObject();
+            shipment.Add("parcels", parcels);
+            shipment.Add("ship_from", shipperAddress);
+
+            Addresses address = order.Addresses;
+            shipment.Add("ship_to", new JObject() {
+                { "country", new Country(address.CountryCode).ThreeCode },
+                { "contact_name", string.Join(" ", new string[] { address.FirstName, address.MiddleInitial, address.LastName }) },
+                { "phone", string.IsNullOrEmpty(address.PhoneNumber) ? "None" : address.PhoneNumber },
+                { "fax", string.IsNullOrEmpty(address.FaxNumber) ? null : address.FaxNumber },
+                { "email", null },
+                { "company_name", string.IsNullOrEmpty(address.CompanyName) ? null : address.CompanyName },
+                { "street1", string.IsNullOrEmpty(address.StreetLine1) ? null : address.StreetLine1 },
+                { "street2", string.IsNullOrEmpty(address.StreetLine2) ? null : address.StreetLine2 },
+                { "city", string.IsNullOrEmpty(address.City) ? null : address.City },
+                { "state", string.IsNullOrEmpty(address.StateName) ? null : address.StateName },
+                { "postal_code", string.IsNullOrEmpty(address.PostalCode) ? null : address.PostalCode }
+            });
+
+            JObject billing = new JObject();
+            billing.Add("paid_by", "shipper");
+            billing.Add("method", new JObject(){
+                { "type", "account" },
+                { "account_number", accountID },
+                { "postal_code", shipperAddress.SelectToken("postal_code").ToString() },
+                { "country", shipperAddress.SelectToken("country").ToString() }
+            });
+
+            JObject customs = new JObject();
+            customs.Add("purpose", "merchandise");
+            customs.Add("terms_of_trade", "ddp");
+            customs.Add("billing", billing);
+
+            JObject obj = new JObject();
+            obj.Add("shipper_account", new JObject() { { "id", account.SelectToken("data.id") } });
+            obj.Add("shipment", shipment);
+            obj.Add("async", false);
+            obj.Add("return_shipment", false);
+            //obj.Add("ship_date", new DateTime().ToString("YYYY-MM-DD"));
+            obj.Add("is_document", false);
+            //obj.Add("service_option", new JObject() { { "type", "lithium_battery" }, { "packing_instruction", "pi965_li" } });
+            obj.Add("references", new JArray() { package.OrderID.ToString() });
+            obj.Add("billing", billing);
+            obj.Add("customs", customs);
+
+            return obj;
+        }
+
+        private void TWN_SaveFile(JObject Label)
+        {
+            DateTime date = package.ShipDate.Value;
+            string basePath = HostingEnvironment.MapPath("~/FileUploads");
+            package.FilePath = Path.Combine("export", date.ToString("yyyy/MM/dd"), package.ID.ToString());
+            string filePath = Path.Combine(basePath, package.FilePath);
+            if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
+
+            /***** Air Waybill *****/
+            var AirWaybill = new { fileName = "AirWaybill.pdf", fileUrl = Label.SelectToken("data.files.label.url").ToString() };
+            WebClient webClient = new WebClient();
+            webClient.DownloadFile(AirWaybill.fileUrl, Path.Combine(filePath, AirWaybill.fileName));
+
+            /***** Commercial Invoice *****/
+            var Invoice = new { fileName = "Invoice.xls", samplePath = Path.Combine(basePath, "sample", "Invoice.xls") };
+            using (FileStream fsIn = new FileStream(Invoice.samplePath, FileMode.Open))
+            {
+                HSSFWorkbook workbook = new HSSFWorkbook(fsIn);
+                fsIn.Close();
+
+                ISheet sheet = workbook.GetSheetAt(0);
+                sheet.GetRow(4).GetCell(3).SetCellValue(package.TrackingNumber);
+                sheet.GetRow(7).GetCell(1).SetCellValue(date.ToString("MMM dd, yyyy", CultureInfo.CreateSpecificCulture("en-US")));
+                sheet.GetRow(7).GetCell(8).SetCellValue(package.OrderID.Value);
+
+                sheet.GetRow(10).GetCell(1).SetCellValue("Zhi You Wan LTD (53362065)");
+                sheet.GetRow(11).GetCell(1).SetCellValue("51 Section 3 Jianguo North Road");
+                sheet.GetRow(12).GetCell(1).SetCellValue("Taichung City West District");
+                sheet.GetRow(13).GetCell(1).SetCellValue("Taiwan (R.O.C) 40243");
+
+                int rowIndex = 10;
+                Addresses address = package.Orders.Addresses;
+                string fullName = string.Join(" ", new string[] { address.FirstName, address.MiddleInitial, address.LastName });
+                if (!string.IsNullOrWhiteSpace(fullName))
+                    sheet.GetRow(rowIndex++).GetCell(5).SetCellValue(fullName);
+                if (!string.IsNullOrWhiteSpace(address.CompanyName))
+                    sheet.GetRow(rowIndex++).GetCell(5).SetCellValue(address.CompanyName);
+                if (!string.IsNullOrWhiteSpace(address.StreetLine1))
+                    sheet.GetRow(rowIndex++).GetCell(5).SetCellValue(address.StreetLine1);
+                if (!string.IsNullOrWhiteSpace(address.StreetLine2))
+                    sheet.GetRow(rowIndex++).GetCell(5).SetCellValue(address.StreetLine2);
+                string cityArea = address.City + " " + address.StateName + " " + address.PostalCode;
+                if (!string.IsNullOrWhiteSpace(cityArea))
+                    sheet.GetRow(rowIndex++).GetCell(5).SetCellValue(cityArea);
+                if (!string.IsNullOrWhiteSpace(address.CountryName))
+                    sheet.GetRow(rowIndex).GetCell(5).SetCellValue(address.CountryName);
+
+                sheet.GetRow(17).GetCell(1).SetCellValue("Taiwan");
+                sheet.GetRow(21).GetCell(1).SetCellValue(address.CountryName);
+
+                rowIndex = 26;
+                foreach (Items item in package.Items.Where(i => i.IsEnable == true))
+                {
+                    Country country = MyHelp.GetCountries().FirstOrDefault(c => c.ID == item.Skus.Origin);
+                    sheet.GetRow(rowIndex).GetCell(1).SetCellValue(country.OriginName);
+                    sheet.GetRow(rowIndex).GetCell(5).SetCellValue(item.Skus.ProductType.ProductTypeName);
+                    sheet.GetRow(rowIndex).GetCell(8).SetCellValue(item.Qty.Value);
+                    sheet.GetRow(rowIndex).GetCell(9).SetCellValue("pieces");
+                    sheet.GetRow(rowIndex).GetCell(10).SetCellValue(item.Qty.Value * ((double)item.Skus.Weight / 1000) + "kg");
+                    sheet.GetRow(rowIndex).GetCell(11).SetCellValue(item.DeclaredValue.ToString("N"));
+                    sheet.GetRow(rowIndex++).GetCell(16).SetCellValue((item.DeclaredValue * item.Qty.Value).ToString("N"));
+                }
+                sheet.GetRow(49).GetCell(3).SetCellValue(1);
+                sheet.GetRow(49).GetCell(10).SetCellValue(package.Items.Where(i => i.IsEnable == true).Sum(i => i.Qty.Value * ((double)i.Skus.Weight / 1000)) + "kg");
+                sheet.GetRow(49).GetCell(11).SetCellValue(Enum.GetName(typeof(OrderService.CurrencyCodeType2), package.Orders.OrderCurrencyCode.Value));
+                sheet.GetRow(49).GetCell(16).SetCellValue(package.Items.Where(i => i.IsEnable == true).Sum(i => i.Qty.Value * i.DeclaredValue).ToString("N"));
+                sheet.GetRow(59).GetCell(9).SetCellValue(date.ToString("yyyy-MM-dd"));
+
+                using (FileStream fsOut = new FileStream(Path.Combine(filePath, Invoice.fileName), FileMode.Create))
+                {
+                    workbook.Write(fsOut);
+
+                    fsOut.Close();
+                }
+            }
+
+            /***** Recognizance Book *****/
+            switch (package.ShippingServiceCode)
+            {
+                case "DHL":
+                    break;
+                case "FedEx":
+                    var CheckList = new { fileName = "CheckList.xlsx", samplePath = Path.Combine(basePath, "sample", "Fedex_CheckList.xlsx") };
+                    using (FileStream fsIn = new FileStream(CheckList.samplePath, FileMode.Open))
+                    {
+                        XSSFWorkbook workbook = new XSSFWorkbook(fsIn);
+                        fsIn.Close();
+
+                        ISheet sheet = workbook.GetSheetAt(0);
+                        sheet.GetRow(5).GetCell(3).SetCellValue(package.TrackingNumber);
+
+                        if (package.ExportMethod == (int)EnumData.ExportMethod.國貨出口)
+                        {
+                            sheet.GetRow(9).GetCell(2).SetCellValue("✔");
+                            sheet.GetRow(19).GetCell(2).SetCellValue("✔");
+                        }
+                        else if (package.ExportMethod == (int)EnumData.ExportMethod.外貨復出口)
+                        {
+                            sheet.GetRow(9).GetCell(11).SetCellValue("✔");
+                            sheet.GetRow(19).GetCell(13).SetCellValue("✔");
+                        }
+
+                        string[] productType = package.Items.Where(i => i.IsEnable == true).Select(i => i.Skus.ProductType.ChtName).Distinct().ToArray();
+                        sheet.GetRow(26).GetCell(6).SetCellValue(string.Join(", ", productType));
+
+                        string[] brandName = package.Items.Where(i => i.IsEnable == true).Select(i => i.Skus.Manufacturers.ManufacturerName).Distinct().ToArray();
+                        sheet.GetRow(28).GetCell(brandName.Any() ? 8 : 4).SetCellValue("✔");
+                        sheet.GetRow(28).GetCell(11).SetCellValue(string.Join(", ", brandName));
+
+                        sheet.GetRow(32).GetCell(9).SetCellValue(package.Items.Where(i => i.IsEnable == true).Sum(i => i.Qty.Value * i.DeclaredValue).ToString("N"));
+                        sheet.GetRow(32).GetCell(10).SetCellValue(Enum.GetName(typeof(OrderService.CurrencyCodeType2), package.Orders.OrderCurrencyCode.Value));
+
+                        using (FileStream fsOut = new FileStream(Path.Combine(filePath, CheckList.fileName), FileMode.Create))
+                        {
+                            workbook.Write(fsOut);
+                            fsOut.Close();
+                        }
+                    }
+                    break;
+                case "UPS":
+                    break;
+                case "USPS":
+                    break;
+            }
+        }
+
+        private ShipResult Winit_Carrier()
+        {
+            Carriers carrier = package.Carriers;
+            CarrierAPI api = carrier.CarrierAPI;
+            Winit_API winit = new Winit_API(api);
+
+            Addresses address = order.Addresses;
+
+            try
+            {
+                createOutboundOrder_data data = new createOutboundOrder_data()
+                {
+                    warehouseID = int.Parse(winit.warehouseIDs[package.Items.First(i => i.IsEnable == true).ShipFromWarehouseID.Value]),
+                    eBayOrderID = order.OrderSourceOrderId,
+                    repeatable = "Y",
+                    deliveryWayID = carrier.ShippingMethod.ToString(),
+                    insuranceTypeID = 1000000,
+                    sellerOrderNo = order.OrderID.ToString(),
+                    recipientName = string.Join(" ", new string[] { address.FirstName, address.MiddleInitial, address.LastName }),
+                    phoneNum = address.PhoneNumber,
+                    zipCode = address.PostalCode,
+                    emailAddress = address.EmailAddress,
+                    state = address.CountryName,
+                    region = address.StateName,
+                    city = address.City,
+                    address1 = address.StreetLine1,
+                    address2 = address.StreetLine2,
+                    isShareOrder = "N",
+                    fromBpartnerId = "",
+                    productList = new List<createOutboundInfo_productList>()
+                };
+
+                foreach (Items item in package.Items.Where(i => i.IsEnable == true))
+                {
+                    data.productList.Add(new createOutboundInfo_productList()
+                    {
+                        eBayBuyerID = order.eBayUserID,
+                        eBayItemID = item.eBayItemID,
+                        eBaySellerID = "",
+                        eBayTransactionID = item.eBayTransactionId,
+                        productCode = item.ProductID,
+                        productNum = item.Qty.ToString()
+                    });
+                }
+
+                Received result = winit.Create(data);
+
+                if (result.code != "0") return new ShipResult(false, result.code + "-" + result.msg);
+
+                createOutboundOrderData outboundOrderData = result.data.ToObject<createOutboundOrderData>();
+                package.WinitNo = outboundOrderData.outboundOrderNum;
+                package.ShippingServiceCode = carrier.Carrier;
+            }
+            catch (Exception e)
+            {
+                return new ShipResult(false, e.Message);
+            }
+
+            return new ShipResult(true);
+        }
+
+        private byte[] Crop(byte[] pdfbytes, float llx, float lly, float urx, float ury)
+        {
+            byte[] rslt = null;
+            // Allows PdfReader to read a pdf document without the owner's password
+            iTextSharp.text.pdf.PdfReader.unethicalreading = true;
+            // Reads the PDF document
+            using (iTextSharp.text.pdf.PdfReader pdfReader = new iTextSharp.text.pdf.PdfReader(pdfbytes))
+            {
+                // Set which part of the source document will be copied.
+                // PdfRectangel(bottom-left-x, bottom-left-y, upper-right-x, upper-right-y)
+                iTextSharp.text.pdf.PdfRectangle rect = new iTextSharp.text.pdf.PdfRectangle(llx, lly, urx, ury);
+
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    // Create a new document
+                    //using (iTextSharp.text.Document doc = 
+                    //	new iTextSharp.text.Document(new iTextSharp.text.Rectangle(288f,432f)))
+                    using (iTextSharp.text.Document doc = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4))
+                    {
+                        // Make a copy of the document
+                        iTextSharp.text.pdf.PdfSmartCopy smartCopy = new iTextSharp.text.pdf.PdfSmartCopy(doc, ms)
+                        {
+                            PdfVersion = iTextSharp.text.pdf.PdfWriter.VERSION_1_7
+                        };
+                        smartCopy.CloseStream = false;
+                        // Open the newly created document                        
+                        doc.Open();
+                        // Loop through all pages of the source document
+                        for (int i = 1; i <= pdfReader.NumberOfPages; i++)
+                        {
+                            doc.NewPage();// net necessary line
+                            // Get a page
+                            var page = pdfReader.GetPageN(i);
+                            // Apply the rectangle filter we created
+                            page.Put(iTextSharp.text.pdf.PdfName.CROPBOX, rect);
+                            page.Put(iTextSharp.text.pdf.PdfName.MEDIABOX, rect);
+                            // Copy the content and insert into the new document
+                            var copiedPage = smartCopy.GetImportedPage(pdfReader, i);
+                            smartCopy.AddPage(copiedPage);
+                        }
+                        smartCopy.FreeReader(pdfReader);
+                        smartCopy.Close();
+                        ms.Position = 0;
+                        rslt = ms.GetBuffer();
+                        // Close the output document
+                        doc.Close();
+                    }
+                }
+                return rslt;
+            }
+        }
+    }
+
+    public class ShipResult
+    {
+        private bool status;
+        private string message;
+
+        public bool Status { get { return status; } }
+        public string Message { get { return message; } }
+
+        public ShipResult(bool status = false, string message = "")
+        {
+            this.status = status;
+            this.message = message;
+        }
+    }
+}

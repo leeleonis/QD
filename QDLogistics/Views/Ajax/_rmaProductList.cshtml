@@ -1,0 +1,48 @@
+﻿@using QDLogistics.Models;
+@{ Packages package = ViewBag.package; }
+@{
+    foreach (Items item in package.Items.Where(i => i.IsEnable == true).ToList())
+    {
+        <tr>
+            <td>
+                @if (item.KitItemCount == 0)
+                {
+                    <label class="checkbox no-padding">
+                        <input type="checkbox" name="chk" data-id="@item.ID"><i style="top:0;"></i>
+                    </label>
+                }
+            </td>
+            <td>@item.ProductID</td>
+            <td>@item.Qty</td>
+            <td>
+                @if (item.KitItemCount == 0)
+                {
+                    <label class="input">
+                        <input type="text" class="input-sm" data-max="@item.Qty" value="1">
+                    </label>
+                }
+            </td>
+        </tr>
+
+        if (item.KitItemCount != 0)
+        {
+            foreach (BundleItems BundleItem in item.BundleItems.Where(b => b.IsEnable == true).ToList())
+            {
+                <tr>
+                    <td>
+                        <label class="checkbox no-padding">
+                            <input type="checkbox" name="chk" data-id="@BundleItem.ID"><i style="top:0;"></i>
+                        </label>
+                    </td>
+                    <td>@BundleItem.ProductID</td>
+                    <td>@BundleItem.Qty</td>
+                    <td>
+                        <label class="input">
+                            <input type="text" class="input-sm" data-max="@BundleItem.Qty" value="1">
+                        </label>
+                    </td>
+                </tr>
+            }
+        }
+    }
+}

@@ -1,0 +1,151 @@
+﻿@section styles{
+    <link href="~/Content/themes/default/easyui.css" rel="stylesheet" />
+    <style>
+        table tbody .datagrid-row {
+            height: 37px;
+        }
+
+            table tbody .datagrid-row input[type=checkbox] {
+                height: 18px;
+            }
+
+        .tool-content {
+            margin-bottom: 10px;
+        }
+
+        .action-button {
+            text-align: right;
+        }
+
+            .action-button .btn {
+                width: 100%;
+                max-width: 170px;
+                margin-top: 5px;
+            }
+    </style>
+}
+<div id="content">
+    <section id="widget-grid" class="">
+        <div class="row">
+            <div class="table-parent tool-content col-xs-12">
+                <div class="action-button col-xs-2 col-xs-offset-10">
+                    <!-- <a class="btn btn-default" id="btn-add" href="@Url.Action("carriercreate", "shipping")">新增運輸廠商</a> -->
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <article class="col-xs-12">
+                <table id="DataGrid"></table>
+            </article>
+        </div>
+    </section>
+</div>
+@section pagespecific {
+    <script src="~/scripts/jquery.easyui-1.4.3.min.js"></script>
+    <script type="text/javascript">
+        var pager, pageSize = 100;
+        var selected = false;
+        var $dataGrid;
+
+        $(function () {
+            $dataGrid = $("#DataGrid").datagrid({
+                title: "品項 列表",
+                url: "@Url.Action("ProductTypeData", "ajax")",
+                queryParams: {},
+                width: "100%",
+                height: "700",
+                columns: [[
+                    { field: "ID", title: "品項 ID", width: "10%", align: "center", sortable: false },
+                    { field: "Name", title: "品項名稱", width: "30%", align: "center", sortable: false },
+                    {
+                        field: "ChtName", title: "品項中文名稱", width: "30%", align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            return "<input type='text' class='form-control input-sm' id='ChtName-" + index + "' value='" + value + "' onchange='onSelect(" + index + ")'>";
+                        }
+                    }, {
+                        field: "save", title: "<button type='button' class='btn btn-default btn-sm' onclick='saveData()'>SAVE</button>", width: "60", sortable: false,
+                        formatter: function (value, row, index) {
+                            return "<button type='button' class='btn btn-default btn-sm' id='btn-" + index + "' onclick='saveData(" + index + ")' disabled>SAVE</button>"
+                        }
+                    }
+                ]],
+                onBeforeSelect: selectAction,
+                onBeforeUnselect: selectAction,
+                pagination: true,
+                pagePosition: "bottom",
+                pageSize: pageSize
+            });
+
+            pager = $dataGrid.datagrid("getPager");
+            $(pager).pagination({
+                pageSize: pageSize,
+                showPageList: true,
+                pageList: [100, 200, 300, 500],
+                beforePageTest: "第",
+                afterPageTest: "頁，共 {pages} 頁",
+                displayMsg: "顯示 {from} 到 {to} 筆資料，共 {total} 筆資料"
+            });
+        });
+
+        function selectAction(index, row) {
+            if (selected) {
+                selected = false;
+                $("#btn-" + index).removeAttr("disabled");
+                return true;
+            }
+
+            return false;
+        }
+
+        function onSelect(index) {
+            selected = true;
+            $dataGrid.datagrid('selectRow', index);
+        }
+
+        function saveData(index) {
+            var data = [];
+
+            if (index == undefined) {
+                var rows = $dataGrid.datagrid('getSelections');
+                for (var i in rows) {
+                    index = $dataGrid.datagrid('getRowIndex', rows[i]);
+                    data.push(setData(rows[i], index));
+                    $("#btn-" + index).attr("disabled", "disabled");
+                }
+                $dataGrid.datagrid("clearSelections");
+            } else {
+                row = $dataGrid.datagrid("getRows")[index];
+                data.push(setData(row, index));
+                $("#btn-" + index).attr("disabled", "disabled");
+
+                selected = true;
+                $dataGrid.datagrid('unselectRow', index);
+            }
+
+            if (data.length > 0) {
+                updateData(data).done(function (response) {
+                    if (response['status']) {
+                        alert("Success!");
+                    }
+                });
+            }
+        }
+
+        function setData(row, index) {
+            return {
+                ID: row.ID,
+                ChtName: $("#ChtName-" + index).val()
+            }
+        }
+
+        function updateData(data) {
+            return $.ajax({
+                url: "@Url.Action("ProductTypeUpdate", "ajax")",
+                type: "post",
+                data: { data: data },
+                dataType: "json"
+            });
+        }
+    </script>
+}

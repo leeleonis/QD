@@ -1,0 +1,36 @@
+﻿@using QDLogistics.Models
+@using QDLogistics.Commons
+@model TaskScheduler
+@{
+    EnumData.TimeZone TimeZone = MyHelp.GetTimeZone((int)Session["TimeZone"]);
+}
+<table class="text-center hidden">
+    <tbody class="datagrid-body">
+        @{
+            foreach (TaskLog log in Model.TaskLog)
+            {
+                <tr class="datagrid-row">
+                    <td width="24"><div class="datagrid-cell"></div></td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+<table class="text-center">
+    <tbody class="datagrid-body">
+        @{
+            foreach (TaskLog log in Model.TaskLog)
+            {
+                var timeZoneConvert = new TimeZoneConvert();
+                <tr class="datagrid-row">
+                    <td><div class="datagrid-cell datagrid-cell-c1-ID"></div></td>
+                    <td><div class="datagrid-cell datagrid-cell-c1-Date">@timeZoneConvert.InitDateTime(log.CreateDate.Value, EnumData.TimeZone.UTC).ConvertDateTime(TimeZone).ToString("MM/dd/yyyy hh:mm tt")</div></td>
+                    <td><div class="datagrid-cell datagrid-cell-c1-Description"></div></td>
+                    <td><div class="datagrid-cell datagrid-cell-c1-Message"></div></td>
+                    <td><div class="datagrid-cell datagrid-cell-c1-AdminName"></div></td>
+                    <td><div class="datagrid-cell datagrid-cell-c1-Status">@Enum.GetName(typeof(EnumData.TaskStatus), log.Status)</div></td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>

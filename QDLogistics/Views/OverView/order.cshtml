@@ -1,0 +1,203 @@
+﻿@using QDLogistics.OrderService
+
+@section styles{
+    <link href="~/Content/themes/default/easyui.css" rel="stylesheet" />
+    <link href="~/Content/themes/icon.css" rel="stylesheet" />
+    <style>
+        .filterColumn td div {
+            padding: 0
+        }
+    </style>
+}
+<div id="content">
+    <section id="widget-grid" class="">
+        <div class="row">
+            <article class="col-xs-12">
+                <table id="DataGrid"></table>
+            </article>
+        </div>
+    </section>
+</div>
+@section pagespecific {
+    <script src="~/scripts/jquery.easyui-1.4.3.min.js"></script>
+    <script src="~/scripts/datagrid-detailview.js"></script>
+    <script src="~/scripts/jquery.number.min.js"></script>
+    <script type="text/javascript">
+        var pager, pageSize = 100, selectOption, filterValue = {}
+        var $dataGrid;
+
+        $(function () {
+            getOption("@Url.Action("getSelectOption", "overview")").done(function (response) {
+                if (response['status']) {
+                    selectOption = response['data'];
+                } else {
+                    alert(response['message']);
+                }
+
+                dataInit();
+            });
+        });
+
+        function dataInit() {
+            $dataGrid = $("#DataGrid").datagrid({
+                title: "訂單 總覽",
+                idField: "PackageID",
+                url: "@Url.Action("getOrderData", "overview")",
+                queryParams: {},
+                width: "100%",
+                height: window.screen.availHeight-200,
+                checkOnSelect: false,
+                selectOnCheck: false,
+                singleSelect: false,
+                frozenColumns: [[
+                    {
+                        field: "OrderID", title: "Order ID<br />訂單號碼", width: 200, align: "center", sortable: true,
+                        formatter: function (value, row, index) {
+                            if (!isEmpty(value)) {
+                                if (row.ParentOrderID != 0) {
+                                    var url = value + "(<a href='https://dm.cwa.sellercloud.com/Orders/Orders_details.aspx?id=" + row.ParentOrderID + "' target='_blank'>" + row.ParentOrderID + "</a>)"
+                                } else {
+                                    var url = "<a href='https://dm.cwa.sellercloud.com/Orders/Orders_details.aspx?id=" + value + "' target='_blank'>" + value + "</a>";
+                                }
+                                if (row.OrderSourceOrderId != "") url += "<br />" + row.OrderSourceOrderId;
+                                return url;
+                            } else {
+                                return "<input type='text' class='form-control s-orderID' value='" + (!isEmpty(filterValue['OrderID']) ? filterValue['OrderID'] : '') + "'>";
+                            }
+                        }
+                    }
+                ]],
+                rowStyler: function (index, value) {
+                    if (index == 0) return { class: 'filterColumn' }
+                },
+                onLoadSuccess: function (data) {
+                    $dataGrid.datagrid('insertRow', {
+                        index: 0,
+                        row: setFilterColumn(filterValue)
+                    });
+
+                    if (data.total > 0) {
+                        $('.datepicker').datepicker({
+                            dateFormat: 'yy-mm-dd'
+                        });
+
+                        $('.filterColumn').on('change', 'input, select', function () {
+                            filterValue = getFilterData();
+
+                            $dataGrid.datagrid('reload');
+                        });
+                    } else {
+                        $dataGrid.datagrid('deleteRow', 0);
+                    }
+                },
+                columns: [[
+                    { field: "PaymentDate", title: "Payment Date<br />付款日", width: 120, align: "center", sortable: false },
+                    { field: "Sku", title: "SKU<br />品號", width: 110, align: "center", sortable: false },
+                    { field: "DisplayName", title: "Item Name<br />品名", width: 440, align: "center", sortable: false },
+                    { field: "ShippingCountry", title: "Country<br />國家", width: 120, align: "center", sortable: false },
+                    { field: "DeclaredTotal", title: "Export Value<br />出口價值", width: 90, align: "center", sortable: false },
+                    { field: "OrderCurrencyCode", title: "Currency<br />幣別", width: 80, align: "center", sortable: false },
+                    { field: "StatusCode", title: "Status<br />訂單狀態", width: 120, align: "center", sortable: false },
+                    { field: "ProccessStatus", title: "工作區塊", width: 120, align: "center", sortable: false }
+                ]],
+                onBeforeLoad: function (param) {
+                    Object.keys(filterValue).forEach(function (key) {
+                        if (!isEmpty(filterValue[key])) param[key] = filterValue[key];
+                    });
+                },
+                onBeforeSelect: function () {
+                    return false
+                },
+                view: detailview,
+                detailFormatter: function (index, row) {
+                    return '<div id="itemList"></div>';
+                },
+                onExpandRow: function (index, row) {
+                    if (row.ItemCount == 1) {
+                        $dataGrid.datagrid("collapseRow", index);
+                    } else {
+                        var $itemList = $("div#itemList:eq(" + index + ")");
+
+                        $itemList.panel({
+                            border: false,
+                            cache: false,
+                            href: "@Html.Raw(Url.Action("orderProductList", "overview", new { PackageID = "_id_", Type = "Order" }))".replace("_id_", row.PackageID),
+                            onLoad: function (response) {
+                                $("#datagrid-row-r1-1-" + index).next("tr").find(".datagrid-row-detail").html($itemList.find("table:hidden").remove().removeClass("hidden"));
+                            }
+                        });
+
+                        $dataGrid.datagrid("fixDetailRowHeight", index);
+                    }
+                },
+                pagination: true,
+                pagePosition: "bottom",
+                pageSize: pageSize
+            });
+
+            pager = $dataGrid.datagrid("getPager");
+            $(pager).pagination({
+                pageSize: pageSize,
+                showPageList: true,
+                pageList: [100, 200, 300, 500],
+                beforePageTest: "第",
+                afterPageTest: "頁，共 {pages} 頁",
+                displayMsg: "顯示 {from} 到 {to} 筆資料，共 {total} 筆資料"
+            });
+        }
+
+        function getOption(url) {
+            return $.ajax({
+                url: url,
+                dataType: "json"
+            });
+        }
+
+        function isEmpty(value) {
+            return (value == undefined) || (value == null) || (value == "");
+        }
+
+        function getFilterData() {
+            return {
+                OrderID: $('.filterColumn .s-orderID').val(),
+                PaymentDate: $('.filterColumn .s-paymentDate').val(),
+                Sku: $('.filterColumn .s-sku').val(),
+                ItemName: $('.filterColumn .s-displayName').val(),
+                CountryCode: $('.filterColumn .s-countryCode').val(),
+                DeclaredTotal: $('.filterColumn .s-declaredTotal').val(),
+                CurrencyCode: $('.filterColumn .s-currencyCode').val(),
+                StatusCode: $('.filterColumn .s-statusCode').val(),
+                ProccessStatus: $('.filterColumn .s-proccessStatusCode').val()
+            };
+        }
+
+        function setFilterColumn(filterValue) {
+            return {
+                ItemCount: 1,
+                OrderID: "",
+                PaymentDate: "<input type='text' class='form-control datepicker s-paymentDate' value='" + (!isEmpty(filterValue['PaymentDate']) ? filterValue['PaymentDate'] : '') + "'>",
+                Sku: "<input type='text' class='form-control s-sku' value='" + (!isEmpty(filterValue['Sku']) ? filterValue['Sku'] : '') + "'>",
+                DisplayName: "<input type='text' class='form-control s-displayName' value='" + (!isEmpty(filterValue['ItemName']) ? filterValue['ItemName'] : '') + "'>",
+                ShippingCountry: "<select class='form-control s-countryCode'><option value=''>全部</option>" + setSelectOption(selectOption['CountryCode'], filterValue['CountryCode']) + "</select>",
+                DeclaredTotal: "<input type='text' class='form-control s-declaredTotal' value='" + (!isEmpty(filterValue['DeclaredTotal']) ? filterValue['DeclaredTotal'] : '') + "'>",
+                OrderCurrencyCode: "<select class='form-control s-currencyCode'><option value=''>全部</option>" + setSelectOption(selectOption['CurrencyCode'], filterValue['CurrencyCode']) + "</select>",
+                StatusCode: "<select class='form-control s-statusCode'><option value=''>全部</option>" + setSelectOption(selectOption['StatusCode'], filterValue['StatusCode']) + "</select>",
+                ProccessStatus: "<select class='form-control s-proccessStatusCode'><option value=''>全部</option>" + setSelectOption(selectOption['ProccessStatusCode'], filterValue['ProccessStatus']) + "</select>",
+            };
+        }
+
+        function setSelectOption(optionList, value) {
+            var option = "";
+
+            if (optionList.length > 0) {
+                for (var i in optionList) {
+                    option += "<option value='" + optionList[i]["value"] + "' " + (!isEmpty(value) && optionList[i]["value"] == value ? "selected" : "") + ">" + optionList[i]["text"] + "</option>";
+                }
+            }
+
+            return option;
+        }
+    </script>
+}
+
+

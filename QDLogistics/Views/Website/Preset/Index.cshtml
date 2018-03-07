@@ -1,0 +1,347 @@
+﻿<style>
+    #content tr td {
+        vertical-align: middle;
+    }
+
+    .dataTables_filter {
+        float: none;
+    }
+
+    .form-horizontal .form-control {
+        width: 100%;
+    }
+
+    .checkbox-inline {
+        padding-top: 0 !important;
+    }
+
+        .checkbox-inline label span {
+            margin-right: 0 !important;
+            margin-left: -15px !important;
+        }
+
+            .checkbox-inline label span :before {
+                margin-right: 3px;
+            }
+</style>
+<div id="content">
+    <section id="widget-grid" class="">
+        <div class="row">
+            <article class="col-xs-12">
+                <div class="jarviswidget jarviswidget-color-darken" data-widget-colorbutton="false" data-widget-editbutton="false" data-widget-togglebutton="false"
+                     data-widget-deletebutton="false" data-widget-fullscreenbutton="false" data-widget-custombutton="false" data-widget-sortable="false">
+
+                    <header>
+                        <span class="widget-icon"><i class="fa fa-table"></i></span>
+
+                        <h2>預設組別</h2>
+                    </header>
+
+                    <div>
+                        <div class="widget-body no-padding">
+                            <div class="table-responsive">
+                                <table id="dt_basic" class="form-horizontal table table-bordered table-striped text-center">
+                                    <thead>
+                                        <tr>
+                                            <th width="30" class="text-center">啟用</th>
+                                            <th width="30" class="text-center">提交</th>
+                                            <th width="10%" class="text-center">類型</th>
+                                            <th class="text-center">數值</th>
+                                            <th width="8%" class="text-center">Order value</th>
+                                            <th width="8%" class="text-center">Delivery country</th>
+                                            <th width="10%" class="text-center">Company</th>
+                                            <th width="8%" class="text-center">Sales channel</th>
+                                            <th width="8%" class="text-center">Item QTY per order</th>
+                                            <th width="8%" class="text-center">Shipping Method</th>
+                                            <th width="7%" class="text-center">Last 3 digits of SKU</th>
+                                            <th width="8%" class="text-center">Item shipping weight</th>
+                                            <th width="160" class="text-center">功能</th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </section>
+</div>
+@section pagespecific {
+    <script type="text/javascript">
+        var $Table;
+        var countryList, companyList, sourceList, methodList, warehouseList;
+
+        $(document).ready(function () {
+            var url = '@Url.RouteUrl("website", new {controller = "preset", action = "ajaxOption"})';
+            ajaxData(url).done(function (response) {
+                if (response['status']) {
+                    countryList = response['data']['countryList'];
+                    companyList = response['data']['companyList'];
+                    sourceList = response['data']['sourceList'];
+                    methodList = response['data']['methodList'];
+                    warehouseList = response['data']['warehouseList'];
+                }
+
+                dataInit();
+            });
+        });
+
+        function dataInit() {
+            var responsiveHelper_dt_basic = undefined;
+            var breakpointDefinition = {
+                tablet: 1024,
+                phone: 480
+            };
+
+            $Table = $('#dt_basic').DataTable({
+                "autoWidth": false,
+                "ordering": false,
+                "serverSide": true,
+                "sDom": "<'dt-toolbar'<'col-sm-8 hidden-xs'><'col-xs-12 col-sm-4'Tl>>" + "t" + "<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
+                "oTableTools": {
+                    "aButtons": [{
+                        "sExtends": "text",
+                        "sButtonText": '<i class="fa fa-plus"></i> <span class="hidden-mobile">新增組別</span>',
+                        "sButtonClass": "btn-lg",
+                        "fnInit": function (nButton, oConfig) {
+                            $(nButton).css('margin-left', 5);
+                        },
+                        "fnClick": function (nButton, oConfig, oFlash) {
+                            var url = '@Url.RouteUrl("website", new {controller = "preset", action = "add"})';
+                            ajaxData(url).done(function (response) {
+                                if (response['status']) {
+                                    $Table.draw();
+                                }
+                            });
+                        }
+                    }]
+                },
+                "ajax": {
+                    "url": '@Url.RouteUrl("website", new {controller = "preset", action = "ajaxData"})',
+                    "type": 'post',
+                    "data": function (data) { }
+                },
+                "columns": [
+                    {
+                        data: "visible", render: function (data, type, row, meta) {
+                            var id = 'visible-' + row.id;
+                            var checked = data ? 'checked' : '';
+                            return "<div class='checkbox-inline'><label><input type='checkbox' class='checkbox' id='" + id + "' " + checked + "><span></span></lebel></div>";
+                        }
+                    }, {
+                        data: "dispatch", render: function (data, type, row, meta) {
+                            var id = 'dispatch-' + row.id;
+                            var checked = data ? 'checked' : '';
+                            return "<div class='checkbox-inline'><label><input type='checkbox' class='checkbox' id='" + id + "' " + checked + "><span></span></lebel></div>";
+                        }
+                    }, {
+                        data: "type", render: function (data, type, row, meta) {
+                            var id = 'type-' + row.id;
+                            var option = ['尚未選擇', 'Upload Tracking', 'Rush order', 'Declare Value', 'warehouse & shipping method'];
+                            return "<select class='form-control' id='" + id + "' onchange='changeBox(" + row.id + ");'>" + setSelectOption(option, data) + "</select>";
+                        }
+                    }, {
+                        data: "value", render: function (data, type, row, meta) {
+                            return "<div id='box-" + row.id + "'>" + setBoxHtml(row.type.toString(), row.id, row) + "</div>";
+                        }
+                    }, {
+                        data: "total", render: function (data, type, row, meta) {
+                            return setNumberType('total', row.id, data, row.totalType);
+                        }
+                    }, {
+                        data: "country", render: function (data, type, row, meta) {
+                            var id = 'country-' + row.id;
+                            return "<select class='form-control' id='" + id + "'><option value=''>不選擇</option>" + setSelectOption(countryList, data) + "</select>";
+                        }
+                    }, {
+                        data: "company", render: function (data, type, row, meta) {
+                            var id = 'company-' + row.id;
+                            return "<select class='form-control' id='" + id + "'><option value=''>不選擇</option>" + setSelectOption(companyList, data.toString()) + "</select>";
+                        }
+                    }, {
+                        data: "channel", render: function (data, type, row, meta) {
+                            var id = 'channel-' + row.id;
+                            return "<select class='form-control' id='" + id + "'><option value=''>不選擇</option>" + setSelectOption(sourceList, data.toString()) + "</select>";
+                        }
+                    }, {
+                        data: "amount", render: function (data, type, row, meta) {
+                            return setNumberType('amount', row.id, data, row.amountType);
+                        }
+                    }, {
+                        data: "method", render: function (data, type, row, meta) {
+                            var id = 'method-' + row.id;
+                            return "<select class='form-control' id='" + id + "'><option value=''>不選擇</option>" + setSelectOption(methodList, data) + "</select>";
+                        }
+                    }, {
+                        data: "sku", render: function (data, type, row, meta) {
+                            return "<input class='form-control' id='sku-" + row.id + "' value='" + $.trim(data) + "'>";
+                        }
+                    }, {
+                        data: "weight", render: function (data, type, row, meta) {
+                            return setNumberType('weight', row.id, data, row.weightType);
+                        }
+                    }, {
+                        data: "action", render: function (data, type, row, meta) {
+                            var saveBtn = "<button class='btn btn-default' onclick='saveData(" + row.id + ");'><i class='fa fa-save'></i><span class='hidden-mobile'> Save</span></button>";
+                            var deleteBtn = "<button class='btn btn-danger' onclick='deleteData(" + row.id + ");'><i class='glyphicon glyphicon-trash'></i><span class='hidden-mobile'> Delete</span></button>";
+                            return saveBtn + deleteBtn;
+                        }
+                    }
+                ],
+                "preDrawCallback": function () {
+                    // Initialize the responsive datatables helper once.
+                    if (!responsiveHelper_dt_basic) {
+                        responsiveHelper_dt_basic = new ResponsiveDatatablesHelper($('#dt_basic'), breakpointDefinition);
+                    }
+                },
+                "rowCallback": function (nRow, data, index) {
+                    responsiveHelper_dt_basic.createExpandIcon(nRow);
+                    $(nRow).on('change', '#warehouse-' + data.id, function () { getCarrierOption(data.id, $(this).val()); });
+                },
+                "drawCallback": function (oSettings) {
+                    responsiveHelper_dt_basic.respond();
+                },
+                "initComplete": function () {
+                }
+            });
+        }
+
+        function setSelectOption(array, select) {
+            var option = '';
+            $.each(array, function (i, value) {
+                var selected = (!isEmpty(select) && (select === i)) ? 'selected' : '';
+                option += "<option value='" + i + "' " + selected + ">" + value + "</option>";
+            });
+            return option;
+        }
+
+        function changeBox(id) {
+            var type = $('#type-' + id).val();
+            $('#box-' + id).html(setBoxHtml(type, id, {}));
+        }
+
+        function setNumberType(column, id, value, type) {
+            var typeArray = ['>', '<', '=', '>=', '<='];
+            var dataType = "<span class='input-group-addon'>" + typeArray[type] + "</span><input type='hidden' id='" + column + "Type-" + id + "' value='" + type + "'>";
+            var button = "<button type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'><span class='caret'></span></button>";
+            var dropdown = "<ul class='dropdown-menu pull-right' role='menu'>";
+            $.each(typeArray, function (i, t) {
+                dropdown += "<li><a href='javascript:void(0);' onclick='changeType(\"" + column + "Type-" + id + "\", " + i + ", \"" + t + "\");'>" + t + "</a></li>";
+            });
+            dropdown += '</ul>';
+            var id = column + '-' + id;
+            return "<div class='input-group'>" + dataType + "<input type='text' class='form-control' id='" + id + "' value='" + value + "'><div class='input-group-btn'>" + button + dropdown + "</div></div>";
+        }
+
+        function changeType(id, type, option) {
+            $('#' + id).val(type).siblings('.input-group-addon').html(option);
+        }
+
+        function setBoxHtml(type, id, row) {
+            var html = '';
+
+            switch (type) {
+                case '1':
+                case '2':
+                    html += "<select class='form-control' id='value-" + id + "'>";
+                    html += setSelectOption(['FALSE', 'TRUE'], row.value);
+                    html += '</select>';
+                    break;
+                case '3':
+                    var value = !isEmpty(row.value) ? row.value : '';
+                    var valueType = !isEmpty(row.valueType) ? row.valueType : 0;
+                    var typeArray = ['%', '$'];
+                    var dataType = "<span class='input-group-addon'>" + typeArray[valueType] + "</span><input type='hidden' id='valueType-" + id + "' value='" + valueType + "'>";
+                    var button = "<button type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'><span class='caret'></span></button>";
+                    var dropdown = "<ul class='dropdown-menu pull-right' role='menu'>";
+                    $.each(typeArray, function (i, t) {
+                        dropdown += "<li><a href='javascript:void(0);' onclick='changeType(\"valueType-" + id + "\", " + i + ", \"" + t + "\");'>" + t + "</a></li>";
+                    });
+                    dropdown += '</ul>';
+                    html += "<div class='input-group'><div class='input-group-btn'>" + button + dropdown + "</div><input class='form-control' id='value-" + id + "' type='text' value='" + value + "'>" + dataType + "</div>";
+                    break;
+                case '4':
+                    var warehouseID = !isEmpty(row.warehouse) && row.warehouse != 0 ? row.warehouse.toString() : Object.keys(warehouseList)[0].toString();
+                    html += "<select class='form-control' id='warehouse-" + id + "'>" + setSelectOption(warehouseList, warehouseID) + "</select>";
+                    html += "<select class='form-control' id='carrier-" + id + "'></select>"
+                    getCarrierOption(id, warehouseID, !isEmpty(row.carrier) ? row.carrier.toString() : '');
+                    break;
+            }
+
+            return html;
+        }
+
+        function getCarrierOption(id, warehouseID, carrierID) {
+            var url = '@Url.RouteUrl("website", new { controller = "preset", action = "ajaxCarrier" })';
+            ajaxData(url, 'get', { warehouseID: warehouseID }).done(function (response) {
+                if (response['status']) {
+                    $('#carrier-' + id).html(setSelectOption(response['data'], carrierID));
+                }
+            });
+        }
+
+        function saveData(id) {
+            var url = '@Url.RouteUrl("website", new { controller = "preset", action = "edit" })';
+            var data = {
+                IsEnable: true,
+                IsVisible: $('#visible-' + id).prop('checked') && $('#type-' + id).val() != 0,
+                IsDispatch: $('#dispatch-' + id).prop('checked'),
+                Id: parseInt(id),
+                Type: checkValue($('#type-' + id).val(), true),
+                Value: checkValue($('#value-' + id).val(), true),
+                ValueType: checkValue($('#valueType-' + id).val(), true),
+                Total: checkValue($('#total-' + id).val(), true),
+                TotalType: checkValue($('#totalType-' + id).val(), true),
+                Country: checkValue($('#country-' + id).val(), false),
+                CompanyID: checkValue($('#company-' + id).val(), true),
+                SourceID: checkValue($('#channel-' + id).val(), true),
+                Amount: checkValue($('#amount-' + id).val(), true),
+                AmountType: checkValue($('#amountType-' + id).val(), true),
+                ShippingMethod: checkValue($('#method-' + id).val(), false),
+                Sku: checkValue($('#sku-' + id).val(), false),
+                Weight: checkValue($('#weight-' + id).val(), true),
+                WeightType: checkValue($('#weightType-' + id).val(), true),
+                WarehouseID: checkValue($('#warehouse-' + id).val(), true),
+                CarrierID: checkValue($('#carrier-' + id).val(), true)
+            };
+            ajaxData(url, 'post', data).done(function (response) {
+                if (response['status']) {
+                    alert('Save success!');
+                    $Table.draw();
+                } else {
+                    alert(response['message']);
+                }
+            });
+        }
+
+        function checkValue(value, isNum) {
+            return !isEmpty(value) ? value : (isNum ? 0 : null);
+        }
+
+        function deleteData(id) {
+            if (confirm('確定要刪除')) {
+                var url = '@Url.RouteUrl("website", new { controller = "preset", action = "edit" })';
+                ajaxData(url, 'post', { id: id }).done(function (response) {
+                    if (response['status']) {
+                        alert('Delete success!');
+                        $Table.draw();
+                    } else {
+                        alert(response['message']);
+                    }
+                });
+            }
+        }
+
+        function ajaxData(url, type, data) {
+            type = isEmpty(type) ? 'get' : type;
+            data = isEmpty(data) ? {} : data;
+
+            return $.ajax({ url: url, type: type, data: data, dataType: 'json' });
+        }
+
+        function isEmpty($value) {
+            return $value == undefined || $value == null || $value === '';
+        }
+    </script>
+}

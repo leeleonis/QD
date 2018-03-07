@@ -1,0 +1,173 @@
+﻿@section styles{
+    <link href="~/Content/themes/default/easyui.css" rel="stylesheet" />
+}
+@{
+    IEnumerable<Country> countries = ViewBag.countries;
+}
+<div id="content">
+    <section id="widget-grid" class="">
+        <div class="row table-parent">
+            <div class="tool-content col-xs-12">
+                <div class="filter-select col-xs-3"></div>
+                <div class="search-input col-xs-7"></div>
+                <div class="col-xs-2">
+                    <div class="action-button col-xs-12">
+                        <button class="btn btn-default btn-sm btn-block" id="btn-import">導入 Import</button>
+                        <button class="btn btn-default btn-sm btn-block" id="btn-export">導出 Export</button>
+                        <form id="form-data" method="post" enctype="multipart/form-data">
+                            <input type="hidden" name="type" value="country" />
+                            <input type="hidden" name="action" id="input-action" />
+                            <input type="hidden" name="IDs" id="input-IDs" />
+                            <input class="hidden" type="file" name="file" id="file-import" />
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <article class="col-xs-12">
+                <table id="DataGrid"></table>
+            </article>
+        </div>
+    </section>
+</div>
+@section pagespecific {
+    <script src="~/scripts/jquery.easyui-1.4.3.min.js"></script>
+    <script type="text/javascript">
+        var selected = false;
+        var $dataGrid, $importBtn = $("#btn-import"), $importFile = $("#file-import"), $exportBtn = $("#btn-export");
+
+        $(function () {
+            dataInit();
+
+            $importBtn.click(function () {
+                document.getElementById("form-data").reset();
+                $importFile.trigger("click");
+            });
+
+            $importFile.change(function () {
+                $("#input-action").val("import");
+                var form = document.querySelector("#form-data");
+                var data = new FormData(form);
+
+                $.ajax({
+                    url: "@Url.Action("upload", "file")",
+                    type: "POST",
+                    data: data,
+                    dataType: "JSON",
+                    contentType: false,
+                    processData: false,
+                    success: function (response) {
+                        alert(response.Msg);
+
+                        if (response.Result) {
+                            $dataGrid.datagrid('reload');
+                        }
+                    }
+                });
+            });
+
+            $exportBtn.click(function () {
+                $("#form-data").attr("action", "@Url.Action("export", "file")").submit();
+            });
+        });
+
+        function dataInit() {
+            $dataGrid = $("#DataGrid").datagrid({
+                title: "運送國家 設定",
+                url: "@Url.Action("CountryData", "ajax")",
+                queryParams: {},
+                width: "100%",
+                height: "700",
+                columns: [[
+                    { field: "Name", title: "Shipping Method", width: "300", align: "center", sortable: false },
+                    @foreach (Country country in countries.ToList()){
+                        @Html.Raw("{field:'" + country.ID + "',title:\"" + country.Name + "\",width:'100',align:'center',sortable:false,formatter:function(value,row,index){return setCheckBox(index,'" + country.ID + "',row.CountryData['" + country.ID + "']);}},\n");
+                    }
+                    {
+                        field: "save", title: "<button type='button' class='btn btn-default btn-sm' onclick='saveData()'>SAVE</button>", width: "60", sortable: false,
+                        formatter: function (value, row, index) {
+                            return "<button type='button' class='btn btn-default btn-sm' id='btn-" + index + "' onclick='saveData(" + index + ")' disabled>SAVE</button>"
+                        }
+                    }
+                ]],
+                onBeforeSelect: selectAction,
+                onBeforeUnselect: selectAction
+            });
+        }
+
+        function selectAction(index, row) {
+            if (selected) {
+                selected = false;
+                $("#btn-" + index).removeAttr("disabled");
+                return true;
+            }
+
+            return false;
+        }
+
+        function onSelect(index) {
+            selected = true;
+            $dataGrid.datagrid('selectRow', index);
+        }
+
+        function saveData(index) {
+            var data = [];
+            var saveAll = index == undefined;
+
+            if (saveAll) {
+                var rows = $dataGrid.datagrid('getSelections');
+                for (var i in rows) {
+                    index = $dataGrid.datagrid('getRowIndex', rows[i]);
+                    data.push(setData(rows[i], index));
+                    $("#btn-" + index).attr("disabled", "disabled");
+                }
+                $dataGrid.datagrid("clearSelections");
+            } else {
+                row = $dataGrid.datagrid("getRows")[index];
+                data.push(setData(row, index));
+                $("#btn-" + index).attr("disabled", "disabled");
+
+                selected = true;
+                $dataGrid.datagrid('unselectRow', index);
+            }
+
+            if (data.length > 0) {
+                updateData(data).done(function (response) {
+                    if (response['status']) {
+                        alert("Success!");
+                    }
+
+                    if (saveAll) $dataGrid.datagrid('reload');
+                });
+            }
+        }
+
+        function setData(row, index) {
+            var countryData = {};
+            $(":checkbox").filter("#Country-" + index).each(function (index, element) {
+                countryData[$(element).data("field")] = $(element).prop("checked");
+            });
+
+            return {
+                ID: row.ID,
+                CountryData: JSON.stringify(countryData)
+            }
+        }
+
+        function updateData(data) {
+            return $.ajax({
+                url: "@Url.Action("CountryUpdate", "ajax")",
+                type: "post",
+                data: { data: data },
+                dataType: "json"
+            });
+        }
+
+        function setCheckBox(index, field, value) {
+            var name = "Country-" + index;
+            return "<input type='checkbox' class='form-control' id='" + name + "' data-field='" + field + "' " + (value ? "checked" : "") + " onchange='onSelect(" + index + ")'>";
+        }
+    </script>
+}

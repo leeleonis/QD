@@ -1,0 +1,134 @@
+﻿@using QDLogistics.Models
+@using Newtonsoft.Json;
+@model AdminGroups
+
+<div id="content">
+    <section id="widget-grid" class="">
+        <div class="row">
+            <article class="col-xs-12">
+                <div class="jarviswidget" data-widget-colorbutton="false" data-widget-editbutton="false" data-widget-togglebutton="false"
+                     data-widget-deletebutton="false" data-widget-fullscreenbutton="false" data-widget-custombutton="false" data-widget-sortable="false">
+
+                    <header>
+                        <span class="widget-icon"> <i class="fa fa-edit"></i> </span>
+
+                        <h2>編輯</h2>
+                        <ul class="nav nav-tabs pull-right">
+                            <li>
+                                <a data-toggle="tab" href="#hb1">基本資料</a>
+                            </li>
+                            <li>
+                                <a data-toggle="tab" href="#hb2">權限設定</a>
+                            </li>
+                        </ul>
+                    </header>
+
+                    <div>
+                        <div class="widget-body no-padding">
+                            <form id="data-form" class="form-horizontal" method="post" enctype="multipart/form-data">
+                                <input type="hidden" name="isEnable" value="true">
+
+                                <div id="content" class="tab-content">
+                                    <div class="tab-pane" id="hb1">
+                                        <fieldset>
+                                            <legend>基本資料</legend>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label">顯示</label>
+
+                                                <div class="col-sm-9">
+                                                    <label class="radio radio-inline">
+                                                        <input type="radio" class="radiobox" name="isVisible" value="true" @(Model.IsVisible ? "checked" : "")>
+                                                        <span>是</span>
+                                                    </label>
+
+                                                    <label class="radio radio-inline">
+                                                        <input type="radio" class="radiobox" name="IsVisible" value="false" @(!Model.IsVisible ? "checked" : "")>
+                                                        <span>否</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label">名稱</label>
+
+                                                <div class="col-sm-9 col-lg-4">
+                                                    <input type="text" class="form-control" name="name" value="@Model.Name" required>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label">排序</label>
+
+                                                <div class="col-sm-2">
+                                                    <input class="form-control" type="number" name="order" value="@Model.Order" min="1">
+
+                                                    <p class="help-block">
+                                                        <strong>Note:</strong> 順序由小到大
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                    </div>
+
+                                    <div class="tab-pane" id="hb2">
+                                        <fieldset>
+                                            <legend>權限設定</legend>
+
+                                            <div class="form-group">
+                                                <div class="col-sm-12">
+                                                    <ol class="dd-list" id="auth-list">
+                                                        @{ var auth = Model.Auth.IsEmpty() ? new Dictionary<int, List<bool>>() : JsonConvert.DeserializeObject<Dictionary<int, List<bool>>>(Model.Auth); }
+                                                        @{foreach (Menu menu in ViewBag.menuList)
+                                                            {
+                                                                Html.RenderPartial("~/Views/Admin/Groups/_AuthList.cshtml", menu, new ViewDataDictionary() { { "auth", auth } });
+                                                            }
+                                                        }
+                                                    </ol>
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                    </div>
+                                </div>
+
+                                <div class="widget-footer">
+                                    <button type="submit" class="btn btn-primary" id="save">儲存</button>
+                                    <!-- <button type="submit" class="btn btn-primary" id="back" onclick="$('#data-form').attr('action', '?back=1');">儲存後返回</button> -->
+                                    <button type="button" class="btn btn-default" onclick="location.href='@Url.Action("index", "group", ViewBag.routeValue)'">返回</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </section>
+</div>
+@section pagespecific {
+    <script type="text/javascript">
+        var hash = window.location.hash;
+        $('ul.nav-tabs li').eq(hash.substr(1)).addClass('active');
+        $('.tab-pane').eq(hash.substr(1)).addClass('active');
+
+        $(document).ready(function () {
+            $('#auth-list').find('label input:checkbox').change(function (e) {
+                var checkbox_id = $(this).attr('id');
+                var value = $(this).prop('checked');
+                var boolean = $(this).parents('label[for="' + checkbox_id + '"]').is(function () {
+                    return $(this).parent('div').children('label:first').attr('for') === checkbox_id;
+                });
+
+                if (value) {
+                    $(this).parents('li.dd-item').find('label:first input:checkbox').prop('checked', value);
+                }
+
+                if (boolean) {
+                    $(this).parents('li.dd-item:first').find('label input:checkbox').prop('checked', value);
+                }
+            });
+
+            $("#save").click(function(e){
+            });
+        });
+    </script>
+}

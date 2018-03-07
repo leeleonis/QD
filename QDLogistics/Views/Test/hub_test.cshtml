@@ -1,0 +1,18 @@
+﻿<div id="">
+    <p></p>
+</div>
+@section pagespecific {
+    <script src="~/scripts/jquery.signalR-2.2.2.min.js"></script>
+    <script src="~/signalr/hubs"></script>
+    <script>
+        var conn = $.connection.apiServer;
+        conn.client.refreshOrderPickUp = function () {
+            alert('Recieve!');
+        };
+
+        $.connection.hub.start().done(function () {
+            conn.server.register('@ViewData["clientName"]');
+            alert('Start!');
+        });
+    </script>
+}

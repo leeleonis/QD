@@ -1,0 +1,593 @@
+﻿@using QDLogistics.Models;
+@using QDLogistics.Commons;
+@section styles{
+    <link href="~/Content/themes/default/easyui.css" rel="stylesheet" />
+    <link href="~/Content/themes/icon.css" rel="stylesheet" />
+    <style>
+        .action-button {
+            display: inline-block;
+            max-width: 200px;
+        }
+
+            .action-button > div {
+                margin: 5px 10px;
+            }
+
+        #win-printer section {
+            margin-bottom: 5px;
+        }
+
+        #win-pick label {
+            min-width: 200px;
+            margin-left: 0px;
+        }
+
+        table tbody tr td {
+            vertical-align: middle !important;
+        }
+
+        table tbody tr.title-row td {
+            vertical-align: top !important;
+        }
+    </style>
+}
+@{
+    List<Packages> packageList = ViewBag.packageList;
+    List<Carriers> carrierList = ViewBag.carrierList;
+    var route = new { warehouseId = ViewData["warehouseId"], adminId = ViewData["adminId"] };
+    int total = (int)ViewData["total"];
+}
+<div id="content">
+    <section id="widget-grid" class="">
+        <div class="row">
+            <div class="action-button col-xs-2">
+                <div>
+                    <select class="form-control" id="select-carrier">
+                        <option value="0">全部</option>
+                        @{ foreach (Carriers carrier in carrierList)
+                            {
+                                <option value="@carrier.ID">@carrier.Name</option>
+                            }}
+                    </select>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-default btn-lg btn-block" id="btn-sync">同步產品序號</button>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-default btn-lg btn-block" id="btn-pick">列印檢貨單</button>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-default btn-lg btn-block" id="btn-ship">開始出貨</button>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-default btn-lg btn-block" id="btn-enter">輸入訂單號<br />(優先出貨)</button>
+                </div>
+                @*<div>
+                        <button type="button" class="btn btn-default btn-lg btn-block" id="btn-export">導出資料</button>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-default btn-lg btn-block" id="btn-import">導入資料</button>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-default btn-lg btn-block" id="btn-download">Excel 模組下載</button>
+                    </div>*@
+                <div class="hidden">
+                    <div id="win-pick" class="easyui-window" title="撿貨單" style="width:800px;height:500px;padding:5px;"
+                         data-options="iconCls:'icon-save',collapsible:false,minimizable:false,maximizable:false,closed:true,draggable:false,resizable:false,modal:true"></div>
+                    <div id="dialog-serial" class="easyui-dialog" title="請輸入產品序號/品號" data-options="iconCls:'icon-edit',closed:true,resizable:false,onBeforeClose:ProductSerialData.Reset_Serial" style="width:1000px;top:200px;">
+                        <div data-options="region:'center'">
+                            <table id="table-pickup" class="easyui-datagrid" style="width:100%;" data-options="onBeforeSelect:function(){return false;}">
+                                <thead>
+                                    <tr>
+                                        <th data-options="field:'OrderID',width:'10%',align:'center'">訂單</th>
+                                        <th data-options="field:'ProductID',width:'10%',align:'center'">SKU</th>
+                                        <th data-options="field:'ProductName',width:'44%',align:'center'">品名</th>
+                                        <th data-options="field:'UPC',width:'15%',align:'center'">UPC</th>
+                                        <th data-options="field:'SerialNumber',width:'15%',align:'center'">序號</th>
+                                        <th data-options="field:'Picked',width:'5%',align:'center'"></th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <div data-options="region:'south',border:false" style="text-align:right;padding:5px;">
+                            <span id="message-error" style="margin-right:5px;font-size:16px;color:red;vertical-align:middle;"></span>
+                            <input type="text" class="easyui-textbox" id="input-serial" style="width:300px;height:30px;" />
+                        </div>
+                    </div>
+                    <div id="dialog-order" class="easyui-dialog" title="請輸入訂單號碼" data-options="iconCls:'icon-edit',closed:true,draggable:false,resizable:false,onClose:function(){$orderInput.val('');}" style="width:300px;">
+                        <input type="text" class="form-control" id="input-order" />
+                    </div>
+                    <div id="win-print" class="easyui-dialog" title="列印提貨單/商業發票" data-options="iconCls:'icon-edit',closed:true,draggable:false,resizable:false,onClose:function(){}" style="width:300px;">
+                        <button class="form-control" id="btn-tracking">提貨單</button>
+                        <input type="hidden" id="param-tracking" />
+                        <button class="form-control" id="btn-invoice">商業發票</button>
+                        <input type="hidden" id="param-invoice" />
+                    </div>
+                </div>
+            </div>
+            <article class="col-xs-10">
+                <div class="jarviswidget jarviswidget-color-darken" data-widget-colorbutton="false" data-widget-editbutton="false" data-widget-togglebutton="false"
+                     data-widget-deletebutton="false" data-widget-fullscreenbutton="false" data-widget-custombutton="false" data-widget-sortable="false">
+
+                    <header>
+                        <span class="widget-icon"><i class="fa fa-table"></i></span>
+
+                        <h2>包貨區 列表</h2>
+                    </header>
+
+                    <div>
+                        <div class="widget-body no-padding">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped text-center">
+                                    <thead>
+                                        <tr>
+                                            <th width="7%" class="text-center">出貨時限：</th>
+                                            <th width="10%" class="text-center" colspan="2">@DateTime.Now.ToString("M/d/yy H:m")</th>
+                                            <th colspan="3"></th>
+                                            <th width="15%" class="text-center" colspan="3">時限內未達成的數量：</th>
+                                            <th width="8%" class="text-center">
+                                                <span class="text-danger">0/200</span>
+                                            </th>
+                                            <th width="20%" class="text-center" colspan="2">Log</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="title-row">
+                                            <td>Order ID</td>
+                                            <td>SKU</td>
+                                            <td>UPC</td>
+                                            <td>Item Name</td>
+                                            <td width="100">Weight (KG)</td>
+                                            <td width="140">Shipping Method</td>
+                                            <td>Country</td>
+                                            <td>Export</td>
+                                            <td>Status</td>
+                                            <td>Comment</td>
+                                            <td rowspan="@(total+1)">
+                                                1. 8/24/2016 15:00 時限內未達成的數量 10/200 @@ 5%
+                                                <br />
+                                                2. 8/24/2016 18:00 時限內未達成的數量 3/100 @@ 3%
+                                            </td>
+                                            <td rowspan="@(total+1)">本月平均未達成數量以及%: 13/300 @@ 4.33%</td>
+                                        </tr>
+                                        @{if (packageList.Any())
+                                            {
+                                                foreach (Packages package in packageList)
+                                                {
+                                                    foreach (Items item in package.Items.Where(i => i.IsEnable == true))
+                                                    {
+                                                        <tr>
+                                                            <td>@item.OrderID</td>
+                                                            <td>@item.ProductID</td>
+                                                            <td>@item.Skus.UPC</td>
+                                                            <td>@item.Skus.ProductName</td>
+                                                            <td>@(item.Qty * 0.5)</td>
+                                                            <td>@package.Carriers.Name</td>
+                                                            <td>@package.Orders.ShippingCountry</td>
+                                                            <td>@Enum.GetName(typeof(EnumData.Export), package.Export)</td>
+                                                            <td>@(package.Orders.RushOrder.Value ? "Rush" : "Normal")</td>
+                                                            <td>@package.Comment</td>
+                                                        </tr>
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </section>
+</div>
+@section pagespecific {
+    <script src="~/scripts/jquery.easyui-1.4.3.min.js"></script>
+    <script src="~/scripts/jquery.signalR-2.2.2.min.js"></script>
+    <script src="~/signalr/hubs"></script>
+    @Html.Raw(ViewBag.WCPScript)
+    <script type="text/javascript">
+        var $carrierSelect = $('#select-carrier'), $syncBtn = $('#btn-sync'), $pickBtn = $("#btn-pick"), $shipBtn = $("#btn-ship"), $enterBtn = $("#btn-enter"),
+            $pickWin = $('#win-pick'), $serialDialog = $('#dialog-serial'), $serialInput = $('#input-serial'), $orderDialog = $('#dialog-order'), $orderInput = $('#input-order'),
+            $pickupTable = $('#table-pickup');
+
+        var isSync = false, taskID = null, now = undefined;
+
+        $(function () {
+            var conn = $.connection.apiServer;
+            $.connection.hub.start().done(function () {
+                conn.server.register('@ViewData["adminName"]');
+                ProductSerialData.Get_Data();
+            });
+
+            conn.client.refreshOrderPickUp = function (response) {
+                ProductSerialData.Update_OrderList($.parseJSON(response));
+            };
+
+            $carrierSelect.change(function(){
+                ProductSerialData.Get_Data();
+            });
+
+            $syncBtn.click(function () {
+                if(isSync) return alert('目前尚有工作在執行中');
+
+                var url = "@Url.Action("checkPurchaseItem", "orderSync")";
+                ajaxData(url, 'get', {}).done(function (response) {
+                    if(response['status']) {
+                        taskID = response['taskID'];
+                        isSync = true;
+
+                        url = "@Url.Action("checkTaskStatus", "orderSync")";
+                        ajaxData(url, 'get', { id: taskID }).done(function (response) {
+                            $('div#text-hint strong').html("工作" + response['message']);
+
+                            var refreshId = setInterval(function() {
+                                ajaxData(url, 'get', { id: taskID }).done(function (response) {
+                                    $('div#text-hint strong').html("工作" + response['message']);
+
+                                    if(!response['status']) {
+                                        window.clearInterval(refreshId);
+                                        ProductSerialData.Get_Data();
+                                        isSync = false;
+                                    }
+                                });
+                            }, 5000);
+                        });
+                    }
+
+                    alert(response['message']);
+                });
+            });
+
+            $pickBtn.click(function () {
+                $pickWin.window("open").window("refresh", "@Url.Action("packagePickUpList", "ajax")");
+            });
+
+            $shipBtn.click(function () {
+                if(!ProductSerialData.Is_Init()) return alert("尚未預載資料!");
+
+                $serialDialog.dialog('open');
+                $serialInput.textbox('textbox').focus();
+            });
+
+            $enterBtn.click(function () {
+                if(!ProductSerialData.Is_Init()) return alert("尚未預載資料!");
+
+                $orderDialog.dialog('open');
+                $orderInput.focus();
+            });
+
+            $serialInput.textbox('textbox').keypress(function (event) {
+                if (event.keyCode == 13) {
+                    ProductSerialData.Check_Serial($serialInput.textbox('getValue'));
+                }
+            });
+
+            $orderInput.keypress(function (event) {
+                if (event.keyCode == 13) {
+                    if (isEmpty($orderInput.val())) return alert('不可為空!');
+
+                    ProductSerialData.Pick_Order($orderInput.val()).done(function(result){
+                        if(result){
+                            $orderDialog.dialog('close');
+                            $shipBtn.trigger('click');
+                        }else{
+                            return alert('查無此訂單!');
+                        }
+                    });
+                }
+            });
+        });
+
+        function printPickUpList() {
+            var url = '@Url.Action("printPickUpList", "ajax")';
+            ajaxData(url, 'post', { warehouseId:@route.warehouseId, adminId:@route.adminId }).done(function (response) {
+                if(response['status']){
+                    print($.param({fileName: response['fileName'], filePath: response['filePath'], amount: response['amount']}, true));
+                }
+
+                $pickWin.window('close');
+            });
+        }
+
+        function isEmpty(value) {
+            return (value == undefined) || (value == null) || (value == "");
+        }
+
+        function ajaxData(url, type, data) {
+            return $.ajax({
+                url: url,
+                type: type,
+                data: data,
+                dataType: 'json'
+            });
+        }
+
+        function print(params){
+            jsWebClientPrint.print(params);
+        }
+
+        var ProductSerialData = function(){
+            var isInit = false, orderChangeList = [];
+            var groupList, productList, serialList, fileList;
+            var gb_OrderID, gb_PackageID;
+
+            var init = function (){
+                var url = '@Url.Action("getSerialData", "ajax")';
+                ajaxData(url, 'get', {carrierID: $carrierSelect.val()}).done(function(response){
+                    if(response['status']){
+                        groupList = response['data']['groupList'];
+                        productList = response['data']['productList'];
+                        serialList = response['data']['serialList'];
+                        fileList = response['data']['fileList'];
+                        groupList["Priority"] = {};
+                    }
+                    isInit = response['status'];
+                });
+                orderLocked();
+                orderChangeList = [];
+            };
+
+            var checkSerial = function(serial){
+                var productId, order, serialNumber;
+
+                if(!ProductSerialData.Is_Init()) return alert("尚未預載資料!");
+
+                if (isEmpty(serial)) return error('不可為空!');
+
+                for(var pId in serialList){
+                    //if($.inArray(serial, serialList[pId].used) != -1) return error("序號已被使用!");
+                    if($.inArray(serial, serialList[pId].serials) != -1){
+                        productId = pId;
+                        serialNumber = serial;
+                    }
+                    if(pId == serial) {
+                        if(serialList[pId].isRequire) return error("產品需要輸入序號!");
+                        productId = pId;
+                    }
+                }
+
+                if(isEmpty(productId)){
+                    if(isEmpty(productList[serial])) return error("找不到產品!");
+                    productId = serial;
+                }
+
+                var products = productList[productId];
+                var notPicked = Object.keys(products).map(i => products[i]).filter(product => !product.IsPicked);
+                if(!isEmpty(gb_OrderID) && !isEmpty(gb_PackageID)){
+                    notPicked = notPicked.filter(product => product.OrderID == gb_OrderID && product.PackageID == gb_PackageID);
+                }
+                if(notPicked.length == 0) return error("產品不符合!");
+
+                var pData, order, typeList = ["Single", "Multiple", "Priority"];
+                for(var type in typeList){
+                    if(!isEmpty(groupList[typeList[type]])){
+                        for(var i in notPicked){
+                            pData = notPicked[i];
+                            order = groupList[typeList[type]][pData.OrderID]
+
+                            if(checkPicked(pData, order, serialNumber)){
+                                showList(order[pData.PackageID]);
+
+                                return error("");
+                            }
+                        }
+                    }
+                }
+            };
+
+            function checkPicked(pData, order, serialNumber) {;
+                if(!isEmpty(order)){
+                    var product = order[pData.PackageID][pData.ItemID];
+                    pData.QtyPicked = product.data.QtyPicked += 1;
+                    pData.IsPicked = product.data.IsPicked = (product.data.QtyPicked == product.data.Qty);
+
+                    if(!isEmpty(serialNumber)){
+                        product.serial.push(serialNumber);
+                        if($.inArray(serialNumber, serialList[product.data.ProductID].used) == -1) {
+                            serialList[product.data.ProductID].used.push(serialNumber);
+                        }
+                    }
+
+                    if(isEmpty(gb_OrderID) || isEmpty(gb_PackageID)) orderLocked(pData.OrderID, pData.PackageID);
+
+                    if(product.data.IsPicked){
+                        var file = fileList[pData.PackageID];
+                        var needPick = Object.keys(order[pData.PackageID]).map(itemID => order[pData.PackageID][itemID]).filter(product => !product.data.IsPicked);
+
+                        if(needPick.length == 0){
+                            if(!findOrderChange(pData.OrderID)){
+                                print($.param({ fileName: file['fileName'], filePath: file['filePath'], amount: file['amount'], printerName: file['printerName'] }, true));
+                                updatePicked(pData, order, false);
+                            }
+
+                            if(orderChangeList.length != 0) init();
+                        }
+                    }
+                    return true;
+                }
+                return false;
+            }
+
+            function findOrderChange(orderID){
+                if(orderChangeList.length > 0){
+                    var orderFilter = orderChangeList.filter(function(order) {
+                        console.log(order['OrderID']);
+                        return (order['OrderID'] == orderID) && (order['Status'] == 1);
+                    });
+
+                    if(orderFilter.length > 0){
+                        alert('訂單【'+ orderID +' 】'+(orderFilter[0]['Status'] == 1 ? '已取消出貨!' : '已完成出貨!'));
+                        orderLocked();
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            function updatePicked(pData, order, retry) {
+                var data = new FormData();
+                var picked = new Array(), serial = new Object();
+
+                for(var itemID in order[pData.PackageID]){
+                    picked.push(order[pData.PackageID][itemID].data);
+                    serial[itemID] = order[pData.PackageID][itemID].serial;
+                }
+
+                var url = '@Url.Action("updatePicked", "ajax")';
+                ajaxData(url, 'post', { picked: picked, serial: serial }).done(function(response){
+                    if(response['status']) {
+                        if(retry) error('訂單【' + gb_OrderID + '】更新失敗，資料已重新寄送!');
+                        orderLocked();
+                    } else {
+                        alert(response['message']);
+                    }
+                }).fail(function(jqXHR, textStatus, errorThrown) {
+                    updatePicked(pData, order, true);
+                });
+                orderLocked();
+            }
+
+            var resetSerial = function(){
+                error("");
+
+                var rows = $pickupTable.datagrid('getRows');
+                if(rows.length == 0) return true;
+
+                var notPicked = rows.filter(product => !product.IsPicked);
+                if(notPicked.length > 0){
+                    var order = searchOrder(notPicked[0].OrderID);
+                    $.each(order[notPicked[0].PackageID], function(itemID, product){
+                        if(product.serial.length > 0){
+                            var serials = $.grep(serialList[product.data.ProductID].used, function(s, i){
+                                return $.inArray(s, product.serial);
+                            });
+
+                            product.data.IsPicked = false;
+                            product.data.QtyPicked = 0;
+                            product.serial = [];
+
+                            productList[product.data.ProductID][product.data.ItemID] = product.data;
+                            serialList[product.data.ProductID].used = serials;
+                        }
+                    });
+                }
+
+                orderLocked();
+
+                return $pickupTable.datagrid('loadData', {total:0, rows:[]});
+            };
+
+            function pickOrder(orderID){
+                var order = searchOrder(orderID);
+
+                if(!isEmpty(order)){
+                    resetSerial();
+                    orderLocked(orderID, Object.keys(order)[0]);
+                    showList(order[gb_PackageID]);
+                    return true;
+                }
+
+                return false;
+            }
+
+            function searchOrder(orderID){
+                var order = false, typeList = ["Single", "Multiple", "Priority"];
+
+                $.each(typeList, function (i, type) {
+                    if(!isEmpty(groupList[type])) {
+                        order = groupList[type][orderID];
+
+                        if(!isEmpty(order)) return false;
+                    }
+                });
+
+                return order;
+            }
+
+            function showList(items) {
+                var data = {total:0, rows:[]};
+                var product, serialNumber;
+
+                for(var itemID in items){
+                    product = items[itemID].data;
+                    serialNumber = items[itemID].serial;
+
+                    for(var i=1; i <= product.Qty; i++){
+                        data.rows.push({
+                            IsPicked: product.IsPicked, OrderID: product.OrderID, PackageID: product.PackageID, ProductID: product.ProductID, ProductName: product.ProductName, UPC: product.UPC, SerialNumber: (i <= product.QtyPicked ? serialNumber[i-1] : ""),
+                            Picked: "<img src='../content/img/" + (i <= product.QtyPicked ? "checked" : "error") + ".png' runat='server' style='width: auto; height: 15px;'>"});
+                        data.total++;
+                    }
+                }
+
+                $pickupTable.datagrid('loadData', data);
+            }
+
+            function orderLocked(orderID, packageID){
+                gb_OrderID = orderID;
+                gb_PackageID = packageID;
+            }
+
+            function error(message){
+                $("#message-error").html(message);
+                $serialInput.textbox('clear');
+            }
+
+            return {
+                Is_Init: function(){
+                    return isInit;
+                },
+                Get_Data: init,
+                Check_Serial: checkSerial,
+                Reset_Serial: function(){
+                    if(!confirm("是否確定要關閉?")) return false;
+
+                    return resetSerial();
+                },
+                Pick_Order: function(orderID){
+                    var deferred = $.Deferred();
+
+                    if(pickOrder(orderID)){
+                        deferred.resolve(true);
+                    }else{
+                        var url = '@Url.Action("PickOrder", "ajax")';
+                        ajaxData(url, 'get', { orderID: orderID, warehouseId: @route.warehouseId }).done(function (response) {
+                            if(response['status']){
+                                var data = response['data'];
+
+                                groupList['Priority'][orderID] = data['groupList'];
+                                $.each(data['productList'], function(pId, products){
+                                    if(productList[pId] == undefined) {
+                                        productList[pId] = {};
+                                    }
+
+                                    $.each(products, function(itemID, product){
+                                        productList[pId][itemID] = product;
+                                    });
+                                });
+                                $.each(data['serialList'], function(pId, serial){
+                                    serialList[pId] = serial;
+                                });
+                                $.each(data['fileList'], function(packageID, file){
+                                    fileList[packageID] = file;
+                                });
+
+                                if(pickOrder(orderID)) deferred.resolve(true);
+                            }
+
+                            deferred.resolve(false);
+                        });
+                    }
+
+                    return deferred.promise();
+                },
+                Update_OrderList: function(order) {
+                    orderChangeList.push(order);
+                }
+            };
+        }();
+    </script>
+}

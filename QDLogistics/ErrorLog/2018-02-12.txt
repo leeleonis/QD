@@ -1,0 +1,65 @@
+ActionName : 同步5天訂單資料失敗
+Message : 並未將物件參考設定為物件的執行個體。
+StackTrace : 於 QDLogistics.Commons.SyncProcess.Sync_Orders(Int32 day)
+Date : 2018/2/12 下午 02:46:52
+
+-----------------------------------------------------------------------------
+
+ActionName : 同步5天訂單資料失敗
+Message : 在此提供者連接上開始交易時發生錯誤。如需詳細資料，請參閱內部例外狀況。
+StackTrace : 於 System.Data.Entity.Core.EntityClient.EntityConnection.BeginDbTransaction(IsolationLevel isolationLevel)
+   於 System.Data.Entity.Core.EntityClient.EntityConnection.BeginTransaction()
+   於 System.Data.Entity.Core.Objects.ObjectContext.ExecuteInTransaction[T](Func`1 func, IDbExecutionStrategy executionStrategy, Boolean startLocalTransaction, Boolean releaseConnectionOnSuccess)
+   於 System.Data.Entity.Core.Objects.ObjectContext.SaveChangesToStore(SaveOptions options, IDbExecutionStrategy executionStrategy, Boolean startLocalTransaction)
+   於 System.Data.Entity.Core.Objects.ObjectContext.<>c__DisplayClass2a.<SaveChangesInternal>b__27()
+   於 System.Data.Entity.SqlServer.DefaultSqlExecutionStrategy.Execute[TResult](Func`1 operation)
+   於 System.Data.Entity.Core.Objects.ObjectContext.SaveChangesInternal(SaveOptions options, Boolean executeInExistingTransaction)
+   於 System.Data.Entity.Core.Objects.ObjectContext.SaveChanges(SaveOptions options)
+   於 System.Data.Entity.Internal.InternalContext.SaveChanges()
+   於 System.Data.Entity.Internal.LazyInternalContext.SaveChanges()
+   於 System.Data.Entity.DbContext.SaveChanges()
+   於 QDLogistics.Models.Repositiry.GenericRepository`1.SaveChanges()
+   於 QDLogistics.Commons.SyncProcess.Sync_Orders(Int32 day)
+Date : 2018/2/12 下午 02:55:02
+Inner Message : System.Runtime.InteropServices.SEHException (0x80004005): 外部元件傳回例外狀況。
+   於 SNI_ConnWrapper.__delDtor(SNI_ConnWrapper* , UInt32 )
+   於 SNINativeMethodWrapper.SNIClose(IntPtr pConn)
+   於 System.Data.SqlClient.SNIHandle.ReleaseHandle()
+   於 System.Runtime.InteropServices.SafeHandle.InternalDispose()
+   於 System.Runtime.InteropServices.SafeHandle.Dispose(Boolean disposing)
+   於 System.Runtime.InteropServices.SafeHandle.Dispose()
+   於 System.Data.SqlClient.TdsParserStateObject.Dispose()
+   於 System.Data.SqlClient.TdsParser.Disconnect()
+   於 System.Data.SqlClient.SqlInternalConnectionTds.Dispose()
+   於 System.Data.ProviderBase.DbConnectionPool.DestroyObject(DbConnectionInternal obj)
+   於 System.Data.ProviderBase.DbConnectionPool.DeactivateObject(DbConnectionInternal obj)
+   於 System.Data.ProviderBase.DbConnectionPool.PutObject(DbConnectionInternal obj, Object owningObject)
+   於 System.Data.ProviderBase.DbConnectionInternal.CloseConnection(DbConnection owningObject, DbConnectionFactory connectionFactory)
+   於 System.Data.SqlClient.SqlConnection.CloseInnerConnection()
+   於 System.Data.SqlClient.SqlConnection.Close()
+   於 System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   於 System.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   於 System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   於 System.Data.SqlClient.TdsParserStateObject.ReadSniError(TdsParserStateObject stateObj, UInt32 error)
+   於 System.Data.SqlClient.TdsParserStateObject.ReadSniSyncOverAsync()
+   於 System.Data.SqlClient.TdsParserStateObject.TryReadNetworkPacket()
+   於 System.Data.SqlClient.TdsParserStateObject.TryPrepareBuffer()
+   於 System.Data.SqlClient.TdsParserStateObject.TryReadByte(Byte& value)
+   於 System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   於 System.Data.SqlClient.TdsParser.Run(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj)
+   於 System.Data.SqlClient.TdsParser.TdsExecuteTransactionManagerRequest(Byte[] buffer, TransactionManagerRequestType request, String transactionName, TransactionManagerIsolationLevel isoLevel, Int32 timeout, SqlInternalTransaction transaction, TdsParserStateObject stateObj, Boolean isDelegateControlRequest)
+   於 System.Data.SqlClient.SqlInternalConnectionTds.ExecuteTransactionYukon(TransactionRequest transactionRequest, String transactionName, IsolationLevel iso, SqlInternalTransaction internalTransaction, Boolean isDelegateControlRequest)
+   於 System.Data.SqlClient.SqlInternalConnectionTds.ExecuteTransaction(TransactionRequest transactionRequest, String name, IsolationLevel iso, SqlInternalTransaction internalTransaction, Boolean isDelegateControlRequest)
+   於 System.Data.SqlClient.SqlInternalConnection.BeginSqlTransaction(IsolationLevel iso, String transactionName, Boolean shouldReconnect)
+   於 System.Data.SqlClient.SqlConnection.BeginTransaction(IsolationLevel iso, String transactionName)
+   於 System.Data.SqlClient.SqlConnection.BeginDbTransaction(IsolationLevel isolationLevel)
+   於 System.Data.Common.DbConnection.BeginTransaction(IsolationLevel isolationLevel)
+   於 System.Data.Entity.Infrastructure.Interception.DbConnectionDispatcher.<BeginTransaction>b__0(DbConnection t, BeginTransactionInterceptionContext c)
+   於 System.Data.Entity.Infrastructure.Interception.InternalDispatcher`1.Dispatch[TTarget,TInterceptionContext,TResult](TTarget target, Func`3 operation, TInterceptionContext interceptionContext, Action`3 executing, Action`3 executed)
+   於 System.Data.Entity.Infrastructure.Interception.DbConnectionDispatcher.BeginTransaction(DbConnection connection, BeginTransactionInterceptionContext interceptionContext)
+   於 System.Data.Entity.Core.EntityClient.EntityConnection.<>c__DisplayClassf.<BeginDbTransaction>b__d()
+   於 System.Data.Entity.SqlServer.DefaultSqlExecutionStrategy.Execute[TResult](Func`1 operation)
+   於 System.Data.Entity.Core.EntityClient.EntityConnection.BeginDbTransaction(IsolationLevel isolationLevel)
+
+-----------------------------------------------------------------------------
+

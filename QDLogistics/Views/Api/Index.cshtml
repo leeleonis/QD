@@ -1,0 +1,558 @@
+﻿@{
+    Layout = "";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>DM API</title>
+    <style>
+        ::selection {
+            background-color: #E13300;
+            color: white;
+        }
+
+        ::-moz-selection {
+            background-color: #E13300;
+            color: white;
+        }
+
+        body {
+            background-color: #FFF;
+            margin: 40px;
+            font: 16px/20px normal Helvetica, Arial, sans-serif;
+            color: #4F5155;
+            word-wrap: break-word;
+        }
+
+        a {
+            color: #039;
+            background-color: transparent;
+            font-weight: normal;
+        }
+
+        h1 {
+            color: #444;
+            background-color: transparent;
+            border-bottom: 1px solid #D0D0D0;
+            font-size: 24px;
+            font-weight: normal;
+            margin: 0 0 14px 0;
+            padding: 14px 15px 10px 15px;
+        }
+
+        code {
+            font-family: Consolas, Monaco, Courier New, Courier, monospace;
+            font-size: 16px;
+            background-color: #f9f9f9;
+            border: 1px solid #D0D0D0;
+            color: #002166;
+            display: block;
+            margin: 14px 0 14px 0;
+            padding: 12px 10px 12px 10px;
+        }
+
+        li {
+            line-height: 1.8em;
+        }
+
+            li > ul {
+                padding-left: 20px;
+            }
+
+        #body {
+            margin: 0 15px 0 15px;
+        }
+
+        p.footer {
+            text-align: right;
+            font-size: 16px;
+            border-top: 1px solid #D0D0D0;
+            line-height: 32px;
+            padding: 0 10px 0 10px;
+            margin: 20px 0 0 0;
+        }
+
+        #container {
+            margin: 10px;
+            border: 1px solid #D0D0D0;
+            box-shadow: 0 0 8px #D0D0D0;
+        }
+
+            #container .inline-list li {
+                display: inline;
+                padding-right: 10px;
+            }
+
+        .note {
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h1>DM API 使用說明</h1>
+        <div id="body">
+            <h2>如何使用：</h2>
+            <ol>
+                <li><a href="#url">API URLs</a>
+                <li><a href="#login">登入檢查 - Login Method</a></li>
+                <li>
+                    <a href="#product">出貨產品 - Product Method</a>
+                    <ul>
+                        <li><a href="#product-list">取得產品列表</a></li>
+                        <li><a href="#product-pickUp">取得撿貨資料</a></li>
+                        <li><a href="#pickUp-list">取得檢貨單</a></li>
+                        <li><a href="#update-pickUp">更新產品出貨</a></li>
+                    </ul>
+                </li>
+                <li><a href="#warehouse">出貨倉列表 - Warehouse Method</a></li>
+                <li><a href="#carrier">運輸商列表 - Carrier Method</a></li>
+                <li><a href="#serial">同步產品序號 - Serial Method</a></li>
+                <li><a href="#logout">管理員登出 - Logout Method</a></li>
+            </ol>
+            <div id="url">
+                <h3>1. API URLs</h3>
+                <span>基本的 API request url 範例： <a href="@Url.Action("warehouse", "api")">@Url.Action("", "api", null, Request.Url.Scheme)/{method_name}?{query_string}</a></span>
+                <span>使用時 API URLs 有幾項要注意</span>
+                <ol>
+                    <li>請求方式有 GET | POST</li>
+                    <li>
+                        API 回傳格式為 JSON，資料有三種，如下
+                        <table border="1" width="500" style="text-align: center;">
+                            <tr>
+                                <td>名稱</td>
+                                <td>型態</td>
+                                <td>說明</td>
+                            </tr>
+                            <tr>
+                                <td>Status</td>
+                                <td>TRUE / FALSE</td>
+                                <td>是否有資料回傳</td>
+                            </tr>
+                            <tr>
+                                <td>Message</td>
+                                <td>STRING</td>
+                                <td>失敗時錯誤訊息回傳</td>
+                            </tr>
+                            <tr>
+                                <td>Data</td>
+                                <td>Object</td>
+                                <td>成功時資料回傳</td>
+                            </tr>
+                        </table>
+                    </li>
+                </ol>
+            </div>
+            <hr>
+            <div id="login">
+                <h3>2. 登入檢查 - Login Method</h3>
+                <ol>
+                    <li>請求方式為 POST</li>
+                    <li><span>API Urls ： <a href="@Url.Action("login", "api")">@Url.Action("login", "api", null, Request.Url.Scheme)</a></span></li>
+                    <li>
+                        傳送檢查資料，可以取得回傳結果
+                        <table border="1" style="width:80%; text-align: center;">
+                            <tr>
+                                <td>名稱</td>
+                                <td>參數</td>
+                                <td>格式</td>
+                                <td width="20%">備註</td>
+                            </tr>
+                            <tr>
+                                <td>使用者名稱</td>
+                                <td>username</td>
+                                <td>String</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>使用者密碼</td>
+                                <td>password</td>
+                                <td>String</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>出貨倉ID</td>
+                                <td>warehouseID</td>
+                                <td>Int</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>應用方ID</td>
+                                <td>GUID</td>
+                                <td>String</td>
+                                <td></td>
+                            </tr>
+                        </table>
+                    </li>
+                </ol>
+            </div>
+            <hr />
+            <div id="product">
+                <h3>3. 出貨產品 - Product Method</h3>
+                <ol>
+                    <li>請求方式為 GET</li>
+                    <li>
+                        <span>傳送應用方ID，可以取得回傳結果</span>
+                        <table border="1" style="width:80%; text-align: center;">
+                            <tr>
+                                <td>名稱</td>
+                                <td>參數</td>
+                                <td>格式</td>
+                                <td width="20%">備註</td>
+                            </tr>
+                            <tr>
+                                <td>應用方ID</td>
+                                <td>GUID</td>
+                                <td>String</td>
+                                <td></td>
+                            </tr>
+                        </table>
+                    </li>
+                </ol>
+                <div id="product-list">
+                    <h4>取得產品列表</h4>
+                    <ol>
+                        <li><span>API Urls ： <a href="@Url.Action("product_list", "api")">@Url.Action("product_list", "api", null, Request.Url.Scheme)</a></span></li>
+                        <li>
+                            <span>以下為取得後的資料</span>
+                            <table border="1" style="width:80%; text-align: center;">
+                                <tr><td>名稱</td><td>參數</td><td>格式</td><td width="20%">備註</td></tr>
+                                <tr><td>訂單ID</td><td>OrderID</td><td>Int</td><td></td></tr>
+                                <tr><td>SKU</td><td>SKU</td><td>String</td><td></td></tr>
+                                <tr><td>產品名稱</td><td>ProductName</td><td>String</td><td></td></tr>
+                                <tr><td>數量</td><td>Qty</td><td>Int</td><td></td></tr>
+                                <tr><td>重量</td><td>Weight</td><td>Float</td><td></td></tr>
+                                <tr><td>運輸方式</td><td>ShippingMethod</td><td>String</td><td></td></tr>
+                                <tr><td>國家</td><td>Country</td><td>String</td><td></td></tr>
+                                <tr><td>出口報關</td><td>Export</td><td>String</td><td>正式 / 簡易</td></tr>
+                                <tr><td>狀態</td><td>Status</td><td>String</td><td>Rush / Normal</td></tr>
+                                <tr><td>備註</td><td>Comment</td><td>String</td><td></td></tr>
+                            </table>
+                        </li>
+                    </ol>
+                </div>
+                <div id="product-pickUp">
+                    <h4>取得撿貨資料</h4>
+                    <ol>
+                        <li>請求方式為 GET</li>
+                        <li><span>API Urls ： <a href="@Url.Action("product_pickUp", "api")">@Url.Action("product_pickUp", "api", null, Request.Url.Scheme)</a></span></li>
+                        <li>
+                            <span>傳送運輸商ID和應用方ID，可以取得待出貨訂單的撿貨資料</span>
+                            <table border="1" style="width:80%; text-align: center;">
+                                <tr>
+                                    <td>名稱</td>
+                                    <td>參數</td>
+                                    <td>格式</td>
+                                    <td width="20%">備註</td>
+                                </tr>
+                                <tr>
+                                    <td>運輸商ID</td>
+                                    <td>carrierID</td>
+                                    <td>int</td>
+                                    <td>如果為0則表示全部</td>
+                                </tr>
+                                <tr>
+                                    <td>應用方ID</td>
+                                    <td>GUID</td>
+                                    <td>String</td>
+                                    <td></td>
+                                </tr>
+                            </table>
+                        </li>
+                        <li>
+                            <span>以下為取得後的資料</span>
+                            <table border="1" style="width:80%; text-align: center;">
+                                <tr><td width="10%">類型</td><td width="15%">分組-1</td><td width="15%">分組-2</td><td width="15%">分組-3</td><td width="15%">分組-4</td><td width="15%">分組-5</td><td width="15%">備註</td></tr>
+                                <tr>
+                                    <td>產品列表【productList】</td>
+                                    <td>ProductID</td>
+                                    <td>ItemID</td>
+                                    <td colspan="4"></td>
+                                </tr>
+                                <tr>
+                                    <td rowspan="2">群組列表【groupList】</td>
+                                    <td>單件【Single】</td>
+                                    <td rowspan="2">OrderID</td>
+                                    <td rowspan="2">PackageID</td>
+                                    <td rowspan="2">ItemID</td>
+                                    <td>data</td>
+                                    <td rowspan="2"></td>
+                                </tr>
+                                <tr>
+                                    <td>多件【Multiple】</td>
+                                    <td>serial</td>
+                                </tr>
+                                <tr>
+                                    <td rowspan="3">序號列表【serialList】</td>
+                                    <td rowspan="3">ProductID</td>
+                                    <td colspan="2">產品序號必備【isRequire】</td>
+                                    <td rowspan="3" colspan="3">如果某件產品的【isRequire】為TURE，則此產品出貨時必帶序號。</td>
+                                </tr>
+                                <tr><td colspan="2">已擁有【serials】</td></tr>
+                                <tr><td colspan="2">已使用【used】</td></tr>
+                                <tr>
+                                    <td rowspan="4">檔案列表【fileList】</td>
+                                    <td rowspan="4">PackageID</td>
+                                    <td colspan="2">檔案名稱【fileName】</td>
+                                    <td rowspan="4" colspan="3" class="note">
+                                        <ul>
+                                            <li>fileName[0]、filePath[0]、amount[0] 為同一組檔案</li>
+                                            <li>AirWaybill檔案需用【printerName】印表機列印，其它則使用預設印表機</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr><td colspan="2">檔案位置【filePath】</td></tr>
+                                <tr><td colspan="2">列印數量【amount】</td></tr>
+                                <tr><td colspan="2">印表機名稱【printerName】</td></tr>
+                            </table>
+                        </li>
+                    </ol>
+                </div>
+                <div id="pickUp-list">
+                    <h4>取得檢貨單</h4>
+                    <ol>
+                        <li>請求方式為 GET</li>
+                        <li><span>API Urls ： <a href="@Url.Action("print_pickUpList", "api")">@Url.Action("print_pickUpList", "api", null, Request.Url.Scheme)</a></span></li>
+                        <li>
+                            <span>以下為取得後的資料為 Byte[]</span>
+                        </li>
+                    </ol>
+                </div>
+                <div id="update-pickUp">
+                    <h4>更新產品</h4>
+                    <ol>
+                        <li>請求方式為 POST</li>
+                        <li><span>API Urls ： <a href="@Url.Action("update_pickUp", "api")">@Url.Action("update_pickUp", "api", null, Request.Url.Scheme)</a></span></li>
+                        <li>
+                            <span>傳送更新資料，可以取得回傳結果</span>
+                            <table border="1" style="width:80%; text-align: center;">
+                                <tr>
+                                    <td>名稱</td>
+                                    <td>參數</td>
+                                    <td>格式</td>
+                                    <td width="20%">備註</td>
+                                </tr>
+                                <tr>
+                                    <td>PickDataID</td>
+                                    <td>id</td>
+                                    <td>Int</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>產品序號</td>
+                                    <td>serials</td>
+                                    <td>Array(String)</td>
+                                    <td></td>
+                                </tr>
+                            </table>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+            <hr>
+            <div id="warehouse">
+                <h3>4. 出貨倉列表 - Warehouse Method</h3>
+                <ol>
+                    <li>請求方式為 GET</li>
+                    <li><span>API Urls ： <a href="@Url.Action("warehouse", "api")">@Url.Action("warehouse", "api", null, Request.Url.Scheme)</a></span></li>
+                    <li>
+                        <span>以下為取得的回傳資料</span>
+                        <table border="1" style="width:80%; text-align: center;">
+                            <tr>
+                                <td>名稱</td>
+                                <td>參數</td>
+                                <td>格式</td>
+                                <td width="20%">備註</td>
+                            </tr>
+                            <tr>
+                                <td>出貨倉ID</td>
+                                <td>ID</td>
+                                <td>int</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>出貨倉名稱</td>
+                                <td>name</td>
+                                <td>string</td>
+                                <td></td>
+                            </tr>
+                        </table>
+                    </li>
+                </ol>
+            </div>
+            <hr>
+            <div id="carrier">
+                <h3>5. 運輸商列表 - Carrier Method</h3>
+                <ol>
+                    <li>請求方式為 GET</li>
+                    <li><span>API Urls ： <a href="@Url.Action("carrier", "api")">@Url.Action("carrier", "api", null, Request.Url.Scheme)</a></span></li>
+                    <li>
+                        <span>傳送應用方ID，可以取得預設的運輸商列表</span>
+                        <table border="1" style="width:80%; text-align: center;">
+                            <tr>
+                                <td>名稱</td>
+                                <td>參數</td>
+                                <td>格式</td>
+                                <td width="20%">備註</td>
+                            </tr>
+                            <tr>
+                                <td>應用方ID</td>
+                                <td>GUID</td>
+                                <td>String</td>
+                                <td></td>
+                            </tr>
+                        </table>
+                    </li>
+                    <li>
+                        <span>以下為取得的回傳資料</span>
+                        <table border="1" style="width:80%; text-align: center;">
+                            <tr>
+                                <td>名稱</td>
+                                <td>參數</td>
+                                <td>格式</td>
+                                <td width="20%">備註</td>
+                            </tr>
+                            <tr>
+                                <td>運輸商ID</td>
+                                <td>ID</td>
+                                <td>int</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>運輸商名稱</td>
+                                <td>name</td>
+                                <td>string</td>
+                                <td></td>
+                            </tr>
+                        </table>
+                    </li>
+                </ol>
+            </div>
+            <hr>
+            <div id="serial">
+                <h3>6. 同步產品序號 - Serial Method</h3>
+                <div id="sync-serial">
+                    <h4>執行工作</h4>
+                    <ol>
+                        <li>請求方式為 GET</li>
+                        <li><span>API Urls ： <a href="@Url.Action("sync_productSerial", "api")">@Url.Action("sync_productSerial", "api", null, Request.Url.Scheme)</a></span></li>
+                        <li>
+                            <span>傳送應用方ID，可以執行產品序號同步工作</span>
+                            <table border="1" style="width:80%; text-align: center;">
+                                <tr>
+                                    <td>名稱</td>
+                                    <td>參數</td>
+                                    <td>格式</td>
+                                    <td width="20%">備註</td>
+                                </tr>
+                                <tr>
+                                    <td>應用方ID</td>
+                                    <td>GUID</td>
+                                    <td>String</td>
+                                    <td></td>
+                                </tr>
+                            </table>
+                        </li>
+                        <li>
+                            <span>以下為取得的回傳資料</span>
+                            <table border="1" style="width:80%; text-align: center;">
+                                <tr>
+                                    <td>名稱</td>
+                                    <td>參數</td>
+                                    <td>格式</td>
+                                    <td width="20%">備註</td>
+                                </tr>
+                                <tr>
+                                    <td>工作ID</td>
+                                    <td>taskID</td>
+                                    <td>Int</td>
+                                    <td></td>
+                                </tr>
+                            </table>
+                        </li>
+                    </ol>
+                </div>
+                <div id="check-task">
+                    <h4>檢查工作狀態</h4>
+                    <ol>
+                        <li>請求方式為 GET</li>
+                        <li><span>API Urls ： <a href="@Url.Action("check_taskStatus", "api")">@Url.Action("check_taskStatus", "api", null, Request.Url.Scheme)</a></span></li>
+                        <li>
+                            <span>傳送工作ID和應用方ID，可以取得工作狀態</span>
+                            <table border="1" style="width:80%; text-align: center;">
+                                <tr>
+                                    <td>名稱</td>
+                                    <td>參數</td>
+                                    <td>格式</td>
+                                    <td width="20%">備註</td>
+                                </tr>
+                                <tr>
+                                    <td>工作ID</td>
+                                    <td>taskID</td>
+                                    <td>int</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>應用方ID</td>
+                                    <td>GUID</td>
+                                    <td>String</td>
+                                    <td></td>
+                                </tr>
+                            </table>
+                        </li>
+                        <li>
+                            <span>以下為取得的回傳資料</span>
+                            <table border="1" style="width:80%; text-align: center;">
+                                <tr>
+                                    <td>名稱</td>
+                                    <td>參數</td>
+                                    <td>格式</td>
+                                    <td width="20%">備註</td>
+                                </tr>
+                                <tr>
+                                    <td>是否結束</td>
+                                    <td>isFinished</td>
+                                    <td>boolean</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>狀態</td>
+                                    <td>statusText</td>
+                                    <td>string</td>
+                                    <td></td>
+                                </tr>
+                            </table>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+            <hr>
+            <div id="logout">
+                <h3>7. 管理員登出 - Logout Method</h3>
+                <ol>
+                    <li>請求方式為 GET</li>
+                    <li><span>API Urls ： <a href="@Url.Action("logout", "api")">@Url.Action("logout", "api", null, Request.Url.Scheme)</a></span></li>
+                    <li>
+                        <span>傳送應用方ID，可以登出系統</span>
+                        <table border="1" style="width:80%; text-align: center;">
+                            <tr>
+                                <td>名稱</td>
+                                <td>參數</td>
+                                <td>格式</td>
+                                <td width="20%">備註</td>
+                            </tr>
+                            <tr>
+                                <td>應用方ID</td>
+                                <td>GUID</td>
+                                <td>String</td>
+                                <td></td>
+                            </tr>
+                        </table>
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
