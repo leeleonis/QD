@@ -258,7 +258,7 @@
                             hasDataChange = true;
                         } 
 
-                        if ($("select#CarrierID:eq(" + index + ")").val() == null) {
+                        if ($("select#MethodID:eq(" + index + ")").val() == null) {
                             message += "訂單 - " + rows[i].OrderID + " 尚未選擇運輸方式!\n";
                         } else {
                             packageIDs.push(rows[i].PackageID);
@@ -449,9 +449,9 @@
                     { field: "AvailableQty", title: "Available QTY<br />可用庫存", width: 90, align: "center", sortable: false },
                     { field: "ShippingServiceSelected", title: "Default Shipping Method<br />預設運輸方式", width: 250, align: "center", sortable: false },
                     {
-                        field: "CarrierID", title: "Shipping Method<br />運輸方式", width: 150, align: "center", sortable: false,
+                        field: "MethodID", title: "Shipping Method<br />運輸方式", width: 150, align: "center", sortable: false,
                         formatter: function (value, row, index) {
-                            return "<select class='form-control input-sm' id='CarrierID' onchange='onDataChange(" + row.PackageID + ")'>" + getSelectOption(filterCarrierOption(row.ShipWarehouse), value) + "</select>";
+                            return "<select class='form-control input-sm' id='MethodID' onchange='onDataChange(" + row.PackageID + ")'>" + getSelectOption(filterCarrierOption(row.ShipWarehouse), value) + "</select>";
                         }
                     }, {
                         field: "Export", title: "Export<br />出口報關", width: 100, align: "center", sortable: false,
@@ -498,7 +498,7 @@
                 },
                 onBeforeLoad: function (param) {
                     param.WarehouseID = $warehouseSelect.val() || $warehouseSearch.val();
-                    param.CarrierID = $carrierSelect.val() || $methodSearch.val();
+                    param.MethodID = $carrierSelect.val() || $methodSearch.val();
                     param.Export = $exportSelect.val();
                     param.ExportMethod = $exportMethodSelect.val();
                     param.StatusCode = $statusCodeSelect.val() || $statusSearch.val();
@@ -572,7 +572,7 @@
             if (changeWarehouse == true) {
                 var Package = $dataGrid.datagrid("getRows")[index];
                 var warehouseID = $("select#ShipWarehouse:eq(" + index + ")").val();
-                $("select#CarrierID:eq(" + index + ")").html(getSelectOption(filterCarrierOption(warehouseID), Package.CarrierID));
+                $("select#MethodID:eq(" + index + ")").html(getSelectOption(filterCarrierOption(warehouseID), Package.MethodID));
             }
 
             $dataGrid.datagrid('checkRow', index);
@@ -673,7 +673,7 @@
                 DeclaredTotal: $("input#DeclaredTotal:eq(" + index + ")").val().replace(',', ''),
                 OrderCurrencyCode: $("select#OrderCurrencyCode:eq(" + index + ")").val(),
                 ShipWarehouse: $("select#ShipWarehouse:eq(" + index + ")").val(),
-                CarrierID: $("select#CarrierID:eq(" + index + ")").val(),
+                MethodID: $("select#MethodID:eq(" + index + ")").val(),
                 Export: $("select#Export:eq(" + index + ")").val(),
                 ExportMethod: $("select#ExportMethod:eq(" + index + ")").val(),
                 StatusCode: $("select#StatusCode:eq(" + index + ")").val(),

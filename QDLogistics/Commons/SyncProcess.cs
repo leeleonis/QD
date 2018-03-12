@@ -438,7 +438,7 @@ namespace QDLogistics.Commons
                 Package SC_package = SC_order.Packages.First(p => p.ID == package.ID);
 
                 SCWS.Update_PackageShippingStatus(SC_package, (package.UploadTracking ? package.TrackingNumber : ""));
-                SCWS.Update_OrderShippingStatus(SC_order, package.CarrierID != null ? package.Carriers.Carrier : "");
+                SCWS.Update_OrderShippingStatus(SC_order, package.Method != null ? package.Method.Carriers.Name : "");
 
                 foreach (Items item in package.Items.Where(i => i.IsEnable.Equals(true)).ToList())
                 {

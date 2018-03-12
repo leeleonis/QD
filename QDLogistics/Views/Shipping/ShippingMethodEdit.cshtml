@@ -1,0 +1,253 @@
+﻿@using QDLogistics.Models
+@using QDLogistics.Commons
+@model ShippingMethod
+
+@section styles{
+    <link href="~/Content/themes/default/easyui.css" rel="stylesheet" />
+    <link href="~/Content/themes/icon.css" rel="stylesheet" />
+}
+<div id="content">
+    <section id="widget-grid" class="">
+        <div class="row">
+            <article class="col-xs-12">
+                <div class="jarviswidget" data-widget-colorbutton="false" data-widget-editbutton="false" data-widget-togglebutton="false"
+                     data-widget-deletebutton="false" data-widget-fullscreenbutton="false" data-widget-custombutton="false" data-widget-sortable="false">
+
+                    <header>
+                        <span class="widget-icon"> <i class="fa fa-edit"></i> </span>
+
+                        <h2>編輯</h2>
+                        <ul class="nav nav-tabs pull-right">
+                            <li><a data-toggle="tab" href="#hb1">基本資料</a></li>
+                        </ul>
+                    </header>
+
+                    <div>
+                        <div class="widget-body no-padding">
+                            <form id="data-form" class="form-horizontal" method="post" enctype="multipart/form-data">
+                                <input type="hidden" name="isEnable" value="True">
+
+                                <div id="content" class="tab-content">
+                                    <div class="tab-pane" id="hb1">
+                                        <fieldset>
+                                            <legend>基本資料</legend>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label">DL運輸</label>
+
+                                                <div class="col-sm-9">
+                                                    <label class="radio radio-inline">
+                                                        <input type="radio" class="radiobox" name="IsDirectLine" value="true" @(Model.IsDirectLine ? "checked" : "")>
+                                                        <span>是</span>
+                                                    </label>
+
+                                                    <label class="radio radio-inline">
+                                                        <input type="radio" class="radiobox" name="IsDirectLine" value="false" @(!Model.IsDirectLine ? "checked" : "")>
+                                                        <span>否</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label">出口報關</label>
+
+                                                <div class="col-sm-9">
+                                                    <label class="radio radio-inline">
+                                                        <input type="radio" class="radiobox" name="IsExport" value="true" @(Model.IsExport.Value ? "checked" : "")>
+                                                        <span>是</span>
+                                                    </label>
+
+                                                    <label class="radio radio-inline">
+                                                        <input type="radio" class="radiobox" name="IsExport" value="false" @(!Model.IsExport.Value ? "checked" : "")>
+                                                        <span>否</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label">運電池</label>
+
+                                                <div class="col-sm-2">
+                                                    <label class="radio radio-inline">
+                                                        <input type="radio" class="radiobox" name="IsBattery" value="true" @(Model.IsBattery.Value ? "checked" : "")>
+                                                        <span>是</span>
+                                                    </label>
+
+                                                    <label class="radio radio-inline">
+                                                        <input type="radio" class="radiobox" name="IsBattery" value="false" @(!Model.IsBattery.Value ? "checked" : "")>
+                                                        <span>否</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label" for="Name">名稱</label>
+
+                                                <div class="col-sm-9 col-lg-4">
+                                                    <input type="text" class="form-control" id="Name" name="Name" value="@Model.Name">
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label">運輸商</label>
+
+                                                <div class="col-sm-9 col-lg-4">
+                                                    @Html.DropDownListFor(Model => Model.CarrierID, (SelectList)ViewData["carrierSelect"], new Dictionary<string, object>() { { "class", "form-control" } })
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label">運輸方法</label>
+
+                                                <div class="col-sm-9 col-lg-6">
+                                                    <select class="form-control" id="select-method" name="MethodType"></select>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label">貨物類型</label>
+
+                                                <div class="col-sm-9 col-lg-3">
+                                                    <select class="form-control" id="select-box" name="BoxType"></select>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label" for="PrinterName">熱感應印表機</label>
+
+                                                <div class="col-sm-9 col-lg-4">
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-control" id="PrinterName" name="PrinterName" value="@Model.PrinterName" readonly>
+                                                        <div class="input-group-btn">
+                                                            <button class="btn btn-default" type="button" id="btn-printer">按此設定</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="hidden">
+                                                    <div id="win-printer" class="easyui-window" title="印表機設定" style="width:400px;height:165px;padding:10px;"
+                                                         data-options="iconCls:'icon-save',collapsible:false,minimizable:false,maximizable:false,closed:true,draggable:false,resizable:false,modal:true">
+                                                        <div class="smart-form" data-options="region:'center'">
+                                                            <section>
+                                                                <label class="label" for="printer-thermal">請選擇熱感應印表機</label>
+                                                                <label class="input">
+                                                                    <select class="form-control" id="printer-thermal" name="thermalPrinter"></select>
+                                                                </label>
+                                                            </section>
+                                                        </div>
+                                                        <div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+                                                            <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" onclick="$printerName.val($thermalPrinter.val()); $printerWin.window('close');" style="width:80px">Ok</a>
+                                                            <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" onclick="$printerWin.window('close');" style="width:80px">Cancel</a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                    </div>
+                                </div>
+
+                                <div class="widget-footer">
+                                    <button type="submit" class="btn btn-primary" id="save">儲存</button>
+                                    <!-- <button type="submit" class="btn btn-primary" id="back" onclick="$('#data-form').attr('action', '?back=1');">儲存後返回</button> -->
+                                    <button type="button" class="btn btn-default" onclick="location.href='@Url.Action("shippingMethod", "shipping", ViewBag.routeValue)'">返回</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </section>
+</div>
+@section pagespecific {
+    <script src="~/scripts/jquery.easyui-1.4.3.min.js"></script>
+    @Html.Raw(ViewBag.WCPScript)
+    <script type="text/javascript">
+        var hash = window.location.hash;
+        $('ul.nav-tabs li').eq(hash.substr(1)).addClass('active');
+        $('.tab-pane').eq(hash.substr(1)).addClass('active');
+
+        var $CarrierSelect = $('#CarrierID'), $MethodSelect = $('#select-method'), MethodType, $BoxSelect = $('#select-box'), BoxType
+        var $printerName = $('#PrinterName'), $printerBtn = $('#btn-printer'), $printerWin = $('#win-printer'), $thermalPrinter = $('#printer-thermal');
+
+        var wcppGetPrintersTimeout_ms = 10000; //10 sec
+        var wcppGetPrintersTimeoutStep_ms = 500; //0.5 sec
+
+        $(document).ready(function () {
+            var data = { optionType: ['methodType', 'boxType'] };
+            getOption("@Url.Action("getSelectOption", "shipping")", 'post', data).done(function (response) {
+                if (response['status']) {
+                    MethodType = response.data.methodType;
+                    BoxType = response.data.boxType;
+
+                    var carrierName = $CarrierSelect.find('option:selected').html();
+                    $MethodSelect.html(getSelectOption(MethodType[carrierName], '@Model.MethodType'));
+                    $BoxSelect.html(getSelectOption(BoxType[carrierName], '@Model.BoxType'));
+                } else {
+                    alert(response['message']);
+                }
+            });
+
+            $CarrierSelect.change(function () {
+                var carrierName = $CarrierSelect.find('option:selected').html();
+                $MethodSelect.html(getSelectOption(MethodType[carrierName]));
+                $BoxSelect.html(getSelectOption(BoxType[carrierName]));
+            });
+
+            $printerBtn.click(function () {
+                if ($thermalPrinter.html().length == 0) jsWebClientPrint.getPrinters();
+                $printerWin.window("open");
+            });
+        });
+
+        function getOption(url, type, data) {
+            type = !isEmpty(type) ? type : {};
+            data = !isEmpty(data) ? data : {};
+
+            return $.ajax({
+                url: url,
+                type: type,
+                data: data,
+                dataType: "json"
+            });
+        }
+
+        function isEmpty(value) {
+            return (value == undefined) || (value == null) || (value == "");
+        }
+
+        function getSelectOption(optionList, value) {
+            var option = "";
+
+            if (!isEmpty(optionList) && optionList.length > 0) {
+                for (var i in optionList) {
+                    option += "<option value='" + optionList[i]["value"] + "' " + (optionList[i]["value"] == value ? "selected" : "") + ">" + optionList[i]["text"] + "</option>";
+                }
+            } else {
+                option = "<option value='0'>無選項</option>";
+            }
+
+            return option;
+        }
+
+        function wcpGetPrintersOnSuccess() {
+            // Display client installed printers
+            if (arguments[0].length > 0) {
+                var p = arguments[0].split("|");
+                var options = '';
+                for (var i = 0; i < p.length; i++) {
+                    options += '<option>' + p[i] + '</option>';
+                }
+
+                $('#printer-thermal').html(options);
+            } else {
+                alert("No printers are installed in your system.");
+            }
+        }
+
+        function wcpGetPrintersOnFailure() {
+            // Do something if printers cannot be got from the client
+            alert("No printers are installed in your system.");
+        }
+    </script>
+}

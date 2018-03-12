@@ -4,15 +4,14 @@
   <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
-      <Diagram DiagramId="2df7ccc2be6346dd95df1211691e689a" Name="Diagram1" ZoomLevel="122">
+      <Diagram DiagramId="2df7ccc2be6346dd95df1211691e689a" Name="Diagram1" ZoomLevel="91">
         <EntityTypeShape EntityType="QDLogisticsModel.Addresses" Width="1.5" PointX="1.25" PointY="20.875" />
         <EntityTypeShape EntityType="QDLogisticsModel.BundleItems" Width="1.5" PointX="5.125" PointY="5.25" />
-        <EntityTypeShape EntityType="QDLogisticsModel.CarrierAPI" Width="1.5" PointX="9.375" PointY="10.875" />
         <EntityTypeShape EntityType="QDLogisticsModel.Items" Width="1.5" PointX="3" PointY="0.75" IsExpanded="true" />
         <EntityTypeShape EntityType="QDLogisticsModel.Manufacturers" Width="1.5" PointX="0.625" PointY="13.375" />
         <EntityTypeShape EntityType="QDLogisticsModel.Orders" Width="1.5" PointX="3.875" PointY="17.5" IsExpanded="true" />
         <EntityTypeShape EntityType="QDLogisticsModel.Packages" Width="1.5" PointX="3.875" PointY="9" />
-        <EntityTypeShape EntityType="QDLogisticsModel.Payments" Width="1.5" PointX="6.5" PointY="18.5" />
+        <EntityTypeShape EntityType="QDLogisticsModel.Payments" Width="1.5" PointX="6.5" PointY="18.25" />
         <EntityTypeShape EntityType="QDLogisticsModel.Skus" Width="1.5" PointX="0.625" PointY="8.25" />
         <EntityTypeShape EntityType="QDLogisticsModel.Warehouses" Width="1.5" PointX="0.75" PointY="1.25" />
         <AssociationConnector Association="QDLogisticsModel.FK_Orders_Addresses" />
@@ -26,8 +25,6 @@
         <AssociationConnector Association="QDLogisticsModel.FK_Skus_Manufacturers" />
         <AssociationConnector Association="QDLogisticsModel.FK_Packages_Orders" />
         <AssociationConnector Association="QDLogisticsModel.FK_Payments_Orders" />
-        <EntityTypeShape EntityType="QDLogisticsModel.Services" Width="1.5" PointX="6.5" PointY="15.875" />
-        <AssociationConnector Association="QDLogisticsModel.FK_Orders_Services" />
         <EntityTypeShape EntityType="QDLogisticsModel.AdminGroups" Width="1.5" PointX="7.5" PointY="5.75" />
         <EntityTypeShape EntityType="QDLogisticsModel.AdminUsers" Width="1.5" PointX="9.625" PointY="5.75" />
         <AssociationConnector Association="QDLogisticsModel.FK_admin_user_admin_group" />
@@ -47,12 +44,19 @@
         <EntityTypeShape EntityType="QDLogisticsModel.PurchaseItemReceive" Width="1.5" PointX="13.375" PointY="10.75" />
         <EntityTypeShape EntityType="QDLogisticsModel.TaskScheduler" Width="1.5" PointX="11.375" PointY="0.875" />
         <AssociationConnector Association="QDLogisticsModel.FK_TaskLog_TaskScheduler" />
-        <EntityTypeShape EntityType="QDLogisticsModel.Carriers" Width="1.5" PointX="6.375" PointY="10.75" />
+        <EntityTypeShape EntityType="QDLogisticsModel.Box" Width="1.5" PointX="6.5" PointY="8.5" />
+        <AssociationConnector Association="QDLogisticsModel.FK_Packages_Box" />
+        <EntityTypeShape EntityType="QDLogisticsModel.Services" Width="1.5" PointX="11.5" PointY="15" />
+        <AssociationConnector Association="QDLogisticsModel.FK_Orders_Services" />
+        <EntityTypeShape EntityType="QDLogisticsModel.Preset" Width="1.5" PointX="13.625" PointY="4.625" />
+        <EntityTypeShape EntityType="QDLogisticsModel.CarrierAPI" Width="1.5" PointX="6.5" PointY="12" />
+        <EntityTypeShape EntityType="QDLogisticsModel.Carriers" Width="1.5" PointX="8.5" PointY="10.75" />
         <AssociationConnector Association="QDLogisticsModel.FK_Carriers_CarrierAPI" />
+        <EntityTypeShape EntityType="QDLogisticsModel.ShippingMethod" Width="1.5" PointX="8.625" PointY="14.125" />
+        <AssociationConnector Association="QDLogisticsModel.FK_ShippingMethod_Carriers" />
         <AssociationConnector Association="QDLogisticsModel.FK_Packages_Carriers" />
         <AssociationConnector Association="QDLogisticsModel.FK_Services_Carriers" />
-        <EntityTypeShape EntityType="QDLogisticsModel.Preset" Width="1.5" PointX="13.625" PointY="4.375" />
-      </Diagram>
+        </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>
 </edmx:Edmx>

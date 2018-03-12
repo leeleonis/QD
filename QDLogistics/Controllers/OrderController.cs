@@ -35,6 +35,7 @@ namespace QDLogistics.Controllers
         private IRepository<Packages> Packages;
         private IRepository<Items> Items;
         private IRepository<SerialNumbers> SerialNumbers;
+        private IRepository<ShippingMethod> ShippingMethod;
         private IRepository<Carriers> Carriers;
         private IRepository<PickProduct> PickProduct;
         private IRepository<Warehouses> Warehouses;
@@ -144,7 +145,7 @@ namespace QDLogistics.Controllers
                                             MyHelp.Log("Orders", packageData.OrderID, "訂單提交完成", session);
 
                                             byte[] carrierType = new byte[] { (byte)EnumData.CarrierType.DHL, (byte)EnumData.CarrierType.FedEx };
-                                            if (!shipProcess.isDropShip && carrierType.Contains(package.Carriers.CarrierAPI.Type.Value))
+                                            if (!shipProcess.isDropShip && carrierType.Contains(package.Method.Carriers.CarrierAPI.Type.Value))
                                             {
                                                 PickProduct = new GenericRepository<PickProduct>(db);
 
@@ -199,7 +200,7 @@ namespace QDLogistics.Controllers
 
                                     if (!string.IsNullOrEmpty(package.WinitNo))
                                     {
-                                        Winit_API winit = new Winit_API(package.Carriers.CarrierAPI);
+                                        Winit_API winit = new Winit_API(package.Method.Carriers.CarrierAPI);
                                         Received received = winit.Void(package.WinitNo);
                                         package.WinitNo = null;
                                     }
@@ -384,7 +385,7 @@ namespace QDLogistics.Controllers
         public ActionResult Package()
         {
             int warehouseId;
-            List<Carriers> CarrierList = new List<Carriers>();
+            List<ShippingMethod> MethodList = new List<ShippingMethod>();
 
             if (int.TryParse(Session["warehouseId"].ToString(), out warehouseId))
             {
@@ -393,9 +394,9 @@ namespace QDLogistics.Controllers
                 Warehouses warehouse = Warehouses.Get(warehouseId);
                 if (warehouse != null && !string.IsNullOrEmpty(warehouse.CarrierData))
                 {
-                    Dictionary<string, bool> CarrierData = JsonConvert.DeserializeObject<Dictionary<string, bool>>(warehouse.CarrierData);
-                    string[] CarrierIDs = CarrierData.Where(cData => cData.Value).Select(cData => cData.Key).ToArray();
-                    CarrierList = db.Carriers.AsNoTracking().Where(c => c.IsEnable.Value && CarrierIDs.Contains(c.ID.ToString())).ToList();
+                    Dictionary<string, bool> MethodData = JsonConvert.DeserializeObject<Dictionary<string, bool>>(warehouse.CarrierData);
+                    string[] MethodIDs = MethodData.Where(mData => mData.Value).Select(mData => mData.Key).ToArray();
+                    MethodList = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && MethodIDs.Contains(m.ID.ToString())).ToList();
                 }
             }
 
@@ -410,7 +411,7 @@ namespace QDLogistics.Controllers
                 .Join(context.ExecuteStoreQuery<Items>(itemSelect).ToList(), op => op.package.ID, i => i.PackageID, (op, item) => op.package).Distinct().ToList();
 
             ViewBag.packageList = ProductList;
-            ViewBag.carrierList = CarrierList;
+            ViewBag.methodList = MethodList;
             ViewBag.WCPScript = WebClientPrint.CreateScript(Url.Action("ProcessRequest", "WebClientPrintAPI", null, HttpContext.Request.Url.Scheme), Url.Action("PrintFile", "File", null, HttpContext.Request.Url.Scheme), HttpContext.Session.SessionID);
             ViewData["warehouseId"] = (int)Session["WarehouseID"];
             ViewData["adminId"] = (int)Session["AdminId"];
@@ -436,7 +437,7 @@ namespace QDLogistics.Controllers
             Items = new GenericRepository<Items>(db);
             PickProduct = new GenericRepository<PickProduct>(db);
             Payments = new GenericRepository<Payments>(db);
-            Carriers = new GenericRepository<Carriers>(db);
+            ShippingMethod = new GenericRepository<ShippingMethod>(db);
 
             try
             {
@@ -460,8 +461,8 @@ namespace QDLogistics.Controllers
                             TrackOrder track = new TrackOrder();
                             List<PickProduct> pickList = PickProduct.GetAll(true).Where(pick => pick.IsEnable == true && pick.IsPicked == true).OrderByDescending(pick => pick.PickUpDate).ToList();
                             List<Packages> packageList = pickList
-                                .Join(Packages.GetAll(true).Where(p => p.IsEnable == true && p.DeliveryStatus != (int)DeliveryStatusType.Delivered && p.CarrierID != 0 && !string.IsNullOrEmpty(p.TrackingNumber)), pick => pick.PackageID, p => p.ID, (pick, p) => p).ToList()
-                                .Join(Carriers.GetAll(true), p => p.CarrierID, carrier => carrier.ID, (p, carrier) => p).ToList()
+                                .Join(Packages.GetAll(true).Where(p => p.IsEnable.Value && !p.DeliveryStatus.Equals((int)DeliveryStatusType.Delivered) && !p.ShippingMethod.Equals(0) && !string.IsNullOrEmpty(p.TrackingNumber)), pick => pick.PackageID, p => p.ID, (pick, p) => p).ToList()
+                                .Join(ShippingMethod.GetAll(true), p => p.ShippingMethod, method => method.ID, (p, method) => p).ToList()
                                 .Join(Payments.GetAll(true), p => p.OrderID, payment => payment.OrderID, (p, payment) => p).ToList();
 
                             foreach (var data in packageList.Join(Orders.GetAll(true), p => p.OrderID, o => o.OrderID, (p, o) => new { order = o, package = p }).ToList())
@@ -549,10 +550,10 @@ namespace QDLogistics.Controllers
                                             data.package.TrackingNumber = trackData.trackingNo;
                                             data.package.ProcessStatus = (int)EnumData.ProcessStatus.已出貨;
 
-                                            Carriers carrier = Carriers.GetAll(true).FirstOrDefault(c => c.ShippingMethod == int.Parse(trackData.deliverywayId));
-                                            if (carrier != null)
+                                            ShippingMethod method = ShippingMethod.GetAll(true).FirstOrDefault(m => m.MethodType == int.Parse(trackData.deliverywayId));
+                                            if (method != null)
                                             {
-                                                data.package.CarrierID = carrier.ID;
+                                                data.package.ShippingMethod = method.ID;
                                             }
 
                                             int warehouseId = winit.warehouseIDs.First(w => w.Value == trackData.warehouseId).Key;
@@ -647,7 +648,7 @@ namespace QDLogistics.Controllers
             {
                 int[] packageIDs = pickList.Select(p => p.PackageID.Value).ToArray();
                 List<Packages> packageList = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.已出貨) && packageIDs.Contains(p.ID)).ToList();
-                var groupList = packageList.GroupBy(p => p.Carriers.Carrier).ToDictionary(p => p.Key, p => p);
+                var groupList = packageList.GroupBy(p => p.Method.Carriers.Name).ToDictionary(p => p.Key, p => p);
 
                 DateTime now = new TimeZoneConvert().ConvertDateTime(EnumData.TimeZone.TST);
                 DateTime noon = new DateTime(now.Year, now.Month, now.Day, 12, 0, 0);

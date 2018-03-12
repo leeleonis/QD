@@ -27,6 +27,7 @@ namespace QDLogistics.Controllers
         private IRepository<Payments> Payments;
         private IRepository<Addresses> Addresses;
         private IRepository<Warehouses> Warehouses;
+        private IRepository<ShippingMethod> ShippingMethod;
         private IRepository<Carriers> Carriers;
 
         public DropShipController()
@@ -49,10 +50,10 @@ namespace QDLogistics.Controllers
         public ActionResult AjaxCarrierOption()
         {
             Warehouses = new GenericRepository<Warehouses>(db);
-            Carriers = new GenericRepository<Carriers>(db);
+            ShippingMethod = new GenericRepository<ShippingMethod>(db);
 
             int warehouseID = 0;
-            List<Carriers> carrierList = new List<Carriers>();
+            List<ShippingMethod> methodList = new List<ShippingMethod>();
 
             if (int.TryParse(Session["warehouseId"].ToString(), out warehouseID))
             {
@@ -61,13 +62,13 @@ namespace QDLogistics.Controllers
                 {
                     if (!string.IsNullOrEmpty(warehouse.CarrierData))
                     {
-                        Dictionary<int, bool> carrierData = JsonConvert.DeserializeObject<Dictionary<int, bool>>(warehouse.CarrierData);
-                        carrierList = Carriers.GetAll(true).Where(c => c.IsEnable.Equals(true) && carrierData.Keys.Contains(c.ID) && carrierData[c.ID]).ToList();
+                        Dictionary<int, bool> methodData = JsonConvert.DeserializeObject<Dictionary<int, bool>>(warehouse.CarrierData);
+                        methodList = ShippingMethod.GetAll(true).Where(m => m.IsEnable && methodData.Keys.Contains(m.ID) && methodData[m.ID]).ToList();
                     }
                 }
             }
 
-            return Content(JsonConvert.SerializeObject(new { carrier = carrierList.Select(c => new { text = string.Format("{0}-{1}", c.ID, c.Name), value = c.ID }) }));
+            return Content(JsonConvert.SerializeObject(new { carrier = methodList.Select(c => new { text = string.Format("{0}-{1}", c.ID, c.Name), value = c.ID }) }));
         }
         
         public ActionResult AjaxWaitingData(DataFilter filter, int page = 1, int rows = 100)
@@ -119,7 +120,7 @@ namespace QDLogistics.Controllers
                                 ItemCount = oData.itemCount,
                                 OrderQtyTotal = oData.items.Sum(i => i.Qty),
                                 ShippingCountry = oData.address.CountryName,
-                                CarrierID = oData.package.CarrierID.Value,
+                                ShippingMethod = oData.package.ShippingMethod.Value,
                                 StatusCode = Enum.GetName(typeof(OrderStatusCode), oData.order.StatusCode.Value),
                                 Comment = oData.package.Comment,
                                 SupplierComment = string.IsNullOrEmpty(oData.package.SupplierComment) ? "" : oData.package.SupplierComment,
@@ -160,7 +161,7 @@ namespace QDLogistics.Controllers
                         results = orderFilter(results, filter);
                         if (results.Any())
                         {
-                            Carriers = new GenericRepository<Carriers>(db);
+                            ShippingMethod = new GenericRepository<ShippingMethod>(db);
                             SerialNumbers = new GenericRepository<SerialNumbers>(db);
 
                             TimeZoneConvert timeZoneConvert = new TimeZoneConvert();
@@ -171,8 +172,8 @@ namespace QDLogistics.Controllers
                             total = results.Count();
                             results = results.OrderByDescending(oData => oData.order.TimeOfOrder).Skip(start).Take(length).ToList();
 
-                            int[] carrierIDs = results.Where(oData => !oData.package.CarrierID.Equals(null)).Select(oData => oData.package.CarrierID.Value).ToArray();
-                            Dictionary<int, string> carrierList = Carriers.GetAll(true).Where(c => c.IsEnable.Equals(true) && carrierIDs.Contains(c.ID)).ToDictionary(c => c.ID, c => c.Name);
+                            int[] methodIDs = results.Where(oData => !oData.package.ShippingMethod.Equals(null)).Select(oData => oData.package.ShippingMethod.Value).ToArray();
+                            Dictionary<int, string> methodList = ShippingMethod.GetAll(true).Where(m => m.IsEnable && methodIDs.Contains(m.ID)).ToDictionary(m => m.ID, m => m.Name);
 
                             int[] itemIDs = results.SelectMany(oData => oData.items.Select(i => i.ID)).ToArray();
                             Dictionary<int, string[]> serialOfItem = SerialNumbers.GetAll(true).Where(s => itemIDs.Contains(s.OrderItemID)).GroupBy(s => s.OrderItemID).ToDictionary(s => s.Key, s => s.Select(ss => ss.SerialNumber).ToArray());
@@ -189,7 +190,7 @@ namespace QDLogistics.Controllers
                                 ItemCount = oData.itemCount,
                                 OrderQtyTotal = oData.items.Sum(i => i.Qty),
                                 ShippingCountry = oData.address.CountryName,
-                                CarrierID = !oData.package.CarrierID.Equals(null) ? carrierList[oData.package.CarrierID.Value] : "",
+                                ShippingMethod = oData.package.Method != null ? methodList[oData.package.ShippingMethod.Value] : "",
                                 StatusCode = Enum.GetName(typeof(OrderStatusCode), oData.order.StatusCode.Value),
                                 Comment = oData.package.Comment,
                                 SupplierComment = oData.package.SupplierComment,
@@ -233,7 +234,8 @@ namespace QDLogistics.Controllers
             if (!string.IsNullOrWhiteSpace(filter.UserID)) results = results.Where(oData => !string.IsNullOrWhiteSpace(oData.order.eBayUserID) && oData.order.eBayUserID.Contains(filter.UserID)).ToList();
             if (!string.IsNullOrWhiteSpace(filter.SourceID)) results = results.Where(oData => (oData.order.OrderSource.Equals(1) && oData.order.eBaySalesRecordNumber.Equals(filter.SourceID)) || (oData.order.OrderSource.Equals(4) && oData.order.OrderSourceOrderId.Equals(filter.SourceID))).ToList();
 
-            if (!filter.CarrierID.Equals(null)) results = results.Where(oData => oData.package.CarrierID.Equals(filter.CarrierID)).ToList();
+            if (!string.IsNullOrWhiteSpace(filter.Tracking)) results = results.Where(p => p.package.TrackingNumber.Equals(filter.Tracking)).ToList();
+            if (!filter.MethodID.Equals(null)) results = results.Where(oData => oData.package.ShippingMethod.Equals(filter.MethodID)).ToList();
             if (!filter.StatusCode.Equals(null)) results = results.Where(oData => oData.order.StatusCode.Equals(filter.StatusCode)).ToList();
             if (!filter.ShippingStatus.Equals(null)) results = results.Where(oData => oData.order.ShippingStatus.Equals(filter.ShippingStatus)).ToList();
             if (!filter.Source.Equals(null)) results = results.Where(oData => oData.order.OrderSource.Equals(filter.Source)).ToList();
@@ -274,7 +276,7 @@ namespace QDLogistics.Controllers
                     {
                         needUpload = string.IsNullOrEmpty(package.TrackingNumber) && !string.IsNullOrEmpty(oData.TrackingNumber);
 
-                        package.CarrierID = oData.CarrierID.Value;
+                        package.ShippingMethod = oData.MethodID.Value;
                         package.TrackingNumber = oData.TrackingNumber;
                         package.SupplierComment = oData.SupplierComment;
                         package.POInvoice = oData.POInvoice;

@@ -36,6 +36,7 @@ namespace QDLogistics.Controllers
         private IRepository<Packages> Packages;
         private IRepository<Items> Items;
         private IRepository<Services> Services;
+        private IRepository<ShippingMethod> ShippingMethod;
         private IRepository<Carriers> Carriers;
         private IRepository<Skus> Skus;
 
@@ -76,7 +77,7 @@ namespace QDLogistics.Controllers
                             break;
 
                         case "service":
-                            MyHelp.Log("Services", null, "匯入運輸方式");
+                            MyHelp.Log("Services", null, "匯入預設運輸方式");
                             List<Services> serviceData = new List<Services>();
                             checkResult = import.CheckImportData(serviceData);
                             if (checkResult.Success) import.SaveImportData(serviceData);
@@ -84,7 +85,7 @@ namespace QDLogistics.Controllers
 
                         case "country":
                             MyHelp.Log("Carriers", null, "匯入運輸國家");
-                            List<Carriers> carrierData = new List<Carriers>();
+                            List<ShippingMethod> carrierData = new List<ShippingMethod>();
                             checkResult = import.CheckImportData(carrierData);
                             if (checkResult.Success) import.SaveImportData(carrierData);
                             break;
@@ -117,7 +118,7 @@ namespace QDLogistics.Controllers
             var typeList = new Dictionary<string, Dictionary<string, string>>();
             typeList.Add("order", new Dictionary<string, string>() { { "sheetName", "待出貨訂單" }, { "fileName", "OrderData" } });
             typeList.Add("shipped", new Dictionary<string, string>() { { "sheetName", "已出貨訂單" }, { "fileName", "OrderData" } });
-            typeList.Add("service", new Dictionary<string, string>() { { "sheetName", "運輸方式" }, { "fileName", "ServiceData" } });
+            typeList.Add("service", new Dictionary<string, string>() { { "sheetName", "預設運輸方式" }, { "fileName", "ServiceData" } });
             typeList.Add("country", new Dictionary<string, string>() { { "sheetName", "運送國家" }, { "fileName", "CountryData" } });
             typeList.Add("sku", new Dictionary<string, string>() { { "sheetName", "品號" }, { "fileName", "SkuData" } });
             typeList.Add("dropShip", new Dictionary<string, string>() { { "sheetName", "DropShipper" }, { "fileName", "DropShipData" } });
@@ -176,30 +177,30 @@ namespace QDLogistics.Controllers
 
                 case "service":
                     Services = new GenericRepository<Services>(db);
-                    List<Services> serviceList = Services.GetAll().Where(s => id.Contains(s.ServiceCode)).ToList();
+                    List<Services> serviceList = Services.GetAll(true).Where(s => id.Contains(s.ServiceCode)).ToList();
 
                     foreach (Services service in serviceList)
                     {
                         var jo = new JObject();
                         jo.Add("ServiceCode", service.ServiceCode);
                         jo.Add("ServiceName", service.ServiceName);
-                        jo.Add("CarrierID", service.CarrierID);
+                        jo.Add("ShippingMethod", service.ShippingMethod);
                         jObjects.Add(jo);
                     }
                     break;
 
                 case "country":
-                    Carriers = new GenericRepository<Carriers>(db);
-                    List<Carriers> carriersList = Carriers.GetAll().Where(c => c.IsEnable == true).ToList();
+                    ShippingMethod = new GenericRepository<ShippingMethod>(db);
+                    List<ShippingMethod> methodList = ShippingMethod.GetAll(true).Where(m => m.IsEnable).ToList();
                     IEnumerable<Country> countries = MyHelp.GetCountries();
 
-                    foreach (Carriers carrier in carriersList)
+                    foreach (ShippingMethod method in methodList)
                     {
                         var jo = new JObject();
-                        jo.Add("ID", carrier.ID);
-                        jo.Add("Method", carrier.Carrier);
+                        jo.Add("ID", method.ID);
+                        jo.Add("Method", method.Name);
 
-                        var countryData = GetCountryBool(countries, carrier.CountryData);
+                        var countryData = GetCountryBool(countries, method.CountryData);
                         foreach (Country country in countries)
                         {
                             jo.Add(country.Name, countryData[country.ID]);
@@ -210,7 +211,7 @@ namespace QDLogistics.Controllers
 
                 case "sku":
                     Skus = new GenericRepository<Skus>(db);
-                    List<Skus> skuList = Skus.GetAll().Where(s => id.Contains(s.Sku)).ToList();
+                    List<Skus> skuList = Skus.GetAll(true).Where(s => id.Contains(s.Sku)).ToList();
 
                     foreach (Skus sku in skuList)
                     {
@@ -232,15 +233,13 @@ namespace QDLogistics.Controllers
                     Orders = new GenericRepository<Orders>(db);
                     Packages = new GenericRepository<Packages>(db);
                     Items = new GenericRepository<Items>(db);
-                    Carriers = new GenericRepository<Carriers>(db);
                     IRepository<Addresses> Addresses = new GenericRepository<Addresses>(db);
 
                     orderDataList = Packages.GetAll(true).Where(p => p.IsEnable.Equals(true) && id.Select(i => int.Parse(i)).Contains(p.ID))
                         .Join(Items.GetAll(true).Where(i => i.IsEnable.Equals(true)).ToList(), p => p.ID, i => i.PackageID.Value, (p, i) => new OrderJoinData() { package = p, item = i })
                         .Join(Orders.GetAll(true).ToList(), oData => oData.package.OrderID.Value, o => o.OrderID, (oData, o) => new OrderJoinData(oData) { order = o })
                         .Join(Addresses.GetAll(true).Where(a => a.IsEnable.Equals(true)).ToList(), oData => oData.order.ShippingAddress.Value, a => a.Id, (oData, a) => new OrderJoinData(oData) { address = a }).ToList();
-
-                    Dictionary<int, string> carrierList = Carriers.GetAll(true).Where(c => c.IsEnable.Equals(true)).ToDictionary(c => c.ID, c => c.Carrier);
+                    
                     if (orderDataList.Any())
                     {
                         long Tracking;
@@ -257,7 +256,7 @@ namespace QDLogistics.Controllers
                                 jo.Add("Qty", 1);
                                 jo.Add("GrandTotal", oData.package.DeclaredTotal.ToString());
                                 jo.Add("Currency", Enum.GetName(typeof(CurrencyCodeType), oData.order.OrderCurrencyCode.Value));
-                                jo.Add("Shipping Method", oData.package.CarrierID.Value);
+                                jo.Add("Shipping Method", oData.package.ShippingMethod.Value);
                                 jo.Add("Tracking", !string.IsNullOrEmpty(oData.package.TrackingNumber) && long.TryParse(oData.package.TrackingNumber, out Tracking) ? Tracking : (long?)null);
                                 jo.Add("Serial", oData.item.SerialNumbers.Skip(i - 1).Any() ? oData.item.SerialNumbers.Skip(i - 1).First().SerialNumber.ToString() : null);
                                 jo.Add("ShipFirstName", oData.address.FirstName);
@@ -394,6 +393,7 @@ namespace QDLogistics.Controllers
         private IRepository<Packages> Packages;
         private IRepository<SerialNumbers> SerialNumbers;
         private IRepository<Services> Services;
+        private IRepository<ShippingMethod> ShippingMethod;
         private IRepository<Carriers> Carriers;
         private IRepository<Skus> Skus;
 
@@ -434,7 +434,7 @@ namespace QDLogistics.Controllers
 
                         try
                         {
-                            int warehouseID = 0, CarrierID = 0;
+                            int warehouseID = 0, MethodID = 0;
                             int[] OrderIDs = excelContent.Select(row => int.Parse(row["OrderID"].ToString())).ToArray();
                             List<Packages> packageList = Packages.GetAll().Where(p => p.IsEnable.Equals(true) && OrderIDs.Contains(p.OrderID.Value) && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨)).ToList();
                             if (packageList.Any() && int.TryParse(Session["warehouseId"].ToString(), out warehouseID))
@@ -452,7 +452,7 @@ namespace QDLogistics.Controllers
                                             needUpload = string.IsNullOrEmpty(package.TrackingNumber) && !string.IsNullOrEmpty(packageData["Tracking"].ToString());
 
                                             package.POInvoice = packageData["Invoice#"].ToString();
-                                            package.CarrierID = int.TryParse(packageData["Shipping Method"].ToString(), out CarrierID) ? CarrierID : package.CarrierID;
+                                            package.ShippingMethod = int.TryParse(packageData["Shipping Method"].ToString(), out MethodID) ? MethodID : package.ShippingMethod;
                                             package.TrackingNumber = packageData["Tracking"].ToString();
                                             package.SupplierComment = packageData["Supplier Comment"].ToString();
                                             if (needUpload) package.ProcessStatus = (int)EnumData.ProcessStatus.已出貨;
@@ -572,8 +572,8 @@ namespace QDLogistics.Controllers
 
             excelFile.AddMapping<Services>(s => s.ServiceCode, "ServiceCode");
             excelFile.AddMapping<Services>(s => s.ServiceName, "ServiceName");
-            excelFile.AddMapping<Services>(s => s.CarrierID, "CarrierID");
-            var excelContent = excelFile.Worksheet<Services>("運輸方式");
+            excelFile.AddMapping<Services>(s => s.ShippingMethod, "ShippingMethod");
+            var excelContent = excelFile.Worksheet<Services>("預設運輸方式");
 
             int errorCount = 0;
             int rowIndex = 1;
@@ -592,14 +592,14 @@ namespace QDLogistics.Controllers
                     Services.SaveChanges();
                 }
                 service.ServiceName = row.ServiceName;
-                service.CarrierID = row.CarrierID;
+                service.ShippingMethod = row.ShippingMethod;
 
-                if (string.IsNullOrWhiteSpace(row.CarrierID.ToString()))
+                if (string.IsNullOrWhiteSpace(row.ShippingMethod.ToString()))
                 {
                     // errorMessage.Append("CarrierID - 不可空白.");
                 }
                 else {
-                    if (!carriers.Contains(row.CarrierID.Value)) errorMessage.Append("CarrierID - 無法找到.");
+                    if (!carriers.Contains(row.ShippingMethod.Value)) errorMessage.Append("MethodID - 無法找到.");
                 }
 
                 if (errorMessage.Length > 0)
@@ -615,11 +615,11 @@ namespace QDLogistics.Controllers
             return returnResult(errorCount, importData.Count, importErrorMessages);
         }
 
-        public CheckResult CheckImportData(List<Carriers> importData)
+        public CheckResult CheckImportData(List<ShippingMethod> importData)
         {
             if (!checkExists()) return result;
 
-            Carriers = new GenericRepository<Carriers>(db);
+            ShippingMethod = new GenericRepository<ShippingMethod>(db);
             IEnumerable<Country> countries = MyHelp.GetCountries();
             var codes = countries.Select(c => c.ID).ToArray();
 
@@ -633,14 +633,14 @@ namespace QDLogistics.Controllers
             {
                 var errorMessage = new StringBuilder();
 
-                Carriers carrier = Carriers.Get(Convert.ToInt32(row[0]));
+                ShippingMethod method = ShippingMethod.Get(Convert.ToInt32(row[0]));
 
                 JObject countryData = new JObject();
                 foreach (var data in row.Skip(2).Select((value, index) => new { value, index }))
                 {
                     countryData.Add(codes[data.index], Convert.ToBoolean(data.value));
                 }
-                carrier.CountryData = JsonConvert.SerializeObject(countryData);
+                method.CountryData = JsonConvert.SerializeObject(countryData);
 
                 if (errorMessage.Length > 0)
                 {
@@ -648,7 +648,7 @@ namespace QDLogistics.Controllers
                     importErrorMessages.Add(string.Format("第 {0} 列資料發現錯誤：{1}{2}", rowIndex, errorMessage, "\r\n"));
                 }
 
-                importData.Add(carrier);
+                importData.Add(method);
                 rowIndex += 1;
             }
 

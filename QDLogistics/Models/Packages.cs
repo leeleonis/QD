@@ -34,7 +34,7 @@ namespace QDLogistics.Models
         public Nullable<System.DateTime> ShipDate { get; set; }
         public string ShippingMethodName { get; set; }
         public string ShippingServiceCode { get; set; }
-        public Nullable<int> CarrierID { get; set; }
+        public Nullable<int> ShippingMethod { get; set; }
         public Nullable<byte> Export { get; set; }
         public Nullable<byte> ExportMethod { get; set; }
         public Nullable<System.DateTime> EstimatedDeliveryDate { get; set; }
@@ -43,6 +43,7 @@ namespace QDLogistics.Models
         public Nullable<int> DeliveryStatus { get; set; }
         public string DeliveryNote { get; set; }
         public string WinitNo { get; set; }
+        public string BoxID { get; set; }
         public Nullable<decimal> FinalShippingFee { get; set; }
         public bool UploadTracking { get; set; }
         public string TrackingNumber { get; set; }
@@ -60,6 +61,7 @@ namespace QDLogistics.Models
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Items> Items { get; set; }
         public virtual Orders Orders { get; set; }
-        public virtual Carriers Carriers { get; set; }
+        public virtual Box Box { get; set; }
+        public virtual ShippingMethod Method { get; set; }
     }
 }

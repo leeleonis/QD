@@ -12,21 +12,26 @@ namespace QDLogistics.Models
     using System;
     using System.Collections.Generic;
     
-    public partial class Services
+    public partial class Box
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public Services()
+        public Box()
         {
-            this.Orders = new HashSet<Orders>();
+            this.Packages = new HashSet<Packages>();
         }
     
-        public Nullable<bool> IsEnable { get; set; }
-        public string ServiceCode { get; set; }
-        public string ServiceName { get; set; }
-        public Nullable<int> ShippingMethod { get; set; }
+        public string BoxID { get; set; }
+        public string SupplierBoxID { get; set; }
+        public string WITID { get; set; }
+        public int CarrierID { get; set; }
+        public int WharehouseID { get; set; }
+        public byte BoxType { get; set; }
+        public byte ShippingStatus { get; set; }
+        public string TrackingNumber { get; set; }
+        public string Note { get; set; }
+        public System.DateTime Create_at { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Orders> Orders { get; set; }
-        public virtual ShippingMethod Method { get; set; }
+        public virtual ICollection<Packages> Packages { get; set; }
     }
 }

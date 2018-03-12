@@ -35,7 +35,7 @@ namespace QDLogistics.Commons
         {
             _order = order;
             _package = package;
-            _carrier = _package.Carriers;
+            _carrier = _package.Method.Carriers;
             _trackingNumber = _package.TrackingNumber;
         }
 
@@ -55,7 +55,7 @@ namespace QDLogistics.Commons
 
                 if (_carrier == null) throw new Exception("Not found carrier!");
 
-                switch (_carrier.Carrier)
+                switch (_carrier.Name)
                 {
                     case "DHL":
                         DHL_API DHL = new DHL_API(_carrier.CarrierAPI);

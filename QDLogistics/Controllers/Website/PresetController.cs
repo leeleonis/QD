@@ -184,7 +184,7 @@ namespace QDLogistics.Controllers.Website
                         weight = preset.Weight,
                         weightType = preset.WeightType,
                         warehouse = preset.WarehouseID,
-                        carrier = preset.CarrierID
+                        shippingMethod = preset.MethodID
                     });
                 }
             }

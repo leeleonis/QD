@@ -9,7 +9,7 @@ namespace QDLogistics.Models.Object
     {
         /***** Order Filter *****/
         public Nullable<int> WarehouseID { get; set; }
-        public Nullable<int> CarrierID { get; set; }
+        public Nullable<int> MethodID { get; set; }
         public Nullable<byte> Export { get; set; }
         public Nullable<byte> ExportMethod { get; set; }
         public Nullable<int> StatusCode { get; set; }

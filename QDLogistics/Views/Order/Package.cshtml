@@ -33,7 +33,7 @@
 }
 @{
     List<Packages> packageList = ViewBag.packageList;
-    List<Carriers> carrierList = ViewBag.carrierList;
+    List<ShippingMethod> methodList = ViewBag.methodList;
     var route = new { warehouseId = ViewData["warehouseId"], adminId = ViewData["adminId"] };
     int total = (int)ViewData["total"];
 }
@@ -42,11 +42,11 @@
         <div class="row">
             <div class="action-button col-xs-2">
                 <div>
-                    <select class="form-control" id="select-carrier">
+                    <select class="form-control" id="select-method">
                         <option value="0">全部</option>
-                        @{ foreach (Carriers carrier in carrierList)
+                        @{ foreach (ShippingMethod method in methodList)
                             {
-                                <option value="@carrier.ID">@carrier.Name</option>
+                                <option value="@method.ID">@method.Name</option>
                             }}
                     </select>
                 </div>
@@ -163,7 +163,7 @@
                                                             <td>@item.Skus.UPC</td>
                                                             <td>@item.Skus.ProductName</td>
                                                             <td>@(item.Qty * 0.5)</td>
-                                                            <td>@package.Carriers.Name</td>
+                                                            <td>@package.Method.Name</td>
                                                             <td>@package.Orders.ShippingCountry</td>
                                                             <td>@Enum.GetName(typeof(EnumData.Export), package.Export)</td>
                                                             <td>@(package.Orders.RushOrder.Value ? "Rush" : "Normal")</td>
@@ -189,7 +189,7 @@
     <script src="~/signalr/hubs"></script>
     @Html.Raw(ViewBag.WCPScript)
     <script type="text/javascript">
-        var $carrierSelect = $('#select-carrier'), $syncBtn = $('#btn-sync'), $pickBtn = $("#btn-pick"), $shipBtn = $("#btn-ship"), $enterBtn = $("#btn-enter"),
+        var $methodSelect = $('#select-method'), $syncBtn = $('#btn-sync'), $pickBtn = $("#btn-pick"), $shipBtn = $("#btn-ship"), $enterBtn = $("#btn-enter"),
             $pickWin = $('#win-pick'), $serialDialog = $('#dialog-serial'), $serialInput = $('#input-serial'), $orderDialog = $('#dialog-order'), $orderInput = $('#input-order'),
             $pickupTable = $('#table-pickup');
 
@@ -206,7 +206,7 @@
                 ProductSerialData.Update_OrderList($.parseJSON(response));
             };
 
-            $carrierSelect.change(function(){
+            $methodSelect.change(function(){
                 ProductSerialData.Get_Data();
             });
 
@@ -316,7 +316,7 @@
 
             var init = function (){
                 var url = '@Url.Action("getSerialData", "ajax")';
-                ajaxData(url, 'get', {carrierID: $carrierSelect.val()}).done(function(response){
+                ajaxData(url, 'get', {methodID: $methodSelect.val()}).done(function(response){
                     if(response['status']){
                         groupList = response['data']['groupList'];
                         productList = response['data']['productList'];

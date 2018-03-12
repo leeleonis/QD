@@ -17,28 +17,17 @@ namespace QDLogistics.Models
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public Carriers()
         {
-            this.Packages = new HashSet<Packages>();
-            this.Services = new HashSet<Services>();
+            this.ShippingMethod = new HashSet<ShippingMethod>();
         }
     
-        public Nullable<bool> IsEnable { get; set; }
+        public bool IsEnable { get; set; }
         public int ID { get; set; }
         public string Name { get; set; }
-        public string Carrier { get; set; }
         public string Email { get; set; }
-        public Nullable<int> ShippingMethod { get; set; }
-        public Nullable<int> BoxType { get; set; }
         public Nullable<int> Api { get; set; }
-        public string PrinterName { get; set; }
-        public Nullable<bool> IsExport { get; set; }
-        public Nullable<bool> IsBattery { get; set; }
-        public string CountryData { get; set; }
-        public Nullable<System.DateTime> SyncOn { get; set; }
     
         public virtual CarrierAPI CarrierAPI { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Packages> Packages { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Services> Services { get; set; }
+        public virtual ICollection<ShippingMethod> ShippingMethod { get; set; }
     }
 }

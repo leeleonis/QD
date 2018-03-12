@@ -12,7 +12,7 @@
                 actionName = String.IsNullOrEmpty(actionName) ? "index" : actionName;
 
                 IRepository<Menu> Menu = new GenericRepository<Menu>(new QDLogisticsEntities());
-                var menuList = Menu.GetAll().Where(m => m.IsEnable == true && m.PrevId == 0).OrderBy(m => m.Order).ToList();
+                var menuList = Menu.GetAll(true).Where(m => m.IsEnable == true && m.PrevId == 0).OrderBy(m => m.Order).ToList();
             }
 
             @foreach (Menu menu in menuList)
@@ -28,7 +28,7 @@
                         @if (menu.SubMenu.Any())
                         {
                             <ul>
-                                @foreach (Menu sub in menu.SubMenu)
+                                @foreach (Menu sub in menu.SubMenu.OrderBy(m => m.Order))
                                 {
                                     if (MyHelp.CheckAuth(sub.Controller, sub.Action, EnumData.AuthType.View, sub))
                                     {

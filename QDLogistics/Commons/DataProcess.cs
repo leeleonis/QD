@@ -51,7 +51,7 @@ namespace QDLogistics.Commons
                     obj.Add("IsRushOrder", data.order.RushOrder);
                     obj.Add("InvoicePrinted", data.order.InvoicePrinted);
                     obj.Add("InvoicePrintedDate", data.order.InvoicePrinted.Value ? MyHelp.DateTimeWithZone(data.order.InvoicePrintedDate.Value).ToString("MM/dd/yyyy hh:mm:ss tt") : "");
-                    obj.Add("ShippingCarrier", data.package.Carriers != null ? data.package.Carriers.Carrier : data.package.ShippingServiceCode);
+                    obj.Add("ShippingCarrier", data.package.Method != null ? data.package.Method.Carriers.Name : data.package.ShippingServiceCode);
                     obj.Add("PackageType", data.order.PackageType);
                     obj.Add("CompanyID", data.order.CompanyID);
                     obj.Add("OrderSourceOrderTotal", data.order.OrderSourceOrderTotal);
@@ -84,7 +84,7 @@ namespace QDLogistics.Commons
                     obj.Add("Qty", 1);
                     obj.Add("Country", data.order.Addresses.CountryName);
                     obj.Add("Warehouse", data.item.ShipWarehouses.Name);
-                    obj.Add("ShippingMethod", data.package.Carriers != null ? data.package.Carriers.Carrier : data.package.ShippingServiceCode);
+                    obj.Add("ShippingMethod", data.package.Method != null ? data.package.Method.Carriers.Name : data.package.ShippingServiceCode);
                     obj.Add("Export", Enum.GetName(typeof(EnumData.Export), data.package.Export != null ? data.package.Export : 0));
                     obj.Add("ExportMethod", Enum.GetName(typeof(EnumData.ExportMethod), data.package.ExportMethod != null ? data.package.ExportMethod : 0));
                     obj.Add("Status", Enum.GetName(typeof(OrderStatusCode), data.order.StatusCode));
@@ -241,7 +241,6 @@ namespace QDLogistics.Commons
             package.OrderItemID = packageDetail.OrderItemID;
             package.BundleItemID = packageDetail.OrderItemBundleItemID;
             package.Qty = packageDetail.Qty;
-            package.ShipDate = packageDetail.ShipDate;
             package.ShippingMethodName = packageDetail.ShippingMethodName.Trim();
             package.EstimatedDeliveryDate = packageDetail.EstimatedDeliveryDate;
             package.DeliveryDate = packageDetail.DeliveryDate;
@@ -252,8 +251,13 @@ namespace QDLogistics.Commons
             package.Width = packageDetail.Width;
             package.Height = packageDetail.Height;
 
-            if (package.ProcessStatus != (int)EnumData.ProcessStatus.待出貨)
+            if (!package.ProcessStatus.Equals((int)EnumData.ProcessStatus.待出貨))
             {
+                if (package.ProcessStatus.Equals((int)EnumData.ProcessStatus.訂單管理))
+                {
+                    package.ShipDate = packageDetail.ShipDate;
+                }
+
                 package.ShippingServiceCode = packageDetail.ShippingServiceCode.Trim();
 
                 if (package.UploadTracking)

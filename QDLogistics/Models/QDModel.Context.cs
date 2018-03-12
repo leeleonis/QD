@@ -35,7 +35,6 @@ namespace QDLogistics.Models
         public virtual DbSet<Payments> Payments { get; set; }
         public virtual DbSet<Skus> Skus { get; set; }
         public virtual DbSet<Warehouses> Warehouses { get; set; }
-        public virtual DbSet<Services> Services { get; set; }
         public virtual DbSet<AdminGroups> AdminGroups { get; set; }
         public virtual DbSet<AdminUsers> AdminUsers { get; set; }
         public virtual DbSet<Menu> Menu { get; set; }
@@ -47,7 +46,10 @@ namespace QDLogistics.Models
         public virtual DbSet<SerialNumbers> SerialNumbers { get; set; }
         public virtual DbSet<PurchaseItemReceive> PurchaseItemReceive { get; set; }
         public virtual DbSet<TaskScheduler> TaskScheduler { get; set; }
-        public virtual DbSet<Carriers> Carriers { get; set; }
+        public virtual DbSet<Box> Box { get; set; }
+        public virtual DbSet<Services> Services { get; set; }
         public virtual DbSet<Preset> Preset { get; set; }
+        public virtual DbSet<Carriers> Carriers { get; set; }
+        public virtual DbSet<ShippingMethod> ShippingMethod { get; set; }
     }
 }

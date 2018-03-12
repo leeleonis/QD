@@ -20,7 +20,7 @@ namespace QDLogistics.Commons
 
         private Orders Order;
         private List<Preset> PresetList;
-        private Dictionary<string, int> CarrierOfService;
+        private Dictionary<string, int> MethodOfService;
 
         public TaskFactory Factory;
         private HttpSessionStateBase Session;
@@ -36,8 +36,8 @@ namespace QDLogistics.Commons
             Preset = new GenericRepository<Preset>(db);
 
             PresetList = db.Preset.AsNoTracking().Where(p => p.IsEnable && p.IsVisible).ToList();
-            CarrierOfService = db.Services.AsNoTracking().Where(s => s.IsEnable.Value && s.CarrierID.HasValue).ToDictionary(s => s.ServiceCode, s => s.CarrierID.Value);
-            CarrierOfService.Add("Expedited", 9);
+            MethodOfService = db.Services.AsNoTracking().Where(s => s.IsEnable.Value && s.ShippingMethod.HasValue).ToDictionary(s => s.ServiceCode, s => s.ShippingMethod.Value);
+            MethodOfService.Add("Expedited", 9);
             this.Order = order;
             this.Session = session;
         }
@@ -62,7 +62,7 @@ namespace QDLogistics.Commons
                 var methodOfSku = db.Skus.AsNoTracking().Where(s => ProductIDs.Contains(s.Sku)).ToDictionary(s => s.Sku, s => new Dictionary<string, byte?>() { { "export", s.Export }, { "exportMethod", s.ExportMethod } });
 
                 package.DeclaredTotal = itemList.Sum(i => i.UnitPrice.Value * i.Qty.Value);
-                package.CarrierID = CarrierOfService.ContainsKey(Order.ShippingServiceSelected) ? CarrierOfService[Order.ShippingServiceSelected] : 9;
+                package.ShippingMethod = MethodOfService.ContainsKey(Order.ShippingServiceSelected) ? MethodOfService[Order.ShippingServiceSelected] : 9;
                 package.Export = itemList.Min(i => methodOfSku.ContainsKey(i.ProductID) ? methodOfSku[i.ProductID]["export"] : 0);
                 package.ExportMethod = itemList.Min(i => methodOfSku.ContainsKey(i.ProductID) ? methodOfSku[i.ProductID]["exportMethod"] : 0);
 
@@ -89,7 +89,7 @@ namespace QDLogistics.Commons
                                 }
                                 break;
                             case 4:
-                                package.CarrierID = preset.CarrierID;
+                                package.ShippingMethod = preset.MethodID;
                                 foreach (Items item in itemList)
                                 {
                                     item.ShipFromWarehouseID = preset.WarehouseID;
@@ -170,7 +170,7 @@ namespace QDLogistics.Commons
                                         MyHelp.Log("Orders", packageData.OrderID, "訂單提交完成", session);
 
                                         byte[] carrierType = new byte[] { (byte)EnumData.CarrierType.DHL, (byte)EnumData.CarrierType.FedEx };
-                                        if (!shipProcess.isDropShip && carrierType.Contains(package.Carriers.CarrierAPI.Type.Value))
+                                        if (!shipProcess.isDropShip && carrierType.Contains(package.Method.Carriers.CarrierAPI.Type.Value))
                                         {
                                             List<PickProduct> pickList = db.PickProduct.AsNoTracking().Where(p => packageData.Items.Where(i => i.IsEnable.Value).Select(i => i.ID).Contains(p.ItemID.Value)).ToList();
                                             foreach (Items item in packageData.Items.Where(i => i.IsEnable.Value))
@@ -219,7 +219,7 @@ namespace QDLogistics.Commons
 
                                 if (!string.IsNullOrEmpty(package.WinitNo))
                                 {
-                                    CarrierApi.Winit.Winit_API winit = new CarrierApi.Winit.Winit_API(package.Carriers.CarrierAPI);
+                                    CarrierApi.Winit.Winit_API winit = new CarrierApi.Winit.Winit_API(package.Method.Carriers.CarrierAPI);
                                     CarrierApi.Winit.Received received = winit.Void(package.WinitNo);
                                     package.WinitNo = null;
                                 }

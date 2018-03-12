@@ -50,8 +50,8 @@ namespace CarrierApi.FedEx
             {
                 ShipTimestamp = new DateTime(),
                 DropoffType = DropoffType.REGULAR_PICKUP,
-                ServiceType = QDLogistics.FedExShipService.ServiceType.INTERNATIONAL_ECONOMY,
-                PackagingType = QDLogistics.FedExShipService.PackagingType.YOUR_PACKAGING,
+                ServiceType = (QDLogistics.FedExShipService.ServiceType)package.Method.MethodType,
+                PackagingType = (QDLogistics.FedExShipService.PackagingType)package.Method.BoxType,
                 Shipper = _shipperInit(),
                 ShippingChargesPayment = new Payment() { PaymentType = PaymentType.SENDER, Payor = new Payor() { ResponsibleParty = _shipperInit() } },
                 LabelSpecification = new LabelSpecification()
@@ -144,19 +144,13 @@ namespace CarrierApi.FedEx
             {
                 ShipTimestamp = DateTime.Today,
                 DropoffType = DropoffType.REGULAR_PICKUP,
-                ServiceType = QDLogistics.FedExShipService.ServiceType.INTERNATIONAL_ECONOMY,
-                PackagingType = QDLogistics.FedExShipService.PackagingType.YOUR_PACKAGING,
+                ServiceType = (QDLogistics.FedExShipService.ServiceType)package.Method.MethodType,
+                PackagingType = (QDLogistics.FedExShipService.PackagingType)package.Method.BoxType,
                 Shipper = _shipperInit(),
                 ShippingChargesPayment = new Payment() { PaymentType = PaymentType.SENDER, Payor = new Payor() { ResponsibleParty = _shipperInit() } },
                 PackageCount = "1"
             };
-
-            if (package.Carriers.ShippingMethod.Value.Equals((int)QDLogistics.Commons.EnumData.ShippingMethod.fedex_international_priority))
-            {
-                request.RequestedShipment.ServiceType = QDLogistics.FedExShipService.ServiceType.INTERNATIONAL_PRIORITY;
-                request.RequestedShipment.PackagingType = QDLogistics.FedExShipService.PackagingType.FEDEX_PAK;
-            }
-
+            
             Addresses address = package.Orders.Addresses;
             request.RequestedShipment.Recipient = new Party()
             {

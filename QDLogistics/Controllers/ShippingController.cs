@@ -20,6 +20,7 @@ namespace QDLogistics.Controllers
     public class ShippingController : Controller
     {
         private QDLogisticsEntities db;
+        private IRepository<ShippingMethod> Method;
         private IRepository<Carriers> Carriers;
         private IRepository<CarrierAPI> CarrierAPI;
 
@@ -31,54 +32,115 @@ namespace QDLogistics.Controllers
         }
 
         [CheckSession]
+        public ActionResult ShippingMethod()
+        {
+            return View();
+        }
+
+        public ActionResult ShippingMethodCreate()
+        {
+            if (!MyHelp.CheckAuth("shipping", "shippingMethod", EnumData.AuthType.Insert)) return RedirectToAction("index", "main");
+
+            using (Method = new GenericRepository<ShippingMethod>())
+            {
+                ShippingMethod newMethod = new ShippingMethod() { IsEnable = false, IsDirectLine = false, IsExport = false, IsBattery = false };
+                Method.Create(newMethod);
+                Method.SaveChanges();
+
+                MyHelp.Log("ShippingMethod", newMethod.ID, "新增運輸方式");
+                return RedirectToAction("shippingMethodEdit", new { id = newMethod.ID });
+            }
+        }
+
+        public ActionResult ShippingMethodEdit(int? id)
+        {
+            if (id == null) return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+
+            Method = new GenericRepository<ShippingMethod>(db);
+
+            ShippingMethod method = Method.Get(id.Value);
+            if (method == null) return HttpNotFound();
+
+            Carriers = new GenericRepository<Carriers>(db);
+            IEnumerable<Carriers> carrierList = Carriers.GetAll(true).Where(c => c.IsEnable).OrderBy(c => c.ID);
+
+            ViewData["carrierSelect"] = new SelectList(carrierList, "Id", "name", method.CarrierID);
+
+            ViewBag.WCPScript = WebClientPrint.CreateScript(Url.Action("ProcessRequest", "WebClientPrintAPI", null, HttpContext.Request.Url.Scheme), Url.Action("PrintFile", "File", null, HttpContext.Request.Url.Scheme), HttpContext.Session.SessionID);
+            return View(method);
+        }
+
+        [HttpPost]
+        public ActionResult ShippingMethodEdit(int id)
+        {
+            if (!MyHelp.CheckAuth("shipping", "shippingMethod", EnumData.AuthType.Edit)) return RedirectToAction("index", "main");
+
+            Method = new GenericRepository<ShippingMethod>(db);
+
+            ShippingMethod method = Method.Get(id);
+            if (method == null) return HttpNotFound();
+
+            if (TryUpdateModel(method) && ModelState.IsValid)
+            {
+                Method.SaveChanges();
+
+                MyHelp.Log("ShippingMethod", method.ID, "編輯運輸方式");
+                return RedirectToAction("shippingMethod", "shipping");
+            }
+
+            Carriers = new GenericRepository<Carriers>(db);
+            IEnumerable<Carriers> carrierList = Carriers.GetAll(true).Where(c => c.IsEnable).OrderBy(c => c.ID);
+
+            ViewData["carrierSelect"] = new SelectList(carrierList, "Id", "name", method.CarrierID);
+
+            ViewBag.WCPScript = WebClientPrint.CreateScript(Url.Action("ProcessRequest", "WebClientPrintAPI", null, HttpContext.Request.Url.Scheme), Url.Action("PrintFile", "File", null, HttpContext.Request.Url.Scheme), HttpContext.Session.SessionID);
+            return View(method);
+        }
+
+        [CheckSession]
         public ActionResult Carrier()
         {
             return View();
         }
-        
-        public ActionResult Carriercreate()
+
+        public ActionResult CarrierCreate()
         {
             if (!MyHelp.CheckAuth("shipping", "carrier", EnumData.AuthType.Insert)) return RedirectToAction("index", "main");
 
-            Carriers newCarrier = new Carriers() { IsEnable = false, IsExport = false, IsBattery = false };
-            Carriers.Create(newCarrier);
-            Carriers.SaveChanges();
+            using (Carriers = new GenericRepository<Carriers>())
+            {
+                Carriers newCarrier = new Carriers() { IsEnable = false };
+                Carriers.Create(newCarrier);
+                Carriers.SaveChanges();
 
-            MyHelp.Log("Carriers", null, "新增運輸商");
-            return RedirectToAction("Carrieredit", new { id = newCarrier.ID });
+                MyHelp.Log("Carriers", newCarrier.ID, "新增運輸商");
+                return RedirectToAction("carrierEdit", new { id = newCarrier.ID });
+            }
         }
-        
-        public ActionResult Carrieredit(int? id)
+
+        public ActionResult CarrierEdit(int? id)
         {
             if (id == null) return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+
+            Carriers = new GenericRepository<Carriers>(db);
 
             Carriers carrier = Carriers.Get(id.Value);
             if (carrier == null) return HttpNotFound();
 
-            var methodList = Enum.GetValues(typeof(EnumData.ShippingMethod)).Cast<EnumData.ShippingMethod>().Select(s => new { text = s.ToString(), value = (int)s, group = "TWN" }).ToList();
+            CarrierAPI = new GenericRepository<CarrierAPI>(db);
+            IEnumerable<CarrierAPI> apiList = CarrierAPI.GetAll(true).Where(a => a.IsEnable).OrderBy(c => c.Id);
 
-            Winit_API winit = new Winit_API();
-            List<object> deliveryWay = new List<object>();
-            foreach (var warehouse in winit.warehouseIDs)
-            {
-                deliveryWayData[] way = winit.getDeliveryWay(warehouse.Value).data.ToObject<deliveryWayData[]>();
-                methodList.AddRange(way.Select(w => new { text = w.deliveryWay, value = int.Parse(w.deliveryID), group = "Winit" }));
-            }
-            ViewData["methodList"] = new SelectList(methodList, "value", "text", "group", carrier.ShippingMethod);
+            ViewData["apiSelect"] = new SelectList(apiList, "Id", "name", carrier.Api);
 
-            var boxTypeList = Enum.GetValues(typeof(EnumData.BoxType)).Cast<EnumData.BoxType>().Select(b => new { text = b.ToString(), value = (int)b }).ToList();
-            ViewData["boxTypeList"] = new SelectList(boxTypeList, "value", "text", carrier.BoxType);
-
-            ViewBag.WCPScript = WebClientPrint.CreateScript(Url.Action("ProcessRequest", "WebClientPrintAPI", null, HttpContext.Request.Url.Scheme), Url.Action("PrintFile", "File", null, HttpContext.Request.Url.Scheme), HttpContext.Session.SessionID);
-            IEnumerable<CarrierAPI> apiList = CarrierAPI.GetAll(true).Where(a => a.IsEnable == true).OrderBy(a => a.Id);
-            ViewData["apiList"] = new SelectList(apiList, "Id", "name", carrier.Api);
             return View(carrier);
         }
 
         [HttpPost]
-        public ActionResult Carrieredit(int id)
+        public ActionResult CarrierEdit(int id)
         {
-            if (!MyHelp.CheckAuth("shipping", "carrier", EnumData.AuthType.Edit)) return RedirectToAction("index", "main");
+            if (!MyHelp.CheckAuth("shipping", "shippingMethod", EnumData.AuthType.Edit)) return RedirectToAction("index", "main");
+
+            Carriers = new GenericRepository<Carriers>(db);
 
             Carriers carrier = Carriers.Get(id);
             if (carrier == null) return HttpNotFound();
@@ -88,12 +150,14 @@ namespace QDLogistics.Controllers
                 Carriers.SaveChanges();
 
                 MyHelp.Log("Carriers", carrier.ID, "編輯運輸商");
-                return RedirectToAction("Carrier", "shipping");
+                return RedirectToAction("carrier", "shipping");
             }
 
-            ViewBag.WCPScript = WebClientPrint.CreateScript(Url.Action("ProcessRequest", "WebClientPrintAPI", null, HttpContext.Request.Url.Scheme), Url.Action("PrintFile", "File", null, HttpContext.Request.Url.Scheme), HttpContext.Session.SessionID);
-            IEnumerable<CarrierAPI> apiList = CarrierAPI.GetAll().Where(a => a.IsEnable == true).OrderBy(a => a.Id);
-            ViewData["apiList"] = new SelectList(apiList, "Id", "name", carrier.Api);
+            CarrierAPI = new GenericRepository<CarrierAPI>(db);
+            IEnumerable<CarrierAPI> apiList = CarrierAPI.GetAll(true).Where(a => a.IsEnable).OrderBy(c => c.Id);
+
+            ViewData["apiSelect"] = new SelectList(apiList, "Id", "name", carrier.Api);
+
             return View(carrier);
         }
 
@@ -134,7 +198,7 @@ namespace QDLogistics.Controllers
                 case (byte)EnumData.CarrierType.FedEx:
                 case (byte)EnumData.CarrierType.UPS:
                 case (byte)EnumData.CarrierType.USPS:
-                    JObject obj = setAccountData(newApi);
+                    JObject obj = SetAccountData(newApi);
                     string type = Enum.GetName(typeof(EnumData.CarrierType), newApi.Type);
 
                     obj.Add("slug", type.ToLower());
@@ -167,7 +231,7 @@ namespace QDLogistics.Controllers
             MyHelp.Log("CarrierAPI", null, "新增連線API");
             return RedirectToAction("api", "shipping");
         }
-        
+
         public ActionResult Apiedit(int? id, [Bind(Include = "start,length,search")] RouteValue routeValue)
         {
             if (id == null) return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
@@ -211,7 +275,7 @@ namespace QDLogistics.Controllers
             return RedirectToAction("api", "shipping", routeValue);
         }
 
-        private JObject setAccountData(CarrierAPI api)
+        private JObject SetAccountData(CarrierAPI api)
         {
             JObject obj = new JObject();
 
@@ -232,6 +296,80 @@ namespace QDLogistics.Controllers
             }
 
             return obj;
+        }
+
+        public ActionResult GetSelectOption(List<string> optionType)
+        {
+            AjaxResult result = new AjaxResult();
+
+            if (optionType.Any())
+            {
+                var optionList = new Dictionary<string, object>();
+
+                try
+                {
+                    foreach (string type in optionType)
+                    {
+                        switch (type)
+                        {
+                            case "shippingMethod":
+                                Method = new GenericRepository<ShippingMethod>(db);
+                                optionList.Add(type, Method.GetAll(true).Where(m => m.IsEnable).Select(m => new { text = m.Name, value = m.ID }));
+                                break;
+                            case "carrier":
+                                Carriers = new GenericRepository<Carriers>(db);
+                                optionList.Add(type, Carriers.GetAll(true).Where(c => c.IsEnable).Select(c => new { text = c.Name, value = c.ID }).ToList());
+                                break;
+                            case "methodType":
+                                var FedEx_shippingMethod = Enum.GetValues(typeof(FedExShipService.ServiceType)).Cast<FedExShipService.ServiceType>().Select(b => new { text = b.ToString(), value = (int)b }).ToList();
+                                
+                                Winit_API winit = new Winit_API();
+                                List<deliveryWayData> deliveryWay = new List<deliveryWayData>();
+                                foreach (var warehouse in winit.warehouseIDs)
+                                {
+                                    deliveryWay.AddRange(winit.getDeliveryWay(warehouse.Value).data.ToObject<deliveryWayData[]>());
+                                }
+
+                                var Winit_shippingMethod = deliveryWay.OrderBy(w => w.deliveryID).Select(w => new { text = w.deliveryWay, value = int.Parse(w.deliveryID) }).Distinct().ToList();
+
+                                optionList.Add(type, new Dictionary<string, object>() { { "FedEx", FedEx_shippingMethod }, { "DHL", null }, { "Winit", Winit_shippingMethod } });
+                                break;
+                            case "boxType":
+                                var FedEx_boxType = Enum.GetValues(typeof(FedExShipService.PackagingType)).Cast<FedExShipService.PackagingType>().Select(b => new { text = b.ToString(), value = (int)b }).ToList();
+
+                                optionList.Add(type, new Dictionary<string, object>() { { "FedEx", FedEx_boxType } });
+                                break;
+                            case "carrierApi":
+                                CarrierAPI = new GenericRepository<CarrierAPI>(db);
+                                optionList.Add(type, CarrierAPI.GetAll(true).Where(a => a.IsEnable).Select(a => new { text = a.Name, value = a.Id }));
+                                break;
+                        }
+                    }
+
+                    result.data = optionList;
+                }
+                catch (Exception e)
+                {
+                    result.status = false;
+                    result.message = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+                }
+            }
+
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
+        public class AjaxResult
+        {
+            public bool status { get; set; }
+            public string message { get; set; }
+            public object data { get; set; }
+
+            public AjaxResult()
+            {
+                this.status = true;
+                this.message = null;
+                this.data = null;
+            }
         }
     }
 }

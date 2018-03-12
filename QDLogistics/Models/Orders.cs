@@ -81,7 +81,7 @@ namespace QDLogistics.Models
         public virtual ICollection<Packages> Packages { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Payments> Payments { get; set; }
-        public virtual Services Services { get; set; }
         public virtual Companies Companies { get; set; }
+        public virtual Services Services { get; set; }
     }
 }

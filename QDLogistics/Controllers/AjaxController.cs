@@ -33,6 +33,7 @@ namespace QDLogistics.Controllers
         private IRepository<Items> Items;
         private IRepository<Warehouses> Warehouses;
         private IRepository<Companies> Companies;
+        private IRepository<ShippingMethod> ShippingMethod;
         private IRepository<Carriers> Carriers;
         private IRepository<Services> Services;
         private IRepository<CarrierAPI> CarrierAPI;
@@ -86,7 +87,7 @@ namespace QDLogistics.Controllers
 
             /** Package Filter **/
             var PackageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.ProcessStatus == (byte)EnumData.ProcessStatus.訂單管理);
-            if (!filter.CarrierID.Equals(null)) PackageFilter = PackageFilter.Where(p => p.CarrierID.Value.Equals(filter.CarrierID.Value));
+            if (!filter.MethodID.Equals(null)) PackageFilter = PackageFilter.Where(p => p.ShippingMethod.Value.Equals(filter.MethodID.Value));
             if (!filter.Export.Equals(null)) PackageFilter = PackageFilter.Where(p => p.Export.Value.Equals(filter.Export.Value));
             if (!filter.ExportMethod.Equals(null)) PackageFilter = PackageFilter.Where(p => p.ExportMethod.Equals(filter.ExportMethod.Value));
 
@@ -135,7 +136,7 @@ namespace QDLogistics.Controllers
                 TimeZoneConvert TimeZoneConvert = new TimeZoneConvert();
                 EnumData.TimeZone TimeZone = MyHelp.GetTimeZone((int)Session["TimeZone"]);
 
-                Dictionary<string, int?> carrierOfService = db.Services.AsNoTracking().ToDictionary(s => s.ServiceCode, s => s.CarrierID);
+                Dictionary<string, int?> carrierOfService = db.Services.AsNoTracking().ToDictionary(s => s.ServiceCode, s => s.ShippingMethod);
                 carrierOfService.Add("Expedited", 9);
                 List<string> uploadDefault = new List<string>() { "AU_StandardDelivery", "AU_Courier" };
 
@@ -165,7 +166,7 @@ namespace QDLogistics.Controllers
                     OrderCurrencyCode = data.order.OrderCurrencyCode,
                     AvailableQty = 1,
                     ShippingServiceSelected = data.order.ShippingServiceSelected,
-                    CarrierID = !data.package.CarrierID.HasValue ? (carrierOfService.ContainsKey(data.order.ShippingServiceSelected) ? carrierOfService[data.order.ShippingServiceSelected] : 9) : data.package.CarrierID,
+                    MethodID = !data.package.ShippingMethod.HasValue ? (carrierOfService.ContainsKey(data.order.ShippingServiceSelected) ? carrierOfService[data.order.ShippingServiceSelected] : 9) : data.package.ShippingMethod,
                     Export = !data.package.Export.HasValue ? data.items.Min(i => methodOfSku.ContainsKey(i.ProductID) ? methodOfSku[i.ProductID]["export"] : 0) : data.package.Export,
                     ExportMethod = !data.package.ExportMethod.HasValue ? data.items.Min(i => methodOfSku.ContainsKey(i.ProductID) ? methodOfSku[i.ProductID]["exportMethod"] : 0) : data.package.ExportMethod,
                     StatusCode = data.order.StatusCode,
@@ -212,7 +213,7 @@ namespace QDLogistics.Controllers
 
                     // update package data
                     package.DeclaredTotal = oData.DeclaredTotal.Value;
-                    package.CarrierID = oData.CarrierID;
+                    package.ShippingMethod = oData.MethodID;
                     package.Export = oData.Export;
                     package.ExportMethod = oData.ExportMethod;
                     package.UploadTracking = oData.UploadTracking.Value;
@@ -393,13 +394,13 @@ namespace QDLogistics.Controllers
                 results = results.OrderByDescending(data => data.order.TimeOfOrder).Skip(start).Take(length).ToList();
 
                 Warehouses = new GenericRepository<Warehouses>(db);
-                Carriers = new GenericRepository<Carriers>(db);
+                ShippingMethod = new GenericRepository<ShippingMethod>(db);
 
                 TimeZoneConvert timeZoneConvert = new TimeZoneConvert();
                 EnumData.TimeZone TimeZone = MyHelp.GetTimeZone((int)Session["TimeZone"]);
 
                 Dictionary<int, string> warehouses = db.Warehouses.AsNoTracking().Where(w => w.IsSellable.Value).ToDictionary(w => w.ID, w => w.Name);
-                Dictionary<int, string> carriers = db.Carriers.AsNoTracking().Where(c => c.IsEnable.Value).ToDictionary(c => c.ID, c => c.Carrier);
+                Dictionary<int, string> methodList = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable).ToDictionary(m => m.ID, m => m.Name);
 
                 dataList.AddRange(results.Select(data => new
                 {
@@ -414,7 +415,7 @@ namespace QDLogistics.Controllers
                     OrderQtyTotal = data.items.Sum(i => i.Qty),
                     ShippingCountry = data.address.CountryName,
                     Warehouse = warehouses[data.item.ShipFromWarehouseID.Value],
-                    ShippingMethod = data.package.CarrierID.HasValue ? carriers[data.package.CarrierID.Value] : data.package.ShippingServiceCode,
+                    ShippingMethod = data.package.ShippingMethod.HasValue ? methodList[data.package.ShippingMethod.Value] : data.package.ShippingServiceCode,
                     Export = Enum.GetName(typeof(EnumData.Export), data.package.Export != null ? data.package.Export : 0),
                     ExportMethod = Enum.GetName(typeof(EnumData.ExportMethod), data.package.ExportMethod != null ? data.package.ExportMethod : 0),
                     StatusCode = Enum.GetName(typeof(OrderStatusCode), data.order.StatusCode),
@@ -456,7 +457,7 @@ namespace QDLogistics.Controllers
                         {
                             if (!string.IsNullOrEmpty(package.WinitNo))
                             {
-                                Winit_API winit = new Winit_API(package.Carriers.CarrierAPI);
+                                Winit_API winit = new Winit_API(package.Method.Carriers.CarrierAPI);
                                 Received received = winit.Void(package.WinitNo);
                                 if (received.code != "0") throw new Exception(received.code + "-" + received.msg);
                                 package.WinitNo = null;
@@ -510,7 +511,7 @@ namespace QDLogistics.Controllers
         }
 
         [CheckSession]
-        public ActionResult GetSerialData(int carrierID)
+        public ActionResult GetSerialData(int methodID)
         {
             AjaxResult result = new AjaxResult();
 
@@ -522,7 +523,7 @@ namespace QDLogistics.Controllers
             string pickSelect = string.Format("SELECT * FROM PickProduct WHERE IsEnable = 1 AND IsPicked = 0 AND WarehouseID = {0}", warehouseId);
 
             var packageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨));
-            if (!carrierID.Equals(0)) packageFilter = packageFilter.Where(p => p.CarrierID.Value.Equals(carrierID));
+            if (!methodID.Equals(0)) packageFilter = packageFilter.Where(p => p.ShippingMethod.Value.Equals(methodID));
 
             ObjectContext context = new ObjectContext("name=QDLogisticsEntities");
             var ProductList = packageFilter.ToList()
@@ -616,22 +617,22 @@ namespace QDLogistics.Controllers
             filePath[1] = Path.Combine(basePath, string.Join("", package.FilePath.Skip(package.FilePath.IndexOf("export"))), fileName[1]);
             /***** 商業發票 *****/
 
-            switch (package.Carriers.CarrierAPI.Type)
+            switch (package.Method.Carriers.CarrierAPI.Type)
             {
-                case (int)EnumData.CarrierType.DHL:
+                case (byte)EnumData.CarrierType.DHL:
                     amount = new int[] { 2, 2 };
                     break;
-                case (int)EnumData.CarrierType.FedEx:
+                case (byte)EnumData.CarrierType.FedEx:
                     amount = new int[] { 1, 4 };
                     break;
-                case (int)EnumData.CarrierType.UPS:
+                case (byte)EnumData.CarrierType.UPS:
                     break;
-                case (int)EnumData.CarrierType.USPS:
+                case (byte)EnumData.CarrierType.USPS:
                     break;
             }
 
             // 取得熱感應印表機名稱
-            string printerName = package.Carriers.PrinterName;
+            string printerName = package.Method.PrinterName;
 
             return new { fileName, filePath, amount, printerName };
         }
@@ -1047,7 +1048,7 @@ namespace QDLogistics.Controllers
                         /***** 商業發票 *****/
 
                         // 取得熱感應印表機名稱
-                        string printerName = package.Carriers.PrinterName;
+                        string printerName = package.Method.PrinterName;
                         if (string.IsNullOrEmpty(printerName))
                         {
                             return Content(JsonConvert.SerializeObject(new { status = false, scan = false, message = "尚未設定印表機!" }), "appllication/json");
@@ -1158,7 +1159,6 @@ namespace QDLogistics.Controllers
                     results = results.OrderByDescending(data => data.order.TimeOfOrder).Skip(start).Take(length).ToList();
 
                     Warehouses = new GenericRepository<Warehouses>(db);
-                    Carriers = new GenericRepository<Carriers>(db);
                     SerialNumbers = new GenericRepository<SerialNumbers>(db);
 
                     TimeZoneConvert TimeZoneConvert = new TimeZoneConvert();
@@ -1268,9 +1268,10 @@ namespace QDLogistics.Controllers
 
                                     if (reasonID == 16)
                                     {
-                                        description = string.Format("{0} {1}, {2}", package.Orders.ShippingCarrier, package.TrackingNumber, description);
 
-                                        Carriers carrier = package.Carriers;
+                                        Carriers carrier = package.Method.Carriers;
+                                        description = string.Format("{0} {1}, {2}", carrier.Name, package.TrackingNumber, description);
+
                                         if (carrier != null)
                                         {
                                             if (!string.IsNullOrEmpty(carrier.Email))
@@ -1363,7 +1364,7 @@ namespace QDLogistics.Controllers
         public ActionResult OrderColumOption()
         {
             Warehouses = new GenericRepository<Warehouses>(db);
-            Carriers = new GenericRepository<Carriers>(db);
+            ShippingMethod = new GenericRepository<ShippingMethod>(db);
 
             List<object> currencyCode = new List<object>();
             foreach (int code in Enum.GetValues(typeof(CurrencyCodeType2)))
@@ -1372,8 +1373,8 @@ namespace QDLogistics.Controllers
             }
 
             List<Warehouses> warehouseList = Warehouses.GetAll(true).Where(w => w.IsEnable == true && w.IsSellable == true).OrderByDescending(w => w.IsDefault).OrderBy(w => w.ID).ToList();
-            List<Carriers> carrierList = Carriers.GetAll(true).Where(c => c.IsEnable == true).OrderBy(c => c.ID).ToList();
-            var carrierOfWarehouse = warehouseList.ToDictionary(w => w.ID, w => GetCarrierBool(carrierList, w.CarrierData));
+            List<ShippingMethod> methodList = ShippingMethod.GetAll(true).Where(m => m.IsEnable).OrderBy(m => m.ID).ToList();
+            var carrierOfWarehouse = warehouseList.ToDictionary(w => w.ID, w => GetCarrierBool(methodList, w.CarrierData));
 
             List<object> export = new List<object>();
             foreach (int code in Enum.GetValues(typeof(EnumData.Export)))
@@ -1397,7 +1398,7 @@ namespace QDLogistics.Controllers
             {
                 currencyCode = currencyCode,
                 warehouse = warehouseList.Select(w => new { text = w.Name, value = w.ID }).ToList(),
-                carrier = carrierList.Select(c => new { text = c.Name, value = c.ID }).ToList(),
+                carrier = methodList.Select(m => new { text = m.Name, value = m.ID }).ToList(),
                 export = export,
                 exportMethod = exportMethod,
                 statusCode = statusCode,
@@ -1411,12 +1412,12 @@ namespace QDLogistics.Controllers
         public ActionResult WarehouseData()
         {
             Warehouses = new GenericRepository<Warehouses>(db);
-            Carriers = new GenericRepository<Carriers>(db);
+            ShippingMethod = new GenericRepository<ShippingMethod>(db);
 
             int total = 0;
             List<object> dataList = new List<object>();
 
-            IEnumerable<Carriers> carriers = Carriers.GetAll(true).Where(c => c.IsEnable == true).OrderBy(c => c.ID).ToList();
+            IEnumerable<ShippingMethod> methodLIst = ShippingMethod.GetAll(true).Where(m => m.IsEnable).OrderBy(m => m.ID).ToList();
             IEnumerable<Warehouses> results = Warehouses.GetAll(true).Where(w => w.IsEnable == true).ToList();
             if (results.Any())
             {
@@ -1429,7 +1430,7 @@ namespace QDLogistics.Controllers
                     WarehouseType = Enum.GetName(typeof(WarehouseTypeType), warehouse.WarehouseType),
                     IsSellable = warehouse.IsSellable,
                     WinitWarehouseID = warehouse.WinitWarehouseID,
-                    CarrierData = GetCarrierBool(carriers, warehouse.CarrierData)
+                    CarrierData = GetCarrierBool(methodLIst, warehouse.CarrierData)
                 }));
             }
 
@@ -1497,32 +1498,100 @@ namespace QDLogistics.Controllers
             return Content(JsonConvert.SerializeObject(new { total = total, rows = dataList }), "appllication/json");
         }
 
-        [CheckSession]
-        public ActionResult CarrierData()
-        {
-            Carriers = new GenericRepository<Carriers>(db);
 
+        [CheckSession]
+        public ActionResult ShippingMethodData()
+        {
             int total = 0;
             List<object> dataList = new List<object>();
 
-            IEnumerable<Carriers> results = Carriers.GetAll(true).Where(c => c.IsEnable == true).ToList();
-            if (results.Any())
+            using (ShippingMethod = new GenericRepository<ShippingMethod>(db))
             {
-                total = results.Count();
+                List<ShippingMethod> results = ShippingMethod.GetAll(true).Where(m => m.IsEnable).OrderBy(m => m.ID).ToList();
 
-                dataList.AddRange(results.OrderBy(c => c.ID).Select(carrier => new
+                Carriers = new GenericRepository<Carriers>(db);
+                var carrierList = Carriers.GetAll(true).Where(c => c.IsEnable).ToDictionary(c => c.ID, c => c.Name);
+
+                if (results.Any())
                 {
-                    ID = carrier.ID,
-                    Name = carrier.Name,
-                    Carrier = carrier.Carrier,
-                    ShippingMethod = carrier.ShippingMethod,
-                    BoxType = carrier.BoxType,
-                    IsExport = carrier.IsExport,
-                    IsBattery = carrier.IsBattery
-                }));
+                    total = results.Count();
+
+                    dataList.AddRange(results.Select(m => new
+                    {
+                        m.ID,
+                        CarrierName = carrierList.ContainsKey(m.CarrierID.Value) ? carrierList[m.CarrierID.Value] : "",
+                        m.IsDirectLine,
+                        m.Name,
+                        m.CarrierID,
+                        m.MethodType,
+                        m.BoxType,
+                        m.IsExport,
+                        m.IsBattery
+                    }).ToList());
+                }
             }
 
-            return Content(JsonConvert.SerializeObject(new { total = total, rows = dataList }), "appllication/json");
+            return Json(new { total, rows = dataList }, JsonRequestBehavior.AllowGet);
+        }
+
+        [CheckSession]
+        [HttpPost]
+        public ActionResult ShippingMethodUpdate(List<ShippingMethod> data)
+        {
+            if (!MyHelp.CheckAuth("shipping", "shippingMethod", EnumData.AuthType.Edit))
+            {
+                return Content(JsonConvert.SerializeObject(new { status = false, message = "沒有權限!" }), "appllication/json");
+            }
+
+            ShippingMethod = new GenericRepository<ShippingMethod>(db);
+
+            foreach (ShippingMethod sData in data)
+            {
+                ShippingMethod method = ShippingMethod.Get(sData.ID);
+                if (method != null)
+                {
+                    method.IsDirectLine = sData.IsDirectLine;
+                    method.Name = sData.Name;
+                    method.CarrierID = sData.CarrierID;
+                    method.MethodType = sData.MethodType;
+                    method.BoxType = sData.BoxType;
+                    method.IsExport = sData.IsExport;
+                    method.IsBattery = sData.IsBattery;
+                    ShippingMethod.Update(method);
+                }
+
+                MyHelp.Log("ShippingMethod", sData.ID, "更新運輸方式資料");
+            }
+
+            ShippingMethod.SaveChanges();
+            return Content(JsonConvert.SerializeObject(new { status = true }), "appllication/json");
+        }
+
+        [CheckSession]
+        public ActionResult CarrierData()
+        {
+            int total = 0;
+            List<object> dataList = new List<object>();
+
+            using (Carriers = new GenericRepository<Carriers>(db))
+            {
+                List<Carriers> results = Carriers.GetAll(true).Where(c => c.IsEnable).OrderBy(c => c.ID).ToList();
+
+                if (results.Any())
+                {
+                    total = results.Count();
+
+                    dataList.AddRange(results.Select(c => new
+                    {
+                        c.ID,
+                        c.Name,
+                        c.Email,
+                        c.Api
+                    }).ToList());
+                }
+            }
+
+            return Json(new { total, rows = dataList }, JsonRequestBehavior.AllowGet);
         }
 
         [CheckSession]
@@ -1542,11 +1611,8 @@ namespace QDLogistics.Controllers
                 if (carrier != null)
                 {
                     carrier.Name = cData.Name;
-                    carrier.Carrier = cData.Carrier;
-                    carrier.ShippingMethod = cData.ShippingMethod;
-                    carrier.BoxType = cData.BoxType;
-                    carrier.IsExport = cData.IsExport;
-                    carrier.IsBattery = cData.IsBattery;
+                    carrier.Email = cData.Email;
+                    carrier.Api = cData.Api;
                     Carriers.Update(carrier);
                 }
 
@@ -1602,7 +1668,7 @@ namespace QDLogistics.Controllers
                 {
                     ServiceCode = service.ServiceCode,
                     ServiceName = service.ServiceName,
-                    CarrierID = service.CarrierID
+                    ShippingMethod = service.ShippingMethod
                 }));
             }
 
@@ -1620,11 +1686,11 @@ namespace QDLogistics.Controllers
                 Services service = Services.Get(sData.ServiceCode);
                 if (service != null)
                 {
-                    service.CarrierID = sData.CarrierID;
+                    service.ShippingMethod = sData.ShippingMethod;
                     Services.Update(service);
                 }
 
-                MyHelp.Log("Services", sData.ServiceCode, "更新運輸方式");
+                MyHelp.Log("Services", sData.ServiceCode, "更新預設運輸方式");
             }
 
             Services.SaveChanges();
@@ -1634,22 +1700,22 @@ namespace QDLogistics.Controllers
         [CheckSession]
         public ActionResult CountryData()
         {
-            Carriers = new GenericRepository<Carriers>(db);
+            ShippingMethod = new GenericRepository<ShippingMethod>(db);
 
             int total = 0;
             List<object> dataList = new List<object>();
 
             IEnumerable<Country> countries = MyHelp.GetCountries();
-            IEnumerable<Carriers> results = Carriers.GetAll(true).Where(c => c.IsEnable == true).ToList();
+            IEnumerable<ShippingMethod> results = ShippingMethod.GetAll(true).Where(c => c.IsEnable == true).ToList();
             if (results.Any())
             {
                 total = results.Count();
 
-                dataList.AddRange(results.OrderBy(c => c.ID).Select(carrier => new
+                dataList.AddRange(results.OrderBy(c => c.ID).Select(method => new
                 {
-                    ID = carrier.ID,
-                    Name = carrier.Carrier,
-                    CountryData = GetCountryBool(countries, carrier.CountryData)
+                    ID = method.ID,
+                    Name = method.Name,
+                    CountryData = GetCountryBool(countries, method.CountryData)
                 }));
             }
 
@@ -1658,20 +1724,20 @@ namespace QDLogistics.Controllers
 
         [CheckSession]
         [HttpPost]
-        public ActionResult CountryUpdate(List<Carriers> data)
+        public ActionResult CountryUpdate(List<ShippingMethod> data)
         {
-            Carriers = new GenericRepository<Carriers>(db);
+            ShippingMethod = new GenericRepository<ShippingMethod>(db);
 
-            foreach (Carriers cData in data)
+            foreach (ShippingMethod sData in data)
             {
-                Carriers carrier = Carriers.Get(cData.ID);
-                if (carrier != null)
+                ShippingMethod method = ShippingMethod.Get(sData.ID);
+                if (method != null)
                 {
-                    carrier.CountryData = cData.CountryData;
-                    Carriers.Update(carrier);
+                    method.CountryData = sData.CountryData;
+                    ShippingMethod.Update(method);
                 }
 
-                MyHelp.Log("Carriers", cData.ID, "更新運輸國家");
+                MyHelp.Log("ShippingMethod", sData.ID, "更新運輸國家");
             }
 
             Carriers.SaveChanges();
@@ -2025,12 +2091,12 @@ namespace QDLogistics.Controllers
             return button;
         }
 
-        private Dictionary<int, bool> GetCarrierBool(IEnumerable<Carriers> carriers, string CarrierData)
+        private Dictionary<int, bool> GetCarrierBool(IEnumerable<ShippingMethod> methodList, string CarrierData)
         {
-            if (string.IsNullOrEmpty(CarrierData)) return carriers.ToDictionary(c => c.ID, c => false);
+            if (string.IsNullOrEmpty(CarrierData)) return methodList.ToDictionary(m => m.ID, m => false);
 
             Dictionary<string, bool> Data = JsonConvert.DeserializeObject<Dictionary<string, bool>>(CarrierData);
-            return carriers.ToDictionary(c => c.ID, c => Data.ContainsKey(c.ID.ToString()) ? Data[c.ID.ToString()] : false);
+            return methodList.ToDictionary(m => m.ID, m => Data.ContainsKey(m.ID.ToString()) ? Data[m.ID.ToString()] : false);
         }
 
         private Dictionary<string, bool> GetCountryBool(IEnumerable<Country> countries, string CountryData)

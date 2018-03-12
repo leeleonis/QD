@@ -128,7 +128,7 @@ namespace QDLogistics.Commons
 
         private ShipResult TWN_Carrier()
         {
-            Carriers carrier = package.Carriers;
+            Carriers carrier = package.Method.Carriers;
             CarrierAPI api = carrier.CarrierAPI;
 
             switch (api.Type)
@@ -141,7 +141,7 @@ namespace QDLogistics.Commons
 
                         package.TrackingNumber = result.AirwayBillNumber;
                         package.ShipDate = SCWS.SyncOn;
-                        package.ShippingServiceCode = carrier.Carrier;
+                        package.ShippingServiceCode = carrier.Name;
 
                         if (package.Export == (byte)EnumData.Export.正式)
                         {
@@ -167,7 +167,7 @@ namespace QDLogistics.Commons
                         CompletedPackageDetail data = result.CompletedShipmentDetail.CompletedPackageDetails.First();
                         package.TrackingNumber = data.TrackingIds.Select(t => t.TrackingNumber).First();
                         package.ShipDate = SCWS.SyncOn;
-                        package.ShippingServiceCode = carrier.Carrier;
+                        package.ShippingServiceCode = carrier.Name;
 
                         if (package.Export == (byte)EnumData.Export.正式)
                         {
@@ -599,7 +599,7 @@ namespace QDLogistics.Commons
 
         private ShipResult Winit_Carrier()
         {
-            Carriers carrier = package.Carriers;
+            Carriers carrier = package.Method.Carriers;
             CarrierAPI api = carrier.CarrierAPI;
             Winit_API winit = new Winit_API(api);
 
@@ -648,7 +648,7 @@ namespace QDLogistics.Commons
 
                 createOutboundOrderData outboundOrderData = result.data.ToObject<createOutboundOrderData>();
                 package.WinitNo = outboundOrderData.outboundOrderNum;
-                package.ShippingServiceCode = carrier.Carrier;
+                package.ShippingServiceCode = carrier.Name;
             }
             catch (Exception e)
             {

@@ -45,13 +45,18 @@
     <script src="~/scripts/jquery.easyui-1.4.3.min.js"></script>
     <script type="text/javascript">
         var pager, pageSize = 100;
-        var selected = false, CarrierOption;
+        var selected = false, MethodOption;
         var $dataGrid, $syncBtn = $("#btn-sync"), $importBtn = $("#btn-import"), $importFile = $("#file-import"), $exportBtn = $("#btn-export");
 
         $(function () {
-            getOption("@Url.Action("CarrierOption", "ajax")").done(function (response) {
-                CarrierOption = response['carrier'];
-                dataInit();
+            getOption("@Url.Action("getSelectOption", "Shipping")", 'post', { optionType: ['shippingMethod'] }).done(function (response) {
+                if (response['status']) {
+                    MethodOption = response.data.shippingMethod;
+
+                    dataInit();
+                } else {
+                    alert(response['message']);
+                }
             });
 
             $syncBtn.click(function () {
@@ -106,7 +111,7 @@
 
         function dataInit() {
             $dataGrid = $("#DataGrid").datagrid({
-                title: "運輸方式  列表",
+                title: "預設運輸方式  列表",
                 url: "@Url.Action("ServiceData", "ajax")",
                 queryParams: {},
                 width: "100%",
@@ -115,9 +120,9 @@
                     { field: "ServiceCode", title: "Service Code", width: "35%", align: "center", sortable: false },
                     { field: "ServiceName", title: "Display Name", width: "35%", align: "center", sortable: false },
                     {
-                        field: "CarrierID", title: "Shipping Method", width: "26%", align: "center", sortable: false,
+                        field: "ShippingMethod", title: "Shipping Method", width: "26%", align: "center", sortable: false,
                         formatter: function (value, row, index) {
-                            return "<select class='form-control input-sm' id='CarrierID-" + index + "' onchange='onSelect(" + index + ")'>" + getSelectOption(CarrierOption, value) + "</select>";
+                            return "<select class='form-control input-sm' id='CarrierID-" + index + "' onchange='onSelect(" + index + ")'>" + getSelectOption(MethodOption, value) + "</select>";
                         }
                     }, {
                         field: "save", title: "<button type='button' class='btn btn-default btn-sm' onclick='saveData()'>SAVE</button>", width: "60", sortable: false,
@@ -212,7 +217,7 @@
 
             if (optionList.length > 0) {
                 for (var i in optionList) {
-                    option += "<option value='" + optionList[i]["value"] + "' " + (optionList[i]["value"] == value ? "selected" : "") + ">" + optionList[i]["text"] + "</option>";
+                    option += "<option value='" + optionList[i].value + "' " + (optionList[i].value == value ? "selected" : "") + ">" + optionList[i].text + "</option>";
                 }
             }
 
@@ -237,11 +242,15 @@
             });
         }
 
-        function getOption(url) {
-            return $.ajax({
-                url: url,
-                dataType: "json"
-            });
+        function getOption(url, type, data) {
+            type = !isEmpty(type) ? type : 'get';
+            data = !isEmpty(data) ? data : {};
+
+            return $.ajax({ url: url, type: type, data: data, dataType: "json" });
+        }
+
+        function isEmpty(value) {
+            return (value == undefined) || (value == null) || (value == "");
         }
     </script>
 }

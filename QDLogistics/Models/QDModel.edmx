@@ -73,6 +73,21 @@
           <Property Name="Auth" Type="nvarchar(max)" />
           <Property Name="LLT" Type="datetime" />
         </EntityType>
+        <EntityType Name="Box">
+          <Key>
+            <PropertyRef Name="BoxID" />
+          </Key>
+          <Property Name="BoxID" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="SupplierBoxID" Type="nvarchar" MaxLength="50" />
+          <Property Name="WITID" Type="nvarchar" MaxLength="50" />
+          <Property Name="CarrierID" Type="int" Nullable="false" />
+          <Property Name="WharehouseID" Type="int" Nullable="false" />
+          <Property Name="BoxType" Type="tinyint" Nullable="false" />
+          <Property Name="ShippingStatus" Type="tinyint" Nullable="false" />
+          <Property Name="TrackingNumber" Type="nvarchar" MaxLength="50" />
+          <Property Name="Note" Type="nvarchar(max)" />
+          <Property Name="Create_at" Type="datetime" Nullable="false" />
+        </EntityType>
         <EntityType Name="BundleItems">
           <Key>
             <PropertyRef Name="ID" />
@@ -108,19 +123,11 @@
           <Key>
             <PropertyRef Name="ID" />
           </Key>
-          <Property Name="IsEnable" Type="bit" />
+          <Property Name="IsEnable" Type="bit" Nullable="false" />
           <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="Name" Type="nvarchar" MaxLength="50" />
-          <Property Name="Carrier" Type="nvarchar" MaxLength="50" />
           <Property Name="Email" Type="nvarchar" MaxLength="150" />
-          <Property Name="ShippingMethod" Type="int" />
-          <Property Name="BoxType" Type="int" />
           <Property Name="Api" Type="int" />
-          <Property Name="PrinterName" Type="nvarchar" MaxLength="50" />
-          <Property Name="IsExport" Type="bit" />
-          <Property Name="IsBattery" Type="bit" />
-          <Property Name="CountryData" Type="nvarchar(max)" />
-          <Property Name="SyncOn" Type="datetime" />
         </EntityType>
         <EntityType Name="Companies">
           <Key>
@@ -254,7 +261,7 @@
           <Property Name="ShipDate" Type="datetime2" Precision="7" />
           <Property Name="ShippingMethodName" Type="nvarchar" MaxLength="150" />
           <Property Name="ShippingServiceCode" Type="nvarchar" MaxLength="50" />
-          <Property Name="CarrierID" Type="int" />
+          <Property Name="ShippingMethod" Type="int" />
           <Property Name="Export" Type="tinyint" />
           <Property Name="ExportMethod" Type="tinyint" />
           <Property Name="EstimatedDeliveryDate" Type="datetime2" Precision="7" />
@@ -263,6 +270,7 @@
           <Property Name="DeliveryStatus" Type="int" />
           <Property Name="DeliveryNote" Type="nvarchar" MaxLength="150" />
           <Property Name="WinitNo" Type="nvarchar" MaxLength="50" />
+          <Property Name="BoxID" Type="nvarchar" MaxLength="50" />
           <Property Name="FinalShippingFee" Type="decimal" Precision="18" Scale="2" />
           <Property Name="UploadTracking" Type="bit" Nullable="false" />
           <Property Name="TrackingNumber" Type="nvarchar" MaxLength="50" />
@@ -336,7 +344,7 @@
           <Property Name="Weight" Type="int" Nullable="false" />
           <Property Name="WeightType" Type="tinyint" Nullable="false" />
           <Property Name="WarehouseID" Type="int" Nullable="false" />
-          <Property Name="CarrierID" Type="int" Nullable="false" />
+          <Property Name="MethodID" Type="int" Nullable="false" />
         </EntityType>
         <EntityType Name="ProductType">
           <Key>
@@ -385,7 +393,24 @@
           <Property Name="IsEnable" Type="bit" />
           <Property Name="ServiceCode" Type="nvarchar" MaxLength="150" Nullable="false" />
           <Property Name="ServiceName" Type="nvarchar" MaxLength="150" />
+          <Property Name="ShippingMethod" Type="int" />
+        </EntityType>
+        <EntityType Name="ShippingMethod">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="IsEnable" Type="bit" Nullable="false" />
+          <Property Name="IsDirectLine" Type="bit" Nullable="false" />
+          <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Name" Type="nvarchar" MaxLength="50" />
           <Property Name="CarrierID" Type="int" />
+          <Property Name="MethodType" Type="int" />
+          <Property Name="BoxType" Type="int" />
+          <Property Name="PrinterName" Type="nvarchar" MaxLength="50" />
+          <Property Name="IsExport" Type="bit" />
+          <Property Name="IsBattery" Type="bit" />
+          <Property Name="CountryData" Type="nvarchar(max)" />
+          <Property Name="SyncOn" Type="datetime" />
         </EntityType>
         <EntityType Name="Skus">
           <Key>
@@ -603,15 +628,27 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="FK_Packages_Carriers">
-          <End Role="Carriers" Type="Self.Carriers" Multiplicity="0..1" />
+        <Association Name="FK_Packages_Box">
+          <End Role="Box" Type="Self.Box" Multiplicity="0..1" />
           <End Role="Packages" Type="Self.Packages" Multiplicity="*" />
           <ReferentialConstraint>
-            <Principal Role="Carriers">
+            <Principal Role="Box">
+              <PropertyRef Name="BoxID" />
+            </Principal>
+            <Dependent Role="Packages">
+              <PropertyRef Name="BoxID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Packages_Carriers">
+          <End Role="ShippingMethod" Type="Self.ShippingMethod" Multiplicity="0..1" />
+          <End Role="Packages" Type="Self.Packages" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ShippingMethod">
               <PropertyRef Name="ID" />
             </Principal>
             <Dependent Role="Packages">
-              <PropertyRef Name="CarrierID" />
+              <PropertyRef Name="ShippingMethod" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -652,13 +689,25 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_Services_Carriers">
-          <End Role="Carriers" Type="Self.Carriers" Multiplicity="0..1" />
+          <End Role="ShippingMethod" Type="Self.ShippingMethod" Multiplicity="0..1" />
           <End Role="Services" Type="Self.Services" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ShippingMethod">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="Services">
+              <PropertyRef Name="ShippingMethod" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_ShippingMethod_Carriers">
+          <End Role="Carriers" Type="Self.Carriers" Multiplicity="0..1" />
+          <End Role="ShippingMethod" Type="Self.ShippingMethod" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="Carriers">
               <PropertyRef Name="ID" />
             </Principal>
-            <Dependent Role="Services">
+            <Dependent Role="ShippingMethod">
               <PropertyRef Name="CarrierID" />
             </Dependent>
           </ReferentialConstraint>
@@ -716,6 +765,7 @@
           <EntitySet Name="Addresses" EntityType="Self.Addresses" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="AdminGroups" EntityType="Self.AdminGroups" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="AdminUsers" EntityType="Self.AdminUsers" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Box" EntityType="Self.Box" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="BundleItems" EntityType="Self.BundleItems" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="CarrierAPI" EntityType="Self.CarrierAPI" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Carriers" EntityType="Self.Carriers" Schema="dbo" store:Type="Tables" />
@@ -732,6 +782,7 @@
           <EntitySet Name="PurchaseItemReceive" EntityType="Self.PurchaseItemReceive" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="SerialNumbers" EntityType="Self.SerialNumbers" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Services" EntityType="Self.Services" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="ShippingMethod" EntityType="Self.ShippingMethod" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Skus" EntityType="Self.Skus" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="TaskLog" EntityType="Self.TaskLog" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="TaskScheduler" EntityType="Self.TaskScheduler" Schema="dbo" store:Type="Tables" />
@@ -788,8 +839,12 @@
             <End Role="Services" EntitySet="Services" />
             <End Role="Orders" EntitySet="Orders" />
           </AssociationSet>
+          <AssociationSet Name="FK_Packages_Box" Association="Self.FK_Packages_Box">
+            <End Role="Box" EntitySet="Box" />
+            <End Role="Packages" EntitySet="Packages" />
+          </AssociationSet>
           <AssociationSet Name="FK_Packages_Carriers" Association="Self.FK_Packages_Carriers">
-            <End Role="Carriers" EntitySet="Carriers" />
+            <End Role="ShippingMethod" EntitySet="ShippingMethod" />
             <End Role="Packages" EntitySet="Packages" />
           </AssociationSet>
           <AssociationSet Name="FK_Packages_Orders" Association="Self.FK_Packages_Orders">
@@ -805,8 +860,12 @@
             <End Role="SerialNumbers" EntitySet="SerialNumbers" />
           </AssociationSet>
           <AssociationSet Name="FK_Services_Carriers" Association="Self.FK_Services_Carriers">
-            <End Role="Carriers" EntitySet="Carriers" />
+            <End Role="ShippingMethod" EntitySet="ShippingMethod" />
             <End Role="Services" EntitySet="Services" />
+          </AssociationSet>
+          <AssociationSet Name="FK_ShippingMethod_Carriers" Association="Self.FK_ShippingMethod_Carriers">
+            <End Role="Carriers" EntitySet="Carriers" />
+            <End Role="ShippingMethod" EntitySet="ShippingMethod" />
           </AssociationSet>
           <AssociationSet Name="FK_Skus_Manufacturers" Association="Self.FK_Skus_Manufacturers">
             <End Role="Manufacturers" EntitySet="Manufacturers" />
@@ -884,11 +943,6 @@
             <End Role="Orders" EntitySet="Orders" />
             <End Role="Payments" EntitySet="Payments" />
           </AssociationSet>
-          <EntitySet Name="Services" EntityType="QDLogisticsModel.Services" />
-          <AssociationSet Name="FK_Orders_Services" Association="QDLogisticsModel.FK_Orders_Services">
-            <End Role="Services" EntitySet="Services" />
-            <End Role="Orders" EntitySet="Orders" />
-          </AssociationSet>
           <EntitySet Name="AdminGroups" EntityType="QDLogisticsModel.AdminGroups" />
           <EntitySet Name="AdminUsers" EntityType="QDLogisticsModel.AdminUsers" />
           <AssociationSet Name="FK_admin_user_admin_group" Association="QDLogisticsModel.FK_admin_user_admin_group">
@@ -928,21 +982,36 @@
             <End Role="TaskScheduler" EntitySet="TaskScheduler" />
             <End Role="TaskLog" EntitySet="TaskLog" />
           </AssociationSet>
+          <EntitySet Name="Box" EntityType="QDLogisticsModel.Box" />
+          <AssociationSet Name="FK_Packages_Box" Association="QDLogisticsModel.FK_Packages_Box">
+            <End Role="Box" EntitySet="Box" />
+            <End Role="Packages" EntitySet="Packages" />
+          </AssociationSet>
+          <EntitySet Name="Services" EntityType="QDLogisticsModel.Services" />
+          <AssociationSet Name="FK_Orders_Services" Association="QDLogisticsModel.FK_Orders_Services">
+            <End Role="Services" EntitySet="Services" />
+            <End Role="Orders" EntitySet="Orders" />
+          </AssociationSet>
+          <EntitySet Name="Preset" EntityType="QDLogisticsModel.Preset" />
           <EntitySet Name="Carriers" EntityType="QDLogisticsModel.Carriers" />
           <AssociationSet Name="FK_Carriers_CarrierAPI" Association="QDLogisticsModel.FK_Carriers_CarrierAPI">
             <End Role="CarrierAPI" EntitySet="CarrierAPI" />
             <End Role="Carriers" EntitySet="Carriers" />
           </AssociationSet>
-          <AssociationSet Name="FK_Packages_Carriers" Association="QDLogisticsModel.FK_Packages_Carriers">
+          <EntitySet Name="ShippingMethod" EntityType="QDLogisticsModel.ShippingMethod" />
+          <AssociationSet Name="FK_ShippingMethod_Carriers" Association="QDLogisticsModel.FK_ShippingMethod_Carriers">
             <End Role="Carriers" EntitySet="Carriers" />
+            <End Role="ShippingMethod" EntitySet="ShippingMethod" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Packages_Carriers" Association="QDLogisticsModel.FK_Packages_Carriers">
+            <End Role="ShippingMethod" EntitySet="ShippingMethod" />
             <End Role="Packages" EntitySet="Packages" />
           </AssociationSet>
           <AssociationSet Name="FK_Services_Carriers" Association="QDLogisticsModel.FK_Services_Carriers">
-            <End Role="Carriers" EntitySet="Carriers" />
+            <End Role="ShippingMethod" EntitySet="ShippingMethod" />
             <End Role="Services" EntitySet="Services" />
           </AssociationSet>
-          <EntitySet Name="Preset" EntityType="QDLogisticsModel.Preset" />
-        </EntityContainer>
+          </EntityContainer>
         <EntityType Name="Addresses">
           <Key>
             <PropertyRef Name="Id" />
@@ -1110,8 +1179,8 @@
           <NavigationProperty Name="Items" Relationship="QDLogisticsModel.FK_Items_Orders" FromRole="Orders" ToRole="Items" />
           <NavigationProperty Name="Packages" Relationship="QDLogisticsModel.FK_Packages_Orders" FromRole="Orders" ToRole="Packages" />
           <NavigationProperty Name="Payments" Relationship="QDLogisticsModel.FK_Payments_Orders" FromRole="Orders" ToRole="Payments" />
-          <NavigationProperty Name="Services" Relationship="QDLogisticsModel.FK_Orders_Services" FromRole="Orders" ToRole="Services" />
           <NavigationProperty Name="Companies" Relationship="QDLogisticsModel.FK_Orders_Companies" FromRole="Orders" ToRole="Companies" />
+          <NavigationProperty Name="Services" Relationship="QDLogisticsModel.FK_Orders_Services" FromRole="Orders" ToRole="Services" />
         </EntityType>
         <EntityType Name="Packages">
           <Key>
@@ -1129,7 +1198,7 @@
           <Property Name="ShipDate" Type="DateTime" Precision="7" />
           <Property Name="ShippingMethodName" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
           <Property Name="ShippingServiceCode" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Name="CarrierID" Type="Int32" />
+          <Property Name="ShippingMethod" Type="Int32" />
           <Property Name="Export" Type="Byte" />
           <Property Name="ExportMethod" Type="Byte" />
           <Property Name="EstimatedDeliveryDate" Type="DateTime" Precision="7" />
@@ -1138,6 +1207,7 @@
           <Property Name="DeliveryStatus" Type="Int32" />
           <Property Name="DeliveryNote" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
           <Property Name="WinitNo" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="BoxID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="FinalShippingFee" Type="Decimal" Precision="18" Scale="2" />
           <Property Name="UploadTracking" Type="Boolean" Nullable="false" DefaultValue="True" />
           <Property Name="TrackingNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
@@ -1153,7 +1223,8 @@
           <Property Name="Length" Type="Double" />
           <Property Name="Width" Type="Double" />
           <Property Name="Height" Type="Double" />
-          <NavigationProperty Name="Carriers" Relationship="QDLogisticsModel.FK_Packages_Carriers" FromRole="Packages" ToRole="Carriers" />
+          <NavigationProperty Name="Box" Relationship="QDLogisticsModel.FK_Packages_Box" FromRole="Packages" ToRole="Box" />
+          <NavigationProperty Name="Method" Relationship="QDLogisticsModel.FK_Packages_Carriers" FromRole="Packages" ToRole="ShippingMethod" />
         </EntityType>
         <EntityType Name="Payments">
           <Key>
@@ -1348,29 +1419,6 @@
             </Principal>
             <Dependent Role="Payments">
               <PropertyRef Name="OrderID" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <EntityType Name="Services">
-          <Key>
-            <PropertyRef Name="ServiceCode" />
-          </Key>
-          <Property Name="IsEnable" Type="Boolean" />
-          <Property Name="ServiceCode" Type="String" Nullable="false" MaxLength="150" FixedLength="false" Unicode="true" />
-          <Property Name="ServiceName" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
-          <Property Name="CarrierID" Type="Int32" />
-          <NavigationProperty Name="Orders" Relationship="QDLogisticsModel.FK_Orders_Services" FromRole="Services" ToRole="Orders" />
-          <NavigationProperty Name="Carriers" Relationship="QDLogisticsModel.FK_Services_Carriers" FromRole="Services" ToRole="Carriers" />
-        </EntityType>
-        <Association Name="FK_Orders_Services">
-          <End Type="QDLogisticsModel.Services" Role="Services" Multiplicity="0..1" />
-          <End Type="QDLogisticsModel.Orders" Role="Orders" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="Services">
-              <PropertyRef Name="ServiceCode" />
-            </Principal>
-            <Dependent Role="Orders">
-              <PropertyRef Name="ShippingServiceSelected" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -1611,60 +1659,54 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <EntityType Name="Carriers">
+        <EntityType Name="Box">
           <Key>
-            <PropertyRef Name="ID" />
+            <PropertyRef Name="BoxID" />
           </Key>
-          <Property Name="IsEnable" Type="Boolean" />
-          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="Name" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Name="Carrier" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Name="Email" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
-          <Property Name="ShippingMethod" Type="Int32" />
-          <Property Name="BoxType" Type="Int32" />
-          <Property Name="Api" Type="Int32" />
-          <Property Name="PrinterName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Name="IsExport" Type="Boolean" />
-          <Property Name="IsBattery" Type="Boolean" />
-          <Property Name="CountryData" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="SyncOn" Type="DateTime" Precision="3" />
-          <NavigationProperty Name="CarrierAPI" Relationship="QDLogisticsModel.FK_Carriers_CarrierAPI" FromRole="Carriers" ToRole="CarrierAPI" />
-          <NavigationProperty Name="Packages" Relationship="QDLogisticsModel.FK_Packages_Carriers" FromRole="Carriers" ToRole="Packages" />
-          <NavigationProperty Name="Services" Relationship="QDLogisticsModel.FK_Services_Carriers" FromRole="Carriers" ToRole="Services" />
+          <Property Name="BoxID" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="SupplierBoxID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="WITID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="CarrierID" Type="Int32" Nullable="false" />
+          <Property Name="WharehouseID" Type="Int32" Nullable="false" />
+          <Property Name="BoxType" Type="Byte" Nullable="false" />
+          <Property Name="ShippingStatus" Type="Byte" Nullable="false" />
+          <Property Name="TrackingNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Note" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="Create_at" Type="DateTime" Nullable="false" Precision="3" />
+          <NavigationProperty Name="Packages" Relationship="QDLogisticsModel.FK_Packages_Box" FromRole="Box" ToRole="Packages" />
         </EntityType>
-        <Association Name="FK_Carriers_CarrierAPI">
-          <End Type="QDLogisticsModel.CarrierAPI" Role="CarrierAPI" Multiplicity="0..1" />
-          <End Type="QDLogisticsModel.Carriers" Role="Carriers" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="CarrierAPI">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="Carriers">
-              <PropertyRef Name="Api" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_Packages_Carriers">
-          <End Type="QDLogisticsModel.Carriers" Role="Carriers" Multiplicity="0..1" />
+        <Association Name="FK_Packages_Box">
+          <End Type="QDLogisticsModel.Box" Role="Box" Multiplicity="0..1" />
           <End Type="QDLogisticsModel.Packages" Role="Packages" Multiplicity="*" />
           <ReferentialConstraint>
-            <Principal Role="Carriers">
-              <PropertyRef Name="ID" />
+            <Principal Role="Box">
+              <PropertyRef Name="BoxID" />
             </Principal>
             <Dependent Role="Packages">
-              <PropertyRef Name="CarrierID" />
+              <PropertyRef Name="BoxID" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="FK_Services_Carriers">
-          <End Type="QDLogisticsModel.Carriers" Role="Carriers" Multiplicity="0..1" />
-          <End Type="QDLogisticsModel.Services" Role="Services" Multiplicity="*" />
+        <EntityType Name="Services">
+          <Key>
+            <PropertyRef Name="ServiceCode" />
+          </Key>
+          <Property Name="IsEnable" Type="Boolean" />
+          <Property Name="ServiceCode" Type="String" Nullable="false" MaxLength="150" FixedLength="false" Unicode="true" />
+          <Property Name="ServiceName" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
+          <Property Name="ShippingMethod" Type="Int32" />
+          <NavigationProperty Name="Orders" Relationship="QDLogisticsModel.FK_Orders_Services" FromRole="Services" ToRole="Orders" />
+          <NavigationProperty Name="Method" Relationship="QDLogisticsModel.FK_Services_Carriers" FromRole="Services" ToRole="ShippingMethod" />
+        </EntityType>
+        <Association Name="FK_Orders_Services">
+          <End Type="QDLogisticsModel.Services" Role="Services" Multiplicity="0..1" />
+          <End Type="QDLogisticsModel.Orders" Role="Orders" Multiplicity="*" />
           <ReferentialConstraint>
-            <Principal Role="Carriers">
-              <PropertyRef Name="ID" />
+            <Principal Role="Services">
+              <PropertyRef Name="ServiceCode" />
             </Principal>
-            <Dependent Role="Services">
-              <PropertyRef Name="CarrierID" />
+            <Dependent Role="Orders">
+              <PropertyRef Name="ShippingServiceSelected" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -1691,8 +1733,88 @@
           <Property Name="Weight" Type="Int32" Nullable="false" />
           <Property Name="WeightType" Type="Byte" Nullable="false" />
           <Property Name="WarehouseID" Type="Int32" Nullable="false" />
-          <Property Name="CarrierID" Type="Int32" Nullable="false" />
+          <Property Name="MethodID" Type="Int32" Nullable="false" />
         </EntityType>
+        <EntityType Name="Carriers">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="IsEnable" Type="Boolean" Nullable="false" />
+          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Name" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Email" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
+          <Property Name="Api" Type="Int32" />
+          <NavigationProperty Name="CarrierAPI" Relationship="QDLogisticsModel.FK_Carriers_CarrierAPI" FromRole="Carriers" ToRole="CarrierAPI" />
+          <NavigationProperty Name="ShippingMethod" Relationship="QDLogisticsModel.FK_ShippingMethod_Carriers" FromRole="Carriers" ToRole="ShippingMethod" />
+        </EntityType>
+        <Association Name="FK_Carriers_CarrierAPI">
+          <End Type="QDLogisticsModel.CarrierAPI" Role="CarrierAPI" Multiplicity="0..1" />
+          <End Type="QDLogisticsModel.Carriers" Role="Carriers" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="CarrierAPI">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="Carriers">
+              <PropertyRef Name="Api" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityType Name="ShippingMethod">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="IsEnable" Type="Boolean" Nullable="false" />
+          <Property Name="IsDirectLine" Type="Boolean" Nullable="false" />
+          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Name" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="CarrierID" Type="Int32" />
+          <Property Name="MethodType" Type="Int32" />
+          <Property Name="BoxType" Type="Int32" />
+          <Property Name="PrinterName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="IsExport" Type="Boolean" />
+          <Property Name="IsBattery" Type="Boolean" />
+          <Property Name="CountryData" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="SyncOn" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="Carriers" Relationship="QDLogisticsModel.FK_ShippingMethod_Carriers" FromRole="ShippingMethod" ToRole="Carriers" />
+          <NavigationProperty Name="Packages" Relationship="QDLogisticsModel.FK_Packages_Carriers" FromRole="ShippingMethod" ToRole="Packages" />
+          <NavigationProperty Name="Services" Relationship="QDLogisticsModel.FK_Services_Carriers" FromRole="ShippingMethod" ToRole="Services" />
+        </EntityType>
+        <Association Name="FK_ShippingMethod_Carriers">
+          <End Type="QDLogisticsModel.Carriers" Role="Carriers" Multiplicity="0..1" />
+          <End Type="QDLogisticsModel.ShippingMethod" Role="ShippingMethod" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Carriers">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="ShippingMethod">
+              <PropertyRef Name="CarrierID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Packages_Carriers">
+          <End Type="QDLogisticsModel.ShippingMethod" Role="ShippingMethod" Multiplicity="0..1" />
+          <End Type="QDLogisticsModel.Packages" Role="Packages" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ShippingMethod">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="Packages">
+              <PropertyRef Name="ShippingMethod" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Services_Carriers">
+          <End Type="QDLogisticsModel.ShippingMethod" Role="ShippingMethod" Multiplicity="0..1" />
+          <End Type="QDLogisticsModel.Services" Role="Services" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ShippingMethod">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="Services">
+              <PropertyRef Name="ShippingMethod" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -1860,6 +1982,8 @@
           <EntitySetMapping Name="Packages">
             <EntityTypeMapping TypeName="QDLogisticsModel.Packages">
               <MappingFragment StoreEntitySet="Packages">
+                <ScalarProperty Name="BoxID" ColumnName="BoxID" />
+                <ScalarProperty Name="ShippingMethod" ColumnName="ShippingMethod" />
                 <ScalarProperty Name="POInvoice" ColumnName="POInvoice" />
                 <ScalarProperty Name="POId" ColumnName="POId" />
                 <ScalarProperty Name="SupplierComment" ColumnName="SupplierComment" />
@@ -1884,7 +2008,6 @@
                 <ScalarProperty Name="EstimatedDeliveryDate" ColumnName="EstimatedDeliveryDate" />
                 <ScalarProperty Name="ExportMethod" ColumnName="ExportMethod" />
                 <ScalarProperty Name="Export" ColumnName="Export" />
-                <ScalarProperty Name="CarrierID" ColumnName="CarrierID" />
                 <ScalarProperty Name="ShippingServiceCode" ColumnName="ShippingServiceCode" />
                 <ScalarProperty Name="ShippingMethodName" ColumnName="ShippingMethodName" />
                 <ScalarProperty Name="ShipDate" ColumnName="ShipDate" />
@@ -1951,16 +2074,6 @@
                 <ScalarProperty Name="AllowUseQtyForFBAShipments" ColumnName="AllowUseQtyForFBAShipments" />
                 <ScalarProperty Name="IsSellable" ColumnName="IsSellable" />
                 <ScalarProperty Name="IsDefault" ColumnName="IsDefault" />
-                <ScalarProperty Name="IsEnable" ColumnName="IsEnable" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="Services">
-            <EntityTypeMapping TypeName="QDLogisticsModel.Services">
-              <MappingFragment StoreEntitySet="Services">
-                <ScalarProperty Name="CarrierID" ColumnName="CarrierID" />
-                <ScalarProperty Name="ServiceName" ColumnName="ServiceName" />
-                <ScalarProperty Name="ServiceCode" ColumnName="ServiceCode" />
                 <ScalarProperty Name="IsEnable" ColumnName="IsEnable" />
               </MappingFragment>
             </EntityTypeMapping>
@@ -2118,21 +2231,28 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
-          <EntitySetMapping Name="Carriers">
-            <EntityTypeMapping TypeName="QDLogisticsModel.Carriers">
-              <MappingFragment StoreEntitySet="Carriers">
-                <ScalarProperty Name="Email" ColumnName="Email" />
-                <ScalarProperty Name="SyncOn" ColumnName="SyncOn" />
-                <ScalarProperty Name="CountryData" ColumnName="CountryData" />
-                <ScalarProperty Name="IsBattery" ColumnName="IsBattery" />
-                <ScalarProperty Name="IsExport" ColumnName="IsExport" />
-                <ScalarProperty Name="PrinterName" ColumnName="PrinterName" />
-                <ScalarProperty Name="Api" ColumnName="Api" />
+          <EntitySetMapping Name="Box">
+            <EntityTypeMapping TypeName="QDLogisticsModel.Box">
+              <MappingFragment StoreEntitySet="Box">
+                <ScalarProperty Name="Create_at" ColumnName="Create_at" />
+                <ScalarProperty Name="Note" ColumnName="Note" />
+                <ScalarProperty Name="TrackingNumber" ColumnName="TrackingNumber" />
+                <ScalarProperty Name="ShippingStatus" ColumnName="ShippingStatus" />
                 <ScalarProperty Name="BoxType" ColumnName="BoxType" />
+                <ScalarProperty Name="WharehouseID" ColumnName="WharehouseID" />
+                <ScalarProperty Name="CarrierID" ColumnName="CarrierID" />
+                <ScalarProperty Name="WITID" ColumnName="WITID" />
+                <ScalarProperty Name="SupplierBoxID" ColumnName="SupplierBoxID" />
+                <ScalarProperty Name="BoxID" ColumnName="BoxID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Services">
+            <EntityTypeMapping TypeName="QDLogisticsModel.Services">
+              <MappingFragment StoreEntitySet="Services">
                 <ScalarProperty Name="ShippingMethod" ColumnName="ShippingMethod" />
-                <ScalarProperty Name="Carrier" ColumnName="Carrier" />
-                <ScalarProperty Name="Name" ColumnName="Name" />
-                <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="ServiceName" ColumnName="ServiceName" />
+                <ScalarProperty Name="ServiceCode" ColumnName="ServiceCode" />
                 <ScalarProperty Name="IsEnable" ColumnName="IsEnable" />
               </MappingFragment>
             </EntityTypeMapping>
@@ -2140,7 +2260,7 @@
           <EntitySetMapping Name="Preset">
             <EntityTypeMapping TypeName="QDLogisticsModel.Preset">
               <MappingFragment StoreEntitySet="Preset">
-                <ScalarProperty Name="CarrierID" ColumnName="CarrierID" />
+                <ScalarProperty Name="MethodID" ColumnName="MethodID" />
                 <ScalarProperty Name="WarehouseID" ColumnName="WarehouseID" />
                 <ScalarProperty Name="WeightType" ColumnName="WeightType" />
                 <ScalarProperty Name="Weight" ColumnName="Weight" />
@@ -2159,6 +2279,35 @@
                 <ScalarProperty Name="Id" ColumnName="Id" />
                 <ScalarProperty Name="IsDispatch" ColumnName="IsDispatch" />
                 <ScalarProperty Name="IsVisible" ColumnName="IsVisible" />
+                <ScalarProperty Name="IsEnable" ColumnName="IsEnable" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Carriers">
+            <EntityTypeMapping TypeName="QDLogisticsModel.Carriers">
+              <MappingFragment StoreEntitySet="Carriers">
+                <ScalarProperty Name="Api" ColumnName="Api" />
+                <ScalarProperty Name="Email" ColumnName="Email" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="IsEnable" ColumnName="IsEnable" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="ShippingMethod">
+            <EntityTypeMapping TypeName="QDLogisticsModel.ShippingMethod">
+              <MappingFragment StoreEntitySet="ShippingMethod">
+                <ScalarProperty Name="SyncOn" ColumnName="SyncOn" />
+                <ScalarProperty Name="CountryData" ColumnName="CountryData" />
+                <ScalarProperty Name="IsBattery" ColumnName="IsBattery" />
+                <ScalarProperty Name="IsExport" ColumnName="IsExport" />
+                <ScalarProperty Name="PrinterName" ColumnName="PrinterName" />
+                <ScalarProperty Name="BoxType" ColumnName="BoxType" />
+                <ScalarProperty Name="MethodType" ColumnName="MethodType" />
+                <ScalarProperty Name="CarrierID" ColumnName="CarrierID" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="IsDirectLine" ColumnName="IsDirectLine" />
                 <ScalarProperty Name="IsEnable" ColumnName="IsEnable" />
               </MappingFragment>
             </EntityTypeMapping>

@@ -199,7 +199,7 @@ namespace QDLogistics.Controllers
 
                 string[] ProductIDs = ProductList.Select(oData => oData.item.ProductID).Distinct().ToArray();
                 Dictionary<string, Skus> SkuList = db.Skus.AsNoTracking().Where(s => s.IsEnable.Value && ProductIDs.Contains(s.Sku)).ToDictionary(s => s.Sku, s => s);
-                Dictionary<int, string> CarrierList = db.Carriers.AsNoTracking().Where(c => c.IsEnable.Value).ToDictionary(c => c.ID, c => c.Name);
+                Dictionary<int, string> MethodList = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable).ToDictionary(m => m.ID, m => m.Name);
 
                 result.data = ProductList.Select(p => new
                 {
@@ -209,7 +209,7 @@ namespace QDLogistics.Controllers
                     SkuList[p.item.ProductID].ProductName,
                     Qty = p.item.Qty,
                     Weight = SkuList[p.item.ProductID].Weight,
-                    ShippingMethod = CarrierList[p.package.CarrierID.Value],
+                    ShippingMethod = MethodList[p.package.ShippingMethod.Value],
                     Country = p.order.ShippingCountry,
                     Export = Enum.GetName(typeof(EnumData.Export), p.package.Export),
                     Status = p.order.RushOrder.Value ? "Rush" : "Normal",
@@ -238,7 +238,7 @@ namespace QDLogistics.Controllers
                 string pickSelect = string.Format("SELECT * FROM PickProduct WHERE IsEnable = 1 AND IsPicked = 0 AND WarehouseID = {0}", userInfo.WarehouseID);
 
                 var PackageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨));
-                if (!data.CarrierID.Equals(0)) PackageFilter = PackageFilter.Where(p => p.CarrierID.Value.Equals(data.CarrierID));
+                if (!data.CarrierID.Equals(0)) PackageFilter = PackageFilter.Where(p => p.ShippingMethod.Value.Equals(data.CarrierID));
 
                 ObjectContext context = new ObjectContext("name=QDLogisticsEntities");
                 var ProductList = PackageFilter.ToList()
@@ -298,7 +298,7 @@ namespace QDLogistics.Controllers
             filePath[1] = string.Format("{0}/FileUploads/{1}/{2}", baseURL, path, fileName[1]);
             /***** 商業發票 *****/
 
-            switch (package.Carriers.CarrierAPI.Type)
+            switch (package.Method.Carriers.CarrierAPI.Type)
             {
                 case (int)EnumData.CarrierType.DHL:
                     amount = new int[] { 2, 2 };
@@ -313,8 +313,8 @@ namespace QDLogistics.Controllers
             }
 
             // 取得熱感應印表機名稱
-            string printerName = package.Carriers.PrinterName;
-            int carrierID = package.CarrierID.Value;
+            string printerName = package.Method.PrinterName;
+            int carrierID = package.ShippingMethod.Value;
 
             return new { fileName, filePath, amount, printerName, carrierID };
         }
@@ -642,8 +642,8 @@ namespace QDLogistics.Controllers
                     Warehouses warehouse = Warehouses.Get(userInfo.WarehouseID);
                     if (warehouse != null && !string.IsNullOrEmpty(warehouse.CarrierData))
                     {
-                        string[] CarrierIDs = GetCarrier(warehouse.CarrierData);
-                        result.data = db.Carriers.AsNoTracking().Where(c => c.IsEnable.Value && CarrierIDs.Contains(c.ID.ToString()))
+                        string[] MethodIDs = GetMethod(warehouse.CarrierData);
+                        result.data = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && MethodIDs.Contains(m.ID.ToString()))
                             .Select(c => new { ID = c.ID, name = c.Name }).ToArray();
                     }
                 }
@@ -656,10 +656,10 @@ namespace QDLogistics.Controllers
             return Json(result, JsonRequestBehavior.AllowGet);
         }
 
-        private string[] GetCarrier(string CarrierData)
+        private string[] GetMethod(string CarrierData)
         {
-            Dictionary<string, bool> carriers = JsonConvert.DeserializeObject<Dictionary<string, bool>>(CarrierData);
-            return carriers.Where(c => c.Value).Select(c => c.Key).ToArray();
+            Dictionary<string, bool> methodList = JsonConvert.DeserializeObject<Dictionary<string, bool>>(CarrierData);
+            return methodList.Where(m => m.Value).Select(c => c.Key).ToArray();
         }
 
         [System.ComponentModel.DataAnnotations.MetadataType(typeof(PickProduct))]

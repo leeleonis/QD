@@ -67,6 +67,28 @@
                         }
                     }
                 ]],
+                columns: [[
+                    {
+                        field: "eBayUserID", title: "User ID<br />客戶帳號", width: 130, align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            if (!isEmpty(value)) {
+                                return "<a href='http://feedback.ebay.com/ws/eBayISAPI.dll?ViewFeedback2&UserID=" + value + "' target='_blank'>" + value + "</a>";
+                            } else {
+                                if (isEmpty(row.OrderID)) {
+                                    return "<input type='text' class='form-control s-userID' value='" + (!isEmpty(filterValue['UserID']) ? filterValue['UserID'] : '') + "'>";
+                                }
+                            }
+                        }
+                    },
+                    { field: "PaymentDate", title: "Payment Date<br />付款日", width: 120, align: "center", sortable: false },
+                    { field: "Sku", title: "SKU<br />品號", width: 110, align: "center", sortable: false },
+                    { field: "DisplayName", title: "Item Name<br />品名", width: 440, align: "center", sortable: false },
+                    { field: "ShippingCountry", title: "Country<br />國家", width: 120, align: "center", sortable: false },
+                    { field: "DeclaredTotal", title: "Export Value<br />出口價值", width: 90, align: "center", sortable: false },
+                    { field: "OrderCurrencyCode", title: "Currency<br />幣別", width: 80, align: "center", sortable: false },
+                    { field: "StatusCode", title: "Status<br />訂單狀態", width: 120, align: "center", sortable: false },
+                    { field: "ProccessStatus", title: "工作區塊", width: 120, align: "center", sortable: false }
+                ]],
                 rowStyler: function (index, value) {
                     if (index == 0) return { class: 'filterColumn' }
                 },
@@ -90,16 +112,6 @@
                         $dataGrid.datagrid('deleteRow', 0);
                     }
                 },
-                columns: [[
-                    { field: "PaymentDate", title: "Payment Date<br />付款日", width: 120, align: "center", sortable: false },
-                    { field: "Sku", title: "SKU<br />品號", width: 110, align: "center", sortable: false },
-                    { field: "DisplayName", title: "Item Name<br />品名", width: 440, align: "center", sortable: false },
-                    { field: "ShippingCountry", title: "Country<br />國家", width: 120, align: "center", sortable: false },
-                    { field: "DeclaredTotal", title: "Export Value<br />出口價值", width: 90, align: "center", sortable: false },
-                    { field: "OrderCurrencyCode", title: "Currency<br />幣別", width: 80, align: "center", sortable: false },
-                    { field: "StatusCode", title: "Status<br />訂單狀態", width: 120, align: "center", sortable: false },
-                    { field: "ProccessStatus", title: "工作區塊", width: 120, align: "center", sortable: false }
-                ]],
                 onBeforeLoad: function (param) {
                     Object.keys(filterValue).forEach(function (key) {
                         if (!isEmpty(filterValue[key])) param[key] = filterValue[key];
@@ -160,6 +172,7 @@
         function getFilterData() {
             return {
                 OrderID: $('.filterColumn .s-orderID').val(),
+                UserID: $('.filterColumn .s-userID').val(),
                 PaymentDate: $('.filterColumn .s-paymentDate').val(),
                 Sku: $('.filterColumn .s-sku').val(),
                 ItemName: $('.filterColumn .s-displayName').val(),
@@ -175,6 +188,7 @@
             return {
                 ItemCount: 1,
                 OrderID: "",
+                UserID: "",
                 PaymentDate: "<input type='text' class='form-control datepicker s-paymentDate' value='" + (!isEmpty(filterValue['PaymentDate']) ? filterValue['PaymentDate'] : '') + "'>",
                 Sku: "<input type='text' class='form-control s-sku' value='" + (!isEmpty(filterValue['Sku']) ? filterValue['Sku'] : '') + "'>",
                 DisplayName: "<input type='text' class='form-control s-displayName' value='" + (!isEmpty(filterValue['ItemName']) ? filterValue['ItemName'] : '') + "'>",

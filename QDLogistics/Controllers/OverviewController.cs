@@ -26,41 +26,33 @@ namespace QDLogistics.Controllers
         {
             return View();
         }
-        
+
         public ActionResult GetOrderData(DataFilter filter, int page = 1, int rows = 100)
         {
             int total = 0;
             List<object> dataList = new List<object>();
 
             /** Order Filter **/
-            int[] hiddenList = { (int)OrderStatusCode.Void, (int)OrderStatusCode.Canceled };
-            var OrderFilter = db.Orders.AsNoTracking().Where(o => filter.StatusCode.Equals(null) ? !hiddenList.Contains(o.StatusCode.Value) : o.StatusCode.Value.Equals(filter.StatusCode.Value));
-
-            if (!string.IsNullOrWhiteSpace(filter.OrderID)) OrderFilter = OrderFilter.Where(o => o.OrderID.ToString().Equals(filter.OrderID));
-            //if (!string.IsNullOrWhiteSpace(filter.UserID)) OrderFilter = OrderFilter.Where(o => o.eBayUserID.Contains(filter.UserID));
-            if (!string.IsNullOrWhiteSpace(filter.SourceID)) OrderFilter = OrderFilter.Where(o => (o.OrderSource.Value.Equals(1) && o.eBaySalesRecordNumber.Equals(filter.SourceID)) || (o.OrderSource.Value.Equals(4) && o.OrderSourceOrderId.Equals(filter.SourceID)));
-            //if (!filter.PaymentStatus.Equals(null)) OrderFilter = OrderFilter.Where(o => o.PaymentStatus.Value.Equals(filter.PaymentStatus.Value));
-            //if (!filter.Source.Equals(null)) OrderFilter = OrderFilter.Where(o => o.OrderSource.Value.Equals(filter.Source.Value));
+            var OrderFilter = db.Orders.AsNoTracking().AsQueryable();
+            if (!filter.StatusCode.Equals(null)) OrderFilter = OrderFilter.Where(o => o.StatusCode.Value.Equals(filter.StatusCode.Value));
+            if (!string.IsNullOrWhiteSpace(filter.OrderID)) OrderFilter = OrderFilter.Where(o => o.OrderID.ToString().Equals(filter.OrderID) || (o.OrderSource.Value.Equals(1) && o.eBaySalesRecordNumber.Equals(filter.OrderID)) || (o.OrderSource.Value.Equals(4) && o.OrderSourceOrderId.Equals(filter.OrderID)));
+            if (!string.IsNullOrWhiteSpace(filter.UserID)) OrderFilter = OrderFilter.Where(o => o.eBayUserID.Contains(filter.UserID));
             if (!filter.CurrencyCode.Equals(null)) OrderFilter = OrderFilter.Where(o => o.OrderCurrencyCode.Value.Equals(filter.CurrencyCode.Value));
 
             /** Package Filter **/
             var PackageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value);
             if (!filter.ProccessStatus.Equals(null)) PackageFilter = PackageFilter.Where(p => p.ProcessStatus.Equals(filter.ProccessStatus.Value));
-            //if (!filter.CarrierID.Equals(null)) PackageFilter = PackageFilter.Where(p => p.CarrierID.Value.Equals(filter.CarrierID.Value));
-            //if (!filter.Export.Equals(null)) PackageFilter = PackageFilter.Where(p => p.Export.Value.Equals(filter.Export.Value));
-            //if (!filter.ExportMethod.Equals(null)) PackageFilter = PackageFilter.Where(p => p.ExportMethod.Equals(filter.ExportMethod.Value));
             if (!filter.DeclaredTotal.Equals(0)) PackageFilter = PackageFilter.Where(p => p.DeclaredTotal.Equals(filter.DeclaredTotal));
 
             /** Item Filter **/
             var ItemFilter = db.Items.AsNoTracking().Where(i => i.IsEnable.Value);
-            //if (!filter.WarehouseID.Equals(null)) ItemFilter = ItemFilter.Where(i => i.ShipFromWarehouseID.Value.Equals(filter.WarehouseID.Value));
             if (!string.IsNullOrWhiteSpace(filter.Sku)) ItemFilter = ItemFilter.Where(i => i.ProductID.ToLower().Contains(filter.Sku.ToLower()));
             if (!string.IsNullOrWhiteSpace(filter.ItemName)) ItemFilter = ItemFilter.Where(i => i.DisplayName.ToLower().Contains(filter.ItemName.ToLower()));
 
             /** Address Filter **/
             var AddressFilter = db.Addresses.AsNoTracking().Where(a => a.IsEnable.Value);
             if (!string.IsNullOrWhiteSpace(filter.CountryCode)) AddressFilter = AddressFilter.Where(a => a.CountryCode.Equals(filter.CountryCode));
-            
+
             var results = OrderFilter.ToList()
                 .Join(PackageFilter, o => o.OrderID, p => p.OrderID, (o, p) => new OrderJoinData() { order = o, package = p })
                 .Join(ItemFilter.GroupBy(i => i.PackageID.Value), oData => oData.package.ID, i => i.Key, (oData, i) => new OrderJoinData(oData) { item = i.First(), items = i.ToList(), itemCount = i.Sum(ii => 1 + ii.KitItemCount).Value })
@@ -101,6 +93,7 @@ namespace QDLogistics.Controllers
                     OrderID = data.package.OrderID.Value,
                     ParentOrderID = data.order.ParentOrderID.Value,
                     OrderSourceOrderId = data.order.OrderSourceOrderId,
+                    eBayUserID = data.order.eBayUserID,
                     ItemCount = data.itemCount,
                     PaymentDate = data.payment != null ? TimeZoneConvert.InitDateTime(data.payment.AuditDate.Value, EnumData.TimeZone.EST).ConvertDateTime(TimeZone).ToString("MM/dd/yyyy<br />hh:mm tt") : "",
                     Sku = data.itemCount == 1 ? data.item.ProductID : "Multi",
@@ -145,19 +138,19 @@ namespace QDLogistics.Controllers
 
             return Json(result, JsonRequestBehavior.AllowGet);
         }
-    }
 
-    public class AjaxResult
-    {
-        public bool status { get; set; }
-        public string message { get; set; }
-        public object data { get; set; }
-
-        public AjaxResult()
+        public class AjaxResult
         {
-            this.status = true;
-            this.message = null;
-            this.data = null;
+            public bool status { get; set; }
+            public string message { get; set; }
+            public object data { get; set; }
+
+            public AjaxResult()
+            {
+                this.status = true;
+                this.message = null;
+                this.data = null;
+            }
         }
-    }
+    }    
 }

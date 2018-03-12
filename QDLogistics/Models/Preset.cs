@@ -33,6 +33,6 @@ namespace QDLogistics.Models
         public int Weight { get; set; }
         public byte WeightType { get; set; }
         public int WarehouseID { get; set; }
-        public int CarrierID { get; set; }
+        public int MethodID { get; set; }
     }
 }
