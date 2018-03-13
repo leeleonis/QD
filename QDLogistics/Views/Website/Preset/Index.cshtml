@@ -264,7 +264,7 @@
                 case '4':
                     var warehouseID = !isEmpty(row.warehouse) && row.warehouse != 0 ? row.warehouse.toString() : Object.keys(warehouseList)[0].toString();
                     html += "<select class='form-control' id='warehouse-" + id + "'>" + setSelectOption(warehouseList, warehouseID) + "</select>";
-                    html += "<select class='form-control' id='carrier-" + id + "'></select>"
+                    html += "<select class='form-control' id='methodID-" + id + "'></select>"
                     getCarrierOption(id, warehouseID, !isEmpty(row.carrier) ? row.carrier.toString() : '');
                     break;
             }
@@ -273,10 +273,10 @@
         }
 
         function getCarrierOption(id, warehouseID, carrierID) {
-            var url = '@Url.RouteUrl("website", new { controller = "preset", action = "ajaxCarrier" })';
+            var url = '@Url.RouteUrl("website", new { controller = "preset", action = "ajaxShippingMethod" })';
             ajaxData(url, 'get', { warehouseID: warehouseID }).done(function (response) {
                 if (response['status']) {
-                    $('#carrier-' + id).html(setSelectOption(response['data'], carrierID));
+                    $('#methodID-' + id).html(setSelectOption(response['data'], carrierID));
                 }
             });
         }
@@ -303,7 +303,7 @@
                 Weight: checkValue($('#weight-' + id).val(), true),
                 WeightType: checkValue($('#weightType-' + id).val(), true),
                 WarehouseID: checkValue($('#warehouse-' + id).val(), true),
-                CarrierID: checkValue($('#carrier-' + id).val(), true)
+                MethodID: checkValue($('#methodID-' + id).val(), true)
             };
             ajaxData(url, 'post', data).done(function (response) {
                 if (response['status']) {

@@ -122,7 +122,7 @@
                     {
                         field: "ShippingMethod", title: "Shipping Method", width: "26%", align: "center", sortable: false,
                         formatter: function (value, row, index) {
-                            return "<select class='form-control input-sm' id='CarrierID-" + index + "' onchange='onSelect(" + index + ")'>" + getSelectOption(MethodOption, value) + "</select>";
+                            return "<select class='form-control input-sm' id='MethodID-" + index + "' onchange='onSelect(" + index + ")'>" + getSelectOption(MethodOption, value) + "</select>";
                         }
                     }, {
                         field: "save", title: "<button type='button' class='btn btn-default btn-sm' onclick='saveData()'>SAVE</button>", width: "60", sortable: false,
@@ -199,7 +199,7 @@
         function setData(row, index) {
             return {
                 ServiceCode: row.ServiceCode,
-                CarrierID: $("#CarrierID-" + index).val()
+                ShippingMethod: $("#MethodID-" + index).val()
             }
         }
 

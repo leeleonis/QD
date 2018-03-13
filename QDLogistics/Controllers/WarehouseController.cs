@@ -14,19 +14,19 @@ namespace QDLogistics.Controllers
     {
         private QDLogisticsEntities db;
         private IRepository<Warehouses> Warehouses;
-        private IRepository<Carriers> Carriers;
+        private IRepository<ShippingMethod> Method;
         
         public WarehouseController()
         {
             db = new QDLogisticsEntities();
             Warehouses = new GenericRepository<Warehouses>(db);
-            Carriers = new GenericRepository<Carriers>(db);
+            Method = new GenericRepository<ShippingMethod>(db);
         }
 
         [CheckSession]
         public ActionResult Index()
         {
-            ViewBag.Carriers = Carriers.GetAll(true).Where(c => c.IsEnable == true).OrderBy(c => c.ID);
+            ViewBag.MethodList = Method.GetAll(true).Where(m => m.IsEnable).OrderBy(m => m.ID);
             return View();
         }
     }

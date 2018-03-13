@@ -128,7 +128,8 @@ namespace QDLogistics.Controllers
             if (carrier == null) return HttpNotFound();
 
             CarrierAPI = new GenericRepository<CarrierAPI>(db);
-            IEnumerable<CarrierAPI> apiList = CarrierAPI.GetAll(true).Where(a => a.IsEnable).OrderBy(c => c.Id);
+            List<CarrierAPI> apiList = new List<CarrierAPI>() { new CarrierAPI() { Id = 0, Name = "無" } };
+            apiList.AddRange(CarrierAPI.GetAll(true).Where(a => a.IsEnable).OrderBy(c => c.Id));
 
             ViewData["apiSelect"] = new SelectList(apiList, "Id", "name", carrier.Api);
 
@@ -154,7 +155,8 @@ namespace QDLogistics.Controllers
             }
 
             CarrierAPI = new GenericRepository<CarrierAPI>(db);
-            IEnumerable<CarrierAPI> apiList = CarrierAPI.GetAll(true).Where(a => a.IsEnable).OrderBy(c => c.Id);
+            List<CarrierAPI> apiList = new List<CarrierAPI>() { new CarrierAPI() { Id = 0, Name = "無" } };
+            apiList.AddRange(CarrierAPI.GetAll(true).Where(a => a.IsEnable).OrderBy(c => c.Id));
 
             ViewData["apiSelect"] = new SelectList(apiList, "Id", "name", carrier.Api);
 
@@ -191,40 +193,7 @@ namespace QDLogistics.Controllers
         public ActionResult Apicreate(CarrierAPI newApi)
         {
             Postmen postmen = new Postmen(newApi.IsTest ? "sandbox" : "production");
-
-            switch (newApi.Type)
-            {
-                case (byte)EnumData.CarrierType.DHL:
-                case (byte)EnumData.CarrierType.FedEx:
-                case (byte)EnumData.CarrierType.UPS:
-                case (byte)EnumData.CarrierType.USPS:
-                    JObject obj = SetAccountData(newApi);
-                    string type = Enum.GetName(typeof(EnumData.CarrierType), newApi.Type);
-
-                    obj.Add("slug", type.ToLower());
-                    obj.Add("description", type + " Shipper Account");
-                    obj.Add("address", new JObject() {
-                        { "country", "TWN" }, { "contact_name", "Huai Wei Ho" },  { "phone", "0423718118" },  { "fax", null },   { "email", null },  { "company_name", "Zhi You Wan LTD" },
-                        { "street1", "No.51, Sec.3 Jianguo N. Rd.," }, { "street2", "South Dist.," }, { "street3", null }, { "city", "Taichung City" }, { "state", null },
-                        { "postal_code", "403" }, { "type", "business" }
-                    });
-                    obj.Add("timezone", "Asia/Taipei");
-
-                    try
-                    {
-                        var result = postmen.create("shipper-accounts", obj);
-                        newApi.AccountID = result["data"]["id"].ToString();
-                    }
-                    catch (Postmen.PostmenException e)
-                    {
-                        ViewBag.Error = e.Details;
-                        return View();
-                    }
-                    break;
-                default:
-                    break;
-            }
-
+            
             CarrierAPI.Create(newApi);
             CarrierAPI.SaveChanges();
 
@@ -275,29 +244,6 @@ namespace QDLogistics.Controllers
             return RedirectToAction("api", "shipping", routeValue);
         }
 
-        private JObject SetAccountData(CarrierAPI api)
-        {
-            JObject obj = new JObject();
-
-            switch (api.Type)
-            {
-                case (byte)EnumData.CarrierType.DHL:
-                    obj.Add("credentials", new JObject() { { "account_number", api.ApiAccount }, { "password", api.ApiPassword }, { "site_id", api.ApiKey } });
-                    break;
-                case (byte)EnumData.CarrierType.FedEx:
-                    obj.Add("credentials", new JObject() { { "account_number", api.ApiAccount }, { "key", api.ApiKey }, { "password", api.ApiPassword }, { "meter_number", api.ApiMeter } });
-                    break;
-                case (byte)EnumData.CarrierType.UPS:
-                    obj.Add("credentials", new JObject() { { "account_number", api.ApiAccount }, { "access_key", api.ApiKey }, { "password", api.ApiPassword }, { "user_identifier", api.ApiMeter } });
-                    break;
-                case (byte)EnumData.CarrierType.USPS:
-                    obj.Add("credentials", new JObject() { { "account_id", api.ApiAccount }, { "passphrase", api.ApiPassword } });
-                    break;
-            }
-
-            return obj;
-        }
-
         public ActionResult GetSelectOption(List<string> optionType)
         {
             AjaxResult result = new AjaxResult();
@@ -322,7 +268,7 @@ namespace QDLogistics.Controllers
                                 break;
                             case "methodType":
                                 var FedEx_shippingMethod = Enum.GetValues(typeof(FedExShipService.ServiceType)).Cast<FedExShipService.ServiceType>().Select(b => new { text = b.ToString(), value = (int)b }).ToList();
-                                
+
                                 Winit_API winit = new Winit_API();
                                 List<deliveryWayData> deliveryWay = new List<deliveryWayData>();
                                 foreach (var warehouse in winit.warehouseIDs)
@@ -341,7 +287,9 @@ namespace QDLogistics.Controllers
                                 break;
                             case "carrierApi":
                                 CarrierAPI = new GenericRepository<CarrierAPI>(db);
-                                optionList.Add(type, CarrierAPI.GetAll(true).Where(a => a.IsEnable).Select(a => new { text = a.Name, value = a.Id }));
+                                List<object> apiList = new List<object>() { new { text = "無", value = 0 } };
+                                apiList.AddRange(CarrierAPI.GetAll(true).Where(a => a.IsEnable).Select(a => new { text = a.Name, value = a.Id }));
+                                optionList.Add(type, apiList);
                                 break;
                         }
                     }

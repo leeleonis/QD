@@ -1666,9 +1666,9 @@ namespace QDLogistics.Controllers
 
                 dataList.AddRange(results.OrderBy(s => s.ServiceCode).Skip(start).Take(length).Select(service => new
                 {
-                    ServiceCode = service.ServiceCode,
-                    ServiceName = service.ServiceName,
-                    ShippingMethod = service.ShippingMethod
+                    service.ServiceCode,
+                    service.ServiceName,
+                    service.ShippingMethod
                 }));
             }
 

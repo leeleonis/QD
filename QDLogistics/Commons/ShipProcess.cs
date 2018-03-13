@@ -1,25 +1,22 @@
-﻿using CarrierApi.DHL;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Web.Hosting;
+using CarrierApi.DHL;
 using CarrierApi.FedEx;
 using CarrierApi.Winit;
 using Newtonsoft.Json.Linq;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
-using Postmen_sdk_NET;
 using QDLogistics.FedExShipService;
 using QDLogistics.Models;
-using QDLogistics.OrderCreationService;
 using QDLogistics.OrderService;
 using QDLogistics.PurchaseOrderService;
 using SellerCloud_WebService;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Web;
-using System.Web.Hosting;
 
 namespace QDLogistics.Commons
 {
@@ -612,7 +609,7 @@ namespace QDLogistics.Commons
                     warehouseID = int.Parse(winit.warehouseIDs[package.Items.First(i => i.IsEnable == true).ShipFromWarehouseID.Value]),
                     eBayOrderID = order.OrderSourceOrderId,
                     repeatable = "Y",
-                    deliveryWayID = carrier.ShippingMethod.ToString(),
+                    deliveryWayID = package.Method.MethodType.ToString(),
                     insuranceTypeID = 1000000,
                     sellerOrderNo = order.OrderID.ToString(),
                     recipientName = string.Join(" ", new string[] { address.FirstName, address.MiddleInitial, address.LastName }),

@@ -2,18 +2,18 @@
 
 @section styles{
     <link href="~/Content/themes/default/easyui.css" rel="stylesheet" />
-<style>
-    button:not(.processing) > span:nth-child(1) + span {
-        display: none;
-    }
+    <style>
+        button:not(.processing) > span:nth-child(1) + span {
+            display: none;
+        }
 
-    button.processing span:nth-child(1) {
-        display: none;
-    }
-</style>
+        button.processing span:nth-child(1) {
+            display: none;
+        }
+    </style>
 }
 @{
-    IEnumerable<Carriers> carriers = ViewBag.carriers;
+    IEnumerable<ShippingMethod> MethodList = ViewBag.MethodList;
 }
 <div id="content">
     <section id="widget-grid" class="">
@@ -80,8 +80,8 @@
                             return "<select class='form-control input-sm' id='WinitWarehouse-" + index + "' onchange='onSelect(" + index + ")'>" + option + "</select>";
                         }
                     },
-                    @foreach(Carriers carrier in carriers){
-                        @Html.Raw("{field:'Carrier" + carrier.ID + "',title:'" + carrier.Name + "',width:'100',align:'center',sortable:false,formatter:function(value,row,index){return setCheckBox(index," + carrier.ID + ",row.CarrierData[" + carrier.ID + "]);}},\n");
+                    @foreach(ShippingMethod method in MethodList) {
+                        @Html.Raw("{field:'Method" + method.ID + "',title:'" + method.Name + "',width:'100',align:'center',sortable:false,formatter:function(value,row,index){return setCheckBox(index," + method.ID + ",row.CarrierData[" + method.ID + "]);}},\n");
                     }
                     {
                         field: "save", title: "<button type='button' class='btn btn-default btn-sm' onclick='saveData()'>SAVE</button>", width: "60", sortable: false,
@@ -146,7 +146,7 @@
 
         function setData(row, index) {
             var carrierData = {};
-            $(":checkbox").filter("#Carrier-" + index).each(function (index, element) {
+            $(":checkbox").filter("#Method-" + index).each(function (index, element) {
                 carrierData[$(element).data("field")] = $(element).prop("checked");
             });
 
@@ -168,7 +168,7 @@
         }
 
         function setCheckBox(index, field, value) {
-            var name = "Carrier-" + index;
+            var name = "Method-" + index;
             return "<input type='checkbox' class='form-control' id='" + name + "' data-field='" + field + "' " + (value ? "checked" : "") + " onchange='onSelect(" + index + ")'>"
         }
 

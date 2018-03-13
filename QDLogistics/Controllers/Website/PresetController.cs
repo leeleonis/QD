@@ -24,7 +24,7 @@ namespace QDLogistics.Controllers.Website
         {
             return View("~/Views/website/preset/index.cshtml");
         }
-        
+
         public ActionResult Add()
         {
             JsonResult result = new JsonResult();
@@ -67,7 +67,7 @@ namespace QDLogistics.Controllers.Website
 
             return Json(result, JsonRequestBehavior.AllowGet);
         }
-        
+
         public ActionResult Delete(int id)
         {
             JsonResult result = new JsonResult();
@@ -92,7 +92,7 @@ namespace QDLogistics.Controllers.Website
 
             return Json(result, JsonRequestBehavior.AllowGet);
         }
-        
+
         public ActionResult AjaxOption()
         {
             IRepository<Companies> Companies = new GenericRepository<Companies>(db);
@@ -125,14 +125,13 @@ namespace QDLogistics.Controllers.Website
 
             return Json(result, JsonRequestBehavior.AllowGet);
         }
-        
-        public ActionResult AjaxCarrier(int warehouseID)
+
+        public ActionResult AjaxShippingMethod(int warehouseID)
         {
             IRepository<Warehouses> Warehouses = new GenericRepository<Warehouses>(db);
-            IRepository<Carriers> Carriers = new GenericRepository<Carriers>(db);
+            IRepository<ShippingMethod> Method = new GenericRepository<ShippingMethod>(db);
 
             JsonResult result = new JsonResult();
-            Dictionary<string, string> carrierList = new Dictionary<string, string>();
 
             try
             {
@@ -140,8 +139,8 @@ namespace QDLogistics.Controllers.Website
 
                 if (warehouse == null) throw new Exception("Not found warehouse!");
 
-                var carrierData = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, bool>>(warehouse.CarrierData);
-                result.data = Carriers.GetAll(true).Where(c => carrierData.ContainsKey(c.ID.ToString()) && carrierData[c.ID.ToString()]).ToDictionary(c => c.ID.ToString(), c => c.Name);
+                var methodData = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, bool>>(warehouse.CarrierData);
+                result.data = Method.GetAll(true).Where(m => methodData.ContainsKey(m.ID.ToString()) && methodData[m.ID.ToString()]).ToDictionary(m => m.ID.ToString(), m => m.Name);
             }
             catch (Exception e)
             {
@@ -150,7 +149,7 @@ namespace QDLogistics.Controllers.Website
 
             return Json(result, JsonRequestBehavior.AllowGet);
         }
-        
+
         public ActionResult AjaxData(int draw, int start, int length)
         {
             Preset = new GenericRepository<Preset>(db);

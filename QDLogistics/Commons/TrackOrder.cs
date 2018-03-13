@@ -35,7 +35,7 @@ namespace QDLogistics.Commons
         {
             _order = order;
             _package = package;
-            _carrier = _package.Method.Carriers;
+            _carrier = _package.Method != null ? _package.Method.Carriers : null;
             _trackingNumber = _package.TrackingNumber;
         }
 

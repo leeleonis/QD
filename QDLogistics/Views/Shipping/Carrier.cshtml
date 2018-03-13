@@ -54,7 +54,7 @@
                     }, {
                         field: "Email", title: "Email<br />聯絡信箱", width: "30%", align: "center", sortable: false,
                         formatter: function (value, row, index) {
-                            return "<input type='text' class='form-control input-sm' id='Email-" + index + "' value='" + value + "' onchange='onSelect(" + index + ")'>";
+                            return "<input type='text' class='form-control input-sm' id='Email-" + index + "' value='" + $.trim(value) + "' onchange='onSelect(" + index + ")'>";
                         }
                     }, {
                         field: "Api", title: "Carrier Api<br />運輸商 Api", width: "15%", align: "center", sortable: false,
