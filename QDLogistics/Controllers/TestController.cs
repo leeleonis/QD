@@ -229,7 +229,7 @@ namespace QDLogistics.Controllers
                 }
             }
         }
-        
+
         public ActionResult Hub_Test(string clientName)
         {
             ViewData["clientName"] = clientName;
@@ -260,6 +260,36 @@ namespace QDLogistics.Controllers
                 Winit_API winit = new Winit_API(package.Method.Carriers.CarrierAPI);
                 Received result = winit.Order(package.WinitNo);
                 return Content(result.data.ToString());
+            }
+        }
+
+        public void Update_Carrier()
+        {
+            int[] OrderIDs = new int[] { 5453707, 5453746, 5453757, 5453766, 5453775, 5453802, 5453835, 5453902, 5453909, 5453928, 5453929, 5453950, 5453955, 5453958, 5453962, 5454001, 5454002, 5454022, 5454029, 5454030, 5454046, 5454047, 5454089, 5453707, 5454090, 5454091, 5454098, 5454099, 5454167, 5454171, 5454173, 5454175, 5454180, 5454181, 5454182, 5454183, 5454184, 5454186, 5454189, 5454190, 5454191, 5454192, 5454193, 5454195, 5454196, 5454197, 5454200, 5454219 };
+
+            SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
+
+            using (IRepository<Packages> Packages = new GenericRepository<Packages>(db))
+            {
+                foreach(int orderID in OrderIDs)
+                {
+                    OrderData orderData = SCWS.Get_OrderData(orderID);
+                    OrderService.Order SC_order = orderData.Order;
+                    string shippingCarrier = SC_order.ShippingCarrier;
+
+                    Packages package = Packages.GetAll().First(p => p.OrderID.Value.Equals(orderID));
+                    string newShippingCarrier = package.Method.Carriers.Name;
+
+                    if (!shippingCarrier.Equals(newShippingCarrier))
+                    {
+                        SCWS.Update_OrderShippingStatus(SC_order, newShippingCarrier);
+                        Response.Write(string.Format("Order【{0}】Carrier - {1} change to Carrier - {2}", orderID, shippingCarrier, newShippingCarrier));
+                    }
+
+                    package.Orders.ShippingCarrier = newShippingCarrier;
+                    Packages.Update(package);
+                }
+                Packages.SaveChanges();
             }
         }
     }

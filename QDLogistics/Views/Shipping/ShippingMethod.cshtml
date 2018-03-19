@@ -59,19 +59,19 @@
                             return "<input type='text' class='form-control input-sm' id='Name-" + index + "' value='" + value + "' onchange='onSelect(" + index + ")'>";
                         }
                     }, {
-                        field: "CarrierID", title: "Carrier<br />運輸商", width: "10%", align: "center", sortable: false,
+                        field: "CarrierID", title: "Carrier<br />運輸商", width: "13%", align: "center", sortable: false,
                         formatter: function (value, row, index) {
                             return "<select class='form-control input-sm' id='CarrierID-" + index + "' onchange='onCarrierSelect(" + index + ")'>" + getSelectOption(CarrierOption, value) + "</select>";
                         }
                     }, {
                         field: "MethodType", title: "Method Type<br />運輸類型", width: "25%", align: "center", sortable: false,
                         formatter: function (value, row, index) {
-                            return "<select class='form-control input-sm' id='MethodType-" + index + "' onchange='onSelect(" + index + ")'>" + getSelectOption(MethodType[row.CarrierName], value) + "</select>";
+                            return "<select class='form-control input-sm' id='MethodType-" + index + "' onchange='onSelect(" + index + ")'>" + getSelectOption(MethodType[row.CarrierType], value) + "</select>";
                         }
                     }, {
                         field: "BoxType", title: "Box Type<br />貨物類型", width: "15%", align: "center", sortable: false,
                         formatter: function (value, row, index) {
-                            return "<select class='form-control input-sm' id='BoxType-" + index + "' onchange='onSelect(" + index + ")'>" + getSelectOption(BoxTypeOption[row.CarrierName], value) + "</select>";
+                            return "<select class='form-control input-sm' id='BoxType-" + index + "' onchange='onSelect(" + index + ")'>" + getSelectOption(BoxTypeOption[row.CarrierType], value) + "</select>";
                         }
                     }, {
                         field: "IsExport", title: "Export<br />出口報關", width: "7%", align: "center", sortable: false,
@@ -115,10 +115,9 @@
         function onCarrierSelect(index) {
             onSelect(index);
 
-            var carrierName = $("#CarrierID-" + index).find('option:selected').html();
-            console.log(carrierName);
-            $("#MethodType-" + index).html(getSelectOption(MethodType[carrierName]));
-            $("#BoxType-" + index).html(getSelectOption(BoxTypeOption[carrierName]));
+            var carrierType = $("#CarrierID-" + index).find('option:selected').data('type');
+            $("#MethodType-" + index).html(getSelectOption(MethodType[carrierType]));
+            $("#BoxType-" + index).html(getSelectOption(BoxTypeOption[carrierType]));
         }
 
         function onSelect(index) {
@@ -189,7 +188,9 @@
             
             if (!isEmpty(optionList) && optionList.length > 0) {
                 for (var i in optionList) {
-                    option += "<option value='" + optionList[i]["value"] + "' " + (optionList[i]["value"] == value ? "selected" : "") + ">" + optionList[i]["text"] + "</option>";
+                    var selected = optionList[i]["value"] == value ? "selected" : "";
+                    var type = !isEmpty(optionList[i]["type"]) ? "data-type='" + optionList[i]["type"] + "'" : "";
+                    option += "<option value='" + optionList[i]["value"] + "' " + selected + " " + type + ">" + optionList[i]["text"] + "</option>";
                 }
             } else {
                 option = "<option value='0'>無選項</option>";

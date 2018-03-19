@@ -37,7 +37,7 @@ namespace QDLogistics.Filters
 
                 if (!new string[] { "main", "ajax", "file" }.Contains(controllerName))
                 {
-                    Menu menu = Menu.GetAll().First(m => m.IsEnable == true && m.Controller == controllerName && m.Action == actionName);
+                    Menu menu = Menu.GetAll().First(m => m.IsEnable && m.Controller.ToLower().Equals(controllerName) && m.Action.ToLower().Equals(actionName));
                     if (menu == null) ToLoginPage(context);
 
                     string auth = (string)context.HttpContext.Session.Contents["Auth"];

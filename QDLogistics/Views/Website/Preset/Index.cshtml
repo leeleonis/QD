@@ -197,7 +197,7 @@
                 },
                 "rowCallback": function (nRow, data, index) {
                     responsiveHelper_dt_basic.createExpandIcon(nRow);
-                    $(nRow).on('change', '#warehouse-' + data.id, function () { getCarrierOption(data.id, $(this).val()); });
+                    $(nRow).on('change', '#warehouse-' + data.id, function () { getMethodOption(data.id, $(this).val()); });
                 },
                 "drawCallback": function (oSettings) {
                     responsiveHelper_dt_basic.respond();
@@ -265,18 +265,18 @@
                     var warehouseID = !isEmpty(row.warehouse) && row.warehouse != 0 ? row.warehouse.toString() : Object.keys(warehouseList)[0].toString();
                     html += "<select class='form-control' id='warehouse-" + id + "'>" + setSelectOption(warehouseList, warehouseID) + "</select>";
                     html += "<select class='form-control' id='methodID-" + id + "'></select>"
-                    getCarrierOption(id, warehouseID, !isEmpty(row.carrier) ? row.carrier.toString() : '');
+                    getMethodOption(id, warehouseID, !isEmpty(row.shippingMethod) ? row.shippingMethod.toString() : '');
                     break;
             }
 
             return html;
         }
 
-        function getCarrierOption(id, warehouseID, carrierID) {
+        function getMethodOption(id, warehouseID, methodID) {
             var url = '@Url.RouteUrl("website", new { controller = "preset", action = "ajaxShippingMethod" })';
             ajaxData(url, 'get', { warehouseID: warehouseID }).done(function (response) {
                 if (response['status']) {
-                    $('#methodID-' + id).html(setSelectOption(response['data'], carrierID));
+                    $('#methodID-' + id).html(setSelectOption(response['data'], methodID));
                 }
             });
         }

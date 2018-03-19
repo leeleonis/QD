@@ -80,8 +80,10 @@
                 queryParams: {},
                 width: "100%",
                 height: "700",
-                columns: [[
+                frozenColumns: [[
                     { field: "Name", title: "Shipping Method", width: "300", align: "center", sortable: false },
+                ]],
+                columns: [[
                     @foreach (Country country in countries.ToList()){
                         @Html.Raw("{field:'" + country.ID + "',title:\"" + country.Name + "\",width:'100',align:'center',sortable:false,formatter:function(value,row,index){return setCheckBox(index,'" + country.ID + "',row.CountryData['" + country.ID + "']);}},\n");
                     }

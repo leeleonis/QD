@@ -61,7 +61,7 @@ namespace QDLogistics.Controllers
         {
             return View();
         }
-        
+
         [HttpPost]
         public ActionResult OrderToWaiting(List<string> packageIDs)
         {
@@ -137,6 +137,16 @@ namespace QDLogistics.Controllers
                                         var address = SC_order.ShippingAddress;
                                         DataProcess.SetAddressData(packageData.Orders.Addresses, address, SC_order.BillingAddress);
 
+                                        /***** 檢查運送國家 *****/
+                                        if (!string.IsNullOrEmpty(packageData.Method.CountryData))
+                                        {
+                                            var countryData = JsonConvert.DeserializeObject<Dictionary<string, bool>>(packageData.Method.CountryData);
+                                            if (!countryData[packageData.Orders.Addresses.CountryCode])
+                                            {
+                                                throw new Exception(string.Format("訂單【{0}】不可寄送至國家{1}", packageData.OrderID, packageData.Orders.Addresses.CountryName));
+                                            }
+                                        }
+
                                         shipProcess.Init(packageData);
                                         var result = shipProcess.Dispatch();
 
@@ -175,12 +185,14 @@ namespace QDLogistics.Controllers
 
                                             packageData.ProcessStatus = (int)EnumData.ProcessStatus.待出貨;
                                         }
-                                        else {
+                                        else
+                                        {
                                             message = result.Message;
                                             packageData.ProcessStatus = (int)EnumData.ProcessStatus.訂單管理;
                                         }
                                     }
-                                    else {
+                                    else
+                                    {
                                         message = "Payment status is different";
                                         packageData.Orders.StatusCode = (int)OrderStatusCode.OnHold;
                                         packageData.ProcessStatus = (int)EnumData.ProcessStatus.訂單管理;
@@ -621,7 +633,7 @@ namespace QDLogistics.Controllers
 
             return Content(JsonConvert.SerializeObject(new { status = true, message = "提單追踨開始執行!" }), "appllication/json");
         }
-        
+
         private void WebServiceInit(HttpSessionStateBase session)
         {
             OS_sellerCloud = new SCServiceSoapClient();
@@ -642,13 +654,17 @@ namespace QDLogistics.Controllers
         public ActionResult SendMailToCarrier()
         {
             PickProduct = new GenericRepository<PickProduct>(db);
+            ShippingMethod = new GenericRepository<ShippingMethod>(db);
 
             List<PickProduct> pickList = db.PickProduct.AsNoTracking().Where(p => p.IsEnable && p.IsPicked && !p.IsMail).ToList();
             if (pickList.Any())
             {
                 int[] packageIDs = pickList.Select(p => p.PackageID.Value).ToArray();
                 List<Packages> packageList = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.已出貨) && packageIDs.Contains(p.ID)).ToList();
-                var groupList = packageList.GroupBy(p => p.Method.Carriers.Name).ToDictionary(p => p.Key, p => p);
+
+                int[] methodIDs = packageList.Where(p => p.ShippingMethod != null).Select(p => p.ShippingMethod.Value).Distinct().ToArray();
+                var carrierList = ShippingMethod.GetAll(true).Where(m => methodIDs.Contains(m.ID)).Distinct().ToDictionary(m => m.ID, m => m.Carriers.Name);
+                var groupList = packageList.GroupBy(p => p.ShippingMethod).ToDictionary(p => p.Key != null && carrierList.ContainsKey(p.Key.Value) ? carrierList[p.Key.Value] : "", p => p);
 
                 DateTime now = new TimeZoneConvert().ConvertDateTime(EnumData.TimeZone.TST);
                 DateTime noon = new DateTime(now.Year, now.Month, now.Day, 12, 0, 0);
@@ -749,6 +765,10 @@ namespace QDLogistics.Controllers
                                     PickProduct.Update(pick, pick.ID);
                                 }
                             }
+                            else
+                            {
+                                MyHelp.Log("", null, string.Format("{0} 寄送失敗", mailTitle));
+                            }
                             break;
                         case "FedEx":
                             MyHelp.Log("PickProduct", null, "寄送FedEx出口報單");
@@ -822,6 +842,13 @@ namespace QDLogistics.Controllers
                                     PickProduct.Update(pick, pick.ID);
                                 }
                             }
+                            else
+                            {
+                                MyHelp.Log("", null, string.Format("{0} 寄送失敗", mailTitle));
+                            }
+                            break;
+                        default:
+                            var orderList = string.Join(",", groupList[serviceCode].OrderBy(p => p.OrderID).Select(o => o.OrderID));
                             break;
                     }
                 }

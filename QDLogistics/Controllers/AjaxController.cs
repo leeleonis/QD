@@ -1510,7 +1510,7 @@ namespace QDLogistics.Controllers
                 List<ShippingMethod> results = ShippingMethod.GetAll(true).Where(m => m.IsEnable).OrderBy(m => m.ID).ToList();
 
                 Carriers = new GenericRepository<Carriers>(db);
-                var carrierList = Carriers.GetAll(true).Where(c => c.IsEnable).ToDictionary(c => c.ID, c => c.Name);
+                var carrierList = Carriers.GetAll(true).Where(c => c.IsEnable && c.CarrierAPI != null).ToDictionary(c => c.ID, c => Enum.GetName(typeof(EnumData.CarrierType), c.CarrierAPI.Type));
 
                 if (results.Any())
                 {
@@ -1519,7 +1519,7 @@ namespace QDLogistics.Controllers
                     dataList.AddRange(results.Select(m => new
                     {
                         m.ID,
-                        CarrierName = carrierList.ContainsKey(m.CarrierID.Value) ? carrierList[m.CarrierID.Value] : "",
+                        CarrierType = carrierList.ContainsKey(m.CarrierID.Value) ? carrierList[m.CarrierID.Value] : "",
                         m.IsDirectLine,
                         m.Name,
                         m.CarrierID,
@@ -1740,7 +1740,7 @@ namespace QDLogistics.Controllers
                 MyHelp.Log("ShippingMethod", sData.ID, "更新運輸國家");
             }
 
-            Carriers.SaveChanges();
+            ShippingMethod.SaveChanges();
             return Content(JsonConvert.SerializeObject(new { status = true }), "appllication/json");
         }
 

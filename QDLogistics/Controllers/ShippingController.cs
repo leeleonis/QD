@@ -193,7 +193,7 @@ namespace QDLogistics.Controllers
         public ActionResult Apicreate(CarrierAPI newApi)
         {
             Postmen postmen = new Postmen(newApi.IsTest ? "sandbox" : "production");
-            
+
             CarrierAPI.Create(newApi);
             CarrierAPI.SaveChanges();
 
@@ -264,7 +264,12 @@ namespace QDLogistics.Controllers
                                 break;
                             case "carrier":
                                 Carriers = new GenericRepository<Carriers>(db);
-                                optionList.Add(type, Carriers.GetAll(true).Where(c => c.IsEnable).Select(c => new { text = c.Name, value = c.ID }).ToList());
+                                optionList.Add(type, Carriers.GetAll(true).Where(c => c.IsEnable).Select(c => new
+                                {
+                                    text = string.Format("{0}【{1}】", c.Name, (c.CarrierAPI != null ? c.CarrierAPI.Name : "無")),
+                                    value = c.ID,
+                                    type = c.CarrierAPI != null ? Enum.GetName(typeof(EnumData.CarrierType), c.CarrierAPI.Type) : ""
+                                }).ToList());
                                 break;
                             case "methodType":
                                 var FedEx_shippingMethod = Enum.GetValues(typeof(FedExShipService.ServiceType)).Cast<FedExShipService.ServiceType>().Select(b => new { text = b.ToString(), value = (int)b }).ToList();
