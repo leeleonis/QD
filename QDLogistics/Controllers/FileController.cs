@@ -568,7 +568,7 @@ namespace QDLogistics.Controllers
             if (!checkExists()) return result;
 
             Services = new GenericRepository<Services>(db);
-            Carriers = new GenericRepository<Carriers>(db);
+            ShippingMethod = new GenericRepository<ShippingMethod>(db);
 
             excelFile.AddMapping<Services>(s => s.ServiceCode, "ServiceCode");
             excelFile.AddMapping<Services>(s => s.ServiceName, "ServiceName");
@@ -578,7 +578,7 @@ namespace QDLogistics.Controllers
             int errorCount = 0;
             int rowIndex = 1;
             var importErrorMessages = new List<string>();
-            var carriers = Carriers.GetAll(true).Select(c => c.ID).ToList();
+            var methodList = ShippingMethod.GetAll(true).Select(m => m.ID).ToList();
 
             foreach (var row in excelContent)
             {
@@ -599,7 +599,7 @@ namespace QDLogistics.Controllers
                     // errorMessage.Append("CarrierID - 不可空白.");
                 }
                 else {
-                    if (!carriers.Contains(row.ShippingMethod.Value)) errorMessage.Append("MethodID - 無法找到.");
+                    if (!methodList.Contains(row.ShippingMethod.Value)) errorMessage.Append("MethodID - 無法找到.");
                 }
 
                 if (errorMessage.Length > 0)

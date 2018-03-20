@@ -232,6 +232,19 @@ namespace QDLogistics.Commons
                 order.RushOrder = orderDetail.RushOrder;
             }
 
+            if (orderDetail.StatusCode.Equals(OrderStatusCode.Canceled) && !order.StatusCode.Equals((int)orderDetail.StatusCode))
+            {
+                if (order.Packages.Any())
+                {
+                    foreach (Packages package in order.Packages)
+                    {
+                        package.ProcessStatus = (int)EnumData.ProcessStatus.訂單管理;
+                    }
+                }
+
+                order.StatusCode = (int)orderDetail.StatusCode;
+            }
+
             return order;
         }
 
@@ -355,7 +368,7 @@ namespace QDLogistics.Commons
             if (string.IsNullOrEmpty(address.CountryName) || address.CountryCode.Equals(address.CountryName))
             {
                 var countryList = MyHelp.GetCountries();
-                if(countryList.Any(c => c.Name.Equals(address.CountryCode)))
+                if (countryList.Any(c => c.Name.Equals(address.CountryCode)))
                 {
                     address.CountryName = address.CountryCode;
                     address.CountryCode = countryList.First(c => c.Name.Equals(address.CountryName)).TwoCode;

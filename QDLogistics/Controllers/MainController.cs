@@ -41,7 +41,7 @@ namespace QDLogistics.Controllers
             string host = Request.Url.Host;
             WarehouseTypeType warehouseType = host.Equals("dropshipper.qd.com.tw") ? WarehouseTypeType.DropShip : WarehouseTypeType.Normal;
 
-            ViewBag.warehouseList = Warehouses.GetAll(true).Where(w => w.IsEnable.Equals(true) && w.IsSellable.Equals(true)/* && w.WarehouseType.Equals((int)warehouseType)*/).ToList();
+            ViewBag.warehouseList = Warehouses.GetAll(true).Where(w => w.IsEnable.Equals(true) && w.IsSellable.Equals(true) && w.WarehouseType.Equals((int)warehouseType)).ToList();
             return View();
         }
 

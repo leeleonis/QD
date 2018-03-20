@@ -217,9 +217,9 @@
                     { field: "OrderQtyTotal", title: "QTY<br />數量", width: 60, align: "center", sortable: false },
                     { field: "ShippingCountry", title: "Country<br />國家", width: 120, align: "center", sortable: false },
                     {
-                        field: "CarrierID", title: "Shipping Method<br />運輸方式", width: 150, align: "center", sortable: false,
+                        field: "ShippingMethod", title: "Shipping Method<br />運輸方式", width: 150, align: "center", sortable: false,
                         formatter: function (value, row, index) {
-                            return "<select class='form-control input-sm' id='CarrierID' onchange='onDataChange(" + row.PackageID + ")'>" + getSelectOption(orderColumOption.carrier, value) + "</select>";
+                            return "<select class='form-control input-sm' id='MethodID' onchange='onDataChange(" + row.PackageID + ")'>" + getSelectOption(orderColumOption.carrier, value) + "</select>";
                         }
                     },
                     { field: "StatusCode", title: "Status<br />訂單狀態", width: 120, align: "center", sortable: false },
@@ -263,7 +263,7 @@
                     param.OrderID = $orderIDSearch.val();
                     param.UserID = $userIDSearch.val();
                     param.SourceID = $sourceIDSearch.val();
-                    param.CarrierID = $carrierStatus.val();
+                    param.MethodID = $carrierStatus.val();
                     param.StatusCode = $statusSearch.val();
                     param.Country = $countrySearch.val();
                     param.Source = $channelSearch.val();
@@ -406,7 +406,7 @@
                 OrderID: row.OrderID,
                 PackageID: row.PackageID,
                 Serials: row.Serials,
-                CarrierID: $("select#CarrierID:eq(" + index + ")").val(),
+                MethodID: $("select#MethodID:eq(" + index + ")").val(),
                 SupplierComment: $("input#SupplierComment:eq(" + index + ")").val(),
                 TrackingNumber: $("input#TrackingNumber:eq(" + index + ")").val(),
                 POInvoice: $("input#POInvoice:eq(" + index + ")").val()

@@ -54,9 +54,12 @@ namespace QDLogistics.Controllers
             if (result.status)
             {
                 List<LoginInfo> LoginList = System.Web.HttpContext.Current.Application.Get("WebAppLogin") as List<LoginInfo>;
-                
+
+                string ApiUserName = string.IsNullOrEmpty(user.ApiUserName) ? data.UserName : user.ApiUserName;
+                string ApiPassword = string.IsNullOrEmpty(user.ApiPassword) ? data.Password : user.ApiPassword;
+
                 LoginList.RemoveAll(info => DateTime.Compare(info.Login_at, DateTime.UtcNow.AddDays(-1)) < 0);
-                LoginList.Add(new LoginInfo(user.Id, user.Name, data.WarehouseID, data.GUID, user.ApiUserName, user.ApiPassword));
+                LoginList.Add(new LoginInfo(user.Id, user.Name, data.WarehouseID, data.GUID, ApiUserName, ApiPassword));
 
                 System.Web.HttpContext.Current.Application.Set("WebAppLogin", LoginList);
             }
@@ -469,7 +472,7 @@ namespace QDLogistics.Controllers
 
                 package = Packages.Get(pickList.First().PackageID.Value);
 
-                MyHelp.Log("Orders", package.OrderID, string.Format("訂單【{0}】出貨", package.OrderID), Session);
+                MyHelp.Log("Orders", package.OrderID, string.Format("訂單【{0}】APP 出貨", package.OrderID), Session);
                 if (!package.Orders.StatusCode.Equals((int)OrderStatusCode.InProcess)) throw new Exception(string.Format("訂單【{0}】無法出貨因為並非InProcess的狀態", package.OrderID));
                 if (!package.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨)) throw new Exception(string.Format("訂單【{0}】無法出貨因為並非待出貨的狀態", package.OrderID));
 
@@ -663,7 +666,7 @@ namespace QDLogistics.Controllers
         }
 
         [System.ComponentModel.DataAnnotations.MetadataType(typeof(PickProduct))]
-        public partial class PickData 
+        public partial class PickData
         {
             public string Country { get; set; }
         }
