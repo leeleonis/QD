@@ -30,17 +30,6 @@ namespace QDLogistics.Commons
         }
 
         public enum CarrierType { Other, DHL, FedEx, UPS, USPS, Winit };
-        public enum ShippingMethod
-        {
-            dhl_b2c, dhl_domestic_economy_select, dhl_domestic_express, dhl_domestic_express_0900, dhl_domestic_express_1030, dhl_domestic_express_1200, dhl_economy_select, dhl_europack, dhl_express_0900, dhl_express_1030, dhl_express_1200, dhl_express_easy, dhl_express_envelope, dhl_express_worldwide, dhl_express_worldwide_eu, dhl_globalmail_business, dhl_jetline, dhl_jumbo_box, dhl_medical_express, dhl_same_day, dhl_sprintline,
-            fedex_2_day, fedex_2_day_am, fedex_2_day_am_one_rate, fedex_2_day_one_rate, fedex_distance_deferred, fedex_europe_first_international_priority, fedex_express_saver, fedex_express_saver_one_rate, fedex_first_overnight, fedex_first_overnight_one_rate, fedex_ground, fedex_ground_home_delivery, fedex_international_economy, fedex_international_first, fedex_international_priority, fedex_next_day_afternoon, fedex_next_day_early_morning, fedex_next_day_end_of_day, fedex_next_day_mid_morning, fedex_priority_overnight, fedex_priority_overnight_one_rate, fedex_same_day, fedex_same_day_city, fedex_standard_overnight, fedex_standard_overnight_one_rate
-        };
-        public enum BoxType
-        {
-            custom,
-            dhl_document, dhl_domestic, dhl_express_document, dhl_express_envelope, dhl_flyer, dhl_jumbo_box, dhl_jumbo_document, dhl_jumbo_junior_document, dhl_jumbo_junior_parcel, dhl_jumbo_parcel, dhl_junior_jumbo_box, dhl_other_dhl_packaging, dhl_parcel,
-            fedex_10kg_box, fedex_25kg_box, fedex_box, fedex_envelope, fedex_extra_large_box, fedex_large_box, fedex_medium_box, fedex_pak, fedex_small_box, fedex_tube
-        };
 
         public enum AuthType { View, Edit, Insert, Delete };
 
@@ -74,6 +63,18 @@ namespace QDLogistics.Commons
                 { 16, "return to shipper" },
                 { 19, "warranty" },
                 { 3, "other" }
+            };
+        }
+
+        public enum DirectLineStatus { 未發貨, 運輸中, 已到貨 }
+        public enum DirectLineBoxType { DirectLine, InventoryTransfer, FBA }
+        public static Dictionary<DirectLineBoxType, string> BoxTypeList()
+        {
+            return new Dictionary<DirectLineBoxType, string>()
+            {
+                {DirectLineBoxType.DirectLine, "Direct Line" },
+                {DirectLineBoxType.InventoryTransfer, "Inventory Transfer" },
+                {DirectLineBoxType.FBA, "FBA" }
             };
         }
     }

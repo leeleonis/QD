@@ -1,0 +1,263 @@
+﻿@section styles{
+    <link href="~/Content/themes/default/easyui.css" rel="stylesheet" />
+    <link href="~/Content/themes/icon.css" rel="stylesheet" />
+    <style>
+        .filterColumn td div {
+            padding: 0
+        }
+    </style>
+}
+<div id="content">
+    <section id="widget-grid" class="">
+        <div class="row table-parent">
+            <div class="tool-content table-row col-xs-12">
+                <div class="table-cell col-xs-10">
+                    <div class="cancel-button col-xs-12">
+                        <button type="button" class="btn btn-default btn-sm" id="btn-cancel">取消</button>
+                    </div>
+                </div>
+                <div class="table-cell col-xs-1">
+                    <div class="action-button col-xs-12">
+                        <button type="button" class="btn btn-default btn-sm btn-block" id="btn-import">Import</button>
+                        <button type="button" class="btn btn-default btn-sm btn-block" id="btn-export">Export</button>
+                        <button type="button" class="btn btn-default btn-sm btn-block" id="btn-download">Excel 模組下載</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <article class="col-xs-12">
+                <table id="DataGrid"></table>
+            </article>
+        </div>
+    </section>
+</div>
+@section pagespecific {
+    <script src="~/scripts/jquery.easyui-1.4.3.min.js"></script>
+    <script src="~/scripts/datagrid-detailview.js"></script>
+    <script src="~/scripts/jquery.number.min.js"></script>
+    <script type="text/javascript">
+        var pager, pageSize = 100, selectOption, filterValue = {}
+        var $dataGrid;
+
+        $(function () {
+            var data = {
+                optionType: ['CountryCode', 'Warehouse', 'Method', 'Export', 'ExportMethod', 'StatusCode']
+            };
+            getOption("@Url.Action("getSelectOption", "directLine")", 'post', data).done(function (response) {
+                if (response['status']) {
+                    selectOption = response['data'];
+
+                    dataInit();
+                } else {
+                    alert(response['message']);
+                }
+            });
+        });
+
+        function dataInit() {
+            $dataGrid = $("#DataGrid").datagrid({
+                title: "DL訂單 列表",
+                idField: "PackageID",
+                url: "@Url.Action("getWaitingData", "directLine")",
+                queryParams: {},
+                width: "100%",
+                height: window.screen.availHeight-280,
+                checkOnSelect: false,
+                selectOnCheck: false,
+                singleSelect: false,
+                frozenColumns: [[
+                    {
+                        field: "OrderID", title: "Order ID<br />訂單號碼", width: 200, align: "center", sortable: true,
+                        formatter: function (value, row, index) {
+                            if (!isEmpty(value)) {
+                                if (row.ParentOrderID != 0) {
+                                    var url = value + "(<a href='https://dm.cwa.sellercloud.com/Orders/Orders_details.aspx?id=" + row.ParentOrderID + "' target='_blank'>" + row.ParentOrderID + "</a>)"
+                                } else {
+                                    var url = "<a href='https://dm.cwa.sellercloud.com/Orders/Orders_details.aspx?id=" + value + "' target='_blank'>" + value + "</a>";
+                                }
+                                if (row.OrderSourceOrderId != "") url += "<br />" + row.OrderSourceOrderId;
+                                return url;
+                            } else {
+                                return "<input type='text' class='form-control s-orderID' value='" + (!isEmpty(filterValue['OrderID']) ? filterValue['OrderID'] : '') + "'>";
+                            }
+                        }
+                    }
+                ]],
+                columns: [[
+                    { field: "PaymentDate", title: "Payment Date<br />付款日", width: 120, align: "center", sortable: false },
+                    { field: "Sku", title: "SKU<br />品號", width: 110, align: "center", sortable: false },
+                    { field: "DisplayName", title: "Item Name<br />品名", width: 440, align: "center", sortable: false },
+                    { field: "Qty", title: "QTY<br />數量", width: 60, align: "center", sortable: false },
+                    { field: "ShippingCountry", title: "Country<br />國家", width: 120, align: "center", sortable: false },
+                    { field: "Warehouse", title: "Warehouse<br />出貨倉", width: 150, align: "center", sortable: false },
+                    { field: "ShippingMethod", title: "Shipping Method<br />運輸方式", width: 150, align: "center", sortable: false },
+                    { field: "Export", title: "Export<br />出口報關", width: 100, align: "center", sortable: false },
+                    { field: "ExportMethod", title: "Export Method<br />申報性質", width: 170, align: "center", sortable: false },
+                    { field: "StatusCode", title: "Status<br />訂單狀態", width: 120, align: "center", sortable: false },
+                    { field: "Comment", title: "Comment<br />出貨備註", width: 200, align: "center", sortable: false },
+                    { field: "Confirmed", title: "Request<br />Confirmed", width: 120, align: "center", sortable: false },
+                    { field: "DispatchDate", title: "Dispatch Date<br />出貨日", width: 120, align: "center", sortable: false },
+                    { field: "TagNo", title: "Tag No<br />標籤號碼", width: 120, align: "center", sortable: false },
+                    { field: "TrackingNumber", title: "Tracking<br />提單號碼", width: 150, align: "center", sortable: false },
+                    {
+                        field: "ChangeStatus", title: "狀態更改", width: 120, sortable: false,
+                        formatter: function (value, row, index) {
+                            if (!isEmpty(row.OrderID)) {
+                                return "<select class='form-control select-status' data-id='" + row.PackageID + "'>" + setSelectOption(selectOption['StatusCode'], row.OrderSatusCode) + "</select>";
+                            }
+                        }
+                    }
+                ]],
+                rowStyler: function (index, row) {
+                    if (isEmpty(row.OrderID)) return { class: 'filterColumn' }
+                },
+                onLoadSuccess: function (data) {
+                    $dataGrid.datagrid('insertRow', {
+                        index: 0,
+                        row: setFilterColumn(filterValue)
+                    });
+
+                    if (data.total > 0) {
+                        $('.datepicker').datepicker({
+                            dateFormat: 'yy-mm-dd'
+                        });
+
+                        $('.filterColumn').on('change', 'input, select', function () {
+                            filterValue = getFilterData();
+
+                            $dataGrid.datagrid('reload');
+                        });
+
+                        $('.select-status').on('change', function () {
+                            if (confirm('是否確定要修改訂單狀態?')) {
+                                alert('TEST');
+                            } else {
+                                $(this).find('option').prop('selected', function () { return this.defaultSelected; });
+                            }
+                        });
+                    } else {
+                        $dataGrid.datagrid('deleteRow', 0);
+                    }
+                },
+                onBeforeLoad: function (param) {
+                    Object.keys(filterValue).forEach(function (key) {
+                        if (!isEmpty(filterValue[key])) param[key] = filterValue[key];
+                    });
+                },
+                onBeforeSelect: function () {
+                    return false
+                },
+                view: detailview,
+                detailFormatter: function (index, row) {
+                    return '<div id="itemList"></div>';
+                },
+                onExpandRow: function (index, row) {
+                    if (row.ItemCount == 1) {
+                        $dataGrid.datagrid("collapseRow", index);
+                    } else {
+                        var $itemList = $("div#itemList:eq(" + index + ")");
+
+                        $itemList.panel({
+                            border: false,
+                            cache: false,
+                            href: "@Html.Raw(Url.Action("orderProductList", "directLine", new { PackageID = "_id_", Type = "Order" }))".replace("_id_", row.PackageID),
+                            onLoad: function (response) {
+                                $("#datagrid-row-r1-1-" + index).next("tr").find(".datagrid-row-detail").html($itemList.find("table:hidden").remove().removeClass("hidden"));
+                            }
+                        });
+
+                        $dataGrid.datagrid("fixDetailRowHeight", index);
+                    }
+                },
+                pagination: true,
+                pagePosition: "bottom",
+                pageSize: pageSize
+            });
+
+            pager = $dataGrid.datagrid("getPager");
+            $(pager).pagination({
+                pageSize: pageSize,
+                showPageList: true,
+                pageList: [100, 200, 300, 500],
+                beforePageTest: "第",
+                afterPageTest: "頁，共 {pages} 頁",
+                displayMsg: "顯示 {from} 到 {to} 筆資料，共 {total} 筆資料"
+            });
+        }
+
+        function getFilterData() {
+            return {
+                OrderID: $('.filterColumn .s-orderID').val(),
+                PaymentDate: $('.filterColumn .s-paymentDate').val(),
+                Sku: $('.filterColumn .s-sku').val(),
+                ItemName: $('.filterColumn .s-displayName').val(),
+                CountryCode: $('.filterColumn .s-countryCode').val(),
+                WarehouseID: $('.filterColumn .s-warehouse').val(),
+                MethodID: $('.filterColumn .s-method').val(),
+                Export: $('.filterColumn .s-export').val(),
+                ExportMethod: $('.filterColumn .s-exportMethod').val(),
+                StatusCode: $('.filterColumn .s-statusCode').val(),
+                Comment: $('.filterColumn .s-comment').val(),
+                DispatchDate: $('.filterColumn .s-dispatchDate').val(),
+                TagNo: $('.filterColumn .s-tagNo').val(),
+                Tracking: $('.filterColumn .s-trackingNumber').val()
+            };
+        }
+
+        function setFilterColumn(filterValue) {
+            return {
+                ItemCount: 1,
+                OrderID: "",
+                PaymentDate: "<input type='text' class='form-control datepicker s-paymentDate' value='" + (!isEmpty(filterValue['PaymentDate']) ? filterValue['PaymentDate'] : '') + "'>",
+                Sku: "<input type='text' class='form-control s-sku' value='" + (!isEmpty(filterValue['Sku']) ? filterValue['Sku'] : '') + "'>",
+                DisplayName: "<input type='text' class='form-control s-displayName' value='" + (!isEmpty(filterValue['ItemName']) ? filterValue['ItemName'] : '') + "'>",
+                Qty: "",
+                ShippingCountry: "<select class='form-control s-countryCode'><option value=''>全部</option>" + setSelectOption(selectOption['CountryCode'], filterValue['CountryCode']) + "</select>",
+                Warehouse: "<select class='form-control s-warehouse'><option value=''>全部</option>" + setSelectOption(selectOption['Warehouse'], filterValue['WarehouseID']) + "</select>",
+                ShippingMethod: "<select class='form-control s-method'><option value=''>全部</option>" + setSelectOption(selectOption['Method'], filterValue['MethodID']) + "</select>",
+                Export: "<select class='form-control s-export'><option value=''>全部</option>" + setSelectOption(selectOption['Export'], filterValue['Export']) + "</select>",
+                ExportMethod: "<select class='form-control s-export'><option value=''>全部</option>" + setSelectOption(selectOption['ExportMethod'], filterValue['ExportMethod']) + "</select>",
+                StatusCode: "<select class='form-control s-statusCode'><option value=''>全部</option>" + setSelectOption(selectOption['StatusCode'], filterValue['StatusCode']) + "</select>",
+                Comment: "<input type='text' class='form-control s-comment' value='" + (!isEmpty(filterValue['Comment']) ? filterValue['Comment'] : '') + "'>",
+                Confirmed: "",
+                DispatchDate: "<input type='text' class='form-control datepicker s-dispatchDate' value='" + (!isEmpty(filterValue['DispatchDate']) ? filterValue['DispatchDate'] : '') + "'>",
+                TagNo: "<input type='text' class='form-control s-tagNo' value='" + (!isEmpty(filterValue['TagNo']) ? filterValue['TagNo'] : '') + "'>",
+                TrackingNumber: "<input type='text' class='form-control s-trackingNumber' value='" + (!isEmpty(filterValue['Tracking']) ? filterValue['Tracking'] : '') + "'>"
+            };
+        }
+
+        function setSelectOption(optionList, value) {
+            var option = "";
+
+            if (!isEmpty(optionList) && optionList.length > 0) {
+                for (var i in optionList) {
+                    option += "<option value='" + optionList[i]["value"] + "' " + (!isEmpty(value) && optionList[i]["value"] == value ? "selected" : "") + ">" + optionList[i]["text"] + "</option>";
+                }
+            }
+
+            return option;
+        }
+
+        function isEmpty(value) {
+            return (value == undefined) || (value == null) || (value == "");
+        }
+
+        function getOption(url, type, data) {
+            type = !isEmpty(type) ? type : {};
+            data = !isEmpty(data) ? data : {};
+
+            return $.ajax({
+                url: url,
+                type: type,
+                data: data,
+                dataType: "json"
+            });
+        }
+    </script>
+}
+
+
+
+

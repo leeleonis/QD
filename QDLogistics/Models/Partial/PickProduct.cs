@@ -17,5 +17,23 @@ namespace QDLogistics.Models
 
             return this;
         }
+
+        public string TagNo { get; set; }
+
+        public PickProduct SetTagNo(string tagNo)
+        {
+            this.TagNo = tagNo;
+
+            return this;
+        }
+
+        public string Note { get; set; }
+
+        public PickProduct SetNote(string note)
+        {
+            this.Note = note;
+
+            return this;
+        }
     }
 }

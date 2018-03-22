@@ -20,11 +20,12 @@ namespace QDLogistics.Models
             this.Packages = new HashSet<Packages>();
         }
     
+        public bool IsEnable { get; set; }
         public string BoxID { get; set; }
         public string SupplierBoxID { get; set; }
         public string WITID { get; set; }
         public int CarrierID { get; set; }
-        public int WharehouseID { get; set; }
+        public int WarehouseID { get; set; }
         public byte BoxType { get; set; }
         public byte ShippingStatus { get; set; }
         public string TrackingNumber { get; set; }

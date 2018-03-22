@@ -1,0 +1,219 @@
+﻿@section styles{
+    <link href="~/Content/themes/default/easyui.css" rel="stylesheet" />
+    <link href="~/Content/themes/icon.css" rel="stylesheet" />
+    <style>
+        .filterColumn td div {
+            padding: 0
+        }
+    </style>
+}
+<div id="content">
+    <section id="widget-grid" class="">
+        <div class="row table-parent">
+            <div class="tool-content table-row col-xs-12">
+                <div class="table-cell col-xs-10">
+                    <div class="cancel-button col-xs-12">
+                    </div>
+                </div>
+                <div class="table-cell col-xs-1">
+                    <div class="action-button col-xs-12">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <article class="col-xs-12">
+                <table id="DataGrid"></table>
+            </article>
+        </div>
+    </section>
+</div>
+@section pagespecific {
+    <script src="~/scripts/jquery.easyui-1.4.3.min.js"></script>
+    <script src="~/scripts/datagrid-detailview.js"></script>
+    <script src="~/scripts/jquery.number.min.js"></script>
+    <script type="text/javascript">
+        var pager, pageSize = 100, selectOption, filterValue = {}
+        var $dataGrid;
+
+        $(function () {
+            var data = { optionType: ['Warehouse', 'DirectLineStatus', 'DirectLineBoxType'] };
+            getOption("@Url.Action("getSelectOption", "directLine")", 'post', data).done(function (response) {
+                if (response['status']) {
+                    selectOption = response['data'];
+
+                    dataInit();
+                } else {
+                    alert(response['message']);
+                }
+            });
+        });
+
+        function dataInit() {
+            $dataGrid = $("#DataGrid").datagrid({
+                title: "DL寄倉投遞 列表",
+                idField: "BoxID",
+                url: "@Url.Action("getBoxData", "directLine")",
+                queryParams: {},
+                width: "100%",
+                height: window.screen.availHeight-280,
+                checkOnSelect: false,
+                selectOnCheck: false,
+                singleSelect: false,
+                frozenColumns: [[
+                    {
+                        field: "BoxID", title: "Box ID", width: 100, align: "center", sortable: true,
+                        formatter: function (value, row, index) {
+                            if (!isEmpty(value)) {
+                                return "<a href='@Url.Action("boxEdit", "directLine")/" + value + "'>" + value + "</a>";
+                            } else {
+                                return "<input type='text' class='form-control s-boxID' value='" + (!isEmpty(filterValue['BoxID']) ? filterValue['BoxID'] : '') + "'>";
+                            }
+                        }
+                    },
+                    { field: "SupplierBoxID", title: "Supplier Box ID", width: 120, align: "center", sortable: true }
+                ]],
+                columns: [[
+                    { field: "CreateDate", title: "Create Date", width: 120, align: "center", sortable: false },
+                    { field: "WarehouseTo", title: "To", width: 150, align: "center", sortable: false },
+                    { field: "BoxQty", title: "Box Qty", width: 60, align: "center", sortable: false },
+                    { field: "TotalWeight", title: "Total Weight", width: 80, align: "center", sortable: false },
+                    { field: "WITID", title: "SC WIT ID", width: 150, align: "center", sortable: false },
+                    { field: "Tracking", title: "Tracking", width: 150, align: "center", sortable: false },
+                    { field: "Status", title: "Status", width: 100, align: "center", sortable: false },
+                    { field: "Type", title: "Type", width: 150, align: "center", sortable: false },
+                    { field: "Note", title: "Notes", width: 250, align: "center", sortable: false }
+                ]],
+                rowStyler: function (index, row) {
+                    if (isEmpty(row.OrderID)) return { class: 'filterColumn' }
+                },
+                onLoadSuccess: function (data) {
+                    $dataGrid.datagrid('insertRow', {
+                        index: 0,
+                        row: setFilterColumn(filterValue)
+                    });
+
+                    if (data.total > 0) {
+                        $('.datepicker').datepicker({
+                            dateFormat: 'yy-mm-dd'
+                        });
+
+                        $('.filterColumn').on('change', 'input, select', function () {
+                            filterValue = getFilterData();
+
+                            $dataGrid.datagrid('reload');
+                        });
+                    } else {
+                        $dataGrid.datagrid('deleteRow', 0);
+                    }
+                },
+                onBeforeLoad: function (param) {
+                    Object.keys(filterValue).forEach(function (key) {
+                        if (!isEmpty(filterValue[key])) param[key] = filterValue[key];
+                    });
+                },
+                onBeforeSelect: function () {
+                    return false
+                },
+                @*view: detailview,
+                detailFormatter: function (index, row) {
+                    return '<div id="itemList"></div>';
+                },
+                onExpandRow: function (index, row) {
+                    if (row.ItemCount == 1) {
+                        $dataGrid.datagrid("collapseRow", index);
+                    } else {
+                        var $itemList = $("div#itemList:eq(" + index + ")");
+
+                        $itemList.panel({
+                            border: false,
+                            cache: false,
+                            href: "@Html.Raw(Url.Action("boxOrderList", "directLine", new { PackageID = "_id_", Type = "Order" }))".replace("_id_", row.PackageID),
+                            onLoad: function (response) {
+                                $("#datagrid-row-r1-1-" + index).next("tr").find(".datagrid-row-detail").html($itemList.find("table:hidden").remove().removeClass("hidden"));
+                            }
+                        });
+
+                        $dataGrid.datagrid("fixDetailRowHeight", index);
+                    }
+                },*@
+                pagination: true,
+                pagePosition: "bottom",
+                pageSize: pageSize
+            });
+
+            pager = $dataGrid.datagrid("getPager");
+            $(pager).pagination({
+                pageSize: pageSize,
+                showPageList: true,
+                pageList: [100, 200, 300, 500],
+                beforePageTest: "第",
+                afterPageTest: "頁，共 {pages} 頁",
+                displayMsg: "顯示 {from} 到 {to} 筆資料，共 {total} 筆資料"
+            });
+        }
+
+        function getFilterData() {
+            return {
+                BoxID: $('.filterColumn .s-boxID').val(),
+                SupplierBoxID: $('.filterColumn .s-supplierBoxID').val(),
+                CreateDate: $('.filterColumn .s-createDate').val(),
+                Warehouse: $('.filterColumn .s-warehouse').val(),
+                WITID: $('.filterColumn .s-WITID').val(),
+                Tracking: $('.filterColumn .s-tracking').val(),
+                Status: $('.filterColumn .s-status').val(),
+                Type: $('.filterColumn .s-type').val(),
+                Notes: $('.filterColumn .s-notes').val()
+            };
+        }
+
+        function setFilterColumn(filterValue) {
+            return {
+                BoxID: "",
+                SupplierBoxID: "<input type='text' class='form-control s-supplierBoxID' value='" + (!isEmpty(filterValue['SupplierBoxID']) ? filterValue['SupplierBoxID'] : '') + "'>",
+                CreateDate: "<input type='text' class='form-control datepicker s-createDate' value='" + (!isEmpty(filterValue['CreateDate']) ? filterValue['CreateDate'] : '') + "'>",
+                WarehouseTo: "<select class='form-control s-warehouse'><option value=''>全部</option>" + setSelectOption(selectOption['Warehouse'], filterValue['Warehouse']) + "</select>",
+                BoxQty: "",
+                TotalWeight: "",
+                WITID: "<input type='text' class='form-control s-WITID' value='" + (!isEmpty(filterValue['WITID']) ? filterValue['WITID'] : '') + "'>",
+                Tracking: "<input type='text' class='form-control s-tracking' value='" + (!isEmpty(filterValue['Tracking']) ? filterValue['Tracking'] : '') + "'>",
+                Status: "<select class='form-control s-status'><option value=''>全部</option>" + setSelectOption(selectOption['DirectLineStatus'], filterValue['Status']) + "</select>",
+                Type: "<select class='form-control s-type'><option value=''>全部</option>" + setSelectOption(selectOption['DirectLineBoxType'], filterValue['Type']) + "</select>",
+                Note: "<input type='text' class='form-control s-notes' value='" + (!isEmpty(filterValue['Notes']) ? filterValue['Notes'] : '') + "'>"
+            };
+        }
+
+        function setSelectOption(optionList, value) {
+            var option = "";
+
+            if (!isEmpty(optionList) && optionList.length > 0) {
+                for (var i in optionList) {
+                    option += "<option value='" + optionList[i]["value"] + "' " + (!isEmpty(value) && optionList[i]["value"] == value ? "selected" : "") + ">" + optionList[i]["text"] + "</option>";
+                }
+            }
+
+            return option;
+        }
+
+        function isEmpty(value) {
+            return (value == undefined) || (value == null) || (value == "");
+        }
+
+        function getOption(url, type, data) {
+            type = !isEmpty(type) ? type : {};
+            data = !isEmpty(data) ? data : {};
+
+            return $.ajax({
+                url: url,
+                type: type,
+                data: data,
+                dataType: "json"
+            });
+        }
+    </script>
+}
+
+
+
+

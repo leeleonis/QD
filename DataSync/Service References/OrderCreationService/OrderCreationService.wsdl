@@ -284,6 +284,7 @@
           <s:element minOccurs="1" maxOccurs="1" name="Invoice_PrintInvoicePrintedDate" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="Invoice_PrintInventoryAvailableQty" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="Invoice_PrintUPC" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="Invoice_PrintUPCForKitItems" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="NewEggDotcomDefaultFixedQty" type="s:int" />
           <s:element minOccurs="1" maxOccurs="1" name="OverStockDefaultFixedQty" type="s:int" />
           <s:element minOccurs="1" maxOccurs="1" name="BuyDotComDefaultFixedQty" type="s:int" />
@@ -529,6 +530,15 @@
           <s:element minOccurs="0" maxOccurs="1" name="BuyDotComShopName" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="AmazonEnablePriceUpdateRegular" type="s:boolean" />
           <s:element minOccurs="0" maxOccurs="1" name="AmazonMWSAuthToken" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="AmazonMWSAuthTokenEnabled" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="IsAmazonUnifiedAccountParentCompany" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="AmazonUnifiedAccountParentCompany" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="NewEggDotComEnableDownloadSBNOrders" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="NewEggDotComShippingOptionDefault" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="CurrencyCodeForShipViaFBADeclaredValue" type="tns:CurrencyCodeType" />
+          <s:element minOccurs="1" maxOccurs="1" name="AutoCreateFBARemovalTransfers" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="AmazonMWSAuthTokenExpiresOn" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="SearsLeadTime" type="s:int" />
         </s:sequence>
       </s:complexType>
       <s:simpleType name="WebsiteProductViewURLValueTypeType">
@@ -1447,6 +1457,7 @@
           <s:enumeration value="MassGenie" />
           <s:enumeration value="Cdiscount" />
           <s:enumeration value="GrouponGateway" />
+          <s:enumeration value="SBN" />
         </s:restriction>
       </s:simpleType>
       <s:simpleType name="OrderShippingStatus">
@@ -2375,6 +2386,8 @@
           <s:element minOccurs="1" maxOccurs="1" name="EnableSellingBelowCostEnabledBy" type="s:int" />
           <s:element minOccurs="1" maxOccurs="1" name="EnableSellingBelowCostEnabledOn" type="s:dateTime" />
           <s:element minOccurs="1" maxOccurs="1" name="SearsHasWarranty" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="SearsLeadTime" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="SearsLeadTimeUseDefault" type="s:boolean" />
           <s:element minOccurs="0" maxOccurs="1" name="HayneedleMerchantSKU" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="WalmartAPIFulfillmentLatencyDays" type="s:int" />
           <s:element minOccurs="1" maxOccurs="1" name="WalmartAPIFulfillmentLatencyDaysUseDefault" type="s:boolean" />
@@ -2448,6 +2461,7 @@
           <s:element minOccurs="1" maxOccurs="1" name="InventoryMaxQtyForWebSite" type="s:int" />
           <s:element minOccurs="1" maxOccurs="1" name="InventoryMaxQtyForWebSiteUseDefault" type="s:boolean" />
           <s:element minOccurs="0" maxOccurs="1" name="BDC_Title" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="BDC_MAPType" type="tns:BDC_MAPTypeType" />
           <s:element minOccurs="1" maxOccurs="1" name="JETShippingTemplateID" type="s:int" />
           <s:element minOccurs="0" maxOccurs="1" name="WalmartAPIParentCategory" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="WalmartAPIChildCategory" type="s:string" />
@@ -2637,6 +2651,7 @@
           <s:element minOccurs="1" maxOccurs="1" name="CdiscountAdditionalShippingFeeUseDefault" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="CdiscountSafetyQuantity" type="s:int" />
           <s:element minOccurs="1" maxOccurs="1" name="CdiscountSafetyQuantityUseDefault" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="CdiscountCategoryCode" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="ShippingTemplateIDForWebsite" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="JETReturnException_ReturnShippingMethodsAsList" type="tns:ArrayOfString" />
           <s:element minOccurs="0" maxOccurs="1" name="JETReturnException_ReturnLocationsAsList" type="tns:ArrayOfString" />
@@ -3066,6 +3081,7 @@
           <s:element minOccurs="1" maxOccurs="1" name="WayfairSafetyQty" type="s:int" />
           <s:element minOccurs="1" maxOccurs="1" name="WayfairPriceUseDefault" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="WayfairPrice" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="WayfairProductID" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="DSWMerchantSKU" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="DSWEnabled" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="DSWDiscontinuedOn" type="s:dateTime" />
@@ -3091,6 +3107,7 @@
           <s:element minOccurs="1" maxOccurs="1" name="HayneedleDiscontinued" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="HayneedleDiscontinuedOn" type="s:dateTime" />
           <s:element minOccurs="0" maxOccurs="1" name="HayneedleListingID" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="HayneedleBackOrderDays" type="s:int" />
           <s:element minOccurs="1" maxOccurs="1" name="ATGStoresSafetyQtyUseDefault" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="ATGStoresSafetyQty" type="s:int" />
           <s:element minOccurs="1" maxOccurs="1" name="ATGStoresPriceUseDefault" type="s:boolean" />
@@ -3322,6 +3339,7 @@
           <s:element minOccurs="1" maxOccurs="1" name="NewEggDotComSafetyQuantityUseDefault" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="ExportedForNewEggOnDotCom" type="s:dateTime" />
           <s:element minOccurs="0" maxOccurs="1" name="NewEggDotComDescription" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="NewEggDotComCountryOfOrigin" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="AmazonEnableShippingOverride" type="s:boolean" />
           <s:element minOccurs="0" maxOccurs="1" name="CustomProductURL" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="AmazonFBASKU" type="s:string" />
@@ -3657,6 +3675,8 @@
           <s:element minOccurs="1" maxOccurs="1" name="WalmartPriceUseDefault" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="WalmartPrice" type="s:decimal" />
           <s:element minOccurs="1" maxOccurs="1" name="WalmartEnabled" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="WalmartDirectUPC" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="WalmartDirectUPCUseDefault" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="TargetDiscontinuedOn" type="s:dateTime" />
           <s:element minOccurs="1" maxOccurs="1" name="TargetDiscontinued" type="s:boolean" />
           <s:element minOccurs="0" maxOccurs="1" name="TargetMerchantSKU" type="s:string" />
@@ -3679,6 +3699,8 @@
           <s:element minOccurs="1" maxOccurs="1" name="AggregatePhysicalNonSellableQty" type="s:int" />
           <s:element minOccurs="1" maxOccurs="1" name="TotalQtyNonFBA" type="s:int" />
           <s:element minOccurs="1" maxOccurs="1" name="JETEnableCustomAttributes" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="WishShippingTemplateID" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="EtsyActiveListingVariationID" type="s:long" />
         </s:sequence>
       </s:complexType>
       <s:simpleType name="MagentoProductVisibilityType">
@@ -3768,6 +3790,14 @@
           <s:enumeration value="Fair" />
           <s:enumeration value="Poor" />
           <s:enumeration value="NonFunctioning" />
+        </s:restriction>
+      </s:simpleType>
+      <s:simpleType name="BDC_MAPTypeType">
+        <s:restriction base="s:string">
+          <s:enumeration value="None" />
+          <s:enumeration value="Click_For_Price" />
+          <s:enumeration value="Cart_For_Price" />
+          <s:enumeration value="Check_Out_For_Price" />
         </s:restriction>
       </s:simpleType>
       <s:simpleType name="WalmartAPIPriceDiscountTypeType">
@@ -4228,6 +4258,7 @@
           <s:enumeration value="Un_Tested" />
           <s:enumeration value="Interim" />
           <s:enumeration value="DropShip" />
+          <s:enumeration value="NewEgg" />
         </s:restriction>
       </s:simpleType>
       <s:element name="Customer_GetList">
@@ -4347,6 +4378,9 @@
           <s:element minOccurs="1" maxOccurs="1" name="OptinDate" type="s:dateTime" />
           <s:element minOccurs="1" maxOccurs="1" name="IsWholeSaleUser" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="IsHidden" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="TwoFactorAuthPINCode" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="TwoFactorAuthLastExecutedOn" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="CustomerShippingAccountBillReceiver" type="s:boolean" />
         </s:sequence>
       </s:complexType>
       <s:simpleType name="OrderSearchDateRange">
@@ -5042,6 +5076,8 @@
           <s:element minOccurs="1" maxOccurs="1" name="CustomerID" type="s:int" />
           <s:element minOccurs="1" maxOccurs="1" name="LastUpdatedOn" type="s:dateTime" />
           <s:element minOccurs="1" maxOccurs="1" name="LastUpdatedBy" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="HasAlert" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="AlertMessage" type="s:string" />
         </s:sequence>
       </s:complexType>
       <s:complexType name="ArrayOfRMAItem">
@@ -5075,6 +5111,7 @@
           <s:element minOccurs="0" maxOccurs="1" name="ProblemDescription" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="CustomerSupportComments" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="QtyReturned" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="ChannelReasonCode" type="s:string" />
         </s:sequence>
       </s:complexType>
       <s:simpleType name="RMAItemApprovalStatusType">
@@ -5915,6 +5952,7 @@
           <s:enumeration value="WinService_AmazonPricesUpate" />
           <s:enumeration value="WinService_SettlementReportingService" />
           <s:enumeration value="WinService_FBAReconciliationDataService" />
+          <s:enumeration value="WinService_PriceFallExportInventoryServices" />
           <s:enumeration value="Skustack" />
         </s:restriction>
       </s:simpleType>
@@ -6350,6 +6388,7 @@
           <s:enumeration value="Amazon_Business_Prime" />
           <s:enumeration value="Second_Day" />
           <s:enumeration value="Wish_Express" />
+          <s:enumeration value="SBN" />
         </s:restriction>
       </s:simpleType>
       <s:simpleType name="OrderCreationSourceApplicationType">
@@ -6990,6 +7029,7 @@
           <s:enumeration value="MassGenie" />
           <s:enumeration value="Cdiscount" />
           <s:enumeration value="GrouponGateway" />
+          <s:enumeration value="SBN" />
         </s:restriction>
       </s:simpleType>
       <s:complexType name="ArrayOfOrderNote">
@@ -7073,6 +7113,9 @@
           <s:element minOccurs="1" maxOccurs="1" name="OrderID" type="s:int" />
           <s:element minOccurs="1" maxOccurs="1" name="AuditDate" type="s:dateTime" />
           <s:element minOccurs="0" maxOccurs="1" name="Note" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Color" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="IsPinned" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="Title" type="s:string" />
         </s:sequence>
       </s:complexType>
     </s:schema>
@@ -7100,6 +7143,7 @@
           <s:element minOccurs="1" maxOccurs="1" name="WholesaleBackOrderQty" type="s:int" />
           <s:element minOccurs="1" maxOccurs="1" name="WholesaleBackOrderShipDate" type="s:dateTime" />
           <s:element minOccurs="1" maxOccurs="1" name="WholesaleRefuseQty" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="WholesaleRejectReason" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="QtyPicked" type="s:int" />
           <s:element minOccurs="1" maxOccurs="1" name="PricePerCase" type="s:decimal" />
           <s:element minOccurs="1" maxOccurs="1" name="TotalCases" type="s:int" />
@@ -7323,6 +7367,8 @@
           <s:element minOccurs="1" maxOccurs="1" name="OrderID" type="s:int" />
           <s:element minOccurs="0" maxOccurs="1" name="ProductID" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="Qty" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="LogoFileName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="UPC" type="s:string" />
         </s:sequence>
       </s:complexType>
       <s:simpleType name="DropShipMode">

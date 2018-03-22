@@ -101,7 +101,7 @@ namespace DataSync
             if (result.Rows.Count > 0)
             {
                 int[] OrderIDs = result.Rows.Cast<DataRow>().Select(o => (int)o.ItemArray.First()).ToArray();
-                OrderList = OS_sellerCloud.Orders_GetOrderStates(OS_authHeader, OS_options, OrderIDs).Where(o => o.DropShipStatus == OrderService.DropShipStatusType1.None)
+                OrderList = OS_sellerCloud.Orders_GetOrderStates(OS_authHeader, OS_options, OrderIDs).Where(o => o.DropShipStatus == OrderService.DropShipStatusType.None)
                     .Select(o => new Orders()
                     {
                         OrderID = o.ID,

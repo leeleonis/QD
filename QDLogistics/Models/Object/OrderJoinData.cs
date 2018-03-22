@@ -14,6 +14,7 @@ namespace QDLogistics.Models.Object
         public Items item { get; set; }
         public List<Items> items { get; set; }
         public int itemCount { get; set; }
+        public ShippingMethod method { get; set; }
 
         public OrderJoinData()
         {
@@ -28,6 +29,7 @@ namespace QDLogistics.Models.Object
             item = data.item;
             items = data.items;
             itemCount = data.itemCount;
+            method = data.method;
         }
     }
 }

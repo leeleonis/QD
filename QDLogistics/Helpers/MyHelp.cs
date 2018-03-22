@@ -48,7 +48,7 @@ public static class MyHelp
 
     public static bool CheckAuth(string controller, string action, EnumData.AuthType check, Menu menu = null)
     {
-        if ((bool)HttpContext.Current.Session["IsManager"]) return true;
+        if (Convert.ToBoolean(HttpContext.Current.Session["IsManager"])) return true;
 
         if (menu == null)
         {

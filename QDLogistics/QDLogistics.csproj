@@ -5910,6 +5910,138 @@
     <Content Include="Service References\OrderService\QDLogistics.OrderService.WarehouseBin_ListAllResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.AddToOrderGroupResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.Brand.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.Brands_CreateNewResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.Brands_DeleteResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.Brands_GetByIDResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.Brands_GetByNameResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.FBA_InboundShipment_GetPickList_ByTrackingNumberResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.GenerateRandomSerialsResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.GetAllProductsWithFiltersResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.GetOrderDetailsResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.GetProductDetailsByEANResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.KitAssemblyPrepSession_AssembleResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.KitAssemblyPrepSession_Assemble_Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.KitAssemblyPrepSession_Assemble_WithSerialsResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.KitAssemblyPrepSession_CancelResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.KitAssemblyPrepSession_CreateResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.KitAssemblyPrepSession_GetAllResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.KitAssemblyPrepSession_GetCompletedResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.KitAssemblyPrepSession_GetDetailsResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.KitAssemblyPrepSession_GetDetails_Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.KitAssemblyPrepSession_GetKitSerialForComponentSerialResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.KitAssemblyPrepSession_GetKitSerialsResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.KitAssemblyPrepSession_GetWorkOrderResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.KitAssemblyPrepSession_GetWorkOrder_Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.KitAssemblyPrepSession_GetWorkOrder_TestResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.KitAssemblyPrepSession_UpdateQtyToAssembleResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.KitAssemblyPrepSession_UpdateQtyToAssemble_ReturnListResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.OrderDetailsResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.OrderNote_Delete_ByIdResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.Orders_AddMerchantNote_NewResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.Orders_GetGroupOnSpecificOrderDataByOrderIdResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.Orders_GetOrderNotesResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.Orders_UpdateNoteResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.Orders_UpdateNote_NewResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.ProductKit_Disassemble_BySerialNumberResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.ProductKit_Disassemble_New2Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.ProductNotes_Add_NewResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.ProductNotes_Delete_ByIdResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.ProductNotes_List_NewResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.ProductNote_UpdateResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.ShipBridge_SerialScan_SettingUpgradeResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.UpdatePnLOrdersAsExportedV2_SPResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.UpdateRelatedRecordAsQBExportedResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\OrderService\QDLogistics.OrderService.UpdateRelatedRecordAsQBExported_SPResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
     <None Include="Service References\OrderService\scservice.disco" />
     <None Include="Service References\OrderService\configuration91.svcinfo" />
     <None Include="Service References\OrderService\configuration.svcinfo" />
@@ -6478,6 +6610,72 @@
     <Content Include="Service References\PurchaseOrderService\QDLogistics.PurchaseOrderService.PurchaseItem_AddForManualSerialAddResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Content>
+    <Content Include="Service References\PurchaseOrderService\QDLogistics.PurchaseOrderService.NoteTag.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\PurchaseOrderService\QDLogistics.PurchaseOrderService.NoteTagSubType.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\PurchaseOrderService\QDLogistics.PurchaseOrderService.Product_AddManualSerial_NewResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\PurchaseOrderService\QDLogistics.PurchaseOrderService.PurchaseItem_AttachSerialsManuallyResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\PurchaseOrderService\QDLogistics.PurchaseOrderService.PurchaseItem_UpdateReceiveCounterResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\PurchaseOrderService\QDLogistics.PurchaseOrderService.PurchaseNote_Add_NewResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\PurchaseOrderService\QDLogistics.PurchaseOrderService.PurchaseNote_Delete_ByIdResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\PurchaseOrderService\QDLogistics.PurchaseOrderService.Purchase_Notes_UpdateResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\PurchaseOrderService\QDLogistics.PurchaseOrderService.ReceiveBridge_SerialScan_SettingUpgradeResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\PurchaseOrderService\QDLogistics.PurchaseOrderService.RMAGetNotes_Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\PurchaseOrderService\QDLogistics.PurchaseOrderService.RMANotes_GetTagsResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\PurchaseOrderService\QDLogistics.PurchaseOrderService.RMANoteTagSubType_CreateResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\PurchaseOrderService\QDLogistics.PurchaseOrderService.RMANoteTagSubType_DeleteResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\PurchaseOrderService\QDLogistics.PurchaseOrderService.RMANoteTagSubType_GetAllResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\PurchaseOrderService\QDLogistics.PurchaseOrderService.RMA_AddNote_NewResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\PurchaseOrderService\QDLogistics.PurchaseOrderService.RMA_AddNote_ReturnResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\PurchaseOrderService\QDLogistics.PurchaseOrderService.RMA_ArchiveNoteResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\PurchaseOrderService\QDLogistics.PurchaseOrderService.RMA_GetNotes_NewResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\PurchaseOrderService\QDLogistics.PurchaseOrderService.RMA_Notes_Delete_ByIdResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\PurchaseOrderService\QDLogistics.PurchaseOrderService.RMA_Notes_Update_ByIdResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\PurchaseOrderService\QDLogistics.PurchaseOrderService.RMA_Notes_Update_NewResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
+    <Content Include="Service References\PurchaseOrderService\QDLogistics.PurchaseOrderService.RMA_UnArchiveNoteResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Content>
     <None Include="Service References\PurchaseOrderService\Reference.svcmap">
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
@@ -6507,6 +6705,7 @@
     <Compile Include="Commons\TrackOrder.cs" />
     <Compile Include="Controllers\ApiController.cs" />
     <Compile Include="Controllers\CompanyController.cs" />
+    <Compile Include="Controllers\DirectLineController.cs" />
     <Compile Include="Controllers\DropShipController.cs" />
     <Compile Include="Controllers\FileController.cs" />
     <Compile Include="Controllers\OrderSyncController.cs" />
@@ -6765,6 +6964,11 @@
     <Content Include="Views\Overview\order.cshtml" />
     <Content Include="Views\Shipping\ShippingMethodEdit.cshtml" />
     <Content Include="Views\Shipping\ShippingMethod.cshtml" />
+    <Content Include="Views\DirectLine\Waiting.cshtml" />
+    <Content Include="Views\DirectLine\Package.cshtml" />
+    <Content Include="Views\DirectLine\Delivery.cshtml" />
+    <Content Include="Views\DirectLine\BoxEdit.cshtml" />
+    <Content Include="Views\DirectLine\List_BoxOrder.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

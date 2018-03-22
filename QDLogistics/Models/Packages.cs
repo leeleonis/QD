@@ -44,6 +44,7 @@ namespace QDLogistics.Models
         public string DeliveryNote { get; set; }
         public string WinitNo { get; set; }
         public string BoxID { get; set; }
+        public string TagNo { get; set; }
         public Nullable<decimal> FinalShippingFee { get; set; }
         public bool UploadTracking { get; set; }
         public string TrackingNumber { get; set; }

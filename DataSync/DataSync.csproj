@@ -415,6 +415,9 @@
     <None Include="Service References\OrderService\DataSync.OrderService.AddressVerificationInfo.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.AddToOrderGroupResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
     <None Include="Service References\OrderService\DataSync.OrderService.AddVendorResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
@@ -485,6 +488,21 @@
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\OrderService\DataSync.OrderService.BasicProductInfoWithBinSuggestionsResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.Brand.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.Brands_CreateNewResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.Brands_DeleteResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.Brands_GetByIDResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.Brands_GetByNameResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\OrderService\DataSync.OrderService.BulkUpdateCleanUpResponse.datasource">
@@ -694,6 +712,9 @@
     <None Include="Service References\OrderService\DataSync.OrderService.FBA_InboundShipment_GetPickList_ByAmazonShipmentIDResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.FBA_InboundShipment_GetPickList_ByTrackingNumberResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
     <None Include="Service References\OrderService\DataSync.OrderService.FBA_InboundShipment_GetResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
@@ -730,6 +751,9 @@
     <None Include="Service References\OrderService\DataSync.OrderService.Files_ReadFileResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.GenerateRandomSerialsResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
     <None Include="Service References\OrderService\DataSync.OrderService.Get10ProductsCoreInfoResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
@@ -758,6 +782,9 @@
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\OrderService\DataSync.OrderService.GetAllProductsResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.GetAllProductsWithFiltersResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\OrderService\DataSync.OrderService.GetAllProducts_DefinePageSizeResponse.datasource">
@@ -913,6 +940,9 @@
     <None Include="Service References\OrderService\DataSync.OrderService.GetOrderByIDResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.GetOrderDetailsResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
     <None Include="Service References\OrderService\DataSync.OrderService.GetOrderID_FromPackageIDResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
@@ -935,6 +965,9 @@
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\OrderService\DataSync.OrderService.GetProductConditionsResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.GetProductDetailsByEANResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\OrderService\DataSync.OrderService.GetProductDetailsResponse.datasource">
@@ -1210,7 +1243,55 @@
     <None Include="Service References\OrderService\DataSync.OrderService.KitAssemblyPrepSession.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.KitAssemblyPrepSession_AssembleResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.KitAssemblyPrepSession_Assemble_Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.KitAssemblyPrepSession_Assemble_WithSerialsResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.KitAssemblyPrepSession_CancelResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.KitAssemblyPrepSession_CreateResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
     <None Include="Service References\OrderService\DataSync.OrderService.KitAssemblyPrepSession_GetActiveResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.KitAssemblyPrepSession_GetAllResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.KitAssemblyPrepSession_GetCompletedResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.KitAssemblyPrepSession_GetDetailsResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.KitAssemblyPrepSession_GetDetails_Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.KitAssemblyPrepSession_GetKitSerialForComponentSerialResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.KitAssemblyPrepSession_GetKitSerialsResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.KitAssemblyPrepSession_GetWorkOrderResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.KitAssemblyPrepSession_GetWorkOrder_Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.KitAssemblyPrepSession_GetWorkOrder_TestResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.KitAssemblyPrepSession_UpdateQtyToAssembleResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.KitAssemblyPrepSession_UpdateQtyToAssemble_ReturnListResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\OrderService\DataSync.OrderService.KitAssemblyPrep_GetActiveAssemblyResponse.datasource">
@@ -1576,6 +1657,9 @@
     <None Include="Service References\OrderService\DataSync.OrderService.OrderData.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.OrderDetailsResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
     <None Include="Service References\OrderService\DataSync.OrderService.OrderDocument.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
@@ -1595,6 +1679,9 @@
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\OrderService\DataSync.OrderService.OrderNote.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.OrderNote_Delete_ByIdResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\OrderService\DataSync.OrderService.OrderPackage.datasource">
@@ -1622,6 +1709,9 @@
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\OrderService\DataSync.OrderService.Orders_AddMerchantNoteResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.Orders_AddMerchantNote_NewResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\OrderService\DataSync.OrderService.Orders_AddNewDocumentResponse.datasource">
@@ -1735,6 +1825,9 @@
     <None Include="Service References\OrderService\DataSync.OrderService.Orders_GetFilterOptions_AdvancedResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.Orders_GetGroupOnSpecificOrderDataByOrderIdResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
     <None Include="Service References\OrderService\DataSync.OrderService.Orders_GetGroupOnSpecificOrderDataResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
@@ -1742,6 +1835,9 @@
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\OrderService\DataSync.OrderService.Orders_GetOrderItemsNeedingSerialScanResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.Orders_GetOrderNotesResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\OrderService\DataSync.OrderService.Orders_GetOrderSourceAndCompanyResponse.datasource">
@@ -1949,6 +2045,12 @@
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\OrderService\DataSync.OrderService.Orders_UpdateItemSerialNumResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.Orders_UpdateNoteResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.Orders_UpdateNote_NewResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\OrderService\DataSync.OrderService.Orders_UpdateOrderItemsForReplacementsResponse.datasource">
@@ -2890,6 +2992,12 @@
     <None Include="Service References\OrderService\DataSync.OrderService.ProductKit_DisassembleResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.ProductKit_Disassemble_BySerialNumberResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.ProductKit_Disassemble_New2Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
     <None Include="Service References\OrderService\DataSync.OrderService.ProductKit_Disassemble_NewResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
@@ -2935,10 +3043,22 @@
     <None Include="Service References\OrderService\DataSync.OrderService.ProductNotes_AddResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.ProductNotes_Add_NewResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.ProductNotes_Delete_ByIdResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
     <None Include="Service References\OrderService\DataSync.OrderService.ProductNotes_ListResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.ProductNotes_List_NewResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
     <None Include="Service References\OrderService\DataSync.OrderService.ProductNoteType.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.ProductNote_UpdateResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\OrderService\DataSync.OrderService.ProductProblem.datasource">
@@ -3709,6 +3829,9 @@
     <None Include="Service References\OrderService\DataSync.OrderService.ShipBridgeStartupResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.ShipBridge_SerialScan_SettingUpgradeResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
     <None Include="Service References\OrderService\DataSync.OrderService.ShipBridge_StartupResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
@@ -3862,6 +3985,9 @@
     <None Include="Service References\OrderService\DataSync.OrderService.UpdatePnLOrdersAsExportedV2_PackageItemsResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.UpdatePnLOrdersAsExportedV2_SPResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
     <None Include="Service References\OrderService\DataSync.OrderService.UpdateProductDependencyResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
@@ -3884,6 +4010,12 @@
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\OrderService\DataSync.OrderService.UpdateRefundAsExportedResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.UpdateRelatedRecordAsQBExportedResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.UpdateRelatedRecordAsQBExported_SPResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\OrderService\DataSync.OrderService.UpdateReturnAsExportedResponse.datasource">

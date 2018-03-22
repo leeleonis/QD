@@ -662,9 +662,12 @@ namespace QDLogistics.Controllers
                 int[] packageIDs = pickList.Select(p => p.PackageID.Value).ToArray();
                 List<Packages> packageList = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.已出貨) && packageIDs.Contains(p.ID)).ToList();
 
+                List<Packages> test = packageList.Where(p => p.ShippingMethod.Equals(35)).ToList();
+
                 int[] methodIDs = packageList.Where(p => p.ShippingMethod != null).Select(p => p.ShippingMethod.Value).Distinct().ToArray();
                 var carrierList = ShippingMethod.GetAll(true).Where(m => methodIDs.Contains(m.ID)).Distinct().ToDictionary(m => m.ID, m => m.Carriers.Name);
-                var groupList = packageList.GroupBy(p => p.ShippingMethod).ToDictionary(p => p.Key != null && carrierList.ContainsKey(p.Key.Value) ? carrierList[p.Key.Value] : "", p => p);
+                var groupList = packageList.GroupBy(p => p.ShippingMethod != null && carrierList.ContainsKey(p.ShippingMethod.Value) ? carrierList[p.ShippingMethod.Value] : "", p => p)
+                    .ToDictionary(g => g.Key, g => g.ToList());
 
                 DateTime now = new TimeZoneConvert().ConvertDateTime(EnumData.TimeZone.TST);
                 DateTime noon = new DateTime(now.Year, now.Month, now.Day, 12, 0, 0);
@@ -767,7 +770,7 @@ namespace QDLogistics.Controllers
                             }
                             else
                             {
-                                MyHelp.Log("", null, string.Format("{0} 寄送失敗", mailTitle));
+                                MyHelp.Log("PickProduct", null, string.Format("{0} 寄送失敗", mailTitle));
                             }
                             break;
                         case "FedEx":
@@ -844,7 +847,7 @@ namespace QDLogistics.Controllers
                             }
                             else
                             {
-                                MyHelp.Log("", null, string.Format("{0} 寄送失敗", mailTitle));
+                                MyHelp.Log("PickProduct", null, string.Format("{0} 寄送失敗", mailTitle));
                             }
                             break;
                         default:

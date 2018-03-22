@@ -1,0 +1,11 @@
+ActionName : 同步1天訂單資料失敗
+Message : 可為 Null 的物件必須具有值。
+StackTrace : 於 System.ThrowHelper.ThrowInvalidOperationException(ExceptionResource resource)
+   於 System.Nullable`1.get_Value()
+   於 QDLogistics.Commons.SyncProcess.<>c__DisplayClass17_1.<Sync_Orders>b__4(Orders o) 於 C:\QD Project\Order Shipping System\QDLogistics\Commons\SyncProcess.cs: 行 107
+   於 System.Linq.Enumerable.Any[TSource](IEnumerable`1 source, Func`2 predicate)
+   於 QDLogistics.Commons.SyncProcess.Sync_Orders(Int32 day) 於 C:\QD Project\Order Shipping System\QDLogistics\Commons\SyncProcess.cs: 行 107
+Date : 2018/3/22 上午 09:58:25
+
+-----------------------------------------------------------------------------
+

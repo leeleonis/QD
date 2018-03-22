@@ -1624,32 +1624,6 @@ namespace QDLogistics.Controllers
         }
 
         [CheckSession]
-        public ActionResult CarrierOption()
-        {
-            Carriers = new GenericRepository<Carriers>(db);
-
-            Winit_API winit = new Winit_API();
-            List<object> deliveryWay = new List<object>();
-            foreach (var warehouse in winit.warehouseIDs)
-            {
-                deliveryWayData[] way = winit.getDeliveryWay(warehouse.Value).data.ToObject<deliveryWayData[]>();
-                deliveryWay.AddRange(way.Select(w => new { text = w.deliveryWay, value = int.Parse(w.deliveryID) }));
-            }
-
-            var data = new
-            {
-                carrier = Carriers.GetAll(true).Where(c => c.IsEnable == true).Select(c => new { text = c.Name, value = c.ID }).ToList(),
-                shippingMethod = new Dictionary<string, object>() {
-                    { "TWN", Enum.GetValues(typeof(EnumData.ShippingMethod)).Cast<EnumData.ShippingMethod>().Select(s => new { text = s.ToString(), value = (int)s }).ToList() },
-                    { "Winit", deliveryWay }
-                },
-                boxType = Enum.GetValues(typeof(EnumData.BoxType)).Cast<EnumData.BoxType>().Select(b => new { text = b.ToString(), value = (int)b }).ToList()
-            };
-
-            return Content(JsonConvert.SerializeObject(data), "appllication/json");
-        }
-
-        [CheckSession]
         public ActionResult ServiceData(int page = 1, int rows = 100)
         {
             Services = new GenericRepository<Services>(db);

@@ -77,11 +77,12 @@
           <Key>
             <PropertyRef Name="BoxID" />
           </Key>
+          <Property Name="IsEnable" Type="bit" Nullable="false" />
           <Property Name="BoxID" Type="nvarchar" MaxLength="50" Nullable="false" />
           <Property Name="SupplierBoxID" Type="nvarchar" MaxLength="50" />
           <Property Name="WITID" Type="nvarchar" MaxLength="50" />
           <Property Name="CarrierID" Type="int" Nullable="false" />
-          <Property Name="WharehouseID" Type="int" Nullable="false" />
+          <Property Name="WarehouseID" Type="int" Nullable="false" />
           <Property Name="BoxType" Type="tinyint" Nullable="false" />
           <Property Name="ShippingStatus" Type="tinyint" Nullable="false" />
           <Property Name="TrackingNumber" Type="nvarchar" MaxLength="50" />
@@ -271,6 +272,7 @@
           <Property Name="DeliveryNote" Type="nvarchar" MaxLength="150" />
           <Property Name="WinitNo" Type="nvarchar" MaxLength="50" />
           <Property Name="BoxID" Type="nvarchar" MaxLength="50" />
+          <Property Name="TagNo" Type="nvarchar" MaxLength="50" />
           <Property Name="FinalShippingFee" Type="decimal" Precision="18" Scale="2" />
           <Property Name="UploadTracking" Type="bit" Nullable="false" />
           <Property Name="TrackingNumber" Type="nvarchar" MaxLength="50" />
@@ -1208,6 +1210,7 @@
           <Property Name="DeliveryNote" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
           <Property Name="WinitNo" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="BoxID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="TagNo" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="FinalShippingFee" Type="Decimal" Precision="18" Scale="2" />
           <Property Name="UploadTracking" Type="Boolean" Nullable="false" DefaultValue="True" />
           <Property Name="TrackingNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
@@ -1663,11 +1666,12 @@
           <Key>
             <PropertyRef Name="BoxID" />
           </Key>
+          <Property Name="IsEnable" Type="Boolean" Nullable="false" />
           <Property Name="BoxID" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="SupplierBoxID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="WITID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="CarrierID" Type="Int32" Nullable="false" />
-          <Property Name="WharehouseID" Type="Int32" Nullable="false" />
+          <Property Name="WarehouseID" Type="Int32" Nullable="false" />
           <Property Name="BoxType" Type="Byte" Nullable="false" />
           <Property Name="ShippingStatus" Type="Byte" Nullable="false" />
           <Property Name="TrackingNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
@@ -1982,6 +1986,7 @@
           <EntitySetMapping Name="Packages">
             <EntityTypeMapping TypeName="QDLogisticsModel.Packages">
               <MappingFragment StoreEntitySet="Packages">
+                <ScalarProperty Name="TagNo" ColumnName="TagNo" />
                 <ScalarProperty Name="BoxID" ColumnName="BoxID" />
                 <ScalarProperty Name="ShippingMethod" ColumnName="ShippingMethod" />
                 <ScalarProperty Name="POInvoice" ColumnName="POInvoice" />
@@ -2234,12 +2239,13 @@
           <EntitySetMapping Name="Box">
             <EntityTypeMapping TypeName="QDLogisticsModel.Box">
               <MappingFragment StoreEntitySet="Box">
+                <ScalarProperty Name="WarehouseID" ColumnName="WarehouseID" />
+                <ScalarProperty Name="IsEnable" ColumnName="IsEnable" />
                 <ScalarProperty Name="Create_at" ColumnName="Create_at" />
                 <ScalarProperty Name="Note" ColumnName="Note" />
                 <ScalarProperty Name="TrackingNumber" ColumnName="TrackingNumber" />
                 <ScalarProperty Name="ShippingStatus" ColumnName="ShippingStatus" />
                 <ScalarProperty Name="BoxType" ColumnName="BoxType" />
-                <ScalarProperty Name="WharehouseID" ColumnName="WharehouseID" />
                 <ScalarProperty Name="CarrierID" ColumnName="CarrierID" />
                 <ScalarProperty Name="WITID" ColumnName="WITID" />
                 <ScalarProperty Name="SupplierBoxID" ColumnName="SupplierBoxID" />
