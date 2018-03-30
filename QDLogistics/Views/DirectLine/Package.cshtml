@@ -46,12 +46,16 @@
         <div class="row">
             <div class="action-button col-xs-2">
                 <div>
-                    <select class="form-control" id="select-method">
+                    <select class="form-control" id="select-type">
+                        @foreach (var type in Enum.GetValues(typeof(EnumData.DirectLine)).Cast<EnumData.DirectLine>())
+                        {
+                            <option value="@((byte)type)">@EnumData.DirectLineList()[type]</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <select class="form-control" id="select-typeMethod">
                         <option value="0">全部</option>
-                        @{ foreach (ShippingMethod method in methodList)
-                            {
-                                <option value="@method.ID">@method.Name</option>
-                            }}
                     </select>
                 </div>
                 <div>
@@ -74,24 +78,30 @@
                             <div class="col-sm-10" style="text-align:center; padding:0 5px 0 0;">
                                 <table class="table table-bordered text-center" id="info-box" style="margin:0;">
                                     <tr>
-                                        <td width="40%" rowspan="3">IDS Continental</td>
+                                        <td width="40%" id="directLineName" rowspan="3"></td>
                                         <td width="30%">Box ID:</td>
-                                        <td width="30%"></td>
+                                        <td width="30%" id="boxID"></td>
                                     </tr>
                                     <tr>
                                         <td>Carrier:</td>
-                                        <td></td>
+                                        <td class="no-padding">
+                                            <select class="form-control" id="select-method">
+                                                @{ foreach (ShippingMethod method in methodList)
+                                                    {
+                                                        <option value="@method.ID">@method.Name</option>
+                                                    }}
+                                            </select>
+                                        </td>
                                     </tr>
                                     <tr>
                                         <td>Box No.</td>
-                                        <td></td>
+                                        <td id="boxNo"></td>
                                     </tr>
                                 </table>
                             </div>
                             <div class="col-sm-2 no-padding">
-                                <button class="btn btn-default btn-sm btn-block" id="btn-save">儲存</button>
-                                <button class="btn btn-default btn-sm btn-block"" id="">下一部</button>
-                                <button class="btn btn-default btn-sm btn-block"" id="">打印Box</button>
+                                <button class="btn btn-default btn-sm btn-block" id="btn-boxSave">下一步</button>
+                                <button class="btn btn-default btn-sm btn-block">打印Box</button>
                             </div>
                         </div>
                         <div data-options="region:'center'">
@@ -103,7 +113,8 @@
                                         <th data-options="field:'ProductName',width:'35%',align:'center'">品名</th>
                                         <th data-options="field:'UPC',width:'13%',align:'center'">UPC</th>
                                         <th data-options="field:'TagNo',width:'13%',align:'center'">標籤號碼</th>
-                                        <th data-options="field:'Note',width:'18%',align:'center'">備註</th>
+                                        <th data-options="field:'Note',width:'13%',align:'center'">備註</th>
+                                        <th data-options="field:'InBox',width:'5%',align:'center'">裝箱</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
@@ -216,9 +227,10 @@
     <script src="~/signalr/hubs"></script>
     @Html.Raw(ViewBag.WCPScript)
     <script type="text/javascript">
-        var $methodSelect = $('#select-method'), $syncBtn = $('#btn-sync'), $pickBtn = $("#btn-pick"), $shipBtn = $("#btn-ship"), $enterBtn = $("#btn-enter"),
-            $pickWin = $('#win-pick'), $serialDialog = $('#dialog-serial'), $serialInput = $('#input-serial'), $orderDialog = $('#dialog-order'), $orderInput = $('#input-order'),
-            $boxInfo = $('#info-box'), $pickupTable = $('#table-pickup'), $boxTable = $('#table-box');
+        var directLineMethodList;
+        var $typeSelect = $('#select-type'), $typeMethodSelect = $('#select-typeMethod'), $methodSelect = $('#select-method'), $syncBtn = $('#btn-sync'), $pickBtn = $("#btn-pick"),
+            $shipBtn = $("#btn-ship"), $enterBtn = $("#btn-enter"), $pickWin = $('#win-pick'), $serialDialog = $('#dialog-serial'), $serialInput = $('#input-serial'),
+            $orderDialog = $('#dialog-order'), $orderInput = $('#input-order'), $boxInfo = $('#info-box'), $pickupTable = $('#table-pickup'), $boxTable = $('#table-box'), $boxSaveBtn = $("#btn-boxSave");
 
         var isSync = false, taskID = null, now = undefined;
 
@@ -226,14 +238,29 @@
             var conn = $.connection.apiServer;
             $.connection.hub.start().done(function () {
                 conn.server.register('@ViewData["adminName"]');
-                ProductSerialData.Get_Data();
+
+                var url = '@Url.Action("getDirectLineMethod", "directLine")';
+                ajaxUrl(url, 'get', {}).done(function (response) {
+                    if (response.status) {
+                        directLineMethodList = response.data;
+                        $typeSelect.trigger('change');
+                    } else {
+                        alert(response.message);
+                    }
+                });
             });
 
             conn.client.refreshOrderPickUp = function (response) {
                 ProductSerialData.Update_OrderList($.parseJSON(response));
             };
 
-            $methodSelect.change(function(){
+            $typeSelect.change(function () {
+                $typeMethodSelect.html($typeMethodSelect.find('option:first').clone());
+                $typeMethodSelect.append(setSelectOption(directLineMethodList[$typeSelect.val()]));
+                $typeMethodSelect.trigger('change');
+            });
+
+            $typeMethodSelect.change(function(){
                 ProductSerialData.Get_Data();
             });
 
@@ -241,17 +268,17 @@
                 if(isSync) return alert('目前尚有工作在執行中');
 
                 var url = "@Url.Action("checkPurchaseItem", "orderSync")";
-                ajaxData(url, 'get', {}).done(function (response) {
+                ajaxUrl(url, 'get', {}).done(function (response) {
                     if(response['status']) {
                         taskID = response['taskID'];
                         isSync = true;
 
                         url = "@Url.Action("checkTaskStatus", "orderSync")";
-                        ajaxData(url, 'get', { id: taskID }).done(function (response) {
+                        ajaxUrl(url, 'get', { id: taskID }).done(function (response) {
                             $('div#text-hint strong').html("工作" + response['message']);
 
                             var refreshId = setInterval(function() {
-                                ajaxData(url, 'get', { id: taskID }).done(function (response) {
+                                ajaxUrl(url, 'get', { id: taskID }).done(function (response) {
                                     $('div#text-hint strong').html("工作" + response['message']);
 
                                     if(!response['status']) {
@@ -275,8 +302,16 @@
             $shipBtn.click(function () {
                 if(!ProductSerialData.Is_Init()) return alert("尚未預載資料!");
 
+                ProductSerialData.Get_Box();
+
                 $serialDialog.dialog('open');
                 $serialInput.textbox('textbox').focus();
+            });
+
+            $boxSaveBtn.click(function () {
+                if (confirm("是否確定進行下一步?")) {
+                    ProductSerialData.Save_box();
+                }
             });
 
             $enterBtn.click(function () {
@@ -310,7 +345,7 @@
 
         function printPickUpList() {
             var url = '@Url.Action("printPickUpList", "ajax")';
-            ajaxData(url, 'post', { warehouseId:@route.warehouseId, adminId:@route.adminId }).done(function (response) {
+            ajaxUrl(url, 'post', { warehouseId:@route.warehouseId, adminId:@route.adminId }).done(function (response) {
                 if(response['status']){
                     print($.param({fileName: response['fileName'], filePath: response['filePath'], amount: response['amount']}, true));
                 }
@@ -319,16 +354,31 @@
             });
         }
 
+        function setSelectOption(optionList, value) {
+            var option = "";
+
+            if (!isEmpty(optionList) && optionList.length > 0) {
+                for (var i in optionList) {
+                    option += "<option value='" + optionList[i]["value"] + "' " + (!isEmpty(value) && optionList[i]["value"] == value ? "selected" : "") + ">" + optionList[i]["text"] + "</option>";
+                }
+            }
+
+            return option;
+        }
+
         function isEmpty(value) {
             return (value == undefined) || (value == null) || (value == "");
         }
 
-        function ajaxData(url, type, data) {
+        function ajaxUrl(url, type, data) {
+            type = !isEmpty(type) ? type : {};
+            data = !isEmpty(data) ? data : {};
+
             return $.ajax({
                 url: url,
                 type: type,
                 data: data,
-                dataType: 'json'
+                dataType: "json"
             });
         }
 
@@ -339,11 +389,11 @@
         var ProductSerialData = function () {
             var isInit = false, needSerial, orderChangeList = [], boxOrderList = { rows: [] };
             var groupList, productList, serialList, fileList;
-            var gb_OrderID, gb_PackageID;
+            var gb_OrderID, gb_PackageID, boxInfo;
 
             var init = function (){
                 var url = '@Url.Action("getOrderSerialData", "directLine")';
-                ajaxData(url, 'get', {methodID: $methodSelect.val()}).done(function(response){
+                ajaxUrl(url, 'get', { type: $typeSelect.val(), methodID: $typeMethodSelect.val()}).done(function(response){
                     if(response['status']){
                         groupList = response['data']['groupList'];
                         productList = response['data']['productList'];
@@ -356,6 +406,31 @@
                 orderLocked();
                 orderChangeList = [];
             };
+
+            var getBoxData = function () {
+                var url = '@Url.Action("getCurrentBox", "directLine")';
+                ajaxUrl(url, 'get', { type: $typeSelect.val() }).done(function (response) {
+                    if (response.status) {
+                        boxInfo = response.data.info;
+
+                        $('#directLineName').html($typeSelect.find('option:selected').html());
+                        $('#boxID').html(boxInfo.BoxID);
+                        $('#select-method').find('option[value=' + boxInfo.FirstMileMethod + ']').prop('selected', true);
+                        $('#boxNo').html(boxInfo.BoxNo);
+
+                        if (response.data.list.length > 0) {
+                            var list = response.data.list;
+
+                            list.forEach(function (value, i) {
+                                value.InBox = "<img src='../content/img/" + (value.InBox ? "checked" : "error") + ".png' runat='server' style='width: auto; height: 15px;'>";
+                                boxOrderList.rows.push(value);
+                            });
+
+                            $boxTable.datagrid('loadData', boxOrderList);
+                        }
+                    }
+                });
+            }
 
             var checkSerial = function(serial){
                 var productId, order, serialNumber;
@@ -434,7 +509,7 @@
                         }
                     }
                 }
-                
+
                 if (isEmpty(gb_OrderID) || isEmpty(gb_PackageID)) orderLocked(pData.OrderID, pData.PackageID);
 
                 if (product.data.IsPicked) {
@@ -476,15 +551,15 @@
 
             function updatePicked(pData, order, retry) {
                 var data = new FormData();
-                var picked = new Array(), serial = new Object();
+                var picked = new Array(), serials = new Object();
 
                 for(var itemID in order[pData.PackageID]){
                     picked.push(order[pData.PackageID][itemID].data);
-                    serial[itemID] = order[pData.PackageID][itemID].serial;
+                    serials[itemID] = order[pData.PackageID][itemID].serial;
                 }
 
-                @*var url = '@Url.Action("updatePicked", "ajax")';
-                ajaxData(url, 'post', { picked: picked, serial: serial }).done(function(response){
+                var url = '@Url.Action("orderPicked", "directLine")';
+                ajaxUrl(url, 'post', { boxID: boxInfo.BoxID, picked: picked, serials: serials }).done(function(response){
                     if(response['status']) {
                         if(retry) error('訂單【' + gb_OrderID + '】更新失敗，資料已重新寄送!');
                         orderLocked();
@@ -493,7 +568,7 @@
                     }
                 }).fail(function(jqXHR, textStatus, errorThrown) {
                     updatePicked(pData, order, true);
-                });*@
+                });
                 orderLocked();
             }
 
@@ -570,7 +645,7 @@
                         data.total++;
                     }
                 }
-                
+
                 $pickupTable.datagrid('loadData', data);
             }
 
@@ -583,6 +658,7 @@
                     for (var i = 1; i <= product.Qty; i++) {
                         boxOrderList.rows.push({
                             OrderID: product.OrderID, PackageID: product.PackageID, ProductID: product.ProductID, ProductName: product.ProductName, UPC: product.UPC, TagNo: product.TagNo, Note: product.Note,
+                            InBox: "<img src='../content/img/" + (product.InBox ? "checked" : "error") + ".png' runat='server' style='width: auto; height: 15px;'>"
                         });
                     }
                 }
@@ -603,6 +679,7 @@
                     return isInit;
                 },
                 Get_Data: init,
+                Get_Box: getBoxData,
                 Check_Serial: checkSerial,
                 Refresh_Page: function () {
                     if (!confirm("是否確定要關閉?")) return false;
@@ -616,7 +693,7 @@
                         deferred.resolve(true);
                     }else{
                         var url = '@Url.Action("PickOrder", "ajax")';
-                        ajaxData(url, 'get', { orderID: orderID, warehouseId: @route.warehouseId }).done(function (response) {
+                        ajaxUrl(url, 'get', { orderID: orderID, warehouseId: @route.warehouseId }).done(function (response) {
                             if(response['status']){
                                 var data = response['data'];
 
@@ -648,6 +725,18 @@
                 },
                 Update_OrderList: function(order) {
                     orderChangeList.push(order);
+                },
+                Save_box: function () {
+                    if (!isEmpty(boxInfo)) {
+                        var url = '@Url.Action("saveBox", "directLine")';
+                        ajaxUrl(url, 'post', { boxID: boxInfo.BoxID, methodID: $methodSelect.val() }).done(function (response) {
+                            if (response.status) {
+                                location.href = '@Url.Action("package", "directLine")';
+                            } else {
+                                alert(response.message);
+                            }
+                        });
+                    }
                 }
             };
         }();

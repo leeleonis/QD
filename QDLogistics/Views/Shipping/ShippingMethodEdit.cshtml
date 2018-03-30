@@ -87,6 +87,14 @@
                                                     <input type="text" class="form-control" id="Name" name="Name" value="@Model.Name">
                                                 </div>
                                             </div>
+                                            
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label">DL廠商</label>
+
+                                                <div class="col-sm-9 col-lg-4">
+                                                    @Html.DropDownListFor(Model => Model.DirectLine, (SelectList)ViewData["directLineSelect"], new Dictionary<string, object>() { { "class", "form-control" } })
+                                                </div>
+                                            </div>
 
                                             <div class="form-group">
                                                 <label class="col-sm-2 control-label">運輸商</label>

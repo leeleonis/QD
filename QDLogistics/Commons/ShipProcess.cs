@@ -28,6 +28,7 @@ namespace QDLogistics.Commons
 
         public bool isSplitShip;
         public bool isDropShip;
+        public bool isDirectLine;
 
         private Warehouses warehouse;
 
@@ -40,17 +41,20 @@ namespace QDLogistics.Commons
         {
             this.order = package.Orders;
             this.package = package;
-            this.isSplitShip = order.Packages.Count(p => p.IsEnable == true) >= 2;
-            this.warehouse = package.Items.Where(i => i.IsEnable == true).First().ShipWarehouses;
+            this.isSplitShip = order.Packages.Count(p => p.IsEnable.Value) >= 2;
+            this.warehouse = package.Items.Where(i => i.IsEnable.Value).First().ShipWarehouses;
             this.isDropShip = warehouse.WarehouseType.Equals((int)OrderService.WarehouseTypeType.DropShip);
+            this.isDirectLine = package.Method.IsDirectLine;
         }
 
         public ShipResult Dispatch()
         {
             ShipResult result = new ShipResult(false);
 
-            if (isDropShip) return DropShip();
+            if (isDirectLine) DirectLine();
 
+            if (isDropShip) return DropShip();
+            
             switch (warehouse.Name)
             {
                 case "TWN":
@@ -73,6 +77,11 @@ namespace QDLogistics.Commons
             }
 
             return result;
+        }
+
+        private void DirectLine()
+        {
+            package.TagNo = string.Format("Label-{0}", package.OrderID);
         }
 
         private ShipResult DropShip()
@@ -299,7 +308,7 @@ namespace QDLogistics.Commons
                 string[] productType = package.Items.Where(i => i.IsEnable == true).Select(i => i.Skus.ProductType.ChtName).Distinct().ToArray();
                 sheet.GetRow(26).GetCell(6).SetCellValue(string.Join(", ", productType));
 
-                string[] brandName = package.Items.Where(i => i.IsEnable == true).Select(i => i.Skus.Manufacturers.ManufacturerName).Distinct().ToArray();
+                string[] brandName = package.Items.Where(i => i.IsEnable.Value && !i.Skus.Brand.Equals(0)).Select(i => i.Skus.Manufacturers.ManufacturerName).Distinct().ToArray();
                 sheet.GetRow(28).GetCell(brandName.Any() ? 8 : 4).SetCellValue("✔");
                 sheet.GetRow(28).GetCell(11).SetCellValue(string.Join(", ", brandName));
 

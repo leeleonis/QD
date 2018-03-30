@@ -19,6 +19,7 @@ namespace QDLogistics.Models.Object
         public Nullable<int> StatusCode { get; set; }
         public Nullable<bool> RushOrder { get; set; }
         public Nullable<bool> UploadTracking { get; set; }
+        public Nullable<bool> InBox { get; set; }
         public string Comment { get; set; }
 
         public Dictionary<string, string[]> Serials { get; set; }

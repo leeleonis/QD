@@ -64,7 +64,11 @@ namespace QDLogistics.Controllers
             Carriers = new GenericRepository<Carriers>(db);
             IEnumerable<Carriers> carrierList = Carriers.GetAll(true).Where(c => c.IsEnable).OrderBy(c => c.ID);
 
+            List<object> directLineSelect = new List<object>() { new { text = "無", value = (byte)0 } };
+            directLineSelect.AddRange(Enum.GetValues(typeof(EnumData.DirectLine)).Cast<EnumData.DirectLine>().Select(t => new { text = EnumData.DirectLineList()[t], value = (byte)t }).ToList());
+
             ViewData["carrierSelect"] = new SelectList(carrierList, "Id", "name", method.CarrierID);
+            ViewData["directLineSelect"] = new SelectList(directLineSelect.AsEnumerable(), "value", "text", method.DirectLine);
 
             ViewBag.WCPScript = WebClientPrint.CreateScript(Url.Action("ProcessRequest", "WebClientPrintAPI", null, HttpContext.Request.Url.Scheme), Url.Action("PrintFile", "File", null, HttpContext.Request.Url.Scheme), HttpContext.Session.SessionID);
             return View(method);

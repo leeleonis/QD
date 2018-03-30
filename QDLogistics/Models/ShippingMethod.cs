@@ -28,6 +28,7 @@ namespace QDLogistics.Models
         public Nullable<int> CarrierID { get; set; }
         public Nullable<int> MethodType { get; set; }
         public Nullable<int> BoxType { get; set; }
+        public int DirectLine { get; set; }
         public string PrinterName { get; set; }
         public Nullable<bool> IsExport { get; set; }
         public Nullable<bool> IsBattery { get; set; }

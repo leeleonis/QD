@@ -17,6 +17,7 @@ namespace QDLogistics.Models
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public Box()
         {
+            this.BoxNo = 1;
             this.Packages = new HashSet<Packages>();
         }
     
@@ -24,10 +25,13 @@ namespace QDLogistics.Models
         public string BoxID { get; set; }
         public string SupplierBoxID { get; set; }
         public string WITID { get; set; }
-        public int CarrierID { get; set; }
-        public int WarehouseID { get; set; }
+        public int DirectLine { get; set; }
+        public int FirstMileMethod { get; set; }
+        public int WarehouseFrom { get; set; }
+        public int WarehouseTo { get; set; }
         public byte BoxType { get; set; }
         public byte ShippingStatus { get; set; }
+        public int BoxNo { get; set; }
         public string TrackingNumber { get; set; }
         public string Note { get; set; }
         public System.DateTime Create_at { get; set; }

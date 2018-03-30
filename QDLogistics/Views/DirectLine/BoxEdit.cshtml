@@ -3,6 +3,8 @@
 @model Box
 
 @{ 
+    TimeZoneConvert timeZoneConvert = new TimeZoneConvert();
+    EnumData.TimeZone TimeZone = MyHelp.GetTimeZone((int)Session["TimeZone"]);
     List<ActionLog> logList = (List<ActionLog>)ViewBag.logList;
 }
 
@@ -38,7 +40,7 @@
                             <td>To：</td>
                             <td></td>
                             <td>Carrier：</td>
-                            <td></td>
+                            <td>@ViewData["Carrier"]</td>
                         </tr>
                         <tr>
                             <td>SC WIT ID：</td>
@@ -53,7 +55,7 @@
                     </table>
                 </div>
                 <div class="col-xs-6">
-                    <textarea class="form-control" rows="11" readonly>@string.Join("\n", logList.Select(log => log.ActionName))</textarea>
+                    <textarea class="form-control" rows="11">@string.Join("\n", logList.Select(log => string.Format("{0} On:{1} {2}", new string[] { log.ActionName, timeZoneConvert.InitDateTime(log.CreateDate.Value, EnumData.TimeZone.UTC).ConvertDateTime(TimeZone).ToString("MM/dd/yyyy hh:mm tt"), log.AdminName })))</textarea>
                 </div>
             </div>
         </div>
@@ -92,7 +94,7 @@
                 idField: "PackageID",
                 url: "@Url.Action("getBoxOrderData", "directLine")",
                 queryParams: {
-                    BoxID: '@Model.BoxID'
+                    boxID: '@Model.BoxID'
                 },
                 width: "100%",
                 height: window.screen.availHeight - 410,

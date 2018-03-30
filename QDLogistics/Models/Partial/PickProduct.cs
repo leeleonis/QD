@@ -18,6 +18,15 @@ namespace QDLogistics.Models
             return this;
         }
 
+        public bool InBox { get; set; }
+
+        public PickProduct SetInBox(bool inBox)
+        {
+            this.InBox = inBox;
+
+            return this;
+        }
+
         public string TagNo { get; set; }
 
         public PickProduct SetTagNo(string tagNo)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Entity.Core.Objects;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Hosting;
 using System.Web.Mvc;
@@ -28,6 +29,8 @@ namespace QDLogistics.Controllers
         private IRepository<Box> Box;
         private IRepository<Warehouses> Warehouses;
         private IRepository<ShippingMethod> Method;
+        private IRepository<PickProduct> PickProduct;
+        private IRepository<SerialNumbers> SerialNumbers;
 
         public DirectLineController()
         {
@@ -43,19 +46,20 @@ namespace QDLogistics.Controllers
         [CheckSession]
         public ActionResult Package()
         {
-            int warehouseId;
+            int warehouseID;
             List<ShippingMethod> MethodList = new List<ShippingMethod>();
 
-            if (int.TryParse(Session["warehouseId"].ToString(), out warehouseId))
+            if (int.TryParse(Session["warehouseId"].ToString(), out warehouseID))
             {
                 Warehouses = new GenericRepository<Warehouses>(db);
 
-                Warehouses warehouse = Warehouses.Get(warehouseId);
+                Warehouses warehouse = Warehouses.Get(warehouseID);
                 if (warehouse != null && !string.IsNullOrEmpty(warehouse.CarrierData))
                 {
-                    Dictionary<string, bool> MethodData = JsonConvert.DeserializeObject<Dictionary<string, bool>>(warehouse.CarrierData);
-                    string[] MethodIDs = MethodData.Where(mData => mData.Value).Select(mData => mData.Key).ToArray();
-                    MethodList = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && m.IsDirectLine && MethodIDs.Contains(m.ID.ToString())).ToList();
+                    Method = new GenericRepository<ShippingMethod>(db);
+
+                    Dictionary<int, bool> methodData = JsonConvert.DeserializeObject<Dictionary<int, bool>>(warehouse.CarrierData);
+                    MethodList = Method.GetAll(true).Where(m => m.IsEnable && methodData.Keys.Contains(m.ID) && methodData[m.ID]).ToList();
                 }
             }
 
@@ -94,9 +98,10 @@ namespace QDLogistics.Controllers
             Box box = Box.Get(id);
 
             if (box == null) return RedirectToAction("delivery", "directLine");
-            
-            //ViewBag.logList = db.ActionLog.AsNoTracking().Where(log => log.TableName.Equals("Box") && log.TargetID.Equals(box.BoxID)).OrderBy(log => log.CreateDate).ToList();
-            ViewBag.logList = db.ActionLog.AsNoTracking().Where(log => log.TableName.Equals("Orders") && log.TargetID.Equals("5455634")).OrderBy(log => log.CreateDate).ToList();
+
+            ViewData["Carrier"] = db.ShippingMethod.AsNoTracking().First(m => m.IsEnable && m.ID.Equals(box.FirstMileMethod)).Carriers.Name;
+
+            ViewBag.logList = db.ActionLog.AsNoTracking().Where(log => log.TableName.Equals("Box") && log.TargetID.Equals(box.BoxID)).OrderBy(log => log.CreateDate).ToList();
 
             return View(box);
         }
@@ -224,7 +229,7 @@ namespace QDLogistics.Controllers
                 dateTo = new TimeZoneConvert(dateTo, MyHelp.GetTimeZone((int)Session["TimeZone"])).ConvertDateTime(EnumData.TimeZone.EST);
                 BoxFilter = BoxFilter.Where(b => DateTime.Compare(b.Create_at, dateFrom) >= 0 && DateTime.Compare(b.Create_at, dateTo) < 0);
             }
-            if (!filter.Warehouse.Equals(null)) BoxFilter = BoxFilter.Where(b => b.WarehouseID.Equals(filter.Warehouse.Value));
+            if (!filter.Warehouse.Equals(null)) BoxFilter = BoxFilter.Where(b => b.WarehouseFrom.Equals(filter.Warehouse.Value));
             if (!string.IsNullOrEmpty(filter.WITID)) BoxFilter = BoxFilter.Where(b => b.WITID.Contains(filter.WITID));
             if (!string.IsNullOrEmpty(filter.Tracking)) BoxFilter = BoxFilter.Where(b => b.TrackingNumber.Contains(filter.Tracking));
             if (!filter.Status.Equals(null)) BoxFilter = BoxFilter.Where(b => b.ShippingStatus.Equals(filter.Status.Value));
@@ -239,12 +244,13 @@ namespace QDLogistics.Controllers
                 total = results.Count();
                 results = results.OrderByDescending(b => b.Create_at).Skip(start).Take(length).ToList();
 
-                Warehouses = new GenericRepository<Warehouses>(db);
-
                 TimeZoneConvert timeZoneConvert = new TimeZoneConvert();
                 EnumData.TimeZone TimeZone = MyHelp.GetTimeZone((int)Session["TimeZone"]);
 
-                Dictionary<int, string> warehouses = db.Warehouses.AsNoTracking().Where(w => w.IsSellable.Value).ToDictionary(w => w.ID, w => w.Name);
+                string[] boxIDs = results.Select(b => b.BoxID).ToArray();
+                Dictionary<string, List<Items>> itemGroup = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && boxIDs.Contains(p.BoxID)).ToList()
+                    .GroupJoin(db.Items.AsNoTracking().Where(i => i.IsEnable.Value), p => p.ID, i => i.PackageID, (p, i) => new { package = p, items = i.ToList() })
+                    .GroupBy(data => data.package.BoxID).ToDictionary(group => group.Key, group => group.SelectMany(data => data.items).ToList());
 
                 dataList.AddRange(results.Select(data => new
                 {
@@ -252,8 +258,8 @@ namespace QDLogistics.Controllers
                     data.SupplierBoxID,
                     CreateDate = timeZoneConvert.InitDateTime(data.Create_at, EnumData.TimeZone.UTC).ConvertDateTime(TimeZone).ToString("MM/dd/yyyy<br />hh:mm tt"),
                     WharehouseTO = "",
-                    BoxQty = 0,
-                    TotalWeight = 0,
+                    BoxQty = data.BoxNo,
+                    TotalWeight = itemGroup[data.BoxID].Sum(i => i.Qty * ((float)i.Skus.Weight / 1000)),
                     data.WITID,
                     Tracking = data.TrackingNumber,
                     Status = Enum.GetName(typeof(EnumData.DirectLineStatus), data.ShippingStatus),
@@ -265,13 +271,13 @@ namespace QDLogistics.Controllers
             return Json(new { total, rows = dataList }, JsonRequestBehavior.AllowGet);
         }
 
-        public ActionResult GetBoxOrderData(string BoxID, int page = 1, int rows = 100)
+        public ActionResult GetBoxOrderData(string boxID, int page = 1, int rows = 100)
         {
             int total = 0;
             List<object> dataList = new List<object>();
 
             var OrderFilter = db.Orders.AsNoTracking();
-            var PackageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.BoxID.Equals(BoxID));
+            var PackageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.BoxID.Equals(boxID));
             var ItemFilter = db.Items.AsNoTracking().Where(i => i.IsEnable.Value);
 
             var results = PackageFilter.ToList()
@@ -357,29 +363,52 @@ namespace QDLogistics.Controllers
             return Json(result, JsonRequestBehavior.AllowGet);
         }
 
-        public ActionResult GetOrderSerialData(int methodID)
+        public ActionResult GetDirectLineMethod()
         {
             AjaxResult result = new AjaxResult();
 
-            int warehouseId = int.Parse(Session["warehouseId"].ToString());
+            int warehouseID;
+            if (int.TryParse(Session["warehouseId"].ToString(), out warehouseID))
+            {
+                Warehouses = new GenericRepository<Warehouses>(db);
+
+                Warehouses warehouse = Warehouses.Get(warehouseID);
+                if (warehouse != null && !string.IsNullOrEmpty(warehouse.CarrierData))
+                {
+                    Method = new GenericRepository<ShippingMethod>(db);
+
+                    Dictionary<int, bool> methodData = JsonConvert.DeserializeObject<Dictionary<int, bool>>(warehouse.CarrierData);
+                    result.data = Method.GetAll(true).Where(m => m.IsEnable && m.IsDirectLine && methodData.Keys.Contains(m.ID) && methodData[m.ID])
+                        .GroupBy(m => m.DirectLine).ToDictionary(g => g.Key.ToString(), g => g.Select(m => new { text = m.Name, value = m.ID }).ToList());
+                }
+            }
+
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
+        public ActionResult GetOrderSerialData(int type, int methodID)
+        {
+            AjaxResult result = new AjaxResult();
+
+            int warehouseID = int.Parse(Session["warehouseId"].ToString());
 
             string orderSelect = string.Format("SELECT * FROM Orders WHERE StatusCode <> {0}", (int)OrderStatusCode.Completed);
-            string itemSelect = string.Format("SELECT * FROM Items WHERE IsEnable = 1 AND ShipFromWarehouseID = {0}", warehouseId);
-            string pickSelect = string.Format("SELECT * FROM PickProduct WHERE IsEnable = 1 AND IsPicked = 0 AND WarehouseID = {0}", warehouseId);
+            string itemSelect = string.Format("SELECT * FROM Items WHERE IsEnable = 1 AND ShipFromWarehouseID = {0}", warehouseID);
+            string pickSelect = string.Format("SELECT * FROM PickProduct WHERE IsEnable = 1 AND IsPicked = 0 AND WarehouseID = {0}", warehouseID);
 
             var packageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨));
             if (!methodID.Equals(0)) packageFilter = packageFilter.Where(p => p.ShippingMethod.Value.Equals(methodID));
 
             ObjectContext context = new ObjectContext("name=QDLogisticsEntities");
-            var ProductList = packageFilter.ToList()
+            var ProductList = packageFilter
+                .Join(db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && m.IsDirectLine && m.DirectLine.Equals(type)), p => p.ShippingMethod.Value, m => m.ID, (p, m) => p).ToList()
                 .Join(context.ExecuteStoreQuery<Items>(itemSelect).ToList(), p => p.ID, i => i.PackageID, (p, i) => p)
                 .Join(context.ExecuteStoreQuery<Orders>(orderSelect).ToList(), p => p.OrderID, o => o.OrderID, (package, order) => new { order, package })
                 .Join(context.ExecuteStoreQuery<PickProduct>(pickSelect).ToList(), op => op.package.ID, pk => pk.PackageID, (op, pick) => new { op.order, op.package, pick }).Distinct()
                 .OrderBy(data => data.package.Qty).OrderBy(data => data.order.TimeOfOrder).OrderByDescending(data => data.order.RushOrder).ToList();
 
             string[] productIDs = ProductList.Select(p => p.pick.ProductID).Distinct().ToArray();
-            //var productList = ProductList.Select(p => p.pick.SetTagNo(p.package.TagNo).SetNote(p.package.Comment))
-            var productList = ProductList.Select(p => p.pick.SetTagNo("TagTest-" + p.order.OrderID).SetNote("NoteTest-" + p.order.OrderID))
+            var productList = ProductList.Select(p => p.pick.SetInBox(p.package.InBox.Value).SetTagNo(p.package.TagNo).SetNote(p.package.Comment))
                 .GroupBy(p => p.ProductID).ToDictionary(group => group.Key.ToString(), group => group.ToDictionary(p => p.ItemID.ToString()));
 
             List<SerialNumbers> itemSerials = db.SerialNumbers.AsNoTracking().Where(s => productIDs.Contains(s.ProductID)).ToList();
@@ -396,14 +425,14 @@ namespace QDLogistics.Controllers
                 pp => new { data = pp, serial = itemSerials.Where(sn => sn.OrderItemID == pp.ItemID).Select(sn => sn.SerialNumber.Trim()).ToArray() })))
                 .GroupBy(o => o.Value.Sum(p => p.Value.Sum(pp => pp.Value.data.Qty)) > 1).ToDictionary(g => g.Key ? "Multiple" : "Single", g => g.ToDictionary(o => o.Key.ToString(), o => o.Value));
 
-            var fileList = ProductList.Select(p => p.package).Distinct().ToDictionary(p => p.ID.ToString(), p => getFileData(p));
+            var fileList = ProductList.Select(p => p.package).Distinct().ToDictionary(p => p.ID.ToString(), p => GetFileData(p));
 
             result.data = new { productList, groupList, serialList, fileList };
 
             return Json(result, JsonRequestBehavior.AllowGet);
         }
 
-        private object getFileData(Packages package)
+        private object GetFileData(Packages package)
         {
             string[] fileName = new string[2];
             string[] filePath = new string[2];
@@ -439,6 +468,201 @@ namespace QDLogistics.Controllers
             string printerName = package.Method.PrinterName;
 
             return new { fileName, filePath, amount, printerName };
+        }
+
+        public ActionResult GetCurrentBox(int type)
+        {
+            AjaxResult result = new AjaxResult();
+
+            int warehouseID;
+            if (int.TryParse(Session["warehouseId"].ToString(), out warehouseID))
+            {
+                Box = new GenericRepository<Box>(db);
+
+                var BoxFilter = Box.GetAll(true).Where(b => b.IsEnable && b.DirectLine.Equals(type));
+                //if (!methodID.Equals(0))
+                //{
+                //    BoxFilter = BoxFilter.Join(db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.ShippingMethod.Value.Equals(methodID)), b => b.BoxID, p => p.BoxID, (b, p) => b);
+                //}
+
+                Box box = BoxFilter.FirstOrDefault(b => b.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.未發貨));
+                if (box == null)
+                {
+                    TimeZoneConvert timeZoneConvert = new TimeZoneConvert();
+                    EnumData.TimeZone TimeZone = MyHelp.GetTimeZone((int)Session["TimeZone"]);
+                    string boxID = string.Format("{0}-{1}", Enum.GetName(typeof(EnumData.DirectLine), type), timeZoneConvert.ConvertDateTime(TimeZone).ToString("yyyyMMdd"));
+                    int count = Box.GetAll(true).Count(b => b.IsEnable && b.DirectLine.Equals(type) && b.BoxID.Contains(boxID)) + 1;
+                    byte[] Byte = BitConverter.GetBytes(count);
+                    Byte[0] += 64;
+                    box = new Box()
+                    {
+                        IsEnable = true,
+                        BoxID = string.Format("{0}-{1}", boxID, System.Text.Encoding.ASCII.GetString(Byte.Take(1).ToArray())),
+                        DirectLine = type,
+                        BoxType = (byte)EnumData.DirectLineBoxType.DirectLine,
+                        WarehouseFrom = warehouseID,
+                        Create_at = timeZoneConvert.Utc
+                    };
+                    Box.Create(box);
+                    Box.SaveChanges();
+
+                    MyHelp.Log("Box", box.BoxID, string.Format("Box【{0}】建立完成", box.BoxID), Session);
+                }
+
+                List<PickProduct> pickList = box.Packages.Where(p => p.IsEnable.Value)
+                    .Join(db.PickProduct.AsNoTracking().Where(pick => pick.IsEnable), p => p.ID, pick => pick.PackageID.Value, (p, pick) => pick.SetTagNo(p.TagNo).SetNote(p.Comment).SetInBox(p.InBox.Value)).ToList();
+                result.data = new
+                {
+                    info = new { box.BoxID, box.FirstMileMethod, box.BoxNo },
+                    list = pickList
+                };
+            }
+
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
+        public ActionResult OrderPicked(string boxID, List<PickProduct> picked, Dictionary<string, string[]> serials, int reTry = 0)
+        {
+            AjaxResult result = new AjaxResult();
+
+            Packages = new GenericRepository<Packages>(db);
+            PickProduct = new GenericRepository<PickProduct>(db);
+            SerialNumbers = new GenericRepository<SerialNumbers>(db);
+
+            Packages package = Packages.Get(picked.First().PackageID.Value);
+
+            try
+            {
+                MyHelp.Log("Orders", package.OrderID, string.Format("訂單【{0}】出貨", package.OrderID));
+
+                if (package.Orders.StatusCode != (int)OrderStatusCode.InProcess)
+                {
+                    reTry = 3;
+                    throw new Exception(string.Format("訂單【{0}】無法出貨因為並非InProcess的狀態", package.OrderID));
+                }
+
+                if (package.ProcessStatus != (byte)EnumData.ProcessStatus.待出貨)
+                {
+                    reTry = 3;
+                    throw new Exception(string.Format("訂單【{0}】無法出貨因為並非待出貨的狀態", package.OrderID));
+                }
+
+                int AdminId = 0;
+                int.TryParse(Session["AdminId"].ToString(), out AdminId);
+                DateTime PickUpDate = new TimeZoneConvert().Utc;
+
+                foreach (PickProduct pick in picked)
+                {
+                    pick.IsMail = false;
+                    pick.PickUpDate = PickUpDate;
+                    pick.PickUpBy = AdminId;
+                    PickProduct.Update(pick, pick.ID);
+                }
+
+                package.BoxID = boxID;
+                package.ProcessStatus = (int)EnumData.ProcessStatus.已出貨;
+                Packages.Update(package, package.ID);
+
+                int itemID;
+                List<SerialNumbers> serialList = package.Items.Where(i => i.IsEnable.Value).SelectMany(i => i.SerialNumbers).ToList();
+                foreach (var sn in serials)
+                {
+                    if (int.TryParse(sn.Key, out itemID))
+                    {
+                        foreach (var serialNumber in sn.Value)
+                        {
+                            if (!serialList.Any(s => s.OrderItemID.Equals(itemID) && s.SerialNumber.Equals(serialNumber)))
+                            {
+                                SerialNumbers.Create(new SerialNumbers
+                                {
+                                    OrderID = package.OrderID,
+                                    ProductID = package.Items.First(i => i.ID == itemID).ProductID,
+                                    SerialNumber = serialNumber,
+                                    OrderItemID = itemID,
+                                    KitItemID = 0
+                                });
+                            }
+                        }
+                    }
+                }
+
+                Packages.SaveChanges();
+
+                using (Hubs.ServerHub server = new Hubs.ServerHub())
+                    server.BroadcastOrderChange(package.OrderID.Value, EnumData.OrderChangeStatus.已完成出貨);
+
+                MyHelp.Log("Orders", package.OrderID, string.Format("訂單【{0}】出貨完成", package.OrderID));
+            }
+            catch (Exception e)
+            {
+                ResetShippedData(package, picked, serials);
+
+                if (reTry < 2)
+                {
+                    MyHelp.Log("", null, string.Format("訂單【{0}】第{1}次重新出貨", package.OrderID, reTry + 1));
+                    return OrderPicked(boxID, picked, serials, reTry + 1);
+                }
+
+                MyHelp.ErrorLog(e, string.Format("訂單【{0}】出貨失敗", package.OrderID), package.OrderID.ToString());
+                result.message = string.Format("訂單【{0}】出貨失敗，錯誤：", package.OrderID) + (e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
+                result.status = false;
+            }
+
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
+        private void ResetShippedData(Packages package, List<PickProduct> picked, Dictionary<string, string[]> serials)
+        {
+            MyHelp.Log("", null, string.Format("訂單【{0}】出貨狀態重置", package.OrderID));
+
+            foreach (PickProduct data in picked)
+            {
+                data.IsPicked = false;
+                data.QtyPicked = 0;
+                PickProduct.Update(data, data.ID);
+            }
+
+            var serialArray = serials.SelectMany(s => s.Value).ToArray();
+            foreach (var ss in SerialNumbers.GetAll().Where(s => s.OrderID.Equals(package.OrderID) && serialArray.Contains(s.SerialNumber)))
+            {
+                SerialNumbers.Delete(ss);
+            };
+
+            package.ProcessStatus = (int)EnumData.ProcessStatus.待出貨;
+            Packages.Update(package, package.ID);
+            Packages.SaveChanges();
+        }
+
+        public ActionResult SaveBox(string boxID, int methodID)
+        {
+            AjaxResult result = new AjaxResult();
+
+            Box = new GenericRepository<Box>(db);
+
+            Box box = Box.Get(boxID);
+
+            try
+            {
+                if (box == null) throw new Exception("Not found box!");
+
+                MyHelp.Log("box", box.BoxID, string.Format("Box【{0}】儲存資料", box.BoxID), Session);
+
+                box.FirstMileMethod = methodID;
+                box.ShippingStatus = (byte)EnumData.DirectLineStatus.運輸中;
+                Box.Update(box, box.BoxID);
+                Box.SaveChanges();
+
+                MyHelp.Log("box", box.BoxID, string.Format("Box【{0}】完成出貨", box.BoxID), Session);
+            }
+            catch (Exception e)
+            {
+                result.message = string.Format("Box【{0}】出貨失敗，錯誤：", boxID) + (e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
+                result.status = false;
+
+                MyHelp.Log("box", box.BoxID, result.message, Session);
+            }
+
+            return Json(result, JsonRequestBehavior.AllowGet);
         }
 
         public ActionResult ProductList(int PackageID, string Type)

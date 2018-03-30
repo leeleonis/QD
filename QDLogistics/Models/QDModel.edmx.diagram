@@ -9,7 +9,7 @@
         <EntityTypeShape EntityType="QDLogisticsModel.BundleItems" Width="1.5" PointX="5.125" PointY="5.25" />
         <EntityTypeShape EntityType="QDLogisticsModel.Items" Width="1.5" PointX="3" PointY="0.75" IsExpanded="true" />
         <EntityTypeShape EntityType="QDLogisticsModel.Manufacturers" Width="1.5" PointX="0.625" PointY="13.375" />
-        <EntityTypeShape EntityType="QDLogisticsModel.Orders" Width="1.5" PointX="3.875" PointY="17.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="QDLogisticsModel.Orders" Width="1.5" PointX="3.875" PointY="17.875" IsExpanded="true" />
         <EntityTypeShape EntityType="QDLogisticsModel.Packages" Width="1.5" PointX="3.875" PointY="9" />
         <EntityTypeShape EntityType="QDLogisticsModel.Payments" Width="1.5" PointX="6.5" PointY="18.25" />
         <EntityTypeShape EntityType="QDLogisticsModel.Skus" Width="1.5" PointX="0.625" PointY="8.25" />
@@ -44,18 +44,18 @@
         <EntityTypeShape EntityType="QDLogisticsModel.PurchaseItemReceive" Width="1.5" PointX="13.375" PointY="10.75" />
         <EntityTypeShape EntityType="QDLogisticsModel.TaskScheduler" Width="1.5" PointX="11.375" PointY="0.875" />
         <AssociationConnector Association="QDLogisticsModel.FK_TaskLog_TaskScheduler" />
-        <EntityTypeShape EntityType="QDLogisticsModel.Box" Width="1.5" PointX="6.5" PointY="8.5" />
-        <AssociationConnector Association="QDLogisticsModel.FK_Packages_Box" />
         <EntityTypeShape EntityType="QDLogisticsModel.Services" Width="1.5" PointX="11.5" PointY="15" />
         <AssociationConnector Association="QDLogisticsModel.FK_Orders_Services" />
         <EntityTypeShape EntityType="QDLogisticsModel.Preset" Width="1.5" PointX="13.625" PointY="4.625" />
-        <EntityTypeShape EntityType="QDLogisticsModel.CarrierAPI" Width="1.5" PointX="6.5" PointY="12" />
-        <EntityTypeShape EntityType="QDLogisticsModel.Carriers" Width="1.5" PointX="8.5" PointY="10.75" />
+        <EntityTypeShape EntityType="QDLogisticsModel.CarrierAPI" Width="1.5" PointX="6.125" PointY="9.125" />
+        <EntityTypeShape EntityType="QDLogisticsModel.Carriers" Width="1.5" PointX="8.625" PointY="10.625" />
         <AssociationConnector Association="QDLogisticsModel.FK_Carriers_CarrierAPI" />
         <EntityTypeShape EntityType="QDLogisticsModel.ShippingMethod" Width="1.5" PointX="8.625" PointY="14.125" />
         <AssociationConnector Association="QDLogisticsModel.FK_ShippingMethod_Carriers" />
         <AssociationConnector Association="QDLogisticsModel.FK_Packages_Carriers" />
         <AssociationConnector Association="QDLogisticsModel.FK_Services_Carriers" />
+        <EntityTypeShape EntityType="QDLogisticsModel.Box" Width="1.5" PointX="6.375" PointY="13.625" />
+        <AssociationConnector Association="QDLogisticsModel.FK_Packages_Box" />
         </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

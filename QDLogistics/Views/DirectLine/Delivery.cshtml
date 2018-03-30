@@ -63,7 +63,7 @@
                 singleSelect: false,
                 frozenColumns: [[
                     {
-                        field: "BoxID", title: "Box ID", width: 100, align: "center", sortable: true,
+                        field: "BoxID", title: "Box ID", width: 150, align: "center", sortable: true,
                         formatter: function (value, row, index) {
                             if (!isEmpty(value)) {
                                 return "<a href='@Url.Action("boxEdit", "directLine")/" + value + "'>" + value + "</a>";
@@ -72,7 +72,7 @@
                             }
                         }
                     },
-                    { field: "SupplierBoxID", title: "Supplier Box ID", width: 120, align: "center", sortable: true }
+                    { field: "SupplierBoxID", title: "Supplier Box ID", width: 150, align: "center", sortable: true }
                 ]],
                 columns: [[
                     { field: "CreateDate", title: "Create Date", width: 120, align: "center", sortable: false },

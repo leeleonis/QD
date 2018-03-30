@@ -158,7 +158,7 @@ namespace QDLogistics.Commons
                         foreach (int OrderID in presetList)
                         {
                             preset.init(OrderID);
-                            //preset.Save();
+                            preset.Save();
                         }
                     }
                 }

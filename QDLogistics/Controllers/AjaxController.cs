@@ -172,6 +172,7 @@ namespace QDLogistics.Controllers
                     StatusCode = data.order.StatusCode,
                     RushOrder = data.order.RushOrder,
                     UploadTracking = uploadDefault.Contains(data.order.ShippingServiceSelected) ? false : data.package.UploadTracking,
+                    InBox = data.package.InBox,
                     Instructions = data.order.Instructions,
                     Comment = string.IsNullOrEmpty(data.package.Comment) ? "" : data.package.Comment,
                     ProcessBack = data.package.ProcessBack
@@ -207,23 +208,24 @@ namespace QDLogistics.Controllers
                         taskList.Add(SyncOrderStatus(package.Orders, oData.StatusCode.Value));
                     }
 
-                    package.Orders.StatusCode = oData.StatusCode;
-                    package.Orders.OrderCurrencyCode = oData.OrderCurrencyCode;
-                    package.Orders.RushOrder = oData.RushOrder;
+                    package.Orders.StatusCode = oData.StatusCode.Value;
+                    package.Orders.OrderCurrencyCode = oData.OrderCurrencyCode.Value;
+                    package.Orders.RushOrder = oData.RushOrder.Value;
 
                     // update package data
                     package.DeclaredTotal = oData.DeclaredTotal.Value;
-                    package.ShippingMethod = oData.MethodID;
-                    package.Export = oData.Export;
-                    package.ExportMethod = oData.ExportMethod;
+                    package.ShippingMethod = oData.MethodID.Value;
+                    package.Export = oData.Export.Value;
+                    package.ExportMethod = oData.ExportMethod.Value;
                     package.UploadTracking = oData.UploadTracking.Value;
+                    package.InBox = oData.InBox.Value;
                     package.Comment = oData.Comment;
                     Packages.Update(package, oData.PackageID);
 
                     // update item data
-                    foreach (Items item in package.Items.Where(i => i.IsEnable == true))
+                    foreach (Items item in package.Items.Where(i => i.IsEnable.Value))
                     {
-                        item.ShipFromWarehouseID = oData.ShipWarehouse;
+                        item.ShipFromWarehouseID = oData.ShipWarehouse.Value;
                         item.DeclaredValue = oData.Items[item.ID.ToString()].DeclaredValue;
                         Items.Update(item, item.ID);
                     }

@@ -29,7 +29,7 @@ namespace QDLogistics.Commons
             return name;
         }
 
-        public enum CarrierType { Other, DHL, FedEx, UPS, USPS, Winit };
+        public enum CarrierType { Other, DHL, FedEx, UPS, USPS, Winit, IDS };
 
         public enum AuthType { View, Edit, Insert, Delete };
 
@@ -66,6 +66,14 @@ namespace QDLogistics.Commons
             };
         }
 
+        public enum DirectLine { IDS = 1 }
+        public static Dictionary<DirectLine, string> DirectLineList()
+        {
+            return new Dictionary<DirectLine, string>()
+            {
+                {DirectLine.IDS, "IDS Contionental" }
+            };
+        }
         public enum DirectLineStatus { 未發貨, 運輸中, 已到貨 }
         public enum DirectLineBoxType { DirectLine, InventoryTransfer, FBA }
         public static Dictionary<DirectLineBoxType, string> BoxTypeList()

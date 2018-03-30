@@ -293,7 +293,7 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public void Update_Warehouse()
+        private void Update_Warehouse()
         {
             int[] OrderIDs = new int[] { 5455086, 5455090, 5455158, 5455216 };
 
@@ -314,6 +314,12 @@ namespace QDLogistics.Controllers
                     SCWS.Update_OrderItem(SC_items);
                 }
             }
+        }
+
+        public void ConvertTo(byte num)
+        {
+            var c = Encoding.ASCII.GetString(new byte[] { num });
+            Response.Write(c);
         }
     }
 }
