@@ -194,8 +194,10 @@ namespace QDLogistics.Controllers
                 string orderSelect = string.Format("SELECT * FROM Orders WHERE StatusCode = {0}", (int)OrderStatusCode.InProcess);
                 string itemSelect = string.Format("SELECT * FROM Items WHERE IsEnable = 1 AND ShipFromWarehouseID = {0}", userInfo.WarehouseID);
 
+                var methodList = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && !m.IsDirectLine).ToList();
+
                 ObjectContext context = new ObjectContext("name=QDLogisticsEntities");
-                var ProductList = context.ExecuteStoreQuery<Packages>(packageSelect).ToList()
+                var ProductList = context.ExecuteStoreQuery<Packages>(packageSelect).ToList().Join(methodList, p => p.ShippingMethod, m => m.ID, (p, m) => p)
                     .Join(context.ExecuteStoreQuery<Orders>(orderSelect).ToList(), p => p.OrderID, o => o.OrderID, (package, order) => new { order, package })
                     .Join(context.ExecuteStoreQuery<Items>(itemSelect).ToList(), op => op.package.ID, i => i.PackageID, (op, item) => new { op.order, op.package, item }).Distinct()
                     .OrderBy(oData => oData.order.TimeOfOrder).OrderByDescending(oData => oData.order.RushOrder).ToList();
@@ -243,8 +245,10 @@ namespace QDLogistics.Controllers
                 var PackageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨));
                 if (!data.CarrierID.Equals(0)) PackageFilter = PackageFilter.Where(p => p.ShippingMethod.Value.Equals(data.CarrierID));
 
+                var methodList = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && !m.IsDirectLine).ToList();
+
                 ObjectContext context = new ObjectContext("name=QDLogisticsEntities");
-                var ProductList = PackageFilter.ToList()
+                var ProductList = PackageFilter.ToList().Join(methodList, p => p.ShippingMethod, m => m.ID, (p, m) => p)
                     .Join(context.ExecuteStoreQuery<Items>(itemSelect).ToList(), p => p.ID, i => i.PackageID, (p, i) => p)
                     .Join(context.ExecuteStoreQuery<Orders>(orderSelect).ToList(), p => p.OrderID, o => o.OrderID, (package, order) => new { order, package })
                     .Join(context.ExecuteStoreQuery<PickProduct>(pickSelect).ToList(), op => op.package.ID, pk => pk.PackageID, (op, pick) => new { op.order, op.package, pick = pick.SetCountry(op.order.ShippingCountry) }).Distinct()
@@ -334,8 +338,10 @@ namespace QDLogistics.Controllers
                 string orderSelect = string.Format("SELECT * FROM Orders WHERE StatusCode = {0}", (int)OrderStatusCode.InProcess);
                 string itemSelect = string.Format("SELECT * FROM Items WHERE IsEnable = 1 AND ShipFromWarehouseID = {0}", userInfo.WarehouseID);
 
+                var methodList = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && !m.IsDirectLine).ToList();
+
                 ObjectContext context = new ObjectContext("name=QDLogisticsEntities");
-                List<Items> ItemList = context.ExecuteStoreQuery<Packages>(packageSelect).ToList()
+                List<Items> ItemList = context.ExecuteStoreQuery<Packages>(packageSelect).ToList().Join(methodList, p => p.ShippingMethod, m => m.ID, (p, m) => p)
                     .Join(context.ExecuteStoreQuery<Orders>(orderSelect).ToList(), p => p.OrderID, o => o.OrderID, (package, order) => new { order, package })
                     .OrderBy(oData => oData.order.TimeOfOrder).OrderByDescending(oData => oData.order.RushOrder)
                     .Join(db.Items.AsNoTracking().Where(i => i.IsEnable.Value && i.ShipFromWarehouseID.Value.Equals(userInfo.WarehouseID)), op => op.package.ID, i => i.PackageID, (op, item) => item).Distinct().ToList();
@@ -476,7 +482,7 @@ namespace QDLogistics.Controllers
                 if (!package.Orders.StatusCode.Equals((int)OrderStatusCode.InProcess)) throw new Exception(string.Format("訂單【{0}】無法出貨因為並非InProcess的狀態", package.OrderID));
                 if (!package.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨)) throw new Exception(string.Format("訂單【{0}】無法出貨因為並非待出貨的狀態", package.OrderID));
 
-                MyHelp.Log("Packages", package.OrderID, "訂單包裹開始更新", Session);
+                MyHelp.Log("Package", package.ID, "訂單包裹開始更新", Session);
 
                 DateTime PickUpDate = new TimeZoneConvert().Utc;
 
@@ -495,7 +501,7 @@ namespace QDLogistics.Controllers
 
                 if (receiveData.itemData.Any(i => i.Item2.Any()))
                 {
-                    MyHelp.Log("Packages", package.OrderID, "訂單產品上傳序號", Session);
+                    MyHelp.Log("Packages", package.ID, "訂單產品上傳序號", Session);
 
                     foreach (var itemData in receiveData.itemData.Where(i => i.Item2.Any()).ToList())
                     {
@@ -515,7 +521,7 @@ namespace QDLogistics.Controllers
                 }
 
                 Packages.SaveChanges();
-                MyHelp.Log("Packages", package.OrderID, "訂單包裹出貨完成", Session);
+                MyHelp.Log("Packages", package.ID, "訂單包裹出貨完成", Session);
             }
             catch (Exception e)
             {

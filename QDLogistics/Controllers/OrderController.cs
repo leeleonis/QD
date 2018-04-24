@@ -154,7 +154,7 @@ namespace QDLogistics.Controllers
                                         {
                                             MyHelp.Log("Orders", packageData.OrderID, "訂單提交完成", session);
 
-                                            byte[] carrierType = new byte[] { (byte)EnumData.CarrierType.DHL, (byte)EnumData.CarrierType.FedEx };
+                                            byte[] carrierType = new byte[] { (byte)EnumData.CarrierType.DHL, (byte)EnumData.CarrierType.FedEx, (byte)EnumData.CarrierType.IDS };
                                             if (!shipProcess.isDropShip && carrierType.Contains(package.Method.Carriers.CarrierAPI.Type.Value))
                                             {
                                                 PickProduct = new GenericRepository<PickProduct>(db);
@@ -415,9 +415,12 @@ namespace QDLogistics.Controllers
             string packageSelect = string.Format("SELECT * FROM Packages WHERE IsEnable = 1 AND ProcessStatus = {0}", (byte)EnumData.ProcessStatus.待出貨);
             string orderSelect = string.Format("SELECT * FROM Orders WHERE StatusCode = {0}", (int)OrderStatusCode.InProcess);
             string itemSelect = string.Format("SELECT * FROM Items WHERE IsEnable = 1 AND ShipFromWarehouseID = {0}", warehouseId);
+            
+            var methodList = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && !m.IsDirectLine).ToList();
 
             ObjectContext context = new ObjectContext("name=QDLogisticsEntities");
             var ProductList = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨)).ToList()
+                .Join(methodList, p => p.ShippingMethod, m => m.ID, (p, m) => p)
                 .Join(context.ExecuteStoreQuery<Orders>(orderSelect).ToList(), p => p.OrderID, o => o.OrderID, (package, order) => new { order, package })
                 .OrderBy(data => data.order.TimeOfOrder).OrderByDescending(data => data.order.RushOrder)
                 .Join(context.ExecuteStoreQuery<Items>(itemSelect).ToList(), op => op.package.ID, i => i.PackageID, (op, item) => op.package).Distinct().ToList();

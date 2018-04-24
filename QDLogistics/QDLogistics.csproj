@@ -269,6 +269,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="App_Code\DirectLineApi\IDS_API.cs" />
     <Content Include="Content\bootstrap-theme.css" />
     <Content Include="Content\bootstrap-theme.min.css" />
     <Content Include="Content\bootstrap.css" />
@@ -6762,6 +6763,12 @@
     <Compile Include="Models\Companies.cs">
       <DependentUpon>QDModel.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\DirectLine.cs">
+      <DependentUpon>QDModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\DirectLineLabel.cs">
+      <DependentUpon>QDModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="Models\Interface\IRepository.cs" />
     <Compile Include="Models\Items.cs">
       <DependentUpon>QDModel.tt</DependentUpon>
@@ -6969,6 +6976,8 @@
     <Content Include="Views\DirectLine\Delivery.cshtml" />
     <Content Include="Views\DirectLine\BoxEdit.cshtml" />
     <Content Include="Views\DirectLine\List_BoxOrder.cshtml" />
+    <Content Include="Views\Shipping\DirectLine.cshtml" />
+    <Content Include="Views\Shipping\DirectLineEdit.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

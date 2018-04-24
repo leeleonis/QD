@@ -2,6 +2,9 @@
 @using QDLogistics.Commons
 @model ShippingMethod
 
+@{ 
+    List<Carriers> carrierSelect = ViewData["carrierSelect"] as List<Carriers>;
+}
 @section styles{
     <link href="~/Content/themes/default/easyui.css" rel="stylesheet" />
     <link href="~/Content/themes/icon.css" rel="stylesheet" />
@@ -81,13 +84,29 @@
                                             </div>
 
                                             <div class="form-group">
+                                                <label class="col-sm-2 control-label">是否裝箱</label>
+
+                                                <div class="col-sm-2">
+                                                    <label class="radio radio-inline">
+                                                        <input type="radio" class="radiobox" name="InBox" value="true" @(Model.InBox ? "checked" : "")>
+                                                        <span>是</span>
+                                                    </label>
+
+                                                    <label class="radio radio-inline">
+                                                        <input type="radio" class="radiobox" name="InBox" value="false" @(!Model.InBox ? "checked" : "")>
+                                                        <span>否</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
                                                 <label class="col-sm-2 control-label" for="Name">名稱</label>
 
                                                 <div class="col-sm-9 col-lg-4">
                                                     <input type="text" class="form-control" id="Name" name="Name" value="@Model.Name">
                                                 </div>
                                             </div>
-                                            
+
                                             <div class="form-group">
                                                 <label class="col-sm-2 control-label">DL廠商</label>
 
@@ -100,7 +119,13 @@
                                                 <label class="col-sm-2 control-label">運輸商</label>
 
                                                 <div class="col-sm-9 col-lg-4">
-                                                    @Html.DropDownListFor(Model => Model.CarrierID, (SelectList)ViewData["carrierSelect"], new Dictionary<string, object>() { { "class", "form-control" } })
+                                                    <select class="form-control" name="CarrierID" id="CarrierID">
+                                                        @foreach (Carriers carrier in carrierSelect)
+                                                        {
+                                                            string selected = carrier.ID.Equals(Model.CarrierID) ? "selected" : "";
+                                                            <option value="@carrier.ID" data-type="@(carrier.CarrierAPI != null ? Enum.GetName(typeof(EnumData.CarrierType), carrier.CarrierAPI.Type) : "")" @selected>@carrier.Name</option>
+                                                        }
+                                                    </select>
                                                 </div>
                                             </div>
 
@@ -188,7 +213,7 @@
                     MethodType = response.data.methodType;
                     BoxType = response.data.boxType;
 
-                    var carrierName = $CarrierSelect.find('option:selected').html();
+                    var carrierName = $CarrierSelect.find('option:selected').data('type');
                     $MethodSelect.html(getSelectOption(MethodType[carrierName], '@Model.MethodType'));
                     $BoxSelect.html(getSelectOption(BoxType[carrierName], '@Model.BoxType'));
                 } else {

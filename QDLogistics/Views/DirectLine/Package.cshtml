@@ -36,10 +36,9 @@
     </style>
 }
 @{
-    List<Packages> packageList = ViewBag.packageList;
+    List<DirectLine> directLineList = ViewBag.directLineList;
     List<ShippingMethod> methodList = ViewBag.methodList;
     var route = new { warehouseId = ViewData["warehouseId"], adminId = ViewData["adminId"] };
-    int total = (int)ViewData["total"];
 }
 <div id="content">
     <section id="widget-grid" class="">
@@ -47,9 +46,9 @@
             <div class="action-button col-xs-2">
                 <div>
                     <select class="form-control" id="select-type">
-                        @foreach (var type in Enum.GetValues(typeof(EnumData.DirectLine)).Cast<EnumData.DirectLine>())
+                        @foreach (DirectLine directLine in directLineList)
                         {
-                            <option value="@((byte)type)">@EnumData.DirectLineList()[type]</option>
+                            <option value="@directLine.ID">@directLine.Name</option>
                         }
                     </select>
                 </div>
@@ -87,9 +86,9 @@
                                         <td class="no-padding">
                                             <select class="form-control" id="select-method">
                                                 @{ foreach (ShippingMethod method in methodList)
-                                                    {
-                                                        <option value="@method.ID">@method.Name</option>
-                                                    }}
+                                    {
+                                        <option value="@method.ID">@method.Name</option>
+                    }}
                                             </select>
                                         </td>
                                     </tr>
@@ -142,81 +141,14 @@
                     <div id="dialog-order" class="easyui-dialog" title="請輸入訂單號碼" data-options="iconCls:'icon-edit',closed:true,draggable:false,resizable:false,onClose:function(){$orderInput.val('');}" style="width:300px;">
                         <input type="text" class="form-control" id="input-order" />
                     </div>
+                    <div id="dialog-recycle" class="easyui-dialog" title="請輸入標籤號碼" data-options="iconCls:'icon-edit',closed:true,draggable:false,resizable:false,onClose:function(){return false;}" style="width:500px;">
+                        <div id="msg-labelError" style="margin-right:5px;font-size:16px;color:red;vertical-align:middle;"></div>
+                        <input type="text" class="form-control" id="input-label" />
+                    </div>
                 </div>
             </div>
             <article class="col-xs-10">
-                <div class="jarviswidget jarviswidget-color-darken" data-widget-colorbutton="false" data-widget-editbutton="false" data-widget-togglebutton="false"
-                     data-widget-deletebutton="false" data-widget-fullscreenbutton="false" data-widget-custombutton="false" data-widget-sortable="false">
-
-                    <header>
-                        <span class="widget-icon"><i class="fa fa-table"></i></span>
-
-                        <h2>DL包貨區 列表</h2>
-                    </header>
-
-                    <div>
-                        <div class="widget-body no-padding">
-                            <div class="table-responsive">
-                                <table class="table table-bordered table-striped text-center">
-                                    <thead>
-                                        <tr>
-                                            <th width="7%" class="text-center">出貨時限：</th>
-                                            <th width="10%" class="text-center" colspan="2">@DateTime.Now.ToString("M/d/yy H:m")</th>
-                                            <th colspan="3"></th>
-                                            <th width="15%" class="text-center" colspan="3">時限內未達成的數量：</th>
-                                            <th width="8%" class="text-center">
-                                                <span class="text-danger">0/200</span>
-                                            </th>
-                                            <th width="20%" class="text-center" colspan="2">Log</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr class="title-row">
-                                            <td>Order ID</td>
-                                            <td>SKU</td>
-                                            <td>UPC</td>
-                                            <td>Item Name</td>
-                                            <td width="100">Weight (KG)</td>
-                                            <td width="140">Shipping Method</td>
-                                            <td>Country</td>
-                                            <td>Export</td>
-                                            <td>Status</td>
-                                            <td>Comment</td>
-                                            <td rowspan="@(total+1)">
-                                                1. 8/24/2016 15:00 時限內未達成的數量 10/200 @@ 5%
-                                                <br />
-                                                2. 8/24/2016 18:00 時限內未達成的數量 3/100 @@ 3%
-                                            </td>
-                                            <td rowspan="@(total+1)">本月平均未達成數量以及%: 13/300 @@ 4.33%</td>
-                                        </tr>
-                                        @*@{if (packageList.Any())
-                                                {
-                                                    foreach (Packages package in packageList)
-                                                    {
-                                                        foreach (Items item in package.Items.Where(i => i.IsEnable == true))
-                                                        {
-                                                            <tr>
-                                                                <td>@item.OrderID</td>
-                                                                <td>@item.ProductID</td>
-                                                                <td>@item.Skus.UPC</td>
-                                                                <td>@item.Skus.ProductName</td>
-                                                                <td>@(item.Qty * 0.5)</td>
-                                                                <td>@package.Method.Name</td>
-                                                                <td>@package.Orders.ShippingCountry</td>
-                                                                <td>@Enum.GetName(typeof(EnumData.Export), package.Export)</td>
-                                                                <td>@(package.Orders.RushOrder.Value ? "Rush" : "Normal")</td>
-                                                                <td>@package.Comment</td>
-                                                            </tr>
-                                                        }
-                                                    }
-                                                }
-                                            }*@
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <table id="DataGrid"></table>
             </article>
         </div>
     </section>
@@ -227,10 +159,13 @@
     <script src="~/signalr/hubs"></script>
     @Html.Raw(ViewBag.WCPScript)
     <script type="text/javascript">
+        var pager, pageSize = 100;
+        var $dataGrid;
         var directLineMethodList;
         var $typeSelect = $('#select-type'), $typeMethodSelect = $('#select-typeMethod'), $methodSelect = $('#select-method'), $syncBtn = $('#btn-sync'), $pickBtn = $("#btn-pick"),
             $shipBtn = $("#btn-ship"), $enterBtn = $("#btn-enter"), $pickWin = $('#win-pick'), $serialDialog = $('#dialog-serial'), $serialInput = $('#input-serial'),
-            $orderDialog = $('#dialog-order'), $orderInput = $('#input-order'), $boxInfo = $('#info-box'), $pickupTable = $('#table-pickup'), $boxTable = $('#table-box'), $boxSaveBtn = $("#btn-boxSave");
+            $orderDialog = $('#dialog-order'), $orderInput = $('#input-order'), $recycleDialog = $('#dialog-recycle'), $labelErrorMsg = $('#msg-labelError'), $labelInput = $('#input-label'),
+            $boxInfo = $('#info-box'), $pickupTable = $('#table-pickup'), $boxTable = $('#table-box'), $boxSaveBtn = $("#btn-boxSave");
 
         var isSync = false, taskID = null, now = undefined;
 
@@ -248,6 +183,8 @@
                         alert(response.message);
                     }
                 });
+
+                dataInit();
             });
 
             conn.client.refreshOrderPickUp = function (response) {
@@ -343,6 +280,60 @@
             });
         });
 
+        function dataInit() {
+            $dataGrid = $("#DataGrid").datagrid({
+                title: "未出貨包裏 列表",
+                idField: "BoxID",
+                url: "@Url.Action("getBoxData", "directLine")",
+                queryParams: {
+                    Status: 0
+                },
+                width: "100%",
+                height: window.screen.availHeight-280,
+                checkOnSelect: false,
+                selectOnCheck: false,
+                singleSelect: false,
+                frozenColumns: [[
+                    {
+                        field: "BoxID", title: "Box ID", width: 150, align: "center", sortable: true,
+                        formatter: function (value, row, index) {
+                            if (!isEmpty(value)) {
+                                return "<a href='@Url.Action("boxEdit", "directLine")/" + value + "'>" + value + "</a>";
+                            }
+                        }
+                    },
+                    { field: "SupplierBoxID", title: "Supplier Box ID", width: 150, align: "center", sortable: true }
+                ]],
+                columns: [[
+                    { field: "CreateDate", title: "Create Date", width: 120, align: "center", sortable: false },
+                    { field: "WarehouseTo", title: "To", width: 150, align: "center", sortable: false },
+                    { field: "BoxQty", title: "Box Qty", width: 60, align: "center", sortable: false },
+                    { field: "TotalWeight", title: "Total Weight", width: 80, align: "center", sortable: false },
+                    { field: "WITID", title: "SC WIT ID", width: 150, align: "center", sortable: false },
+                    { field: "Tracking", title: "Tracking", width: 150, align: "center", sortable: false },
+                    { field: "Status", title: "Status", width: 100, align: "center", sortable: false },
+                    { field: "Type", title: "Type", width: 150, align: "center", sortable: false },
+                    { field: "Note", title: "Notes", width: 250, align: "center", sortable: false }
+                ]],
+                onBeforeSelect: function () {
+                    return false
+                },
+                pagination: true,
+                pagePosition: "bottom",
+                pageSize: pageSize
+            });
+
+            pager = $dataGrid.datagrid("getPager");
+            $(pager).pagination({
+                pageSize: pageSize,
+                showPageList: true,
+                pageList: [100, 200, 300, 500],
+                beforePageTest: "第",
+                afterPageTest: "頁，共 {pages} 頁",
+                displayMsg: "顯示 {from} 到 {to} 筆資料，共 {total} 筆資料"
+            });
+        }
+
         function printPickUpList() {
             var url = '@Url.Action("printPickUpList", "ajax")';
             ajaxUrl(url, 'post', { warehouseId:@route.warehouseId, adminId:@route.adminId }).done(function (response) {
@@ -421,6 +412,7 @@
                         if (response.data.list.length > 0) {
                             var list = response.data.list;
 
+                            boxOrderList.rows = [];
                             list.forEach(function (value, i) {
                                 value.InBox = "<img src='../content/img/" + (value.InBox ? "checked" : "error") + ".png' runat='server' style='width: auto; height: 15px;'>";
                                 boxOrderList.rows.push(value);
@@ -513,12 +505,10 @@
                 if (isEmpty(gb_OrderID) || isEmpty(gb_PackageID)) orderLocked(pData.OrderID, pData.PackageID);
 
                 if (product.data.IsPicked) {
-                    var file = fileList[pData.PackageID];
                     var needPick = Object.keys(order[pData.PackageID]).map(itemID => order[pData.PackageID][itemID]).filter(product => !product.data.IsPicked);
 
                     if (needPick.length == 0) {
                         if (!findOrderChange(pData.OrderID)) {
-                            //print($.param({ fileName: file['fileName'], filePath: file['filePath'], amount: file['amount'], printerName: file['printerName'] }, true));
                             updatePicked(pData, order, false);
                             joinBoxList(order[pData.PackageID]);
                         }
@@ -561,7 +551,9 @@
                 var url = '@Url.Action("orderPicked", "directLine")';
                 ajaxUrl(url, 'post', { boxID: boxInfo.BoxID, picked: picked, serials: serials }).done(function(response){
                     if(response['status']) {
-                        if(retry) error('訂單【' + gb_OrderID + '】更新失敗，資料已重新寄送!');
+                        if (retry) error('訂單【' + gb_OrderID + '】更新失敗，資料已重新寄送!');
+
+                        print($.param({ fileName: response.data.fileName, filePath: response.data.filePath, amount: response.data.amount, printerName: response.data.printerName }, true));
                         orderLocked();
                     } else {
                         alert(response['message']);
@@ -731,7 +723,46 @@
                         var url = '@Url.Action("saveBox", "directLine")';
                         ajaxUrl(url, 'post', { boxID: boxInfo.BoxID, methodID: $methodSelect.val() }).done(function (response) {
                             if (response.status) {
-                                location.href = '@Url.Action("package", "directLine")';
+                                if (response.data.fileList.length > 0) {
+                                    var file = response.data.fileList[0];
+                                    print($.param({ fileName: file['fileName'][0], filePath: file['filePath'][0], amount: file['amount'][0], printerName: file['printerName'] }, true));
+                                    print($.param({ fileName: file['fileName'][1], filePath: file['filePath'][1], amount: file['amount'][1], printerName: "" }, true));
+                                }
+
+                                if (response.data.errorList.length > 0) {
+                                    var errorList = response.data.errorList;
+
+                                    var i = 0;
+                                    $labelErrorMsg.html(errorList[i].ErrorMsg);
+                                    $recycleDialog.dialog('open');
+                                    $labelInput.focus();
+                                    $labelInput.keypress(function (event) {
+                                        if (event.keyCode == 13) {
+                                            if (isEmpty($labelInput.val())) return alert('不可為空!');
+
+                                            if ($labelInput.val() == errorList[i].LabelID) {
+                                                if (++i < errorList.length) {
+                                                    $labelErrorMsg.html(errorList[i].ErrorMsg);
+                                                } else {
+                                                    if (confirm("出貨完成，是否刷新頁面?")) {
+                                                        location.href = '@Url.Action("package", "directLine")';
+                                                    } else {
+                                                        $serialDialog.dialog('close');
+                                                    }
+
+                                                }
+                                            } else {
+                                                $labelErrorMsg.html(errorList[i].ErrorMsg + ' - 輸入錯誤!');
+                                            }
+                                        }
+                                    });
+                                } else {
+                                    if (confirm("出貨完成，是否刷新頁面?")) {
+                                        location.href = '@Url.Action("package", "directLine")';
+                                    } else {
+                                        $serialDialog.dialog('close');
+                                    }
+                                }
                             } else {
                                 alert(response.message);
                             }

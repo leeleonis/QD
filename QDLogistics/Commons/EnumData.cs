@@ -67,13 +67,6 @@ namespace QDLogistics.Commons
         }
 
         public enum DirectLine { IDS = 1 }
-        public static Dictionary<DirectLine, string> DirectLineList()
-        {
-            return new Dictionary<DirectLine, string>()
-            {
-                {DirectLine.IDS, "IDS Contionental" }
-            };
-        }
         public enum DirectLineStatus { 未發貨, 運輸中, 已到貨 }
         public enum DirectLineBoxType { DirectLine, InventoryTransfer, FBA }
         public static Dictionary<DirectLineBoxType, string> BoxTypeList()
@@ -85,5 +78,7 @@ namespace QDLogistics.Commons
                 {DirectLineBoxType.FBA, "FBA" }
             };
         }
+
+        public enum LabelStatus { 正常, 鎖定中, 完成, 作廢 }
     }
 }

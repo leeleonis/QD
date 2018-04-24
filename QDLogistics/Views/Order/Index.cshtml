@@ -478,11 +478,6 @@
                         formatter: function (value, row, index) {
                             return setCheckBox(row.PackageID, this.field, value);
                         }
-                    }, {
-                        field: "InBox", title: "是否裝箱", width: 80, align: "center", sortable: false,
-                        formatter: function (value, row, index) {
-                            return setCheckBox(row.PackageID, this.field, value);
-                        }
                     },
                     { field: "Instructions", title: "Buyer Note<br />客戶備註", width: 200, align: "center", sortable: false },
                     {
@@ -683,7 +678,6 @@
                 ExportMethod: $("select#ExportMethod:eq(" + index + ")").val(),
                 StatusCode: $("select#StatusCode:eq(" + index + ")").val(),
                 RushOrder: $("input#RushOrder:eq(" + index + ")").prop("checked"),
-                InBox: $("input#InBox:eq(" + index + ")").prop("checked"),
                 UploadTracking: $("input#UploadTracking:eq(" + index + ")").prop("checked"),
                 Comment: $("input#Comment:eq(" + index + ")").val()
             }

@@ -1,0 +1,149 @@
+﻿@using QDLogistics.Commons;
+@using QDLogistics.Models
+@model DirectLine
+
+<div id="content">
+    <section id="widget-grid" class="">
+        <div class="row">
+            <article class="col-xs-12">
+                <div class="jarviswidget" data-widget-colorbutton="false" data-widget-editbutton="false" data-widget-togglebutton="false"
+                     data-widget-deletebutton="false" data-widget-fullscreenbutton="false" data-widget-custombutton="false" data-widget-sortable="false">
+
+                    <header>
+                        <span class="widget-icon"> <i class="fa fa-edit"></i> </span>
+
+                        <h2>編輯</h2>
+                        <ul class="nav nav-tabs pull-right">
+                            <li><a data-toggle="tab" href="#hb1">基本資料</a></li>
+                        </ul>
+                    </header>
+
+                    <div>
+                        <div class="widget-body no-padding">
+                            <form id="data-form" class="form-horizontal" method="post" enctype="multipart/form-data">
+                                <input type="hidden" name="isEnable" value="True">
+
+                                <div id="content" class="tab-content">
+                                    <div class="tab-pane" id="hb1">
+                                        <fieldset>
+                                            <legend>基本資料</legend>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label" for="Name">名稱</label>
+
+                                                <div class="col-sm-9 col-lg-3">
+                                                    <input type="text" class="form-control" id="Name" name="Name" value="@Model.Name" required>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label" for="Abbreviation">縮寫</label>
+
+                                                <div class="col-sm-9 col-lg-3">
+                                                    <input type="text" class="form-control" id="Abbreviation" name="Abbreviation" value="@Model.Abbreviation" required>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label" for="ContactName">聯絡人名稱</label>
+
+                                                <div class="col-sm-9 col-lg-4">
+                                                    <input type="text" class="form-control" id="ContactName" name="ContactName" value="@Model.ContactName" required>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label" for="CompanyName">公司名稱</label>
+
+                                                <div class="col-sm-9 col-lg-4">
+                                                    <input type="text" class="form-control" id="CompanyName" name="CompanyName" value="@Model.CompanyName">
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label" for="PhoneNumber">聯絡電話</label>
+
+                                                <div class="col-sm-9 col-lg-4">
+                                                    <input type="text" class="form-control" id="PhoneNumber" name="PhoneNumber" value="@Model.PhoneNumber" required>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label" for="CountryCode">國家</label>
+
+                                                <div class="col-sm-9 col-lg-4">
+                                                    <select class="form-control" id="CountryCode" name="CountryCode">
+                                                        @foreach (Country country in MyHelp.GetCountries())
+                                                        {
+                                                            string selected = country.ID.Equals(Model.CountryCode) ? "selected" : "";
+                                                            <option value="@country.TwoCode" @selected>@country.Name</option>
+                                                        }
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label" for="City">城市</label>
+
+                                                <div class="col-sm-9 col-lg-4">
+                                                    <input type="text" class="form-control" id="City" name="City" value="@Model.City" required>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label" for="StreetLine1">地址1</label>
+
+                                                <div class="col-sm-9 col-lg-6">
+                                                    <input type="text" class="form-control" id="StreetLine1" name="StreetLine1" value="@Model.StreetLine1" required>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label" for="StreetLine2">地址2</label>
+
+                                                <div class="col-sm-9 col-lg-6">
+                                                    <input type="text" class="form-control" id="StreetLine2" name="StreetLine2" value="@Model.StreetLine2">
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label" for="StateName">區域</label>
+
+                                                <div class="col-sm-9 col-lg-4">
+                                                    <input type="text" class="form-control" id="StateName" name="StateName" value="@Model.StateName">
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label" for="PostalCode">郵號</label>
+
+                                                <div class="col-sm-9 col-lg-4">
+                                                    <input type="text" class="form-control" id="PostalCode" name="PostalCode" value="@Model.PostalCode">
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                    </div>
+                                </div>
+
+                                <div class="widget-footer">
+                                    <button type="submit" class="btn btn-primary" id="save">儲存</button>
+                                    <button type="button" class="btn btn-default" onclick="location.href='@Url.Action("directLine", "shipping", ViewBag.routeValue)'">返回</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </section>
+</div>
+@section pagespecific {
+    <script type="text/javascript">
+        var hash = window.location.hash;
+        $('ul.nav-tabs li').eq(hash.substr(1)).addClass('active');
+        $('.tab-pane').eq(hash.substr(1)).addClass('active');
+
+        $(document).ready(function () {
+        });
+    </script>
+}

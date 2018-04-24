@@ -1,4 +1,5 @@
 ﻿using CarrierApi.Winit;
+using DirectLineApi.IDS;
 using Neodynamic.SDK.Web;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -62,12 +63,10 @@ namespace QDLogistics.Controllers
             if (method == null) return HttpNotFound();
 
             Carriers = new GenericRepository<Carriers>(db);
-            IEnumerable<Carriers> carrierList = Carriers.GetAll(true).Where(c => c.IsEnable).OrderBy(c => c.ID);
+            ViewData["carrierSelect"] = Carriers.GetAll(true).Where(c => c.IsEnable).OrderBy(c => c.ID).ToList();
 
             List<object> directLineSelect = new List<object>() { new { text = "無", value = (byte)0 } };
-            directLineSelect.AddRange(Enum.GetValues(typeof(EnumData.DirectLine)).Cast<EnumData.DirectLine>().Select(t => new { text = EnumData.DirectLineList()[t], value = (byte)t }).ToList());
-
-            ViewData["carrierSelect"] = new SelectList(carrierList, "Id", "name", method.CarrierID);
+            directLineSelect.AddRange(db.DirectLine.AsNoTracking().Where(d => d.IsEnable).Select(d => new { text = d.Name, value = d.ID }).ToList());
             ViewData["directLineSelect"] = new SelectList(directLineSelect.AsEnumerable(), "value", "text", method.DirectLine);
 
             ViewBag.WCPScript = WebClientPrint.CreateScript(Url.Action("ProcessRequest", "WebClientPrintAPI", null, HttpContext.Request.Url.Scheme), Url.Action("PrintFile", "File", null, HttpContext.Request.Url.Scheme), HttpContext.Session.SessionID);
@@ -93,9 +92,11 @@ namespace QDLogistics.Controllers
             }
 
             Carriers = new GenericRepository<Carriers>(db);
-            IEnumerable<Carriers> carrierList = Carriers.GetAll(true).Where(c => c.IsEnable).OrderBy(c => c.ID);
+            ViewData["carrierSelect"] = Carriers.GetAll(true).Where(c => c.IsEnable).OrderBy(c => c.ID).ToList();
 
-            ViewData["carrierSelect"] = new SelectList(carrierList, "Id", "name", method.CarrierID);
+            List<object> directLineSelect = new List<object>() { new { text = "無", value = (byte)0 } };
+            directLineSelect.AddRange(db.DirectLine.AsNoTracking().Where(d => d.IsEnable).Select(d => new { text = d.Name, value = d.ID }).ToList());
+            ViewData["directLineSelect"] = new SelectList(directLineSelect.AsEnumerable(), "value", "text", method.DirectLine);
 
             ViewBag.WCPScript = WebClientPrint.CreateScript(Url.Action("ProcessRequest", "WebClientPrintAPI", null, HttpContext.Request.Url.Scheme), Url.Action("PrintFile", "File", null, HttpContext.Request.Url.Scheme), HttpContext.Session.SessionID);
             return View(method);
@@ -168,6 +169,90 @@ namespace QDLogistics.Controllers
         }
 
         [CheckSession]
+        public ActionResult DirectLine([Bind(Include = "start,length,search")] RouteValue routeValue)
+        {
+            ViewBag.routeValue = routeValue;
+            return View();
+        }
+
+        public ActionResult DirectLineCreate()
+        {
+            if (!MyHelp.CheckAuth("shipping", "directLine", EnumData.AuthType.Insert)) return RedirectToAction("index", "main");
+
+            using (IRepository<DirectLine> DirectLine = new GenericRepository<DirectLine>())
+            {
+                DirectLine newDirectLine = new DirectLine() { IsEnable = false };
+                DirectLine.Create(newDirectLine);
+                DirectLine.SaveChanges();
+
+                MyHelp.Log("DirectLine", newDirectLine.ID, "新增運輸方式");
+                return RedirectToAction("directLineEdit", new { id = newDirectLine.ID });
+            }
+        }
+
+        public ActionResult DirectLineEdit(int? id, [Bind(Include = "start,length,search")] RouteValue routeValue)
+        {
+            if (id == null) return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+
+            if (!MyHelp.CheckAuth("shipping", "directLine", EnumData.AuthType.Edit)) RedirectToAction("index", "main");
+
+            using (IRepository<DirectLine> DirectLine = new GenericRepository<DirectLine>())
+            {
+                DirectLine directLine = DirectLine.Get(id.Value);
+
+                if (directLine == null) return HttpNotFound();
+
+                ViewBag.routeValue = routeValue;
+                return View(directLine);
+            }
+        }
+
+        [HttpPost]
+        public ActionResult DirectLineEdit(int id, [Bind(Include = "start,length,search")] RouteValue routeValue)
+        {
+            if (!MyHelp.CheckAuth("shipping", "directLine", EnumData.AuthType.Edit)) RedirectToAction("index", "main");
+
+            using (IRepository<DirectLine> DirectLine = new GenericRepository<DirectLine>())
+            {
+                DirectLine directLine = DirectLine.Get(id);
+
+                if (directLine == null) return HttpNotFound();
+
+                if (TryUpdateModel(directLine) && ModelState.IsValid)
+                {
+                    directLine.CountryName = MyHelp.GetCountries().First(c => c.TwoCode.Equals(directLine.CountryCode)).Name;
+                    DirectLine.SaveChanges();
+
+                    MyHelp.Log("DirectLine", directLine.ID, "編輯DL運輸廠商");
+                    return RedirectToAction("directLine", "shipping", routeValue);
+                }
+
+                ViewBag.routeValue = routeValue;
+                return View(directLine);
+            }
+        }
+
+        public ActionResult DirectLineDelete(int id, [Bind(Include = "start,length,search")] RouteValue routeValue)
+        {
+            if (!MyHelp.CheckAuth("shipping", "directLine", EnumData.AuthType.Delete)) RedirectToAction("index", "main");
+
+            using (IRepository<DirectLine> DirectLine = new GenericRepository<DirectLine>())
+            {
+                DirectLine directLine = DirectLine.Get(id);
+
+                if (directLine == null) return HttpNotFound();
+
+                directLine.IsEnable = false;
+                DirectLine.Update(directLine, directLine.ID);
+                DirectLine.SaveChanges();
+
+                MyHelp.Log("DirectLine", directLine.ID, "刪除DL運輸廠商");
+                return RedirectToAction("directLine", "shipping", routeValue);
+            }
+        }
+
+
+        [CheckSession]
         public ActionResult Service()
         {
             return View();
@@ -234,7 +319,6 @@ namespace QDLogistics.Controllers
             return View(api);
         }
 
-        [CheckSession]
         public ActionResult Apidelete(int id, [Bind(Include = "start,length,search")] RouteValue routeValue)
         {
             CarrierAPI api = CarrierAPI.Get(id);
@@ -287,7 +371,11 @@ namespace QDLogistics.Controllers
 
                                 var Winit_shippingMethod = deliveryWay.OrderBy(w => w.deliveryID).Select(w => new { text = w.deliveryWay, value = int.Parse(w.deliveryID) }).Distinct().ToList();
 
-                                optionList.Add(type, new Dictionary<string, object>() { { "FedEx", FedEx_shippingMethod }, { "DHL", null }, { "Winit", Winit_shippingMethod } });
+                                IDS_API IDS = new IDS_API();
+                                int index = 0;
+                                var IDS_shippingMethod = IDS.GetServiceTypeList().Select(s => new { text = s, value = index++ }).ToList();
+
+                                optionList.Add(type, new Dictionary<string, object>() { { "FedEx", FedEx_shippingMethod }, { "DHL", null }, { "Winit", Winit_shippingMethod }, { "IDS", IDS_shippingMethod } });
                                 break;
                             case "boxType":
                                 var FedEx_boxType = Enum.GetValues(typeof(FedExShipService.PackagingType)).Cast<FedExShipService.PackagingType>().Select(b => new { text = b.ToString(), value = (int)b }).ToList();

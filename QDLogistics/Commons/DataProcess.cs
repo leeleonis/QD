@@ -266,16 +266,19 @@ namespace QDLogistics.Commons
 
             if (!package.ProcessStatus.Equals((int)EnumData.ProcessStatus.待出貨))
             {
-                if (package.ProcessStatus.Equals((int)EnumData.ProcessStatus.訂單管理))
+                if(string.IsNullOrEmpty(package.BoxID) || package.Box.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.已到貨))
                 {
-                    package.ShipDate = packageDetail.ShipDate;
-                }
+                    if (package.ProcessStatus.Equals((int)EnumData.ProcessStatus.訂單管理))
+                    {
+                        package.ShipDate = packageDetail.ShipDate;
+                    }
 
-                package.ShippingServiceCode = packageDetail.ShippingServiceCode.Trim();
+                    package.ShippingServiceCode = packageDetail.ShippingServiceCode.Trim();
 
-                if (package.UploadTracking)
-                {
-                    package.TrackingNumber = packageDetail.TrackingNumber.Trim();
+                    if (package.UploadTracking)
+                    {
+                        package.TrackingNumber = packageDetail.TrackingNumber.Trim();
+                    }
                 }
             }
 

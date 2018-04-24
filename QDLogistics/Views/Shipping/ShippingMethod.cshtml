@@ -84,6 +84,11 @@
                             return setCheckBox(index, this.field, value);
                         }
                     }, {
+                        field: "InBox", title: "裝箱", width: "7%", align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            return setCheckBox(index, this.field, value);
+                        }
+                    }, {
                         field: "edit", title: "", width: "56", sortable: false,
                         formatter: function (value, row, index) {
                             return "<a class='btn btn-default btn-sm' href='@Url.Action("shippingMethodEdit", "shipping")/" + row.ID + "'>EDIT</a>"
@@ -165,7 +170,8 @@
                 MethodType: $("#MethodType-" + index).val(),
                 BoxType: $("#BoxType-" + index).val(),
                 IsExport: $("#IsExport-" + index).prop("checked"),
-                IsBattery: $("#IsBattery-" + index).prop("checked")
+                IsBattery: $("#IsBattery-" + index).prop("checked"),
+                InBox: $("#InBox-" + index).prop("checked")
             }
         }
 

@@ -197,6 +197,130 @@ namespace CarrierApi.DHL
             return shipment;
         }
 
+
+        public ShipmentValidateResponse CreateBox(Box box, DirectLine directLine)
+        {
+            ShipmentValidateResponse result;
+            ShipmentValidateRequestEA shipment = new ShipmentValidateRequestEA();
+
+            shipment.Request = requsetInit();
+            //shipment.RegionCode = "AP";
+            shipment.NewShipper = YesNo1.N;
+            shipment.NewShipperSpecified = true;
+            shipment.LanguageCode = "tw";
+            shipment.PiecesEnabled = PiecesEnabled.Y;
+            shipment.PiecesEnabledSpecified = true;
+            shipment.Reference = new Reference1[] { new Reference1() { ReferenceID = box.BoxID } };
+            shipment.LabelImageFormat = LabelImageFormat.PDF;
+            shipment.LabelImageFormatSpecified = true;
+            shipment.RequestArchiveDoc = YesNo1.Y;
+            shipment.RequestArchiveDocSpecified = true;
+            shipment.Label = new Label() { LabelTemplate = "8X4_A4_PDF" };
+
+            shipment.Billing = new Billing1()
+            {
+                ShipperAccountNumber = api_account,
+                ShippingPaymentType = ShipmentPaymentType.S,
+                BillingAccountNumber = api_account,
+                DutyPaymentType = DutyTaxPaymentType1.S,
+                DutyPaymentTypeSpecified = true,
+                DutyAccountNumber = api_account
+            };
+
+            Contact2 contact = new Contact2()
+            {
+                PersonName = directLine.ContactName,
+                PhoneNumber = directLine.PhoneNumber
+            };
+
+            shipment.Consignee = new Consignee1()
+            {
+                CompanyName = !string.IsNullOrEmpty(directLine.CompanyName) ? directLine.CompanyName : contact.PersonName,
+                AddressLine = new string[] { directLine.StreetLine1, directLine.StreetLine2 },
+                City = directLine.City,
+                Division = directLine.StateName,
+                PostalCode = directLine.PostalCode,
+                CountryCode = directLine.CountryCode,
+                CountryName = directLine.CountryName,
+                Contact = contact
+            };
+
+            List<Items> itemList = box.Packages.Where(p => p.IsEnable.Value).SelectMany(p => p.Items.Where(i => i.IsEnable.Value)).ToList();
+            List<Piece2> pieceList = new List<Piece2>();
+            pieceList.Add(new Piece2()
+            {
+                PackageType = PackageType1.YP,
+                Weight = itemList.Sum(i => i.Qty.Value * ((decimal)i.Skus.Weight / 1000)),
+                PieceContents = itemList.First().Skus.ProductType.ProductTypeName
+            });
+
+            shipment.ShipmentDetails = new ShipmentDetails2()
+            {
+                NumberOfPieces = pieceList.Count().ToString(),
+                Pieces = pieceList.ToArray(),
+                Weight = pieceList.Sum(p => p.Weight),
+                WeightUnit = WeightUnit.K,
+                GlobalProductCode = "P",
+                LocalProductCode = "P",
+                Date = DateTime.Now,
+                Contents = string.Join(", ", itemList.Select(i => i.Skus.ProductType.ProductTypeName).Distinct().ToArray()),
+                DoorTo = DoorTo.DD,
+                DoorToSpecified = true,
+                DimensionUnit = DimensionUnit.C,
+                DimensionUnitSpecified = true,
+                //InsuredAmount = "0.00",
+                PackageType = PackageType1.YP,
+                IsDutiable = YesNo1.Y,
+                IsDutiableSpecified = true,
+                CurrencyCode = Enum.GetName(typeof(QDLogistics.OrderService.CurrencyCodeType2), box.Packages.First().Orders.OrderCurrencyCode.Value)
+            };
+
+            shipment.Dutiable = new Dutiable1()
+            {
+                DeclaredValue = box.Packages.Sum(p => p.DeclaredTotal).ToString(),
+                DeclaredCurrency = shipment.ShipmentDetails.CurrencyCode,
+                TermsOfTrade = "DDP"
+            };
+
+            shipment.Shipper = new Shipper1()
+            {
+                ShipperID = api_account,
+                CompanyName = "Zhi You Wan LTD",
+                AddressLine = new string[] { "No.51, Sec.3 Jianguo N. Rd.,", "South Dist.," },
+                City = "Taichung City",
+                PostalCode = "403",
+                CountryCode = "TW",
+                CountryName = "Taiwan",
+                Contact = new Contact2() { PersonName = "Huai Wei Ho", PhoneNumber = "0423718118" }
+            };
+
+            shipment.SpecialService = new SpecialService1[] { new SpecialService1() {
+                SpecialServiceType = "DD",
+                ChargeValue = shipment.Dutiable.DeclaredValue,
+                CurrencyCode = shipment.Dutiable.DeclaredCurrency
+            } };
+
+            XmlSerializer serializer = new XmlSerializer(typeof(ShipmentValidateResponse));
+            string request = SendRequest(shipment);
+            using (TextReader reader = new StringReader(request))
+            {
+                try
+                {
+                    result = (ShipmentValidateResponse)serializer.Deserialize(reader);
+                }
+                catch (Exception e)
+                {
+                    TextReader errorReader = new StringReader(request);
+                    XmlSerializer errorSerializer = new XmlSerializer(typeof(ShipmentValidateErrorResponse));
+                    ShipmentValidateErrorResponse error = errorSerializer.Deserialize(errorReader) as ShipmentValidateErrorResponse;
+                    errorReader.Dispose();
+                    throw new Exception(string.Join("; ", error.Response.Status.Condition.Select(c => c.ConditionData)));
+                }
+            }
+
+            return result;
+        }
+
         private Request requsetInit()
         {
             return new Request()

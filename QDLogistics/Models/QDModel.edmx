@@ -141,6 +141,38 @@
           <Property Name="CompanyName" Type="nvarchar" MaxLength="100" />
           <Property Name="TimeZone" Type="int" />
         </EntityType>
+        <EntityType Name="DirectLine">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="IsEnable" Type="bit" Nullable="false" />
+          <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Name" Type="nvarchar" MaxLength="50" />
+          <Property Name="Abbreviation" Type="nvarchar" MaxLength="50" />
+          <Property Name="ContactName" Type="nvarchar" MaxLength="100" />
+          <Property Name="CompanyName" Type="nvarchar" MaxLength="100" />
+          <Property Name="PhoneNumber" Type="nvarchar" MaxLength="50" />
+          <Property Name="CountryName" Type="nvarchar" MaxLength="50" />
+          <Property Name="CountryCode" Type="nvarchar" MaxLength="3" />
+          <Property Name="City" Type="nvarchar" MaxLength="50" />
+          <Property Name="StreetLine1" Type="nvarchar(max)" />
+          <Property Name="StreetLine2" Type="nvarchar(max)" />
+          <Property Name="StateName" Type="nvarchar" MaxLength="50" />
+          <Property Name="PostalCode" Type="nvarchar" MaxLength="50" />
+        </EntityType>
+        <EntityType Name="DirectLineLabel">
+          <Key>
+            <PropertyRef Name="LabelID" />
+          </Key>
+          <Property Name="IsEnable" Type="bit" Nullable="false" />
+          <Property Name="LabelID" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="BoxID" Type="nvarchar" MaxLength="50" />
+          <Property Name="PrevBoxID" Type="nvarchar" MaxLength="50" />
+          <Property Name="OrderID" Type="int" Nullable="false" />
+          <Property Name="PackageID" Type="int" Nullable="false" />
+          <Property Name="Status" Type="tinyint" Nullable="false" />
+          <Property Name="Note" Type="nvarchar(max)" />
+        </EntityType>
         <EntityType Name="Items">
           <Key>
             <PropertyRef Name="ID" />
@@ -275,7 +307,6 @@
           <Property Name="DeliveryNote" Type="nvarchar" MaxLength="150" />
           <Property Name="WinitNo" Type="nvarchar" MaxLength="50" />
           <Property Name="BoxID" Type="nvarchar" MaxLength="50" />
-          <Property Name="InBox" Type="bit" />
           <Property Name="TagNo" Type="nvarchar" MaxLength="50" />
           <Property Name="FinalShippingFee" Type="decimal" Precision="18" Scale="2" />
           <Property Name="UploadTracking" Type="bit" Nullable="false" />
@@ -411,6 +442,7 @@
           <Property Name="Name" Type="nvarchar" MaxLength="50" />
           <Property Name="CarrierID" Type="int" />
           <Property Name="MethodType" Type="int" />
+          <Property Name="InBox" Type="bit" Nullable="false" />
           <Property Name="BoxType" Type="int" />
           <Property Name="DirectLine" Type="int" Nullable="false" />
           <Property Name="PrinterName" Type="nvarchar" MaxLength="50" />
@@ -418,6 +450,16 @@
           <Property Name="IsBattery" Type="bit" />
           <Property Name="CountryData" Type="nvarchar(max)" />
           <Property Name="SyncOn" Type="datetime" />
+          <Property Name="ContactName" Type="nvarchar" MaxLength="50" />
+          <Property Name="ConpanyName" Type="nvarchar" MaxLength="50" />
+          <Property Name="PhoneNumber" Type="nvarchar" MaxLength="50" />
+          <Property Name="CountryName" Type="nvarchar" MaxLength="50" />
+          <Property Name="CountryCode" Type="nvarchar" MaxLength="3" />
+          <Property Name="City" Type="nvarchar" MaxLength="50" />
+          <Property Name="StreetLine1" Type="nvarchar(max)" />
+          <Property Name="StreetLine2" Type="nvarchar(max)" />
+          <Property Name="StateName" Type="nvarchar" MaxLength="50" />
+          <Property Name="PostalCode" Type="nvarchar" MaxLength="50" />
         </EntityType>
         <EntityType Name="Skus">
           <Key>
@@ -524,6 +566,18 @@
             </Principal>
             <Dependent Role="Carriers">
               <PropertyRef Name="Api" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_DirectLineLabel_Box">
+          <End Role="Box" Type="Self.Box" Multiplicity="0..1" />
+          <End Role="DirectLineLabel" Type="Self.DirectLineLabel" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Box">
+              <PropertyRef Name="BoxID" />
+            </Principal>
+            <Dependent Role="DirectLineLabel">
+              <PropertyRef Name="BoxID" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -659,6 +713,18 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_Packages_DirectLineLabel">
+          <End Role="DirectLineLabel" Type="Self.DirectLineLabel" Multiplicity="0..1" />
+          <End Role="Packages" Type="Self.Packages" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="DirectLineLabel">
+              <PropertyRef Name="LabelID" />
+            </Principal>
+            <Dependent Role="Packages">
+              <PropertyRef Name="TagNo" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_Packages_Orders">
           <End Role="Orders" Type="Self.Orders" Multiplicity="0..1" />
           <End Role="Packages" Type="Self.Packages" Multiplicity="*" />
@@ -777,6 +843,8 @@
           <EntitySet Name="CarrierAPI" EntityType="Self.CarrierAPI" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Carriers" EntityType="Self.Carriers" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Companies" EntityType="Self.Companies" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="DirectLine" EntityType="Self.DirectLine" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="DirectLineLabel" EntityType="Self.DirectLineLabel" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Items" EntityType="Self.Items" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Manufacturers" EntityType="Self.Manufacturers" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Menu" EntityType="Self.Menu" Schema="dbo" store:Type="Tables" />
@@ -809,6 +877,10 @@
           <AssociationSet Name="FK_Carriers_CarrierAPI" Association="Self.FK_Carriers_CarrierAPI">
             <End Role="CarrierAPI" EntitySet="CarrierAPI" />
             <End Role="Carriers" EntitySet="Carriers" />
+          </AssociationSet>
+          <AssociationSet Name="FK_DirectLineLabel_Box" Association="Self.FK_DirectLineLabel_Box">
+            <End Role="Box" EntitySet="Box" />
+            <End Role="DirectLineLabel" EntitySet="DirectLineLabel" />
           </AssociationSet>
           <AssociationSet Name="FK_Items_Orders" Association="Self.FK_Items_Orders">
             <End Role="Orders" EntitySet="Orders" />
@@ -852,6 +924,10 @@
           </AssociationSet>
           <AssociationSet Name="FK_Packages_Carriers" Association="Self.FK_Packages_Carriers">
             <End Role="ShippingMethod" EntitySet="ShippingMethod" />
+            <End Role="Packages" EntitySet="Packages" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Packages_DirectLineLabel" Association="Self.FK_Packages_DirectLineLabel">
+            <End Role="DirectLineLabel" EntitySet="DirectLineLabel" />
             <End Role="Packages" EntitySet="Packages" />
           </AssociationSet>
           <AssociationSet Name="FK_Packages_Orders" Association="Self.FK_Packages_Orders">
@@ -1018,6 +1094,16 @@
             <End Role="Box" EntitySet="Box" />
             <End Role="Packages" EntitySet="Packages" />
           </AssociationSet>
+          <EntitySet Name="DirectLineLabel" EntityType="QDLogisticsModel.DirectLineLabel" />
+          <AssociationSet Name="FK_DirectLineLabel_Box" Association="QDLogisticsModel.FK_DirectLineLabel_Box">
+            <End Role="Box" EntitySet="Box" />
+            <End Role="DirectLineLabel" EntitySet="DirectLineLabel" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Packages_DirectLineLabel" Association="QDLogisticsModel.FK_Packages_DirectLineLabel">
+            <End Role="DirectLineLabel" EntitySet="DirectLineLabel" />
+            <End Role="Packages" EntitySet="Packages" />
+          </AssociationSet>
+          <EntitySet Name="DirectLine" EntityType="QDLogisticsModel.DirectLine" />
           </EntityContainer>
         <EntityType Name="Addresses">
           <Key>
@@ -1215,7 +1301,6 @@
           <Property Name="DeliveryNote" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
           <Property Name="WinitNo" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="BoxID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Name="InBox" Type="Boolean" />
           <Property Name="TagNo" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="FinalShippingFee" Type="Decimal" Precision="18" Scale="2" />
           <Property Name="UploadTracking" Type="Boolean" Nullable="false" DefaultValue="True" />
@@ -1234,6 +1319,7 @@
           <Property Name="Height" Type="Double" />
           <NavigationProperty Name="Method" Relationship="QDLogisticsModel.FK_Packages_Carriers" FromRole="Packages" ToRole="ShippingMethod" />
           <NavigationProperty Name="Box" Relationship="QDLogisticsModel.FK_Packages_Box" FromRole="Packages" ToRole="Box" />
+          <NavigationProperty Name="Label" Relationship="QDLogisticsModel.FK_Packages_DirectLineLabel" FromRole="Packages" ToRole="DirectLineLabel" />
         </EntityType>
         <EntityType Name="Payments">
           <Key>
@@ -1750,6 +1836,7 @@
           <Property Name="Name" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="CarrierID" Type="Int32" />
           <Property Name="MethodType" Type="Int32" />
+          <Property Name="InBox" Type="Boolean" Nullable="false" />
           <Property Name="BoxType" Type="Int32" />
           <Property Name="DirectLine" Type="Int32" Nullable="false" />
           <Property Name="PrinterName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
@@ -1760,6 +1847,16 @@
           <NavigationProperty Name="Carriers" Relationship="QDLogisticsModel.FK_ShippingMethod_Carriers" FromRole="ShippingMethod" ToRole="Carriers" />
           <NavigationProperty Name="Packages" Relationship="QDLogisticsModel.FK_Packages_Carriers" FromRole="ShippingMethod" ToRole="Packages" />
           <NavigationProperty Name="Services" Relationship="QDLogisticsModel.FK_Services_Carriers" FromRole="ShippingMethod" ToRole="Services" />
+          <Property Name="ContactName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="ConpanyName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="PhoneNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="CountryName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="CountryCode" Type="String" MaxLength="3" FixedLength="false" Unicode="true" />
+          <Property Name="City" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="StreetLine1" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="StreetLine2" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="StateName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="PostalCode" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
         </EntityType>
         <Association Name="FK_ShippingMethod_Carriers">
           <End Type="QDLogisticsModel.Carriers" Role="Carriers" Multiplicity="0..1" />
@@ -1816,6 +1913,7 @@
           <Property Name="Note" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="Create_at" Type="DateTime" Nullable="false" Precision="3" />
           <NavigationProperty Name="Packages" Relationship="QDLogisticsModel.FK_Packages_Box" FromRole="Box" ToRole="Packages" />
+          <NavigationProperty Name="DirectLineLabel" Relationship="QDLogisticsModel.FK_DirectLineLabel_Box" FromRole="Box" ToRole="DirectLineLabel" />
         </EntityType>
         <Association Name="FK_Packages_Box">
           <End Type="QDLogisticsModel.Box" Role="Box" Multiplicity="0..1" />
@@ -1829,6 +1927,64 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <EntityType Name="DirectLineLabel">
+          <Key>
+            <PropertyRef Name="LabelID" />
+          </Key>
+          <Property Name="IsEnable" Type="Boolean" Nullable="false" />
+          <Property Name="LabelID" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="BoxID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="PrevBoxID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="OrderID" Type="Int32" Nullable="false" />
+          <Property Name="PackageID" Type="Int32" Nullable="false" />
+          <Property Name="Status" Type="Byte" Nullable="false" />
+          <Property Name="Note" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="Box" Relationship="QDLogisticsModel.FK_DirectLineLabel_Box" FromRole="DirectLineLabel" ToRole="Box" />
+          <NavigationProperty Name="Packages" Relationship="QDLogisticsModel.FK_Packages_DirectLineLabel" FromRole="DirectLineLabel" ToRole="Packages" />
+        </EntityType>
+        <Association Name="FK_DirectLineLabel_Box">
+          <End Type="QDLogisticsModel.Box" Role="Box" Multiplicity="0..1" />
+          <End Type="QDLogisticsModel.DirectLineLabel" Role="DirectLineLabel" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Box">
+              <PropertyRef Name="BoxID" />
+            </Principal>
+            <Dependent Role="DirectLineLabel">
+              <PropertyRef Name="BoxID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Packages_DirectLineLabel">
+          <End Type="QDLogisticsModel.DirectLineLabel" Role="DirectLineLabel" Multiplicity="0..1" />
+          <End Type="QDLogisticsModel.Packages" Role="Packages" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="DirectLineLabel">
+              <PropertyRef Name="LabelID" />
+            </Principal>
+            <Dependent Role="Packages">
+              <PropertyRef Name="TagNo" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityType Name="DirectLine">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="IsEnable" Type="Boolean" Nullable="false" />
+          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" />
+          <Property Name="Name" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Abbreviation" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="ContactName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="CompanyName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="PhoneNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="CountryName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="CountryCode" Type="String" MaxLength="3" FixedLength="false" Unicode="true" />
+          <Property Name="City" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="StreetLine1" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="StreetLine2" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="StateName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="PostalCode" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+        </EntityType>
         </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -1996,7 +2152,6 @@
           <EntitySetMapping Name="Packages">
             <EntityTypeMapping TypeName="QDLogisticsModel.Packages">
               <MappingFragment StoreEntitySet="Packages">
-                <ScalarProperty Name="InBox" ColumnName="InBox" />
                 <ScalarProperty Name="TagNo" ColumnName="TagNo" />
                 <ScalarProperty Name="BoxID" ColumnName="BoxID" />
                 <ScalarProperty Name="ShippingMethod" ColumnName="ShippingMethod" />
@@ -2297,6 +2452,17 @@
           <EntitySetMapping Name="ShippingMethod">
             <EntityTypeMapping TypeName="QDLogisticsModel.ShippingMethod">
               <MappingFragment StoreEntitySet="ShippingMethod">
+                <ScalarProperty Name="PostalCode" ColumnName="PostalCode" />
+                <ScalarProperty Name="StateName" ColumnName="StateName" />
+                <ScalarProperty Name="StreetLine2" ColumnName="StreetLine2" />
+                <ScalarProperty Name="StreetLine1" ColumnName="StreetLine1" />
+                <ScalarProperty Name="City" ColumnName="City" />
+                <ScalarProperty Name="CountryCode" ColumnName="CountryCode" />
+                <ScalarProperty Name="CountryName" ColumnName="CountryName" />
+                <ScalarProperty Name="PhoneNumber" ColumnName="PhoneNumber" />
+                <ScalarProperty Name="ConpanyName" ColumnName="ConpanyName" />
+                <ScalarProperty Name="ContactName" ColumnName="ContactName" />
+                <ScalarProperty Name="InBox" ColumnName="InBox" />
                 <ScalarProperty Name="DirectLine" ColumnName="DirectLine" />
                 <ScalarProperty Name="SyncOn" ColumnName="SyncOn" />
                 <ScalarProperty Name="CountryData" ColumnName="CountryData" />
@@ -2329,6 +2495,40 @@
                 <ScalarProperty Name="WITID" ColumnName="WITID" />
                 <ScalarProperty Name="SupplierBoxID" ColumnName="SupplierBoxID" />
                 <ScalarProperty Name="BoxID" ColumnName="BoxID" />
+                <ScalarProperty Name="IsEnable" ColumnName="IsEnable" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="DirectLineLabel">
+            <EntityTypeMapping TypeName="QDLogisticsModel.DirectLineLabel">
+              <MappingFragment StoreEntitySet="DirectLineLabel">
+                <ScalarProperty Name="PrevBoxID" ColumnName="PrevBoxID" />
+                <ScalarProperty Name="BoxID" ColumnName="BoxID" />
+                <ScalarProperty Name="Note" ColumnName="Note" />
+                <ScalarProperty Name="Status" ColumnName="Status" />
+                <ScalarProperty Name="PackageID" ColumnName="PackageID" />
+                <ScalarProperty Name="OrderID" ColumnName="OrderID" />
+                <ScalarProperty Name="LabelID" ColumnName="LabelID" />
+                <ScalarProperty Name="IsEnable" ColumnName="IsEnable" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="DirectLine">
+            <EntityTypeMapping TypeName="QDLogisticsModel.DirectLine">
+              <MappingFragment StoreEntitySet="DirectLine">
+                <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="PostalCode" ColumnName="PostalCode" />
+                <ScalarProperty Name="StateName" ColumnName="StateName" />
+                <ScalarProperty Name="StreetLine2" ColumnName="StreetLine2" />
+                <ScalarProperty Name="StreetLine1" ColumnName="StreetLine1" />
+                <ScalarProperty Name="City" ColumnName="City" />
+                <ScalarProperty Name="CountryCode" ColumnName="CountryCode" />
+                <ScalarProperty Name="CountryName" ColumnName="CountryName" />
+                <ScalarProperty Name="PhoneNumber" ColumnName="PhoneNumber" />
+                <ScalarProperty Name="CompanyName" ColumnName="CompanyName" />
+                <ScalarProperty Name="ContactName" ColumnName="ContactName" />
+                <ScalarProperty Name="Abbreviation" ColumnName="Abbreviation" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
                 <ScalarProperty Name="IsEnable" ColumnName="IsEnable" />
               </MappingFragment>
             </EntityTypeMapping>

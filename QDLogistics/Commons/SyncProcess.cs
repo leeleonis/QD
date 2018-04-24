@@ -430,7 +430,7 @@ namespace QDLogistics.Commons
 
             try
             {
-                MyHelp.Log("Packages", package.OrderID, "訂單包裹SC更新", Session);
+                MyHelp.Log("Packages", package.ID, "訂單包裹SC更新", Session);
 
                 if (!SCWS.Is_login) throw new Exception("SC is not logged in!");
 

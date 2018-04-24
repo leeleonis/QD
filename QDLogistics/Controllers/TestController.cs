@@ -1,16 +1,15 @@
 ﻿using CarrierApi.DHL;
 using CarrierApi.FedEx;
 using CarrierApi.Winit;
+using DirectLineApi.IDS;
 using QDLogistics.Commons;
 using QDLogistics.Models;
 using QDLogistics.Models.Repositiry;
 using QDLogistics.OrderService;
-using QDLogistics.PurchaseOrderService;
 using SellerCloud_WebService;
 using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -32,11 +31,14 @@ namespace QDLogistics.Controllers
             IRepository<Orders> Orders = new GenericRepository<Orders>(db);
             SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
 
-            int OrderID = 5447014;
+            int OrderID = 5462611;
             var order = Orders.Get(OrderID);
             if (SCWS.Is_login)
             {
                 var SC_order = SCWS.Get_OrderStatus(OrderID);
+                var SC_order2 = SCWS.Get_OrderData(OrderID);
+                //SyncProcess Sync = new SyncProcess(Session);
+                //string message = Sync.Sync_Order(OrderID);
                 //var address = DataProcess.SetAddressData(order.Addresses, SC_order.ShippingAddress, SC_order.BillingAddress);
             }
         }
@@ -271,9 +273,9 @@ namespace QDLogistics.Controllers
 
             using (IRepository<Packages> Packages = new GenericRepository<Packages>(db))
             {
-                foreach(int orderID in OrderIDs)
+                foreach (int orderID in OrderIDs)
                 {
-                    OrderData orderData = SCWS.Get_OrderData(orderID);
+                    OrderService.OrderData orderData = SCWS.Get_OrderData(orderID);
                     OrderService.Order SC_order = orderData.Order;
                     string shippingCarrier = SC_order.ShippingCarrier;
 
@@ -303,7 +305,7 @@ namespace QDLogistics.Controllers
             {
                 foreach (int orderID in OrderIDs)
                 {
-                    OrderData orderData = SCWS.Get_OrderData(orderID);
+                    OrderService.OrderData orderData = SCWS.Get_OrderData(orderID);
                     OrderService.Order SC_order = orderData.Order;
 
                     var SC_items = SC_order.Items.ToArray();
@@ -316,10 +318,22 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public void ConvertTo(byte num)
+        public void IDS_Test(int orderID)
         {
-            var c = Encoding.ASCII.GetString(new byte[] { num });
-            Response.Write(c);
+            Packages package = db.Packages.AsNoTracking().First(p => p.OrderID.Value.Equals(orderID));
+
+            //IDS_API IDS = new IDS_API(package.Method.Carriers.CarrierAPI);
+            //var result = IDS.GetTrackingNumber(package);
+
+            CarrierAPI api = new CarrierAPI
+            {
+                IsTest = false,
+                ApiAccount = "TW018",
+                ApiPassword = "000000"
+            };
+
+            IDS_API IDS = new IDS_API(api);
+            var result = IDS.GetToken();
         }
     }
 }

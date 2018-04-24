@@ -44,7 +44,6 @@ namespace QDLogistics.Models
         public string DeliveryNote { get; set; }
         public string WinitNo { get; set; }
         public string BoxID { get; set; }
-        public Nullable<bool> InBox { get; set; }
         public string TagNo { get; set; }
         public Nullable<decimal> FinalShippingFee { get; set; }
         public bool UploadTracking { get; set; }
@@ -65,5 +64,6 @@ namespace QDLogistics.Models
         public virtual Orders Orders { get; set; }
         public virtual ShippingMethod Method { get; set; }
         public virtual Box Box { get; set; }
+        public virtual DirectLineLabel Label { get; set; }
     }
 }

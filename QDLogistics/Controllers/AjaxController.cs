@@ -172,7 +172,6 @@ namespace QDLogistics.Controllers
                     StatusCode = data.order.StatusCode,
                     RushOrder = data.order.RushOrder,
                     UploadTracking = uploadDefault.Contains(data.order.ShippingServiceSelected) ? false : data.package.UploadTracking,
-                    InBox = data.package.InBox,
                     Instructions = data.order.Instructions,
                     Comment = string.IsNullOrEmpty(data.package.Comment) ? "" : data.package.Comment,
                     ProcessBack = data.package.ProcessBack
@@ -218,7 +217,6 @@ namespace QDLogistics.Controllers
                     package.Export = oData.Export.Value;
                     package.ExportMethod = oData.ExportMethod.Value;
                     package.UploadTracking = oData.UploadTracking.Value;
-                    package.InBox = oData.InBox.Value;
                     package.Comment = oData.Comment;
                     Packages.Update(package, oData.PackageID);
 
@@ -527,8 +525,10 @@ namespace QDLogistics.Controllers
             var packageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨));
             if (!methodID.Equals(0)) packageFilter = packageFilter.Where(p => p.ShippingMethod.Value.Equals(methodID));
 
+            var methodList = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && !m.IsDirectLine).ToList();
+
             ObjectContext context = new ObjectContext("name=QDLogisticsEntities");
-            var ProductList = packageFilter.ToList()
+            var ProductList = packageFilter.ToList().Join(methodList, p => p.ShippingMethod, m => m.ID, (p, m) => p)
                 .Join(context.ExecuteStoreQuery<Items>(itemSelect).ToList(), p => p.ID, i => i.PackageID, (p, i) => p)
                 .Join(context.ExecuteStoreQuery<Orders>(orderSelect).ToList(), p => p.OrderID, o => o.OrderID, (package, order) => new { order, package })
                 .Join(context.ExecuteStoreQuery<PickProduct>(pickSelect).ToList(), op => op.package.ID, pk => pk.PackageID, (op, pick) => new { op.order, op.package, pick }).Distinct()
@@ -648,8 +648,10 @@ namespace QDLogistics.Controllers
             string orderSelect = string.Format("SELECT * FROM Orders WHERE StatusCode = {0}", (int)OrderStatusCode.InProcess);
             string itemSelect = string.Format("SELECT * FROM Items WHERE IsEnable = 1 AND ShipFromWarehouseID = {0}", warehouseId);
 
+            var methodList = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && !m.IsDirectLine).ToList();
+
             ObjectContext context = new ObjectContext("name=QDLogisticsEntities");
-            var ItemList = context.ExecuteStoreQuery<Packages>(packageSelect).ToList()
+            var ItemList = context.ExecuteStoreQuery<Packages>(packageSelect).ToList().Join(methodList, p => p.ShippingMethod, m => m.ID, (p, m) => p)
                 .Join(context.ExecuteStoreQuery<Orders>(orderSelect).ToList(), p => p.OrderID, o => o.OrderID, (package, order) => new { order, package })
                 .OrderBy(data => data.order.TimeOfOrder).OrderByDescending(data => data.order.RushOrder)
                 .Join(db.Items.AsNoTracking().Where(i => i.IsEnable.Value && i.ShipFromWarehouseID.Value.Equals(warehouseId)), op => op.package.ID, i => i.PackageID, (op, item) => item).Distinct()
@@ -671,8 +673,10 @@ namespace QDLogistics.Controllers
             string orderSelect = string.Format("SELECT * FROM Orders WHERE StatusCode = {0}", (int)OrderStatusCode.InProcess);
             string itemSelect = string.Format("SELECT * FROM Items WHERE IsEnable = 1 AND ShipFromWarehouseID = {0}", warehouseId);
 
+            var methodList = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && !m.IsDirectLine).ToList();
+
             ObjectContext context = new ObjectContext("name=QDLogisticsEntities");
-            List<Items> itemList = context.ExecuteStoreQuery<Packages>(packageSelect).ToList()
+            List<Items> itemList = context.ExecuteStoreQuery<Packages>(packageSelect).ToList().Join(methodList, p => p.ShippingMethod, m => m.ID, (p, m) => p)
                 .Join(context.ExecuteStoreQuery<Orders>(orderSelect).ToList(), p => p.OrderID, o => o.OrderID, (package, order) => new { order, package })
                 .OrderBy(data => data.order.TimeOfOrder).OrderByDescending(data => data.order.RushOrder)
                 .Join(db.Items.AsNoTracking().Where(i => i.IsEnable.Value && i.ShipFromWarehouseID.Value.Equals(warehouseId)), op => op.package.ID, i => i.PackageID, (op, item) => item).Distinct().ToList();
@@ -1528,7 +1532,8 @@ namespace QDLogistics.Controllers
                         m.MethodType,
                         m.BoxType,
                         m.IsExport,
-                        m.IsBattery
+                        m.IsBattery,
+                        m.InBox
                     }).ToList());
                 }
             }
@@ -1559,6 +1564,7 @@ namespace QDLogistics.Controllers
                     method.BoxType = sData.BoxType;
                     method.IsExport = sData.IsExport;
                     method.IsBattery = sData.IsBattery;
+                    method.InBox = sData.InBox;
                     ShippingMethod.Update(method);
                 }
 
@@ -1623,6 +1629,34 @@ namespace QDLogistics.Controllers
 
             Carriers.SaveChanges();
             return Content(JsonConvert.SerializeObject(new { status = true }), "appllication/json");
+        }
+
+        public ActionResult GetDirectLineData(int draw, int start, int length, Dictionary<string, string> search)
+        {
+            using (IRepository<DirectLine> DirectLine = new GenericRepository<DirectLine>(db))
+            {
+                int total = 0;
+                string value = search["value"];
+                List<Object> dataList = new List<Object>();
+
+                var DirectLineFilter = DirectLine.GetAll(true).Where(d => d.IsEnable);
+                if (!string.IsNullOrEmpty(value)) DirectLineFilter = DirectLineFilter.Where(d => d.Name.Contains(value));
+                var results = DirectLineFilter.ToList();
+                if (results.Any())
+                {
+                    total = results.Count();
+                    dynamic routeValue = new RouteValue(start, length, value);
+
+                    dataList.AddRange(results.OrderBy(d => d.ID).Skip(start).Take(length).Select(d => new
+                    {
+                        abbrevation = d.Abbreviation,
+                        name = d.Name,
+                        action = getButton("Default", "shipping", "directLineEdit", d.ID, routeValue) + getButton("Default", "shipping", "directLineDelete", d.ID, routeValue)
+                    }));
+                }
+
+                return Json(new { draw = draw, data = dataList, recordsFiltered = total, recordsTotal = total }, JsonRequestBehavior.AllowGet);
+            }
         }
 
         [CheckSession]
@@ -2048,8 +2082,7 @@ namespace QDLogistics.Controllers
             switch (action)
             {
                 case "edit":
-                    button = "<a href='" + url + "' class='btn btn-default'><i class='fa fa-gear'></i><span class='hidden-mobile'> 編輯</span></a>";
-                    break;
+                case "directLineEdit":
                 case "apiedit":
                     button = "<a href='" + url + "' class='btn btn-default'><i class='fa fa-gear'></i><span class='hidden-mobile'> 編輯</span></a>";
                     break;
@@ -2057,8 +2090,7 @@ namespace QDLogistics.Controllers
                     button = "<a href='" + url + "' class='btn btn-default'><i class='fa fa-gear'></i><span class='hidden-mobile'> 瀏覽</span></a>";
                     break;
                 case "delete":
-                    button = "<a href='" + url + "' class='btn btn-danger' onclick='return confirm(\'確定要刪除?\');'><i class='glyphicon glyphicon-trash'></i><span class='hidden-mobile'> 刪除</span></a>";
-                    break;
+                case "directLineDelete":
                 case "apidelete":
                     button = "<a href='" + url + "' class='btn btn-danger' onclick='return confirm(\'確定要刪除?\');'><i class='glyphicon glyphicon-trash'></i><span class='hidden-mobile'> 刪除</span></a>";
                     break;

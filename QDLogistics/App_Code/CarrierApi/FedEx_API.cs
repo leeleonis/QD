@@ -259,6 +259,132 @@ namespace CarrierApi.FedEx
             return reply;
         }
 
+        public ProcessShipmentReply CreateBox(Box box, ShippingMethod method, DirectLine directLine)
+        {
+            ProcessShipmentRequest request = _shipmentInit();
+
+            request.TransactionDetail = new QDLogistics.FedExShipService.TransactionDetail();
+            request.TransactionDetail.CustomerTransactionId = "*** Process Shipment Request ***";
+
+            request.RequestedShipment = new RequestedShipment()
+            {
+                ShipTimestamp = DateTime.Today,
+                DropoffType = DropoffType.REGULAR_PICKUP,
+                ServiceType = (QDLogistics.FedExShipService.ServiceType)method.MethodType,
+                PackagingType = (QDLogistics.FedExShipService.PackagingType)method.BoxType,
+                Shipper = _shipperInit(),
+                ShippingChargesPayment = new Payment() { PaymentType = PaymentType.SENDER, Payor = new Payor() { ResponsibleParty = _shipperInit() } },
+                PackageCount = "1"
+            };
+
+            request.RequestedShipment.Recipient = new Party()
+            {
+                Contact = new QDLogistics.FedExShipService.Contact()
+                {
+                    PersonName = directLine.ContactName,
+                    CompanyName = directLine.CompanyName,
+                    PhoneNumber = directLine.PhoneNumber
+                },
+                Address = new QDLogistics.FedExShipService.Address()
+                {
+                    StreetLines = new string[] { directLine.StreetLine1, directLine.StreetLine2 },
+                    City = directLine.City,
+                    StateOrProvinceCode = directLine.StateName,
+                    PostalCode = directLine.PostalCode,
+                    CountryName = directLine.CountryName,
+                    CountryCode = directLine.CountryCode
+                }
+            };
+
+            List<Items> itemList = box.Packages.Where(p => p.IsEnable.Value).SelectMany(p => p.Items.Where(i => i.IsEnable.Value)).ToList();
+            string currency = Enum.GetName(typeof(QDLogistics.OrderService.CurrencyCodeType2), box.Packages.First(p => p.IsEnable.Value).Orders.OrderCurrencyCode.Value);
+            QDLogistics.FedExShipService.Money customsValue = new QDLogistics.FedExShipService.Money() { Currency = currency, Amount = box.Packages.Where(p => p.IsEnable.Value).Sum(p => p.DeclaredTotal) };
+            QDLogistics.FedExShipService.Commodity commodity = new QDLogistics.FedExShipService.Commodity
+            {
+                NumberOfPieces = "1",
+                Description = string.Join(", ", itemList.Select(i => i.Skus.ProductType.ProductTypeName).Distinct().ToArray()),
+                CountryOfManufacture = string.Join(", ", itemList.Select(i => i.Skus.Origin).Distinct().ToArray()),
+                Weight = new QDLogistics.FedExShipService.Weight()
+                {
+                    Units = QDLogistics.FedExShipService.WeightUnits.KG,
+                    Value = itemList.Sum(i => i.Qty.Value * ((decimal)i.Skus.Weight / 1000))
+                },
+                Quantity = 1,
+                QuantityUnits = "EA",
+                UnitPrice = customsValue,
+                CustomsValue = customsValue,
+                QuantitySpecified = true
+            };
+
+            request.RequestedShipment.CustomsClearanceDetail = new CustomsClearanceDetail()
+            {
+                DutiesPayment = new Payment() { PaymentType = PaymentType.RECIPIENT },
+                DocumentContent = InternationalDocumentContentType.DOCUMENTS_ONLY,
+                CustomsValue = customsValue,
+                Commodities = new QDLogistics.FedExShipService.Commodity[] { commodity },
+                DocumentContentSpecified = true
+            };
+
+            request.RequestedShipment.RequestedPackageLineItems = new RequestedPackageLineItem[] {
+                new RequestedPackageLineItem()
+                {
+                    SequenceNumber = "1",
+                    InsuredValue = customsValue,
+                    Weight = commodity.Weight,
+                    CustomerReferences = new CustomerReference[]
+                    {
+                        new CustomerReference()
+                        {
+                            CustomerReferenceType = CustomerReferenceType.CUSTOMER_REFERENCE,
+                            Value = box.BoxID
+                        }
+                    }
+                }
+            };
+
+            request.RequestedShipment.LabelSpecification = new LabelSpecification()
+            {
+                LabelFormatType = LabelFormatType.COMMON2D,
+                ImageType = ShippingDocumentImageType.ZPLII,
+                LabelStockType = LabelStockType.STOCK_4X6,
+                LabelPrintingOrientation = LabelPrintingOrientationType.BOTTOM_EDGE_OF_TEXT_FIRST,
+                ImageTypeSpecified = true,
+                LabelStockTypeSpecified = true,
+                LabelPrintingOrientationSpecified = true
+            };
+
+            ProcessShipmentReply reply;
+            using (ShipPortTypeClient client = new ShipPortTypeClient())
+            {
+                var endpoint = client.Endpoint;
+                ConsoleOutputBehavior consoleOutputBehavior = new ConsoleOutputBehavior();
+                client.Endpoint.Behaviors.Add(consoleOutputBehavior);
+
+                try
+                {
+                    reply = client.processShipment(request);
+                }
+                catch (Exception e)
+                {
+                    QDLogistics.FedExShipService.Notification notification = new QDLogistics.FedExShipService.Notification();
+
+                    if (!string.IsNullOrEmpty(consoleOutputBehavior.ConsoleOutputInspector.ResponseXML))
+                    {
+                        XElement element = XElement.Parse(consoleOutputBehavior.ConsoleOutputInspector.ResponseXML);
+                        notification.Message = element.Attributes("Message").Any() ? element.Attributes("Message").First().Value : element.Attributes("Desc").First().Value;
+                    }
+                    else
+                    {
+                        notification.Message = e.Message;
+                    }
+
+                    reply = new ProcessShipmentReply() { Notifications = new QDLogistics.FedExShipService.Notification[] { notification } };
+                }
+            }
+
+            return reply;
+        }
+
         private ProcessShipmentRequest _shipmentInit()
         {
             ProcessShipmentRequest request = new ProcessShipmentRequest();

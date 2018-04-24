@@ -132,7 +132,12 @@
 
                         $('.select-status').on('change', function () {
                             if (confirm('是否確定要修改訂單狀態?')) {
-                                alert('TEST');
+                                getOption("@Url.Action("changeOrderStatus", "directLine")", 'post', { packageID: $(this).data('id'), status: $(this).val() }).done(function (response) {
+                                    if (response['status']) {
+                                    } else {
+                                        alert(response['message']);
+                                    }
+                                });
                             } else {
                                 $(this).find('option').prop('selected', function () { return this.defaultSelected; });
                             }

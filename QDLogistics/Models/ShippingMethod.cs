@@ -27,6 +27,7 @@ namespace QDLogistics.Models
         public string Name { get; set; }
         public Nullable<int> CarrierID { get; set; }
         public Nullable<int> MethodType { get; set; }
+        public bool InBox { get; set; }
         public Nullable<int> BoxType { get; set; }
         public int DirectLine { get; set; }
         public string PrinterName { get; set; }
@@ -34,6 +35,16 @@ namespace QDLogistics.Models
         public Nullable<bool> IsBattery { get; set; }
         public string CountryData { get; set; }
         public Nullable<System.DateTime> SyncOn { get; set; }
+        public string ContactName { get; set; }
+        public string ConpanyName { get; set; }
+        public string PhoneNumber { get; set; }
+        public string CountryName { get; set; }
+        public string CountryCode { get; set; }
+        public string City { get; set; }
+        public string StreetLine1 { get; set; }
+        public string StreetLine2 { get; set; }
+        public string StateName { get; set; }
+        public string PostalCode { get; set; }
     
         public virtual Carriers Carriers { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
