@@ -1429,7 +1429,7 @@ namespace QDLogistics.Controllers
             {
                 total = results.Count();
 
-                dataList.AddRange(results.OrderBy(w => w.ID).Select(warehouse => new
+                dataList.AddRange(results.OrderBy(w => w.Name).Select(warehouse => new
                 {
                     ID = warehouse.ID,
                     Name = warehouse.Name,
@@ -1522,7 +1522,7 @@ namespace QDLogistics.Controllers
                 {
                     total = results.Count();
 
-                    dataList.AddRange(results.Select(m => new
+                    dataList.AddRange(results.OrderBy(m => m.Name).Select(m => new
                     {
                         m.ID,
                         CarrierType = carrierList.ContainsKey(m.CarrierID.Value) ? carrierList[m.CarrierID.Value] : "",
@@ -1589,7 +1589,7 @@ namespace QDLogistics.Controllers
                 {
                     total = results.Count();
 
-                    dataList.AddRange(results.Select(c => new
+                    dataList.AddRange(results.OrderBy(c => c.Api).Select(c => new
                     {
                         c.ID,
                         c.Name,

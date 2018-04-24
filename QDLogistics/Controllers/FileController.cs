@@ -300,14 +300,24 @@ namespace QDLogistics.Controllers
                 {
                     ClientPrintJob cpj2 = new ClientPrintJob();
 
-                    int index = fileName.IndexOf("AirWaybill.pdf");
+                    int index = 0;
+                    if (fileName.Any(f => f.Equals("AirWaybill.pdf")))
+                    {
+                        index = fileName.IndexOf("AirWaybill.pdf");
+                    }
+
+                    if (fileName.Any(f => f.Equals("Label.pdf")))
+                    {
+                        index = fileName.IndexOf("Label.pdf");
+                    }
+
                     cpj2.PrintFile = new PrintFile(HttpUtility.UrlDecode(filePath[index]), HttpUtility.UrlDecode(fileName[index]), amount[index]);
                     cpj2.ClientPrinter = new InstalledPrinter(HttpUtility.UrlDecode(printerName));
                     cpjg.Add(cpj2);
                 }
 
                 ClientPrintJob cpj1 = new ClientPrintJob();
-                foreach (var name in fileName.Select((value, i) => new { i, value }).Where(n => !string.IsNullOrEmpty(n.value) && !n.value.Equals("AirWaybill.pdf")))
+                foreach (var name in fileName.Select((value, i) => new { i, value }).Where(n => !string.IsNullOrEmpty(n.value) && !n.value.Equals("AirWaybill.pdf") && !n.value.Equals("Label.pdf")))
                 {
                     cpj1.PrintFileGroup.Add(new PrintFile(HttpUtility.UrlDecode(filePath[name.i]), HttpUtility.UrlDecode(name.value), amount[name.i]));
                 }

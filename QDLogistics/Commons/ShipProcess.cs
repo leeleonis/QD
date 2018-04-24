@@ -10,6 +10,7 @@ using CarrierApi.DHL;
 using CarrierApi.FedEx;
 using CarrierApi.Winit;
 using DirectLineApi.IDS;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
@@ -211,8 +212,9 @@ namespace QDLogistics.Commons
 
                         if (!result.status.Equals("200"))
                         {
-                            Dictionary<int, string> error = result.error as Dictionary<int, string>;
-                            throw new Exception(error[package.OrderID.Value]);
+                            var error = JsonConvert.DeserializeObject<List<List<List<object>>>>(JsonConvert.SerializeObject(result.error));
+                            var msg = JsonConvert.SerializeObject(error.SelectMany(e => e).First(e => e[0].Equals(package.OrderID.ToString()))[1]);
+                            throw new Exception(JsonConvert.DeserializeObject<string[]>(msg)[0]);
                         }
 
                         package.TagNo = result.labels.First(l => l.salesRecordNumber.Equals(package.OrderID.ToString())).orderid;

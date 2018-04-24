@@ -233,7 +233,7 @@
             });
 
             $pickBtn.click(function () {
-                $pickWin.window("open").window("refresh", "@Url.Action("packagePickUpList", "ajax")");
+                $pickWin.window("open").window("refresh", "@Url.Action("packagePickUpList", "directLine")");
             });
 
             $shipBtn.click(function () {
@@ -335,7 +335,7 @@
         }
 
         function printPickUpList() {
-            var url = '@Url.Action("printPickUpList", "ajax")';
+            var url = '@Url.Action("printPickUpList", "directLine")';
             ajaxUrl(url, 'post', { warehouseId:@route.warehouseId, adminId:@route.adminId }).done(function (response) {
                 if(response['status']){
                     print($.param({fileName: response['fileName'], filePath: response['filePath'], amount: response['amount']}, true));
@@ -725,8 +725,7 @@
                             if (response.status) {
                                 if (response.data.fileList.length > 0) {
                                     var file = response.data.fileList[0];
-                                    print($.param({ fileName: file['fileName'][0], filePath: file['filePath'][0], amount: file['amount'][0], printerName: file['printerName'] }, true));
-                                    print($.param({ fileName: file['fileName'][1], filePath: file['filePath'][1], amount: file['amount'][1], printerName: "" }, true));
+                                    print($.param({ fileName: file['fileName'], filePath: file['filePath'], amount: file['amount'], printerName: file['printerName'] }, true));
                                 }
 
                                 if (response.data.errorList.length > 0) {

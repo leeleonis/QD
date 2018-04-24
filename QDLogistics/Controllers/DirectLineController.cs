@@ -86,7 +86,7 @@ namespace QDLogistics.Controllers
 
         public ActionResult BoxEdit(string id)
         {
-            if (!MyHelp.CheckAuth("directLine", "delivery", EnumData.AuthType.Insert)) return RedirectToAction("index", "main");
+            if (!MyHelp.CheckAuth("directLine", "delivery", EnumData.AuthType.Edit)) return RedirectToAction("index", "main");
 
             Box = new GenericRepository<Box>(db);
 
@@ -147,7 +147,7 @@ namespace QDLogistics.Controllers
                 .Join(PackageFilter, o => o.OrderID, p => p.OrderID, (o, p) => new OrderJoinData() { order = o, package = p })
                 .Join(ItemFilter.GroupBy(i => i.PackageID.Value), oData => oData.package.ID, i => i.Key, (oData, i) => new OrderJoinData(oData) { item = i.First(), items = i.ToList(), itemCount = i.Sum(ii => 1 + ii.KitItemCount).Value })
                 .Join(AddressFilter, oData => oData.order.ShippingAddress, a => a.Id, (oData, a) => new OrderJoinData(oData) { address = a })
-                .Join(MethodFilter, oData => oData.package.ShippingMethod, m => m.ID, (oData, m) => new OrderJoinData(oData) { method = m });
+                .Join(MethodFilter, oData => oData.package.ShippingMethod, m => m.ID, (oData, m) => new OrderJoinData(oData) { method = m }).ToList();
 
             /** Payment Filter **/
             var PaymentFilter = db.Payments.AsNoTracking().Where(p => p.IsEnable.Value && p.PaymentType.Value.Equals((int)PaymentRecordType.Payment));
@@ -208,6 +208,150 @@ namespace QDLogistics.Controllers
             }
 
             return Json(new { total, rows = dataList }, JsonRequestBehavior.AllowGet);
+        }
+
+        public ActionResult PackagePickUpList()
+        {
+            int warehouseId = int.Parse(Session["warehouseId"].ToString());
+
+            var PackageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨) && string.IsNullOrEmpty(p.BoxID));
+
+            string packageSelect = string.Format("SELECT * FROM Packages WHERE IsEnable = 1 AND ProcessStatus = {0}", (byte)EnumData.ProcessStatus.待出貨);
+            string orderSelect = string.Format("SELECT * FROM Orders WHERE StatusCode = {0}", (int)OrderStatusCode.InProcess);
+            string itemSelect = string.Format("SELECT * FROM Items WHERE IsEnable = 1 AND ShipFromWarehouseID = {0}", warehouseId);
+
+            var methodList = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && m.IsDirectLine).ToList();
+
+            ObjectContext context = new ObjectContext("name=QDLogisticsEntities");
+            var ItemList = PackageFilter.ToList().Join(methodList, p => p.ShippingMethod, m => m.ID, (p, m) => p)
+                .Join(context.ExecuteStoreQuery<Orders>(orderSelect).ToList(), p => p.OrderID, o => o.OrderID, (package, order) => new { order, package })
+                .OrderBy(data => data.order.TimeOfOrder).OrderByDescending(data => data.order.RushOrder)
+                .Join(db.Items.AsNoTracking().Where(i => i.IsEnable.Value && i.ShipFromWarehouseID.Value.Equals(warehouseId)), op => op.package.ID, i => i.PackageID, (op, item) => item).Distinct()
+                .GroupBy(i => i.PackageID).ToList();
+
+            ViewBag.itemList = ItemList;
+            return PartialView("~/Views/Ajax/_PickUpList.cshtml");
+        }
+
+        [HttpPost]
+        public ActionResult PrintPickUpList(int warehouseId, int adminId)
+        {
+            IRepository<AdminUsers> AdminUsers = new GenericRepository<AdminUsers>(db);
+
+            AdminUsers admin = AdminUsers.Get(adminId);
+
+            var PackageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨) && string.IsNullOrEmpty(p.BoxID));
+
+            string packageSelect = string.Format("SELECT * FROM Packages WHERE IsEnable = 1 AND ProcessStatus = {0}", (byte)EnumData.ProcessStatus.待出貨);
+            string orderSelect = string.Format("SELECT * FROM Orders WHERE StatusCode = {0}", (int)OrderStatusCode.InProcess);
+            string itemSelect = string.Format("SELECT * FROM Items WHERE IsEnable = 1 AND ShipFromWarehouseID = {0}", warehouseId);
+
+            var methodList = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && m.IsDirectLine).ToList();
+
+            ObjectContext context = new ObjectContext("name=QDLogisticsEntities");
+            List<Items> itemList = PackageFilter.ToList().Join(methodList, p => p.ShippingMethod, m => m.ID, (p, m) => p)
+                .Join(context.ExecuteStoreQuery<Orders>(orderSelect).ToList(), p => p.OrderID, o => o.OrderID, (package, order) => new { order, package })
+                .OrderBy(data => data.order.TimeOfOrder).OrderByDescending(data => data.order.RushOrder)
+                .Join(db.Items.AsNoTracking().Where(i => i.IsEnable.Value && i.ShipFromWarehouseID.Value.Equals(warehouseId)), op => op.package.ID, i => i.PackageID, (op, item) => item).Distinct().ToList();
+
+            string basePath = HostingEnvironment.MapPath("~/FileUploads");
+            string DirPath = Path.Combine(basePath, "pickup");
+            if (!Directory.Exists(DirPath)) Directory.CreateDirectory(DirPath);
+            string[] fileName = new string[2];
+            string[] filePath = new string[2];
+
+            List<IGrouping<int?, Items>> itemGroupList = itemList.GroupBy(i => i.PackageID).ToList();
+
+            XLWorkbook workbook1 = new XLWorkbook();
+            if (SetWorkSheet(workbook1, "單項產品", itemGroupList.Where(i => i.Sum(ii => ii.Qty) == 1).ToList(), admin.Name))
+            {
+                fileName[0] = "Box-Single.xlsx";
+                filePath[0] = Path.Combine(DirPath, fileName[0]);
+                workbook1.SaveAs(filePath[0]);
+            }
+
+            XLWorkbook workbook2 = new XLWorkbook();
+            if (SetWorkSheet(workbook2, "多項產品", itemGroupList.Where(i => i.Sum(ii => ii.Qty) > 1).ToList(), admin.Name))
+            {
+                fileName[1] = "Box-Multiple.xlsx";
+                filePath[1] = Path.Combine(DirPath, fileName[1]);
+                workbook2.SaveAs(filePath[1]);
+            }
+
+            return Content(JsonConvert.SerializeObject(new { status = true, filePath = filePath, fileName = fileName, amount = new int[] { 1, 1 } }), "appllication /json");
+        }
+        private bool SetWorkSheet(XLWorkbook workbook, string sheetName, List<IGrouping<int?, Items>> itemGroupList, string adminName)
+        {
+            if (itemGroupList.Any())
+            {
+                JArray jObjects = new JArray();
+
+                switch (sheetName)
+                {
+                    case "單項產品":
+                        var singleList = itemGroupList.SelectMany(i => i).OrderBy(i => i.ProductID).ToList();
+
+                        foreach (Items item in singleList)
+                        {
+                            JObject jo = new JObject();
+                            jo.Add("ProductID", item.ProductID);
+                            jo.Add("ProductName", item.Skus.ProductName);
+                            jo.Add("Qty", item.Qty);
+                            jo.Add("Warehouse", item.ShipWarehouses.Name);
+                            jo.Add("PickUpDate", DateTime.Today);
+                            jo.Add("PickUpBy", adminName);
+                            jo.Add("Check", "□");
+                            jObjects.Add(jo);
+                        }
+                        break;
+                    case "多項產品":
+                        int I = 0;
+                        var multipleList = itemGroupList
+                            .ToDictionary(i => Convert.ToChar(65 + (I / 9 % 26)) + (I++ % 9 + 1).ToString(), i => i)
+                            .SelectMany(i => i.Value.Select(ii => new { block = i.Key, data = ii })).OrderBy(i => i.data.ProductID).ToList();
+
+                        foreach (var item in multipleList)
+                        {
+                            JObject jo = new JObject();
+                            jo.Add("ProductID", item.data.ProductID);
+                            jo.Add("ProductName", item.data.Skus.ProductName);
+                            jo.Add("Qty", item.data.Qty);
+                            jo.Add("Warehouse", item.data.ShipWarehouses.Name);
+                            jo.Add("PickUpDate", DateTime.Today);
+                            jo.Add("PickUpBy", adminName);
+                            jo.Add("Block", item.block);
+                            jo.Add("Check", "□");
+                            jObjects.Add(jo);
+                        }
+                        break;
+                }
+
+                var sheet = workbook.Worksheets.Add(JsonConvert.DeserializeObject<DataTable>(jObjects.ToString()), sheetName);
+                sheet.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                sheet.Style.Font.FontName = "新細明體";
+                sheet.Style.Font.FontSize = 14;
+                sheet.Column(1).Width = sheet.Column(4).Width = sheet.Column(5).Width = sheet.Column(6).Width = 12;
+                sheet.Column(2).Width = 80;
+                sheet.Column(3).Width = 5;
+                sheet.Column(7).Width = 6;
+                if (sheetName == "多項產品") sheet.Column(8).Width = 6;
+                sheet.Column(2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+                sheet.Cell(1, 2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                sheet.PageSetup.PageOrientation = XLPageOrientation.Landscape;
+                sheet.PageSetup.PagesWide = 1;
+                sheet.PageSetup.PaperSize = XLPaperSize.A4Paper;
+                sheet.PageSetup.Margins.Top = 0;
+                sheet.PageSetup.Margins.Bottom = 0;
+                sheet.PageSetup.Margins.Left = 0;
+                sheet.PageSetup.Margins.Right = 0;
+                sheet.PageSetup.Margins.Footer = 0;
+                sheet.PageSetup.Margins.Header = 0;
+                sheet.PageSetup.CenterHorizontally = true;
+
+                return true;
+            }
+
+            return false;
         }
 
         public ActionResult GetBoxData(BoxFilter filter, int page = 1, int rows = 100)
@@ -664,7 +808,7 @@ namespace QDLogistics.Controllers
                 Packages.SaveChanges();
 
                 string basePath = HostingEnvironment.MapPath("~/FileUploads");
-                result.data = new { fileName = "Label.pdf", filePath = Path.Combine(basePath, package.FilePath, "Label.pdf"), amount = 1, printName = package.Method.PrinterName };
+                result.data = new { fileName = new string[] { "Label.pdf" }, filePath = new string[] { Path.Combine(basePath, package.FilePath, "Label.pdf") }, amount = new int[] { 1 }, printName = package.Method.PrinterName };
 
                 using (Hubs.ServerHub server = new Hubs.ServerHub())
                     server.BroadcastOrderChange(package.OrderID.Value, EnumData.OrderChangeStatus.已完成出貨);
@@ -822,13 +966,20 @@ namespace QDLogistics.Controllers
                     }
 
                     fileList.Add(new { fileName, filePath, amount, printerName = method.PrinterName });
+
+                    MyHelp.Log("box", box.BoxID, string.Format("寄送 Box【{0}】報關資料", box.BoxID), Session);
+                    SendMailToCarrier(box, method, db.DirectLine.AsNoTracking().First(d => d.ID.Equals(box.DirectLine)));
+                    
+                    MyHelp.Log("box", box.BoxID, string.Format("Box【{0}】完成出貨", box.BoxID), Session);
+                }
+                else
+                {
+                    string error = string.Format("產出 Box【{0}】報關資料失敗", box.BoxID);
+                    MyHelp.Log("box", box.BoxID, error, Session);
+                    throw new Exception(error);
                 }
 
-                MyHelp.Log("box", box.BoxID, string.Format("寄送 Box【{0}】報關資料", box.BoxID), Session);
-
                 result.data = new { fileList, errorList };
-
-                MyHelp.Log("box", box.BoxID, string.Format("Box【{0}】完成出貨", box.BoxID), Session);
             }
             catch (Exception e)
             {
