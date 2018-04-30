@@ -463,6 +463,12 @@ namespace QDLogistics.Controllers
                                 package.WinitNo = null;
                             }
 
+                            if (!string.IsNullOrEmpty(package.TagNo))
+                            {
+                                package.Label.IsEnable = false;
+                                package.TagNo = package.BoxID = null;
+                            }
+
                             package.ProcessStatus = (int)EnumData.ProcessStatus.訂單管理;
                             Packages.Update(package, package.ID);
                             Packages.SaveChanges();
@@ -473,7 +479,7 @@ namespace QDLogistics.Controllers
                                 pick.IsPicked = false;
                                 pick.IsMail = false;
                                 pick.QtyPicked = 0;
-                                PickProduct.Update(pick);
+                                PickProduct.Update(pick, pick.ID);
                             }
 
                             PickProduct.SaveChanges();

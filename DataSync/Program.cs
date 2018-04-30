@@ -11,7 +11,7 @@ namespace DataSync
     class Program
     {
         //本機
-        static SqlConnection conn = new SqlConnection(Properties.Settings.Default.DataConnectionRootString);
+        static SqlConnection conn = new SqlConnection(Properties.Settings.Default.DataConnectionString);
 
 
         static SCServiceSoapClient OS_sellerCloud;
@@ -101,7 +101,7 @@ namespace DataSync
             if (result.Rows.Count > 0)
             {
                 int[] OrderIDs = result.Rows.Cast<DataRow>().Select(o => (int)o.ItemArray.First()).ToArray();
-                OrderList = OS_sellerCloud.Orders_GetOrderStates(OS_authHeader, OS_options, OrderIDs).Where(o => o.DropShipStatus == OrderService.DropShipStatusType.None)
+                OrderList = OS_sellerCloud.Orders_GetOrderStates(OS_authHeader, OS_options, OrderIDs).Where(o => o.DropShipStatus == OrderService.DropShipStatusType1.None)
                     .Select(o => new Orders()
                     {
                         OrderID = o.ID,

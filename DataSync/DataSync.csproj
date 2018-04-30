@@ -1111,6 +1111,12 @@
     <None Include="Service References\OrderService\DataSync.OrderService.GetReplacementProducts_NewResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.GetRolesForCurrentUserResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.GetRolesForUserResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
     <None Include="Service References\OrderService\DataSync.OrderService.GetSalesByCompanyAndDateRangeResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
@@ -2773,6 +2779,9 @@
     <None Include="Service References\OrderService\DataSync.OrderService.PickList_Product_OrderData_Item_GetList_BundleItemResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.PickList_Product_OrderData_Item_GetList_ForKitParentComponentsResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
     <None Include="Service References\OrderService\DataSync.OrderService.PickList_Product_OrderData_Item_GetList_OrderItemAndBundleItemResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
@@ -3077,6 +3086,9 @@
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\OrderService\DataSync.OrderService.ProductProblemFlagType_CreateResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.ProductProblemFlagType_DeleteResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\OrderService\DataSync.OrderService.ProductProblemFlagType_GetResponse.datasource">
@@ -3985,6 +3997,9 @@
     <None Include="Service References\OrderService\DataSync.OrderService.UpdatePnLOrdersAsExportedV2_PackageItemsResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.UpdatePnLOrdersAsExportedV2_SPOnlyResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
     <None Include="Service References\OrderService\DataSync.OrderService.UpdatePnLOrdersAsExportedV2_SPResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
@@ -4013,6 +4028,9 @@
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\OrderService\DataSync.OrderService.UpdateRelatedRecordAsQBExportedResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.UpdateRelatedRecordAsQBExported_SPOnlyResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\OrderService\DataSync.OrderService.UpdateRelatedRecordAsQBExported_SPResponse.datasource">
@@ -4249,13 +4267,25 @@
     <None Include="Service References\OrderService\DataSync.OrderService.WarehouseBin_CreateNewResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.WarehouseBin_CycleCount_CancelResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
     <None Include="Service References\OrderService\DataSync.OrderService.WarehouseBin_CycleCount_CommitChangesResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\OrderService\DataSync.OrderService.WarehouseBin_CycleCount_GenerateAuditResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.WarehouseBin_CycleCount_GetAuditResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.WarehouseBin_CycleCount_GetItems2Response.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
     <None Include="Service References\OrderService\DataSync.OrderService.WarehouseBin_CycleCount_GetItemsResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.WarehouseBin_CycleCount_GetListWithFiltersResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\OrderService\DataSync.OrderService.WarehouseBin_CycleCount_GetPendingResponse.datasource">
@@ -4268,6 +4298,9 @@
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\OrderService\DataSync.OrderService.WarehouseBin_CycleCount_IdentifyScanResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.WarehouseBin_CycleCount_ReverseAuditResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\OrderService\DataSync.OrderService.WarehouseBin_FindByProductIDAndWarehouseIDResponse.datasource">
@@ -4601,6 +4634,9 @@
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\OrderService\DataSync.OrderService.WarehouseInventoryTransferRequest_ReceiveProductSerialsResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OrderService\DataSync.OrderService.WarehouseInventoryTransferRequest_ReceiveProduct_2Response.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\OrderService\DataSync.OrderService.WarehouseInventoryTransferRequest_ReceiveProduct_NewResponse.datasource">

@@ -2,17 +2,19 @@
 using CarrierApi.FedEx;
 using CarrierApi.Winit;
 using DirectLineApi.IDS;
+using Ionic.Zip;
 using QDLogistics.Commons;
 using QDLogistics.Models;
 using QDLogistics.Models.Repositiry;
 using QDLogistics.OrderService;
 using SellerCloud_WebService;
 using System;
+using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Web.Hosting;
 using System.Web.Mvc;
 
 namespace QDLogistics.Controllers
@@ -322,18 +324,19 @@ namespace QDLogistics.Controllers
         {
             Packages package = db.Packages.AsNoTracking().First(p => p.OrderID.Value.Equals(orderID));
 
-            //IDS_API IDS = new IDS_API(package.Method.Carriers.CarrierAPI);
-            //var result = IDS.GetTrackingNumber(package);
+            IDS_API IDS = new IDS_API(package.Method.Carriers.CarrierAPI);
+            var result = IDS.GetTrackingNumber(package);
 
-            CarrierAPI api = new CarrierAPI
+        }
+
+        public void Box_Test(string boxID)
+        {
+            using (IRepository<Box> Box = new GenericRepository<Box>(db))
             {
-                IsTest = false,
-                ApiAccount = "TW018",
-                ApiPassword = "000000"
-            };
-
-            IDS_API IDS = new IDS_API(api);
-            var result = IDS.GetToken();
+                SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
+                ShipProcess shipProcess = new ShipProcess(SCWS);
+                ShipResult boxResult = shipProcess.Dispatch(Box.Get(boxID));
+            }
         }
     }
 }

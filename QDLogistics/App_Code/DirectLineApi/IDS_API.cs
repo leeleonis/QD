@@ -27,9 +27,9 @@ namespace DirectLineApi.IDS
             {
                 Api = new CarrierAPI()
                 {
-                    IsTest = true,
-                    ApiAccount = "test0001",
-                    ApiPassword = "111111"
+                    IsTest = false,
+                    ApiAccount = "TW018",
+                    ApiPassword = "000000"
                 };
             }
 
@@ -82,7 +82,7 @@ namespace DirectLineApi.IDS
                     buyerCity = address.City.Trim(),
                     buyerCountry = address.CountryName.Trim(),
                     buyerDistrict = address.CountryCode.Equals("US") ? "" : "E",
-                    buyerState = address.CountryCode.Equals("US") ? address.StateName : "",
+                    buyerState = !string.IsNullOrEmpty(address.StateName) ? address.StateName : "",
                     buyerZip = address.PostalCode,
                     weight = itemList.Sum(i => i.Qty.Value * i.Skus.Weight),
                     quantity = itemList.Sum(i => i.Qty.Value),

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using CarrierApi.Winit;
 using ClosedXML.Excel;
+using DirectLineApi.IDS;
 using Ionic.Zip;
 using Neodynamic.SDK.Web;
 using Newtonsoft.Json;
@@ -39,6 +40,8 @@ namespace QDLogistics.Controllers
         private IRepository<Carriers> Carriers;
         private IRepository<PickProduct> PickProduct;
         private IRepository<Warehouses> Warehouses;
+        private IRepository<Box> Box;
+        private IRepository<DirectLineLabel> Label;
 
         private SCServiceSoapClient OS_sellerCloud;
         private AuthHeader OS_authHeader;
@@ -415,7 +418,7 @@ namespace QDLogistics.Controllers
             string packageSelect = string.Format("SELECT * FROM Packages WHERE IsEnable = 1 AND ProcessStatus = {0}", (byte)EnumData.ProcessStatus.待出貨);
             string orderSelect = string.Format("SELECT * FROM Orders WHERE StatusCode = {0}", (int)OrderStatusCode.InProcess);
             string itemSelect = string.Format("SELECT * FROM Items WHERE IsEnable = 1 AND ShipFromWarehouseID = {0}", warehouseId);
-            
+
             var methodList = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && !m.IsDirectLine).ToList();
 
             ObjectContext context = new ObjectContext("name=QDLogisticsEntities");
@@ -623,6 +626,181 @@ namespace QDLogistics.Controllers
                         return message;
                     }, HttpContext.Session));
                 }
+
+                lock (factory)
+                {
+                    ThreadTask threadTask = new ThreadTask("追蹤Direct Line訂單");
+                    threadTask.AddWork(factory.StartNew(Session =>
+                    {
+                        threadTask.Start();
+
+                        db = new QDLogisticsEntities();
+                        Box = new GenericRepository<Box>(db);
+                        Label = new GenericRepository<DirectLineLabel>(db);
+
+                        string message = "";
+                        string sendMail = "dispatch-qd@hotmail.com";
+                        string mailTitle;
+                        string mailBody;
+                        string[] receiveMails;
+                        string[] ccMails = new string[] { "Kellyyang82@hotmail.com", "ella.chou@hotmail.com", "jenny-QD@hotmail.com", "yiing1009@hotmail.com" };
+                        //string[] ccMails = new string[] { };
+
+                        try
+                        {
+                            HttpSessionStateBase session = (HttpSessionStateBase)Session;
+                            MyHelp.Log("Box", null, "追蹤Direct Line訂單開始", session);
+
+                            List<Box> boxList = Box.GetAll(true).Where(b => b.IsEnable && b.BoxType.Equals((byte)EnumData.DirectLineBoxType.DirectLine) && b.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.運輸中)).ToList();
+                            if (boxList.Any())
+                            {
+                                int[] methodList = boxList.Select(b => b.FirstMileMethod).Distinct().ToArray();
+                                var boxShippingMethodList = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && methodList.Contains(m.ID)).ToList(); ;
+                                foreach (Box box in boxList)
+                                {
+                                    ShippingMethod method = boxShippingMethodList.First(m => m.ID.Equals(box.FirstMileMethod));
+
+                                    TrackOrder TrackOrder = new TrackOrder();
+                                    TrackResult boxResult = TrackOrder.Track(box, method.Carriers.CarrierAPI);
+                                    if (boxResult.DeliveryStatus.Equals((int)DeliveryStatusType.Delivered))
+                                    {
+                                        MyHelp.Log("Box", box.BoxID, "寄送Box到貨通知", session);
+
+                                        box.ShippingStatus = (byte)EnumData.DirectLineStatus.已到貨;
+                                        Box.Update(box, box.BoxID);
+
+                                        DirectLine directLine = db.DirectLine.AsNoTracking().First(d => d.IsEnable && d.ID.Equals(box.DirectLine));
+                                        string[] address, boxLabel;
+                                        switch (directLine.Abbreviation)
+                                        {
+                                            case "IDS":
+                                                receiveMails = new string[] { "gloria.chiu@contin-global.com", "cherry.chen@contin-global.com", "TWCS@contin-global.com", "contincs@gmail.com" };
+                                                //receiveMails = new string[] { "qd.tuko@hotmail.com" };
+                                                mailTitle = string.Format("TW018 至優網有限公司 First Mile 包裹 {0} {1} ({2} 件包裹) 已抵達", method.Carriers.Name, box.TrackingNumber, box.DirectLineLabel.Count(l => l.IsEnable));
+                                                mailBody = "您好<br /><br />包裹已抵達:<br />{0}<br /><br />內容包含:<br />{1}<br /><br />請盡速處理並確認已經全數收到<br />謝謝!";
+                                                address = new string[] { directLine.StreetLine1, directLine.StreetLine2, directLine.City, directLine.StateName, directLine.CountryName, directLine.PostalCode };
+                                                boxLabel = box.DirectLineLabel.Where(l => l.IsEnable).Select(l => l.LabelID).ToArray();
+                                                mailBody = string.Format(mailBody, string.Join(" ", address.Except(new string[] { "", null })), string.Join("<br />", boxLabel));
+                                                bool IDS_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, null, null, false);
+                                                if (!IDS_Status) MyHelp.Log("Box", box.BoxID, "寄送Box到貨通知失敗", session);
+                                                break;
+                                        }
+                                    }
+                                }
+                                Box.SaveChanges();
+                            }
+
+                            List<DirectLineLabel> labelList = Label.GetAll(true).Where(l => l.IsEnable && !string.IsNullOrEmpty(l.BoxID) && l.Status.Equals((byte)EnumData.LabelStatus.正常)).ToList();
+                            if (labelList.Any())
+                            {
+                                Packages = new GenericRepository<Packages>(db);
+
+                                SC_WebService SCWS = new SC_WebService("tim@weypro.com", "timfromweypro");
+
+                                List <DirectLineLabel> remindList = new List<DirectLineLabel>();
+                                DateTime today = new TimeZoneConvert().ConvertDateTime(EnumData.TimeZone.EST);
+
+                                foreach (DirectLineLabel label in labelList)
+                                {
+                                    Packages package = label.Packages.First();
+
+                                    Order orderData = SCWS.Get_OrderData(package.OrderID.Value).Order;
+
+                                    if (package.Orders.StatusCode.Value.Equals((int)orderData.StatusCode) && package.Orders.PaymentStatus.Value.Equals((int)orderData.PaymentStatus))
+                                    {
+
+                                        if (string.IsNullOrEmpty(package.TrackingNumber))
+                                        {
+                                            CarrierAPI api = package.Method.Carriers.CarrierAPI;
+                                            switch (api.Type)
+                                            {
+                                                case (byte)EnumData.CarrierType.IDS:
+                                                    IDS_API IDS = new IDS_API(api);
+                                                    var IDS_Result = IDS.GetTrackingNumber(package);
+                                                    if (IDS_Result.trackingnumber.Any())
+                                                    {
+                                                        package.TrackingNumber = IDS_Result.trackingnumber.SelectMany(t => t.Where(tt => tt.Any())).First();
+                                                        Packages.Update(package, package.ID);
+                                                        Packages.SaveChanges();
+                                                    }
+                                                    break;
+                                            }
+                                        }
+
+                                        DateTime paymentDate = package.Orders.Payments.First().AuditDate.Value;
+
+                                        if (label.Box.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.已到貨) && DateTime.Compare(today, paymentDate.AddDays(3)) > 0)
+                                        {
+                                            if (today.Hour >= paymentDate.Hour && today.Hour <= paymentDate.Hour + 2)
+                                            {
+                                                if (string.IsNullOrEmpty(package.TrackingNumber))
+                                                {
+                                                    remindList.Add(label);
+                                                }
+                                                else
+                                                {
+                                                    SyncProcess sync = new SyncProcess(session);
+                                                    sync.Update_Tracking(package);
+                                                }
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        MyHelp.Log("box", label.BoxID, string.Format("訂單【{0}】資料狀態異常", package.OrderID.Value), session);
+
+                                        package.Orders.StatusCode = (int)orderData.StatusCode;
+                                        package.Orders.PaymentStatus = (int)orderData.PaymentStatus;
+                                        label.Status = (byte)EnumData.LabelStatus.鎖定中;
+
+                                        if (orderData.StatusCode.Equals((int)OrderStatusCode.Canceled))
+                                        {
+                                            label.Status = (byte)EnumData.LabelStatus.作廢;
+                                        }
+
+                                        Label.Update(label, label.LabelID);
+                                        Packages.Update(package, package.ID);
+                                        Packages.SaveChanges();
+                                    }
+                                }
+
+                                if (remindList.Any())
+                                {
+                                    MyHelp.Log("Box", null, "開始寄送Direct Line Tracking通知", session);
+
+                                    foreach (var group in remindList.GroupBy(l => l.BoxID))
+                                    {
+                                        Box box = db.Box.AsNoTracking().First(b => b.IsEnable && b.BoxID.Equals(group.Key));
+                                        DirectLine directLine = db.DirectLine.AsNoTracking().First(d => d.IsEnable && d.ID.Equals(box.DirectLine));
+
+                                        switch (directLine.Abbreviation)
+                                        {
+                                            case "IDS":
+                                                receiveMails = new string[] { "gloria.chiu@contin-global.com", "cherry.chen@contin-global.com", "TWCS@contin-global.com", "contincs@gmail.com" };
+                                                //receiveMails = new string[] { "qd.tuko@hotmail.com" };
+                                                mailTitle = string.Format("TW018 - {0} Orders Awaiting Dispatch", group.Count());
+                                                mailBody = "Hello<br /><br />We still could not find the last mile tracking for the below packages:<br />{0}<br />...<br /><br />Please update tracking info ASAP.Thank you<br /><br />Regards<br /><br />QD Team";
+                                                mailBody = string.Format(mailBody, string.Join("<br />", group.Select(l => l.LabelID)));
+                                                bool IDS_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, null, null, false);
+                                                if (!IDS_Status) MyHelp.Log("Box", null, "寄送IDS Direct Line Tracking通知失敗", session);
+                                                break;
+                                        }
+                                    }
+
+                                    MyHelp.Log("Box", null, "完成寄送Direct Line Tracking通知", session);
+                                }
+                            }
+
+                            MyHelp.Log("Box", null, "追蹤Direct Line訂單結束", session);
+                        }
+                        catch (Exception e)
+                        {
+                            message = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+                        }
+
+                        return message;
+                    }, HttpContext.Session));
+                }
             }
             catch (DbEntityValidationException ex)
             {
@@ -764,7 +942,7 @@ namespace QDLogistics.Controllers
 
                             if (DHL_Status)
                             {
-                                MyHelp.Log("", null, mailTitle);
+                                MyHelp.Log("PickProdcut", null, mailTitle);
                                 foreach (PickProduct pick in pickList.Where(pick => groupList[serviceCode].Select(p => p.ID).ToArray().Contains(pick.PackageID.Value)).ToList())
                                 {
                                     pick.IsMail = true;
@@ -841,7 +1019,7 @@ namespace QDLogistics.Controllers
 
                             if (FedEx_Status)
                             {
-                                MyHelp.Log("", null, mailTitle);
+                                MyHelp.Log("PickProduct", null, mailTitle);
                                 foreach (PickProduct pick in pickList.Where(pick => groupList[serviceCode].Select(p => p.ID).ToArray().Contains(pick.PackageID.Value)).ToList())
                                 {
                                     pick.IsMail = true;

@@ -108,10 +108,10 @@
                     { field: "ReceivedQty", title: "Received QTY", width: 100, align: "center", sortable: false },
                     { field: "Weight", title: "Weight(each)", width: 100, align: "center", sortable: false },
                     { field: "OrderID", title: "Order ID", width: 120, align: "center", sortable: false },
-                    { field: "Serial", title: "Serial", width: 150, align: "center", sortable: false },
-                    { field: "LabelID", title: "Label ID", width: 150, align: "center", sortable: false },
+                    { field: "Serial", title: "Serial", width: 200, align: "center", sortable: false },
+                    { field: "LabelID", title: "Label ID", width: 200, align: "center", sortable: false },
                     {
-                        field: "Action", title: "Action", width: 250, align: "center", sortable: false,
+                        field: "Action", title: "Action", width: 150, align: "center", sortable: false,
                         formatter: function (value, row, index) {
                             return "<select class='form-control'>" + setSelectOption(selectOption['StatusCode'], row.StatusCode) + "</select>"
                         }

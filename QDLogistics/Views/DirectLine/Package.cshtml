@@ -110,7 +110,7 @@
                                         <th data-options="field:'OrderID',width:'10%',align:'center'">訂單</th>
                                         <th data-options="field:'ProductID',width:'10%',align:'center'">SKU</th>
                                         <th data-options="field:'ProductName',width:'35%',align:'center'">品名</th>
-                                        <th data-options="field:'UPC',width:'13%',align:'center'">UPC</th>
+                                        <th data-options="field:'SerialNumber',width:'13%',align:'center'">Serial</th>
                                         <th data-options="field:'TagNo',width:'13%',align:'center'">標籤號碼</th>
                                         <th data-options="field:'Note',width:'13%',align:'center'">備註</th>
                                         <th data-options="field:'InBox',width:'5%',align:'center'">裝箱</th>
@@ -124,7 +124,7 @@
                                         <th data-options="field:'OrderID',width:'10%',align:'center'">訂單</th>
                                         <th data-options="field:'ProductID',width:'10%',align:'center'">SKU</th>
                                         <th data-options="field:'ProductName',width:'35%',align:'center'">品名</th>
-                                        <th data-options="field:'UPC',width:'13%',align:'center'">UPC</th>
+                                        <th data-options="field:'SerialNumber',width:'13%',align:'center'">Serial</th>
                                         <th data-options="field:'TagNo',width:'13%',align:'center'">標籤號碼</th>
                                         <th data-options="field:'Note',width:'13%',align:'center'">備註</th>
                                         <th data-options="field:'Picked',width:'5%',align:'center'"></th>
@@ -373,7 +373,7 @@
             });
         }
 
-        function print(params){
+        function print(params) {
             jsWebClientPrint.print(params);
         }
 
@@ -526,7 +526,6 @@
             function findOrderChange(orderID){
                 if(orderChangeList.length > 0){
                     var orderFilter = orderChangeList.filter(function(order) {
-                        console.log(order['OrderID']);
                         return (order['OrderID'] == orderID) && (order['Status'] == 1);
                     });
 
@@ -552,8 +551,7 @@
                 ajaxUrl(url, 'post', { boxID: boxInfo.BoxID, picked: picked, serials: serials }).done(function(response){
                     if(response['status']) {
                         if (retry) error('訂單【' + gb_OrderID + '】更新失敗，資料已重新寄送!');
-
-                        print($.param({ fileName: response.data.fileName, filePath: response.data.filePath, amount: response.data.amount, printerName: response.data.printerName }, true));
+                        print($.param(response.data, true));
                         orderLocked();
                     } else {
                         alert(response['message']);
@@ -631,7 +629,7 @@
 
                     for(var i=1; i <= product.Qty; i++){
                         data.rows.push({
-                            IsPicked: product.IsPicked, OrderID: product.OrderID, PackageID: product.PackageID, ProductID: product.ProductID, ProductName: product.ProductName, UPC: product.UPC,
+                            IsPicked: product.IsPicked, OrderID: product.OrderID, PackageID: product.PackageID, ProductID: product.ProductID, ProductName: product.ProductName, SerialNumber: (i <= product.QtyPicked ? serialNumber[i - 1] : ""),
                             TagNo: product.TagNo, Note: product.Note,
                             Picked: "<img src='../content/img/" + (i <= product.QtyPicked ? "checked" : "error") + ".png' runat='server' style='width: auto; height: 15px;'>"});
                         data.total++;
@@ -646,10 +644,11 @@
 
                 for (var itemID in items) {
                     product = items[itemID].data;
+                    serialNumber = items[itemID].serial;
 
                     for (var i = 1; i <= product.Qty; i++) {
                         boxOrderList.rows.push({
-                            OrderID: product.OrderID, PackageID: product.PackageID, ProductID: product.ProductID, ProductName: product.ProductName, UPC: product.UPC, TagNo: product.TagNo, Note: product.Note,
+                            OrderID: product.OrderID, PackageID: product.PackageID, ProductID: product.ProductID, ProductName: product.ProductName, SerialNumber: (i <= product.QtyPicked ? serialNumber[i - 1] : ""), TagNo: product.TagNo, Note: product.Note,
                             InBox: "<img src='../content/img/" + (product.InBox ? "checked" : "error") + ".png' runat='server' style='width: auto; height: 15px;'>"
                         });
                     }

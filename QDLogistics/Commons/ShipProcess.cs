@@ -93,6 +93,7 @@ namespace QDLogistics.Commons
             ShipResult result = new ShipResult(true);
 
             QDLogisticsEntities db = new QDLogisticsEntities();
+            IRepository<Box> Box = new GenericRepository<Box>(db);
             IRepository<ShippingMethod> Method = new GenericRepository<ShippingMethod>(db);
             IRepository<DirectLine> DirectLine = new GenericRepository<DirectLine>(db);
 
@@ -188,6 +189,8 @@ namespace QDLogistics.Commons
                         }
                         break;
                 }
+                Box.Update(box, box.BoxID);
+                Box.SaveChanges();
             }
             catch (Exception e)
             {
@@ -231,6 +234,11 @@ namespace QDLogistics.Commons
 
                         using (ZipArchive archive = ZipFile.OpenRead(Path.Combine(filePath, "Label.zip")))
                         {
+                            if (File.Exists(Path.Combine(filePath, "Label.pdf")))
+                            {
+                                File.Delete(Path.Combine(filePath, "Label.pdf"));
+                            }
+
                             foreach (ZipArchiveEntry entry in archive.Entries)
                             {
                                 if (entry.FullName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
@@ -240,7 +248,7 @@ namespace QDLogistics.Commons
                             }
                         }
 
-                        IRepository<DirectLineLabel> DirectLineLabel = new Models.Repositiry.GenericRepository<DirectLineLabel>(new QDLogisticsEntities());
+                        IRepository<DirectLineLabel> DirectLineLabel = new GenericRepository<DirectLineLabel>(new QDLogisticsEntities());
                         DirectLineLabel.Create(new DirectLineLabel()
                         {
                             IsEnable = true,

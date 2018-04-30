@@ -79,7 +79,7 @@ namespace QDLogistics.Commons
                 List<OrderSerialNumber> SC_SerialNumbers = new List<OrderSerialNumber>();
 
                 int[] ignoreOrderIDs = new int[] { };
-                foreach (OrderStateInfo orderStateInfo in SC_OrderStateInfoList.Where(o => o.DropShipStatus == DropShipStatusType.None && !ignoreOrderIDs.Contains(o.ID)))
+                foreach (OrderStateInfo orderStateInfo in SC_OrderStateInfoList.Where(o => o.DropShipStatus == DropShipStatusType1.None && !ignoreOrderIDs.Contains(o.ID)))
                 {
                     OrderData order = SCWS.Get_OrderData(orderStateInfo.ID);
                     SC_Orders.Add(order.Order);
@@ -136,7 +136,7 @@ namespace QDLogistics.Commons
                 List<SerialNumbers> serialNumberDatas = SerialNumbers.GetAll().Where(serial => OrderIDs.Contains(serial.OrderID.Value)).ToList();
                 Check_Serial(serialNumberDatas, SC_SerialNumbers);
 
-                foreach (OrderStateInfo orderStateInfo in SC_OrderStateInfoList.Where(o => o.DropShipStatus != DropShipStatusType.None))
+                foreach (OrderStateInfo orderStateInfo in SC_OrderStateInfoList.Where(o => o.DropShipStatus != DropShipStatusType1.None))
                 {
                     if (orderList.Any(o => o.OrderID.Equals(orderStateInfo.ID)))
                     {
@@ -192,7 +192,7 @@ namespace QDLogistics.Commons
                 if (!SCWS.Is_login) throw new Exception("SC is not logged in!");
 
                 OrderStateInfo orderStateInfo = SCWS.Get_OrderStatus(OrderID);
-                if (orderStateInfo == null || orderStateInfo.DropShipStatus == DropShipStatusType.None)
+                if (orderStateInfo == null || orderStateInfo.DropShipStatus == DropShipStatusType1.None)
                 {
                     Order orderDetail = SCWS.Get_OrderData(OrderID).Order;
                     DataProcess.SetOrderData(orderData, orderDetail);

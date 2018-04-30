@@ -779,6 +779,7 @@
           <s:element minOccurs="0" maxOccurs="1" name="CustomerSupportComments" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="QtyReturned" type="s:int" />
           <s:element minOccurs="0" maxOccurs="1" name="ChannelReasonCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="OrderSourceRMAID" type="s:string" />
         </s:sequence>
       </s:complexType>
       <s:simpleType name="RMAItemApprovalStatusType">
@@ -821,6 +822,7 @@
           <s:element minOccurs="1" maxOccurs="1" name="LastUpdatedBy" type="s:int" />
           <s:element minOccurs="1" maxOccurs="1" name="HasAlert" type="s:boolean" />
           <s:element minOccurs="0" maxOccurs="1" name="AlertMessage" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TrackingNumber" type="s:string" />
         </s:sequence>
       </s:complexType>
       <s:simpleType name="RMAStatusCodeType">
@@ -2657,6 +2659,7 @@
           <s:enumeration value="Klarna" />
           <s:enumeration value="HomeDepot" />
           <s:enumeration value="GrouponGateway" />
+          <s:enumeration value="Cdiscount" />
         </s:restriction>
       </s:simpleType>
       <s:complexType name="ArrayOfPurchaseItem">
@@ -3678,6 +3681,9 @@
           <s:element minOccurs="1" maxOccurs="1" name="LastAutoUpdatedFromAmazonReportsOn" type="s:dateTime" />
           <s:element minOccurs="1" maxOccurs="1" name="HSNEnabled" type="s:boolean" />
           <s:element minOccurs="0" maxOccurs="1" name="HSNItemNumber" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="HSNMerchantSKU" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="HSNSafetyQuantity" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="HSNSafetyQuantityUseDefault" type="s:boolean" />
           <s:element minOccurs="0" maxOccurs="1" name="WalmartAPISKUOverrideValue" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="StaplesDiscontinued" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="StaplesInStockDate" type="s:dateTime" />
@@ -3739,6 +3745,7 @@
           <s:element minOccurs="0" maxOccurs="1" name="HomeDepotTitle" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="HomeDepotPrice" type="s:decimal" />
           <s:element minOccurs="0" maxOccurs="1" name="HomeDepotListingID" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="HomeDepotBackOrderDays" type="s:int" />
           <s:element minOccurs="1" maxOccurs="1" name="HouzzEnabled" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="HouzzProductId" type="s:long" />
           <s:element minOccurs="0" maxOccurs="1" name="HouzzMerchantSKU" type="s:string" />
@@ -3804,6 +3811,7 @@
           <s:element minOccurs="1" maxOccurs="1" name="CdiscountSafetyQuantity" type="s:int" />
           <s:element minOccurs="1" maxOccurs="1" name="CdiscountSafetyQuantityUseDefault" type="s:boolean" />
           <s:element minOccurs="0" maxOccurs="1" name="CdiscountCategoryCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CdiscountSKU" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="ShippingTemplateIDForWebsite" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="JETReturnException_ReturnShippingMethodsAsList" type="tns:ArrayOfString" />
           <s:element minOccurs="0" maxOccurs="1" name="JETReturnException_ReturnLocationsAsList" type="tns:ArrayOfString" />
@@ -3854,6 +3862,8 @@
           <s:element minOccurs="1" maxOccurs="1" name="DrugStoresSafetyQtyUseDefault" type="s:boolean" />
           <s:element minOccurs="0" maxOccurs="1" name="DrugStoresMerchantSKU" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="GroupOnGoodsRequire3rdPartyBilling" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="GroupOnGoodsSafetyQty" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="GroupOnGoodsSafetyQtyUseDefault" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="BestBuyPrice" type="s:decimal" />
           <s:element minOccurs="1" maxOccurs="1" name="BestBuyPriceUseDefault" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="BestBuyShippingStandard" type="s:decimal" />
@@ -3954,6 +3964,7 @@
           <s:element minOccurs="0" maxOccurs="1" name="WishProductTags" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="WishPrice" type="s:decimal" />
           <s:element minOccurs="1" maxOccurs="1" name="WishPriceUseDefault" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="WishMerchantSKU" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="WishEnabled" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="SonsiSalePrice" type="s:decimal" />
           <s:element minOccurs="0" maxOccurs="1" name="WalmartProductID" type="s:string" />
@@ -4271,6 +4282,8 @@
           <s:element minOccurs="0" maxOccurs="1" name="ParentASIN" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="UnbeatableMerchantSKU" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="UnbeatableSalesEnabled" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="UnbeatableSafetyQty" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="UnbeatableSafetyQtyUseDefault" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="SearsSaleStartDate" type="s:dateTime" />
           <s:element minOccurs="1" maxOccurs="1" name="SearsPostingFailureOn" type="s:dateTime" />
           <s:element minOccurs="0" maxOccurs="1" name="SearsPostingFailureReason" type="s:string" />
@@ -4829,6 +4842,9 @@
           <s:element minOccurs="1" maxOccurs="1" name="WalmartEnabled" type="s:boolean" />
           <s:element minOccurs="0" maxOccurs="1" name="WalmartDirectUPC" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="WalmartDirectUPCUseDefault" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="WalmartDefaultQty" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="WalmartDefaultQtyEnabled" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="WalmartDefaultQtyUseDefault" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="TargetDiscontinuedOn" type="s:dateTime" />
           <s:element minOccurs="1" maxOccurs="1" name="TargetDiscontinued" type="s:boolean" />
           <s:element minOccurs="0" maxOccurs="1" name="TargetMerchantSKU" type="s:string" />
@@ -5932,6 +5948,7 @@
           <s:enumeration value="KitUnPrepare" />
           <s:enumeration value="KitAssembly" />
           <s:enumeration value="KitDisAssembly" />
+          <s:enumeration value="CycleBinCountReverse" />
           <s:enumeration value="ManualDelete" />
           <s:enumeration value="ManualEdit" />
           <s:enumeration value="ManualAdd" />
@@ -6939,6 +6956,7 @@
           <s:element minOccurs="1" maxOccurs="1" name="AverageCostMovementID" type="s:int" />
           <s:element minOccurs="1" maxOccurs="1" name="PackingSlipPrice" type="s:decimal" />
           <s:element minOccurs="0" maxOccurs="1" name="AmazonShipmentID2" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="CoOpFee" type="s:decimal" />
           <s:element minOccurs="1" maxOccurs="1" name="WholesaleConfirmedQty" type="s:int" />
           <s:element minOccurs="1" maxOccurs="1" name="WholesaleConfirmShipDate" type="s:dateTime" />
           <s:element minOccurs="1" maxOccurs="1" name="WholesaleBackOrderQty" type="s:int" />
@@ -9031,6 +9049,7 @@
           <s:enumeration value="Klarna" />
           <s:enumeration value="HomeDepot" />
           <s:enumeration value="GrouponGateway" />
+          <s:enumeration value="Cdiscount" />
         </s:restriction>
       </s:simpleType>
       <s:simpleType name="CreditCardType">

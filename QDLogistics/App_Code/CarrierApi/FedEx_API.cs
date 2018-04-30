@@ -297,7 +297,8 @@ namespace CarrierApi.FedEx
             };
 
             List<Items> itemList = box.Packages.Where(p => p.IsEnable.Value).SelectMany(p => p.Items.Where(i => i.IsEnable.Value)).ToList();
-            string currency = Enum.GetName(typeof(QDLogistics.OrderService.CurrencyCodeType2), box.Packages.First(p => p.IsEnable.Value).Orders.OrderCurrencyCode.Value);
+            //string currency = Enum.GetName(typeof(QDLogistics.OrderService.CurrencyCodeType2), box.Packages.First(p => p.IsEnable.Value).Orders.OrderCurrencyCode.Value);
+            string currency = "USD";
             QDLogistics.FedExShipService.Money customsValue = new QDLogistics.FedExShipService.Money() { Currency = currency, Amount = box.Packages.Where(p => p.IsEnable.Value).Sum(p => p.DeclaredTotal) };
             QDLogistics.FedExShipService.Commodity commodity = new QDLogistics.FedExShipService.Commodity
             {

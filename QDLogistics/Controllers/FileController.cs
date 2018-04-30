@@ -239,7 +239,7 @@ namespace QDLogistics.Controllers
                         .Join(Items.GetAll(true).Where(i => i.IsEnable.Equals(true)).ToList(), p => p.ID, i => i.PackageID.Value, (p, i) => new OrderJoinData() { package = p, item = i })
                         .Join(Orders.GetAll(true).ToList(), oData => oData.package.OrderID.Value, o => o.OrderID, (oData, o) => new OrderJoinData(oData) { order = o })
                         .Join(Addresses.GetAll(true).Where(a => a.IsEnable.Equals(true)).ToList(), oData => oData.order.ShippingAddress.Value, a => a.Id, (oData, a) => new OrderJoinData(oData) { address = a }).ToList();
-                    
+
                     if (orderDataList.Any())
                     {
                         long Tracking;
@@ -294,9 +294,10 @@ namespace QDLogistics.Controllers
                     t.Start(processList.First());
                 }
 
+                string[] pdfList = new string[] { "AirWaybill.pdf", "Label.pdf" };
                 ClientPrintJobGroup cpjg = new ClientPrintJobGroup();
 
-                if (!string.IsNullOrEmpty(printerName))
+                if (fileName.Any(f => pdfList.Contains(f)))
                 {
                     ClientPrintJob cpj2 = new ClientPrintJob();
 
@@ -305,8 +306,7 @@ namespace QDLogistics.Controllers
                     {
                         index = fileName.IndexOf("AirWaybill.pdf");
                     }
-
-                    if (fileName.Any(f => f.Equals("Label.pdf")))
+                    else if (fileName.Any(f => f.Equals("Label.pdf")))
                     {
                         index = fileName.IndexOf("Label.pdf");
                     }
@@ -316,14 +316,18 @@ namespace QDLogistics.Controllers
                     cpjg.Add(cpj2);
                 }
 
-                ClientPrintJob cpj1 = new ClientPrintJob();
-                foreach (var name in fileName.Select((value, i) => new { i, value }).Where(n => !string.IsNullOrEmpty(n.value) && !n.value.Equals("AirWaybill.pdf") && !n.value.Equals("Label.pdf")))
+                var normalList = fileName.Select((value, i) => new { i, value }).Where(n => !string.IsNullOrEmpty(n.value) && !n.value.Equals("AirWaybill.pdf") && !n.value.Equals("Label.pdf")).ToList();
+                if (normalList.Count() > 0)
                 {
-                    cpj1.PrintFileGroup.Add(new PrintFile(HttpUtility.UrlDecode(filePath[name.i]), HttpUtility.UrlDecode(name.value), amount[name.i]));
-                }
+                    ClientPrintJob cpj1 = new ClientPrintJob();
+                    foreach (var name in normalList)
+                    {
+                        cpj1.PrintFileGroup.Add(new PrintFile(HttpUtility.UrlDecode(filePath[name.i]), HttpUtility.UrlDecode(name.value), amount[name.i]));
+                    }
 
-                cpj1.ClientPrinter = new DefaultPrinter();
-                cpjg.Add(cpj1);
+                    cpj1.ClientPrinter = new DefaultPrinter();
+                    cpjg.Add(cpj1);
+                }
 
                 System.Web.HttpContext.Current.Response.ContentType = "application/octet-stream";
                 System.Web.HttpContext.Current.Response.BinaryWrite(cpjg.GetContent());
@@ -608,7 +612,8 @@ namespace QDLogistics.Controllers
                 {
                     // errorMessage.Append("CarrierID - 不可空白.");
                 }
-                else {
+                else
+                {
                     if (!methodList.Contains(row.ShippingMethod.Value)) errorMessage.Append("MethodID - 無法找到.");
                 }
 
