@@ -83,7 +83,16 @@
                     { field: "Tracking", title: "Tracking", width: 150, align: "center", sortable: false },
                     { field: "Status", title: "Status", width: 100, align: "center", sortable: false },
                     { field: "Type", title: "Type", width: 150, align: "center", sortable: false },
-                    { field: "Note", title: "Notes", width: 250, align: "center", sortable: false }
+                    { field: "Note", title: "Notes", width: 250, align: "center", sortable: false },
+                    {
+                        field: "Download", title: "Download<br />檔案下載", width: 150, align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            var hasFilePath = $.trim(value) != '' ? true : false;
+                            var AirWaybill = "<button type='button' class='btn btn-default btn-sm' onclick='window.open(\"" + value + "/AirWaybill.pdf\")'" + (hasFilePath ? '' : 'disabled') + ">提貨單</button>";
+                            var Invoice = "<button type='button' class='btn btn-default btn-sm' onclick='window.open(\"" + value + "/Invoice.xls\")'" + (hasFilePath ? '' : 'disabled') + ">商業發票</button>";
+                            return AirWaybill + Invoice;
+                        }
+                    }
                 ]],
                 rowStyler: function (index, row) {
                     if (isEmpty(row.OrderID)) return { class: 'filterColumn' }

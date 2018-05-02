@@ -396,6 +396,8 @@ namespace QDLogistics.Controllers
                     .GroupJoin(db.Items.AsNoTracking().Where(i => i.IsEnable.Value), p => p.ID, i => i.PackageID, (p, i) => new { package = p, items = i.ToList() })
                     .GroupBy(data => data.package.BoxID).ToDictionary(group => group.Key, group => group.SelectMany(data => data.items).ToList());
 
+                string baseUrl = Request.Url.Scheme + "://" + Request.Url.Authority + Request.ApplicationPath.TrimEnd('/') + "/fileUploads";
+
                 dataList.AddRange(results.Select(data => new
                 {
                     data.BoxID,
@@ -408,7 +410,8 @@ namespace QDLogistics.Controllers
                     Tracking = data.TrackingNumber,
                     Status = Enum.GetName(typeof(EnumData.DirectLineStatus), data.ShippingStatus),
                     Type = EnumData.BoxTypeList()[(EnumData.DirectLineBoxType)data.BoxType],
-                    data.Note
+                    data.Note,
+                    Download = !data.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.未發貨) ? string.Format("{0}/export/box/{1}/{2}", baseUrl, data.Create_at.ToString("yyyy/MM/dd"), data.BoxID) : ""
                 }));
             }
 
@@ -447,7 +450,7 @@ namespace QDLogistics.Controllers
                     Weight = data.items.Sum(i => i.Skus.Weight * i.Qty.Value / 1000),
                     data.order.OrderID,
                     Serial = data.itemCount == 1 && data.item.SerialNumbers.Any() ? data.item.SerialNumbers.First().SerialNumber : "Multi",
-                    LabelID = string.Format("<a href='http://internal.qd.com.tw/fileUploads/{0}/Label.pdf' target='_blank'>{1}</a>", data.package.FilePath ,data.package.TagNo),
+                    LabelID = string.Format("<a href='http://internal.qd.com.tw/fileUploads/{0}/Label.pdf' target='_blank'>{1}</a>", data.package.FilePath, data.package.TagNo),
                     data.order.StatusCode
                 }));
             }
@@ -899,7 +902,7 @@ namespace QDLogistics.Controllers
 
                 if (!SCWS.Is_login) throw new Exception("SC is not login");
 
-                MyHelp.Log("box", box.BoxID, string.Format("開始檢查 Box【{0}】內的訂單狀態", box.BoxID), Session);
+                MyHelp.Log("Box", box.BoxID, string.Format("開始檢查 Box【{0}】內的訂單狀態", box.BoxID), Session);
 
                 List<object> fileList = new List<object>();
                 List<object> errorList = new List<object>();
@@ -919,7 +922,7 @@ namespace QDLogistics.Controllers
                     }
                     else
                     {
-                        MyHelp.Log("box", box.BoxID, string.Format("訂單【{0}】資料狀態異常", package.OrderID.Value), Session);
+                        MyHelp.Log("Box", box.BoxID, string.Format("訂單【{0}】資料狀態異常", package.OrderID.Value), Session);
 
                         package.Orders.StatusCode = (int)order.Order.StatusCode;
                         package.Orders.PaymentStatus = (int)order.Order.PaymentStatus;
@@ -950,20 +953,20 @@ namespace QDLogistics.Controllers
                     }
                 }
 
-                MyHelp.Log("box", box.BoxID, string.Format("Box【{0}】儲存資料", box.BoxID), Session);
+                MyHelp.Log("Box", box.BoxID, string.Format("Box【{0}】儲存資料", box.BoxID), Session);
 
                 box.FirstMileMethod = methodID;
                 box.ShippingStatus = (byte)EnumData.DirectLineStatus.運輸中;
                 Box.Update(box, box.BoxID);
                 Box.SaveChanges();
 
-                MyHelp.Log("box", box.BoxID, string.Format("開始產出 Box【{0}】報關資料", box.BoxID), Session);
+                MyHelp.Log("Box", box.BoxID, string.Format("開始產出 Box【{0}】報關資料", box.BoxID), Session);
 
                 ShipProcess shipProcess = new ShipProcess(SCWS);
                 ShipResult boxResult = shipProcess.Dispatch(box);
                 if (boxResult.Status)
                 {
-                    MyHelp.Log("box", box.BoxID, string.Format("開始產出 Box【{0}】報關資料成功", box.BoxID), Session);
+                    MyHelp.Log("Box", box.BoxID, string.Format("開始產出 Box【{0}】報關資料成功", box.BoxID), Session);
 
                     string[] fileName = new string[2];
                     string[] filePath = new string[2];
@@ -972,12 +975,12 @@ namespace QDLogistics.Controllers
 
                     /***** 提貨單 *****/
                     fileName[0] = "AirWaybill.pdf";
-                    filePath[0] = Path.Combine(basePath, "export", "box", box.Create_at.ToString("yyyy/MM/dd"), box.BoxID, fileName[0]);
+                    filePath[0] = Path.Combine(basePath, "export", "Box", box.Create_at.ToString("yyyy/MM/dd"), box.BoxID, fileName[0]);
                     /***** 提貨單 *****/
 
                     /***** 商業發票 *****/
                     fileName[1] = "Invoice.xls";
-                    filePath[1] = Path.Combine(basePath, "export", "box", box.Create_at.ToString("yyyy/MM/dd"), box.BoxID, fileName[1]);
+                    filePath[1] = Path.Combine(basePath, "export", "Box", box.Create_at.ToString("yyyy/MM/dd"), box.BoxID, fileName[1]);
                     /***** 商業發票 *****/
 
                     ShippingMethod method = db.ShippingMethod.AsNoTracking().First(m => m.ID.Equals(methodID));
@@ -997,15 +1000,19 @@ namespace QDLogistics.Controllers
 
                     fileList.Add(new { fileName, filePath, amount, printerName = method.PrinterName });
 
-                    MyHelp.Log("box", box.BoxID, string.Format("寄送 Box【{0}】報關資料", box.BoxID), Session);
+                    MyHelp.Log("Box", box.BoxID, string.Format("寄送 Box【{0}】報關資料", box.BoxID), Session);
                     SendMailToCarrier(box, method, db.DirectLine.AsNoTracking().First(d => d.ID.Equals(box.DirectLine)));
 
-                    MyHelp.Log("box", box.BoxID, string.Format("Box【{0}】完成出貨", box.BoxID), Session);
+                    MyHelp.Log("Box", box.BoxID, string.Format("Box【{0}】完成出貨", box.BoxID), Session);
                 }
                 else
                 {
-                    string error = string.Format("產出 Box【{0}】報關資料失敗", box.BoxID);
-                    MyHelp.Log("box", box.BoxID, error, Session);
+                    box.ShippingStatus = (byte)EnumData.DirectLineStatus.未發貨;
+                    Box.Update(box, box.BoxID);
+                    Box.SaveChanges();
+
+                    string error = string.Format("產出 Box【{0}】報關資料失敗：{1}", box.BoxID, boxResult.Message);
+                    MyHelp.Log("Box", box.BoxID, error, Session);
                     throw new Exception(error);
                 }
 
@@ -1016,7 +1023,7 @@ namespace QDLogistics.Controllers
                 result.message = string.Format("Box【{0}】出貨失敗，錯誤：", boxID) + (e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
                 result.status = false;
 
-                MyHelp.Log("box", box.BoxID, result.message, Session);
+                MyHelp.Log("Box", box.BoxID, result.message, Session);
             }
 
             return Json(result, JsonRequestBehavior.AllowGet);
@@ -1208,7 +1215,7 @@ namespace QDLogistics.Controllers
 
                         List<Tuple<Stream, string>> FedExFile = new List<Tuple<Stream, string>>();
 
-                        filePath = Path.Combine(basePath, "export", "box", box.Create_at.ToString("yyyy/MM/dd"), box.BoxID);
+                        filePath = Path.Combine(basePath, "export", "Box", box.Create_at.ToString("yyyy/MM/dd"), box.BoxID);
 
                         var memoryStream = new MemoryStream();
                         using (var file = new ZipFile())

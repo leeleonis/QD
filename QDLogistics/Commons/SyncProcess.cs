@@ -450,7 +450,8 @@ namespace QDLogistics.Commons
             }
             catch (Exception e)
             {
-                MyHelp.ErrorLog(e, string.Format("訂單包裹【{0}】更新失敗", package.OrderID), package.OrderID.ToString());
+                string[] serials = package.Items.Where(i => i.IsEnable.Value).SelectMany(i => i.SerialNumbers.Select(s => s.SerialNumber)).ToArray();
+                MyHelp.ErrorLog(e, string.Format("訂單包裹【{0}】更新失敗: #serials {1}", package.OrderID, string.Join(",", serials)), package.OrderID.ToString());
                 Message = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
             }
 

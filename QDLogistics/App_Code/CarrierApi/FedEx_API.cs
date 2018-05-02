@@ -177,7 +177,7 @@ namespace CarrierApi.FedEx
             {
                 NumberOfPieces = "1",
                 Description = string.Join(", ", package.Items.Select(i => i.Skus.ProductType.ProductTypeName).Distinct().ToArray()),
-                CountryOfManufacture = string.Join(", ", package.Items.Select(i => i.Skus.Origin).Distinct().ToArray()),
+                CountryOfManufacture = "CN",
                 Weight = new QDLogistics.FedExShipService.Weight()
                 {
                     Units = QDLogistics.FedExShipService.WeightUnits.KG,
@@ -304,7 +304,7 @@ namespace CarrierApi.FedEx
             {
                 NumberOfPieces = "1",
                 Description = string.Join(", ", itemList.Select(i => i.Skus.ProductType.ProductTypeName).Distinct().ToArray()),
-                CountryOfManufacture = string.Join(", ", itemList.Select(i => i.Skus.Origin).Distinct().ToArray()),
+                CountryOfManufacture = "CN",
                 Weight = new QDLogistics.FedExShipService.Weight()
                 {
                     Units = QDLogistics.FedExShipService.WeightUnits.KG,

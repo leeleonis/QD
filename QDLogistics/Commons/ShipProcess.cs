@@ -689,7 +689,7 @@ namespace QDLogistics.Commons
                     sheet.GetRow(rowIndex).GetCell(8).SetCellValue(group.Sum(i => i.Qty.Value));
                     sheet.GetRow(rowIndex).GetCell(9).SetCellValue("pieces");
                     sheet.GetRow(rowIndex).GetCell(10).SetCellValue(group.Sum(i => i.Qty * ((double)sku.Weight / 1000)) + "kg");
-                    sheet.GetRow(rowIndex).GetCell(11).SetCellValue(group.Sum(i => i.DeclaredValue).ToString("N"));
+                    sheet.GetRow(rowIndex).GetCell(11).SetCellValue(group.First().DeclaredValue.ToString("N"));
                     sheet.GetRow(rowIndex).GetCell(16).SetCellValue(group.Sum(i => i.DeclaredValue * i.Qty.Value).ToString("N"));
                     sheet.GetRow(rowIndex).HeightInPoints = (productName.Length / 30 + 1) * sheet.DefaultRowHeight / 20;
                     sheet.GetRow(rowIndex++).RowStyle.VerticalAlignment = VerticalAlignment.Center;
