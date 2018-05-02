@@ -260,13 +260,13 @@ namespace QDLogistics.Controllers
                     var productList = ProductList.Select(p => p.pick).GroupBy(p => p.ProductID).ToDictionary(group => group.Key.ToString(), group => group.ToDictionary(p => p.ItemID.ToString()));
 
                     List<SerialNumbers> itemSerials = db.SerialNumbers.AsNoTracking().Where(s => productIDs.Contains(s.ProductID)).ToList();
-                    var serialList = db.PurchaseItemReceive.AsNoTracking().Where(s => productIDs.Contains(s.ProductID)).GroupBy(s => s.ProductID)
-                        .ToDictionary(s => s.Key.ToString(), s => new
-                        {
-                            isRequire = s.Max(sn => sn.IsRequireSerialScan),
-                            serials = s.Select(sn => sn.SerialNumber.Trim()).ToArray(),
-                            used = itemSerials.Where(i => i.ProductID == s.Key).Select(i => i.SerialNumber.Trim()).ToArray()
-                        });
+                    List<PurchaseItemReceive> purchaseItemSerial = db.PurchaseItemReceive.AsNoTracking().Where(s => productIDs.Contains(s.ProductID)).ToList();
+                    var serialList = productIDs.ToDictionary(p => p, p => new
+                    {
+                        isRequire = purchaseItemSerial.Any(s => s.ProductID.Equals(p)) ? purchaseItemSerial.Where(s => s.ProductID.Equals(p)).Max(sn => sn.IsRequireSerialScan) : false,
+                        serials = purchaseItemSerial.Where(sn => sn.ProductID.Equals(p)).Select(sn => sn.SerialNumber.Trim()).ToArray(),
+                        used = itemSerials.Where(i => i.ProductID.Equals(p)).Select(i => i.SerialNumber.Trim()).ToArray()
+                    });
 
                     var groupList = ProductList.Select(p => p.pick).GroupBy(p => p.PackageID).GroupBy(p => p.First().OrderID)
                         .ToDictionary(o => o.Key.ToString(), o => o.ToDictionary(p => p.Key.ToString(), p => p.ToDictionary(pp => pp.ItemID.ToString(),

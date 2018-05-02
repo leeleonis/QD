@@ -677,12 +677,12 @@ namespace QDLogistics.Controllers
                 .GroupBy(p => p.ProductID).ToDictionary(group => group.Key.ToString(), group => group.ToDictionary(p => p.ItemID.ToString()));
 
             List<SerialNumbers> itemSerials = db.SerialNumbers.AsNoTracking().Where(s => productIDs.Contains(s.ProductID)).ToList();
-            var serialList = db.PurchaseItemReceive.AsNoTracking().Where(s => productIDs.Contains(s.ProductID)).GroupBy(s => s.ProductID)
-                .ToDictionary(s => s.Key.ToString(), s => new
+            List<PurchaseItemReceive> purchaseItemSerial = db.PurchaseItemReceive.AsNoTracking().Where(s => productIDs.Contains(s.ProductID)).ToList();
+            var serialList = productIDs.ToDictionary(p => p, p => new
                 {
-                    isRequire = s.Max(sn => sn.IsRequireSerialScan),
-                    serials = s.Select(sn => sn.SerialNumber.Trim()).ToArray(),
-                    used = itemSerials.Where(i => i.ProductID == s.Key).Select(i => i.SerialNumber.Trim()).ToArray()
+                    isRequire = purchaseItemSerial.Any(s => s.ProductID.Equals(p)) ? purchaseItemSerial.Where(s => s.ProductID.Equals(p)).Max(sn => sn.IsRequireSerialScan) : false,
+                    serials = purchaseItemSerial.Where(sn => sn.ProductID.Equals(p)).Select(sn => sn.SerialNumber.Trim()).ToArray(),
+                    used = itemSerials.Where(i => i.ProductID.Equals(p)).Select(i => i.SerialNumber.Trim()).ToArray()
                 });
 
             var groupList = ProductList.Select(p => p.pick).GroupBy(p => p.PackageID).GroupBy(p => p.First().OrderID)
@@ -749,6 +749,7 @@ namespace QDLogistics.Controllers
                             {
                                 data.pick.OrderID,
                                 data.pick.PackageID,
+                                data.pick.ProductID,
                                 data.pick.ProductName,
                                 SerialNumber = data.item.SerialNumbers.Skip(i).Any() ? data.item.SerialNumbers.Skip(i).FirstOrDefault().SerialNumber : "",
                                 data.package.TagNo,
