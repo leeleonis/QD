@@ -480,7 +480,7 @@ namespace QDLogistics.Controllers
                             List<PickProduct> pickList = PickProduct.GetAll(true).Where(pick => pick.IsEnable == true && pick.IsPicked == true).OrderByDescending(pick => pick.PickUpDate).ToList();
                             List<Packages> packageList = pickList
                                 .Join(Packages.GetAll(true).Where(p => p.IsEnable.Value && !p.DeliveryStatus.Equals((int)DeliveryStatusType.Delivered) && !p.ShippingMethod.Equals(0) && !string.IsNullOrEmpty(p.TrackingNumber)), pick => pick.PackageID, p => p.ID, (pick, p) => p).ToList()
-                                .Join(ShippingMethod.GetAll(true), p => p.ShippingMethod, method => method.ID, (p, method) => p).ToList()
+                                .Join(ShippingMethod.GetAll(true).Where(m => m.IsEnable && !m.IsDirectLine), p => p.ShippingMethod, method => method.ID, (p, method) => p).ToList()
                                 .Join(Payments.GetAll(true), p => p.OrderID, payment => payment.OrderID, (p, payment) => p).ToList();
 
                             foreach (var data in packageList.Join(Orders.GetAll(true), p => p.OrderID, o => o.OrderID, (p, o) => new { order = o, package = p }).ToList())
@@ -697,7 +697,7 @@ namespace QDLogistics.Controllers
 
                                 SC_WebService SCWS = new SC_WebService("tim@weypro.com", "timfromweypro");
 
-                                List <DirectLineLabel> remindList = new List<DirectLineLabel>();
+                                List<DirectLineLabel> remindList = new List<DirectLineLabel>();
                                 DateTime today = new TimeZoneConvert().ConvertDateTime(EnumData.TimeZone.EST);
 
                                 foreach (DirectLineLabel label in labelList)
@@ -717,9 +717,9 @@ namespace QDLogistics.Controllers
                                                 case (byte)EnumData.CarrierType.IDS:
                                                     IDS_API IDS = new IDS_API(api);
                                                     var IDS_Result = IDS.GetTrackingNumber(package);
-                                                    if (IDS_Result.trackingnumber.Any())
+                                                    if (IDS_Result.trackingnumber.Any(t => t.First().Equals(package.OrderID.ToString())))
                                                     {
-                                                        package.TrackingNumber = IDS_Result.trackingnumber.SelectMany(t => t.Where(tt => tt.Any())).First();
+                                                        package.TrackingNumber = IDS_Result.trackingnumber.First(t => t.First().Equals(package.OrderID.ToString()))[1];
                                                         Packages.Update(package, package.ID);
                                                         Packages.SaveChanges();
                                                     }
@@ -731,17 +731,17 @@ namespace QDLogistics.Controllers
 
                                         if (label.Box.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.已到貨) && DateTime.Compare(today, paymentDate.AddDays(3)) > 0)
                                         {
-                                            if (today.Hour >= paymentDate.Hour && today.Hour <= paymentDate.Hour + 2)
+                                            if (string.IsNullOrEmpty(package.TrackingNumber))
                                             {
-                                                if (string.IsNullOrEmpty(package.TrackingNumber))
-                                                {
-                                                    remindList.Add(label);
-                                                }
-                                                else
-                                                {
-                                                    SyncProcess sync = new SyncProcess(session);
-                                                    sync.Update_Tracking(package);
-                                                }
+                                                if (today.Hour >= paymentDate.Hour && today.Hour <= paymentDate.Hour + 2) remindList.Add(label);
+                                            }
+                                            else
+                                            {
+                                                SyncProcess sync = new SyncProcess(session);
+                                                sync.Update_Tracking(package);
+                                                label.Status = (byte)EnumData.LabelStatus.完成;
+                                                Label.Update(label, label.LabelID);
+                                                Label.SaveChanges();
                                             }
                                         }
                                     }

@@ -46,7 +46,7 @@ namespace QDLogistics.Controllers
         {
             return View();
         }
-        
+
         public ActionResult AjaxCarrierOption()
         {
             Warehouses = new GenericRepository<Warehouses>(db);
@@ -70,7 +70,7 @@ namespace QDLogistics.Controllers
 
             return Content(JsonConvert.SerializeObject(new { carrier = methodList.Select(c => new { text = string.Format("{0}-{1}", c.ID, c.Name), value = c.ID }) }));
         }
-        
+
         public ActionResult AjaxWaitingData(DataFilter filter, int page = 1, int rows = 100)
         {
             Orders = new GenericRepository<Orders>(db);
@@ -88,55 +88,70 @@ namespace QDLogistics.Controllers
                 Warehouses warehouse = Warehouses.Get(warehouseID);
                 if (warehouse != null && warehouse.WarehouseType.Equals((int)WarehouseTypeType.DropShip))
                 {
-                    List<Orders> orderList = Orders.GetAll(true).Where(o => !o.StatusCode.Equals((int)OrderStatusCode.Completed) && o.PaymentStatus.Equals((int)OrderPaymentStatus2.Charged)).ToList();
-                    List<OrderJoinData> results = orderSearch(orderList, EnumData.ProcessStatus.待出貨, warehouseID);
+                    /** Order Filter **/
+                    var OrderFilter = db.Orders.AsNoTracking().Where(o => !o.StatusCode.Value.Equals((int)OrderStatusCode.Completed) && o.PaymentStatus.Value.Equals((int)OrderPaymentStatus2.Charged));
+                    /** Shipping Method Filter **/
+                    var MethodFilter = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && !m.IsDirectLine);
+                    List<OrderJoinData> results = DataFilter(filter, OrderFilter, MethodFilter, EnumData.ProcessStatus.待出貨, warehouseID);
                     if (results.Any())
                     {
-                        results = orderFilter(results, filter);
-                        if (results.Any())
+                        SerialNumbers = new GenericRepository<SerialNumbers>(db);
+
+                        TimeZoneConvert timeZoneConvert = new TimeZoneConvert();
+                        EnumData.TimeZone TimeZone = MyHelp.GetTimeZone((int)Session["TimeZone"]);
+
+                        int length = rows;
+                        int start = (page - 1) * length;
+                        total = results.Count();
+                        results = results.OrderByDescending(oData => oData.order.TimeOfOrder).Skip(start).Take(length).ToList();
+
+                        int[] itemIDs = results.SelectMany(oData => oData.items.Select(i => i.ID)).ToArray();
+                        Dictionary<int, string[]> serialOfItem = SerialNumbers.GetAll(true).Where(s => itemIDs.Contains(s.OrderItemID)).GroupBy(s => s.OrderItemID).ToDictionary(s => s.Key, s => s.Select(ss => ss.SerialNumber).ToArray());
+
+                        dataList.AddRange(results.Select(oData => new
                         {
-                            SerialNumbers = new GenericRepository<SerialNumbers>(db);
-
-                            TimeZoneConvert timeZoneConvert = new TimeZoneConvert();
-                            EnumData.TimeZone TimeZone = MyHelp.GetTimeZone((int)Session["TimeZone"]);
-
-                            int length = rows;
-                            int start = (page - 1) * length;
-                            total = results.Count();
-                            results = results.OrderByDescending(oData => oData.order.TimeOfOrder).Skip(start).Take(length).ToList();
-
-                            int[] itemIDs = results.SelectMany(oData => oData.items.Select(i => i.ID)).ToArray();
-                            Dictionary<int, string[]> serialOfItem = SerialNumbers.GetAll(true).Where(s => itemIDs.Contains(s.OrderItemID)).GroupBy(s => s.OrderItemID).ToDictionary(s => s.Key, s => s.Select(ss => ss.SerialNumber).ToArray());
-
-                            dataList.AddRange(results.Select(oData => new
-                            {
-                                OrderID = oData.order.OrderID,
-                                POId = oData.package.POId,
-                                PackageID = oData.package.ID,
-                                ItemID = oData.item.ID,
-                                PaymentDate = oData.payment != null ? timeZoneConvert.InitDateTime(oData.payment.AuditDate.Value, EnumData.TimeZone.EST).ConvertDateTime(TimeZone).ToString("MM/dd/yyyy<br />hh:mm tt") : "",
-                                Sku = oData.itemCount == 1 ? oData.item.ProductID : "Multi",
-                                DisplayName = oData.itemCount == 1 ? oData.item.DisplayName : "Multi",
-                                ItemCount = oData.itemCount,
-                                OrderQtyTotal = oData.items.Sum(i => i.Qty),
-                                ShippingCountry = oData.address.CountryName,
-                                ShippingMethod = oData.package.ShippingMethod.Value,
-                                StatusCode = Enum.GetName(typeof(OrderStatusCode), oData.order.StatusCode.Value),
-                                Comment = oData.package.Comment,
-                                SupplierComment = string.IsNullOrEmpty(oData.package.SupplierComment) ? "" : oData.package.SupplierComment,
-                                Serials = oData.items.Where(i => serialOfItem.ContainsKey(i.ID)).ToDictionary(i => i.ID, i => serialOfItem[i.ID]),
-                                SerialNumber = oData.itemCount + oData.item.Qty == 2 ? (serialOfItem.ContainsKey(oData.item.ID) ? serialOfItem[oData.item.ID].First() : "") : "Multi",
-                                TrackingNumber = string.IsNullOrEmpty(oData.package.TrackingNumber) ? "" : oData.package.TrackingNumber,
-                                POInvoice = string.IsNullOrEmpty(oData.package.POInvoice) ? "" : oData.package.POInvoice
-                            }));
-                        }
+                            OrderID = oData.order.OrderID,
+                            POId = oData.package.POId,
+                            PackageID = oData.package.ID,
+                            ItemID = oData.item.ID,
+                            PaymentDate = oData.payment != null ? timeZoneConvert.InitDateTime(oData.payment.AuditDate.Value, EnumData.TimeZone.EST).ConvertDateTime(TimeZone).ToString("MM/dd/yyyy<br />hh:mm tt") : "",
+                            Sku = oData.itemCount == 1 ? oData.item.ProductID : "Multi",
+                            DisplayName = oData.itemCount == 1 ? oData.item.DisplayName : "Multi",
+                            ItemCount = oData.itemCount,
+                            OrderQtyTotal = oData.items.Sum(i => i.Qty),
+                            ShippingCountry = oData.address.CountryName,
+                            ShippingMethod = oData.package.ShippingMethod.Value,
+                            StatusCode = Enum.GetName(typeof(OrderStatusCode), oData.order.StatusCode.Value),
+                            Comment = oData.package.Comment,
+                            SupplierComment = string.IsNullOrEmpty(oData.package.SupplierComment) ? "" : oData.package.SupplierComment,
+                            Serials = oData.items.Where(i => serialOfItem.ContainsKey(i.ID)).ToDictionary(i => i.ID, i => serialOfItem[i.ID]),
+                            SerialNumber = oData.itemCount + oData.item.Qty == 2 ? (serialOfItem.ContainsKey(oData.item.ID) ? serialOfItem[oData.item.ID].First() : "") : "Multi",
+                            TrackingNumber = string.IsNullOrEmpty(oData.package.TrackingNumber) ? "" : oData.package.TrackingNumber,
+                            POInvoice = string.IsNullOrEmpty(oData.package.POInvoice) ? "" : oData.package.POInvoice
+                        }));
                     }
                 }
             }
 
             return Content(JsonConvert.SerializeObject(new { total, rows = dataList }), "appllication/json");
         }
-        
+
+        //public Action AjaxDirectLineData(DataFilter filter, int page = 1, int rows = 100)
+        //{
+        //    int warehouseID = 0, total = 0;
+        //    List<object> dataList = new List<object>();
+
+        //    if (int.TryParse(Session["warehouseId"].ToString(), out warehouseID))
+        //    {
+        //        Warehouses = new GenericRepository<Warehouses>(db);
+        //        Warehouses warehouse = Warehouses.Get(warehouseID);
+        //        if (warehouse != null && warehouse.WarehouseType.Equals((int)WarehouseTypeType.DropShip))
+        //        {
+
+        //        }
+        //    }
+        //}
+
         public ActionResult AjaxShippedData(DataFilter filter, int page = 1, int rows = 100)
         {
             Orders = new GenericRepository<Orders>(db);
@@ -154,51 +169,48 @@ namespace QDLogistics.Controllers
                 Warehouses warehouse = Warehouses.Get(warehouseID);
                 if (warehouse != null && warehouse.WarehouseType.Equals((int)WarehouseTypeType.DropShip))
                 {
-                    List<Orders> orderList = Orders.GetAll(true).Where(o => o.StatusCode.Equals((int)OrderStatusCode.Completed) || o.ShippingStatus.Equals((int)OrderShippingStatus.PartiallyShipped)).ToList();
-                    List<OrderJoinData> results = orderSearch(orderList, EnumData.ProcessStatus.已出貨, warehouseID);
+                    /** Order Filter **/
+                    var OrderFilter = db.Orders.AsNoTracking().Where(o => o.StatusCode.Value.Equals((int)OrderStatusCode.Completed) || o.ShippingStatus.Value.Equals((int)OrderShippingStatus.PartiallyShipped));
+                    /** Shipping Method Filter **/
+                    var MethodFilter = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable);
+                    List<OrderJoinData> results = DataFilter(filter, OrderFilter, MethodFilter, EnumData.ProcessStatus.已出貨, warehouseID);
                     if (results.Any())
                     {
-                        results = orderFilter(results, filter);
-                        if (results.Any())
+                        SerialNumbers = new GenericRepository<SerialNumbers>(db);
+
+                        TimeZoneConvert timeZoneConvert = new TimeZoneConvert();
+                        EnumData.TimeZone TimeZone = MyHelp.GetTimeZone((int)Session["TimeZone"]);
+
+                        int length = rows;
+                        int start = (page - 1) * length;
+                        total = results.Count();
+                        results = results.OrderByDescending(oData => oData.order.TimeOfOrder).Skip(start).Take(length).ToList();
+                        
+                        int[] itemIDs = results.SelectMany(oData => oData.items.Select(i => i.ID)).ToArray();
+                        Dictionary<int, string[]> serialOfItem = SerialNumbers.GetAll(true).Where(s => itemIDs.Contains(s.OrderItemID)).GroupBy(s => s.OrderItemID).ToDictionary(s => s.Key, s => s.Select(ss => ss.SerialNumber).ToArray());
+
+                        dataList.AddRange(results.Select(oData => new
                         {
-                            ShippingMethod = new GenericRepository<ShippingMethod>(db);
-                            SerialNumbers = new GenericRepository<SerialNumbers>(db);
-
-                            TimeZoneConvert timeZoneConvert = new TimeZoneConvert();
-                            EnumData.TimeZone TimeZone = MyHelp.GetTimeZone((int)Session["TimeZone"]);
-
-                            int length = rows;
-                            int start = (page - 1) * length;
-                            total = results.Count();
-                            results = results.OrderByDescending(oData => oData.order.TimeOfOrder).Skip(start).Take(length).ToList();
-
-                            int[] methodIDs = results.Where(oData => !oData.package.ShippingMethod.Equals(null)).Select(oData => oData.package.ShippingMethod.Value).ToArray();
-                            Dictionary<int, string> methodList = ShippingMethod.GetAll(true).Where(m => m.IsEnable && methodIDs.Contains(m.ID)).ToDictionary(m => m.ID, m => m.Name);
-
-                            int[] itemIDs = results.SelectMany(oData => oData.items.Select(i => i.ID)).ToArray();
-                            Dictionary<int, string[]> serialOfItem = SerialNumbers.GetAll(true).Where(s => itemIDs.Contains(s.OrderItemID)).GroupBy(s => s.OrderItemID).ToDictionary(s => s.Key, s => s.Select(ss => ss.SerialNumber).ToArray());
-
-                            dataList.AddRange(results.Select(oData => new
-                            {
-                                OrderID = oData.order.OrderID,
-                                POId = oData.package.POId,
-                                PackageID = oData.package.ID,
-                                ItemID = oData.item.ID,
-                                PaymentDate = oData.payment != null ? timeZoneConvert.InitDateTime(oData.payment.AuditDate.Value, EnumData.TimeZone.EST).ConvertDateTime(TimeZone).ToString("MM/dd/yyyy<br />hh:mm tt") : "",
-                                Sku = oData.itemCount == 1 ? oData.item.ProductID : "Multi",
-                                DisplayName = oData.itemCount == 1 ? oData.item.DisplayName : "Multi",
-                                ItemCount = oData.itemCount,
-                                OrderQtyTotal = oData.items.Sum(i => i.Qty),
-                                ShippingCountry = oData.address.CountryName,
-                                ShippingMethod = oData.package.Method != null ? methodList[oData.package.ShippingMethod.Value] : "",
-                                StatusCode = Enum.GetName(typeof(OrderStatusCode), oData.order.StatusCode.Value),
-                                Comment = oData.package.Comment,
-                                SupplierComment = oData.package.SupplierComment,
-                                SerialNumber = oData.itemCount + oData.item.Qty == 2 ? (serialOfItem.ContainsKey(oData.item.ID) ? serialOfItem[oData.item.ID].First() : "") : "Multi",
-                                TrackingNumber = oData.package.TrackingNumber,
-                                POInvoice = oData.package.POInvoice
-                            }));
-                        }
+                            OrderID = oData.order.OrderID,
+                            POId = oData.package.POId,
+                            PackageID = oData.package.ID,
+                            ItemID = oData.item.ID,
+                            PaymentDate = oData.payment != null ? timeZoneConvert.InitDateTime(oData.payment.AuditDate.Value, EnumData.TimeZone.EST).ConvertDateTime(TimeZone).ToString("MM/dd/yyyy<br />hh:mm tt") : "",
+                            Sku = oData.itemCount == 1 ? oData.item.ProductID : "Multi",
+                            DisplayName = oData.itemCount == 1 ? oData.item.DisplayName : "Multi",
+                            ItemCount = oData.itemCount,
+                            OrderQtyTotal = oData.items.Sum(i => i.Qty),
+                            ShippingCountry = oData.address.CountryName,
+                            ShippingMethod = oData.method.Name,
+                            Type = oData.method.IsDirectLine ? "Direct Line" : "Dropship",
+                            StatusCode = Enum.GetName(typeof(OrderStatusCode), oData.order.StatusCode.Value),
+                            Comment = oData.package.Comment,
+                            SupplierComment = oData.package.SupplierComment,
+                            SerialNumber = oData.itemCount + oData.item.Qty == 2 ? (serialOfItem.ContainsKey(oData.item.ID) ? serialOfItem[oData.item.ID].First() : "") : "Multi",
+                            LabelID = string.IsNullOrEmpty(oData.package.TagNo) ? "" : oData.package.TagNo,
+                            TrackingNumber = oData.package.TrackingNumber,
+                            POInvoice = oData.package.POInvoice
+                        }));
                     }
                 }
             }
@@ -206,55 +218,51 @@ namespace QDLogistics.Controllers
             return Content(JsonConvert.SerializeObject(new { total, rows = dataList }), "appllication/json");
         }
 
-        private List<OrderJoinData> orderSearch(List<Orders> orderList, EnumData.ProcessStatus processStatus, int warehouseID)
+        private List<OrderJoinData> DataFilter(DataFilter filter, IQueryable<Orders> OrderFilter, IQueryable<ShippingMethod> MethodFilter, EnumData.ProcessStatus processStatus, int warehouseID)
         {
-            int[] orderIDs = orderList.Select(o => o.OrderID).ToArray();
-            List<Packages> packageList = Packages.GetAll(true).Where(p => p.IsEnable.Equals(true) && orderIDs.Contains(p.OrderID.Value) && p.ProcessStatus.Equals((byte)processStatus)).ToList();
-            var itemList = Items.GetAll(true).Where(i => i.IsEnable.Equals(true) && orderIDs.Contains(i.OrderID.Value) && i.ShipFromWarehouseID.Equals(warehouseID)).GroupBy(i => i.PackageID.Value).ToList();
-            List<Payments> paymentList = Payments.GetAll(true).Where(p => p.IsEnable.Equals(true) && orderIDs.Contains(p.OrderID.Value)).ToList();
+            /** Order Filter **/
+            if (!filter.StatusCode.Equals(null)) OrderFilter = OrderFilter.Where(o => o.StatusCode.Value.Equals(filter.StatusCode.Value));
+            if (!filter.ShippingStatus.Equals(null)) OrderFilter = OrderFilter.Where(o => o.ShippingStatus.Equals(filter.ShippingStatus));
+            if (!filter.Source.Equals(null)) OrderFilter = OrderFilter.Where(o => o.OrderSource.Equals(filter.Source));
+            if (!string.IsNullOrWhiteSpace(filter.OrderID)) OrderFilter = OrderFilter.Where(o => o.OrderID.ToString().Equals(filter.OrderID));
+            if (!string.IsNullOrWhiteSpace(filter.UserID)) OrderFilter = OrderFilter.Where(o => !string.IsNullOrWhiteSpace(o.eBayUserID) && o.eBayUserID.Contains(filter.UserID));
+            if (!string.IsNullOrWhiteSpace(filter.SourceID)) OrderFilter = OrderFilter.Where(o => (o.OrderSource.Equals(1) && o.eBaySalesRecordNumber.Equals(filter.SourceID)) || (o.OrderSource.Equals(4) && o.OrderSourceOrderId.Equals(filter.SourceID)));
 
-            return orderList.Join(packageList, o => o.OrderID, p => p.OrderID, (o, p) => new OrderJoinData() { order = o, package = p })
-                .Join(itemList, oData => oData.package.ID, i => i.Key, (oData, i) => new OrderJoinData(oData) { item = i.First(), items = i.ToList(), itemCount = i.Sum(ii => 1 + ii.KitItemCount.Value) })
-                .Join(Addresses.GetAll(true).Where(a => a.IsEnable.Equals(true)).ToList(), oData => oData.order.ShippingAddress, a => a.Id, (oData, a) => new OrderJoinData(oData) { address = a })
-                .GroupJoin(paymentList, o => o.order.OrderID, p => p.OrderID, (o, p) => new { orderJoinData = o, payment = p.Take(1) })
-                .SelectMany(o => o.payment.DefaultIfEmpty(), (o, p) => new OrderJoinData(o.orderJoinData) { payment = p }).ToList();
-            //.Join(paymentList, oData => oData.order.OrderID, p => p.OrderID, (oData, p) => new OrderJoinData(oData) { payment = p }).ToList();
-        }
+            /** Package Filter **/
+            var PackageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)processStatus));
+            if (!filter.MethodID.Equals(null)) PackageFilter = PackageFilter.Where(p => p.ShippingMethod.Value.Equals(filter.MethodID.Value));
+            if (!string.IsNullOrWhiteSpace(filter.Tracking)) PackageFilter = PackageFilter.Where(p => p.TrackingNumber.ToLower().Contains(filter.Tracking.ToLower()));
 
-        private List<OrderJoinData> orderFilter(List<OrderJoinData> results, DataFilter filter)
-        {
-            if (!string.IsNullOrWhiteSpace(filter.OrderID)) results = results.Where(oData => oData.order.OrderID.ToString().Equals(filter.OrderID)).ToList();
-            if (!string.IsNullOrWhiteSpace(filter.ItemName))
-            {
-                Skus = new GenericRepository<Skus>(db);
-                string[] productIDs = results.Select(oData => oData.item.ProductID).Distinct().ToArray();
-                Dictionary<string, string> skuList = Skus.GetAll(true).Where(s => productIDs.Contains(s.Sku)).ToDictionary(s => s.Sku, s => s.UPC);
-                results = results.Where(oData => oData.items.Any(i => i.DisplayName.ToLower().Contains(filter.ItemName.ToLower()) || i.ProductID.Equals(filter.ItemName) || skuList[i.ProductID].Equals(filter.ItemName))).ToList();
-            }
-            if (!string.IsNullOrWhiteSpace(filter.UserID)) results = results.Where(oData => !string.IsNullOrWhiteSpace(oData.order.eBayUserID) && oData.order.eBayUserID.Contains(filter.UserID)).ToList();
-            if (!string.IsNullOrWhiteSpace(filter.SourceID)) results = results.Where(oData => (oData.order.OrderSource.Equals(1) && oData.order.eBaySalesRecordNumber.Equals(filter.SourceID)) || (oData.order.OrderSource.Equals(4) && oData.order.OrderSourceOrderId.Equals(filter.SourceID))).ToList();
+            /** Item Filter **/
+            var ItemFilter = db.Items.AsNoTracking().Where(i => i.IsEnable.Value && i.ShipFromWarehouseID.Value.Equals(warehouseID));
+            if (!string.IsNullOrWhiteSpace(filter.ItemName)) ItemFilter = ItemFilter.Where(i => i.DisplayName.ToLower().Contains(filter.ItemName.ToLower()) || i.ProductID.Equals(filter.ItemName));
 
-            if (!string.IsNullOrWhiteSpace(filter.Tracking)) results = results.Where(p => p.package.TrackingNumber.Equals(filter.Tracking)).ToList();
-            if (!filter.MethodID.Equals(null)) results = results.Where(oData => oData.package.ShippingMethod.Equals(filter.MethodID)).ToList();
-            if (!filter.StatusCode.Equals(null)) results = results.Where(oData => oData.order.StatusCode.Equals(filter.StatusCode)).ToList();
-            if (!filter.ShippingStatus.Equals(null)) results = results.Where(oData => oData.order.ShippingStatus.Equals(filter.ShippingStatus)).ToList();
-            if (!filter.Source.Equals(null)) results = results.Where(oData => oData.order.OrderSource.Equals(filter.Source)).ToList();
-            if (!string.IsNullOrWhiteSpace(filter.Country)) results = results.Where(oData => filter.Country.Equals(oData.address.CountryCode)).ToList();
+            /** Address Filter **/
+            var AddressFilter = db.Addresses.AsNoTracking().Where(a => a.IsEnable.Value);
+            if (!string.IsNullOrWhiteSpace(filter.Country)) AddressFilter = AddressFilter.Where(a => a.CountryCode.Equals(filter.Country));
 
+            /** Payment Filter **/
+            var PaymentFilter = db.Payments.AsNoTracking().Where(p => p.IsEnable.Value && p.PaymentType.Value.Equals((int)PaymentRecordType.Payment));
             if (!filter.DateFrom.Equals(new DateTime()))
             {
                 DateTime dateFrom = new DateTime(filter.DateFrom.Year, filter.DateFrom.Month, filter.DateFrom.Day, 0, 0, 0);
                 dateFrom = new TimeZoneConvert(dateFrom, MyHelp.GetTimeZone((int)Session["TimeZone"])).ConvertDateTime(EnumData.TimeZone.EST);
-                results = results.Where(oData => oData.payment != null && DateTime.Compare(oData.payment.AuditDate.Value, dateFrom) >= 0).ToList();
+                PaymentFilter = PaymentFilter.Where(p => DateTime.Compare(p.AuditDate.Value, dateFrom) >= 0);
             }
             if (!filter.DateTo.Equals(new DateTime()))
             {
                 DateTime dateTo = new DateTime(filter.DateTo.Year, filter.DateTo.Month, filter.DateTo.Day + 1, 0, 0, 0);
                 dateTo = new TimeZoneConvert(dateTo, MyHelp.GetTimeZone((int)Session["TimeZone"])).ConvertDateTime(EnumData.TimeZone.EST);
-                results = results.Where(oData => oData.payment != null && DateTime.Compare(oData.payment.AuditDate.Value, dateTo) < 0).ToList();
+                PaymentFilter = PaymentFilter.Where(p => DateTime.Compare(p.AuditDate.Value, dateTo) < 0);
             }
 
-            return results;
+            return OrderFilter.ToList()
+                .Join(PackageFilter, o => o.OrderID, p => p.OrderID, (o, p) => new OrderJoinData() { order = o, package = p })
+                .Join(ItemFilter.GroupBy(i => i.PackageID.Value), oData => oData.package.ID, i => i.Key, (oData, i) => new OrderJoinData(oData) { item = i.First(), items = i.ToList(), itemCount = i.Sum(ii => 1 + ii.KitItemCount).Value })
+                .Join(AddressFilter, oData => oData.order.ShippingAddress, a => a.Id, (oData, a) => new OrderJoinData(oData) { address = a })
+                .Join(MethodFilter, oData => oData.package.ShippingMethod, m => m.ID, (oData, m) => new OrderJoinData(oData) { method = m })
+                .GroupJoin(PaymentFilter, oData => oData.order.OrderID, p => p.OrderID.Value, (oData, p) => new { orderJoinData = oData, payment = p.Take(1) })
+                .SelectMany(o => o.payment.DefaultIfEmpty(), (o, p) => new OrderJoinData(o.orderJoinData) { payment = p }).ToList();
         }
         
         public ActionResult AjaxOrderUpdate(List<OrderUpdateData> data, int reTry = 0, List<string> message = null)
@@ -262,7 +270,7 @@ namespace QDLogistics.Controllers
             Packages = new GenericRepository<Packages>(db);
             SerialNumbers = new GenericRepository<SerialNumbers>(db);
 
-            if(message == null)
+            if (message == null)
                 message = new List<string>();
 
             foreach (OrderUpdateData oData in data)
@@ -319,10 +327,11 @@ namespace QDLogistics.Controllers
                         package.TrackingNumber = "";
                         Packages.Update(package, package.ID);
                         Packages.SaveChanges();
-                        
+
                         if (reTry <= 2)
                             return AjaxOrderUpdate(new List<OrderUpdateData>() { oData }, reTry + 1, message);
-                        else {
+                        else
+                        {
                             MyHelp.ErrorLog(e, string.Format("直發商訂單【{0}】更新失敗", oData.OrderID), oData.OrderID.ToString());
                             message.Add(string.Format("直發商訂單【{0}】更新失敗，錯誤：", oData.OrderID) + (e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim()));
                         }
@@ -373,7 +382,7 @@ namespace QDLogistics.Controllers
                             error = Sync.Update_PurchaseOrder(package.ID);
                         }
                         catch (Exception e)
-                        {   
+                        {
                             error = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
                         }
 

@@ -45,7 +45,8 @@
                     <td><div class="datagrid-cell datagrid-cell-c1-DisplayName">@item.DisplayName</div></td>
                     <td><div class="datagrid-cell datagrid-cell-c1-OrderQtyTotal">1</div></td>
                     <td><div class="datagrid-cell datagrid-cell-c1-ShippingCountry"></div></td>
-                    <td><div class="datagrid-cell datagrid-cell-c1-CarrierID"></div></td>
+                    <td><div class="datagrid-cell datagrid-cell-c1-ShippingMethod"></div></td>
+                    <td><div class="datagrid-cell datagrid-cell-c1-Type"></div></td>
                     <td><div class="datagrid-cell datagrid-cell-c1-StatusCode"></div></td>
                     <td><div class="datagrid-cell datagrid-cell-c1-Comment"></div></td>
                     <td><div class="datagrid-cell datagrid-cell-c1-SupplierComment"></div></td>
@@ -54,6 +55,7 @@
                             <input type='text' class='form-control input-sm' id="SerialNumber-@item.PackageID" data-id="@item.ID" value="@serial" onchange="changeSerial(@item.PackageID)" />
                         </div>
                     </td>
+                    <td><div class="datagrid-cell datagrid-cell-c1-LabelID"></div></td>
                     <td><div class="datagrid-cell datagrid-cell-c1-TrackingNumber"></div></td>
                     <td><div class="datagrid-cell datagrid-cell-c1-POInvoice"></div></td>
                     <td><div class="datagrid-cell datagrid-cell-c1-save"></div></td>
@@ -68,11 +70,13 @@
                             <td><div class="datagrid-cell datagrid-cell-c1-DisplayName">@bundle.Skus.ProductName</div></td>
                             <td><div class="datagrid-cell datagrid-cell-c1-OrderQtyTotal">@bundle.Qty</div></td>
                             <td><div class="datagrid-cell datagrid-cell-c1-ShippingCountry"></div></td>
-                            <td><div class="datagrid-cell datagrid-cell-c1-CarrierID"></div></td>
+                            <td><div class="datagrid-cell datagrid-cell-c1-ShippingMethod"></div></td>
+                            <td><div class="datagrid-cell datagrid-cell-c1-Type"></div></td>
                             <td><div class="datagrid-cell datagrid-cell-c1-StatusCode"></div></td>
                             <td><div class="datagrid-cell datagrid-cell-c1-Comment"></div></td>
                             <td><div class="datagrid-cell datagrid-cell-c1-SupplierComment"></div></td>
                             <td><div class="datagrid-cell datagrid-cell-c1-SerialNumber"></div></td>
+                            <td><div class="datagrid-cell datagrid-cell-c1-LabelID"></div></td>
                             <td><div class="datagrid-cell datagrid-cell-c1-TrackingNumber"></div></td>
                             <td><div class="datagrid-cell datagrid-cell-c1-POInvoice"></div></td>
                             <td><div class="datagrid-cell datagrid-cell-c1-save"></div></td>

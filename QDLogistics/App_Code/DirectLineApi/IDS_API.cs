@@ -70,15 +70,31 @@ namespace DirectLineApi.IDS
                 List<OrderData> orderList = new List<OrderData>();
 
                 List<Items> itemList = package.Items.Where(i => i.IsEnable.Value).ToList();
+
+                string buyerName = string.Join(" ", new string[] { address.FirstName, address.MiddleInitial, address.LastName });
+                string buyerAddress2 = !string.IsNullOrEmpty(address.StreetLine2) ? address.StreetLine2.Trim() : "";
+                if (!string.IsNullOrEmpty(address.CompanyName))
+                {
+                    string companyName = address.CompanyName.Trim();
+                    if(string.Format("{0} {1}", buyerName, companyName).Length <= 50)
+                    {
+                        buyerName = string.Format("{0} {1}", buyerName, companyName).Trim();
+                    }
+                    else
+                    {
+                        buyerAddress2 = string.Format("{0} {1}", companyName, buyerAddress2).Trim();
+                    }
+                }
+
                 orderList.Add(new OrderData()
                 {
                     salesRecordNumber = order.OrderID.ToString(),
                     productType = string.Join(",", itemList.Select(i => i.Skus.ProductType).Select(t => t.ProductTypeName).Distinct()),
                     serviceType = serviceTypeList[method.MethodType.Value],
-                    buyerName = string.Join(" ", new string[] { address.FirstName, address.MiddleInitial, address.LastName }),
+                    buyerName = buyerName,
                     buyerPhone = !string.IsNullOrEmpty(address.PhoneNumber) ? address.PhoneNumber.Trim() : "",
                     buyerAddress1 = address.StreetLine1.Trim(),
-                    buyerAddress2 = !string.IsNullOrEmpty(address.StreetLine2) ? address.StreetLine2.Trim() : "",
+                    buyerAddress2 = buyerAddress2,
                     buyerCity = address.City.Trim(),
                     buyerCountry = address.CountryName.Trim(),
                     buyerDistrict = address.CountryCode.Equals("US") ? "" : "E",

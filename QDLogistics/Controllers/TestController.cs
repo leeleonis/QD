@@ -326,7 +326,10 @@ namespace QDLogistics.Controllers
 
             IDS_API IDS = new IDS_API(package.Method.Carriers.CarrierAPI);
             var result = IDS.GetTrackingNumber(package);
-
+            if (result.trackingnumber.Any(t => t.First().Equals(package.OrderID.ToString())))
+            {
+                string tracking = result.trackingnumber.First(t => t.First().Equals(package.OrderID.ToString()))[1];
+            }
         }
 
         public void Box_Test(string boxID)
