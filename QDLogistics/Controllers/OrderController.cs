@@ -144,6 +144,11 @@ namespace QDLogistics.Controllers
                                         if (!string.IsNullOrEmpty(packageData.Method.CountryData))
                                         {
                                             var countryData = JsonConvert.DeserializeObject<Dictionary<string, bool>>(packageData.Method.CountryData);
+                                            if (!countryData.ContainsKey(packageData.Orders.Addresses.CountryCode))
+                                            {
+                                                throw new Exception(string.Format("訂單【{0}】國家名稱不合，請重新確認", packageData.OrderID));
+                                            }
+
                                             if (!countryData[packageData.Orders.Addresses.CountryCode])
                                             {
                                                 throw new Exception(string.Format("訂單【{0}】不可寄送至國家{1}", packageData.OrderID, packageData.Orders.Addresses.CountryName));
@@ -643,7 +648,7 @@ namespace QDLogistics.Controllers
                         string mailTitle;
                         string mailBody;
                         string[] receiveMails;
-                        string[] ccMails = new string[] { "Kellyyang82@hotmail.com", "ella.chou@hotmail.com", "jenny-QD@hotmail.com", "yiing1009@hotmail.com" };
+                        string[] ccMails = new string[] { "peter0626@hotmail.com", "Kellyyang82@hotmail.com", "ella.chou@hotmail.com", "jenny-QD@hotmail.com", "yiing1009@hotmail.com" };
                         //string[] ccMails = new string[] { };
 
                         try

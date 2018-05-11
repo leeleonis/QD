@@ -102,7 +102,7 @@ namespace DirectLineApi.IDS
                     buyerZip = address.PostalCode,
                     weight = itemList.Sum(i => i.Qty.Value * i.Skus.Weight),
                     quantity = itemList.Sum(i => i.Qty.Value),
-                    cost = itemList.Sum(i => i.Qty.Value * (float)i.DeclaredValue),
+                    cost = (float)itemList.Sum(i => i.Qty.Value * i.DeclaredValue),
                     remarks = !string.IsNullOrEmpty(package.SupplierComment) ? package.SupplierComment.Trim() : ""
                 });
 

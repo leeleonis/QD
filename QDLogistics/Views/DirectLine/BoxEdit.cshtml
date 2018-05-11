@@ -2,7 +2,7 @@
 @using QDLogistics.Commons
 @model Box
 
-@{ 
+@{
     TimeZoneConvert timeZoneConvert = new TimeZoneConvert();
     EnumData.TimeZone TimeZone = MyHelp.GetTimeZone((int)Session["TimeZone"]);
     List<ActionLog> logList = (List<ActionLog>)ViewBag.logList;
@@ -113,11 +113,23 @@
                     {
                         field: "Action", title: "Action", width: 150, align: "center", sortable: false,
                         formatter: function (value, row, index) {
-                            return "<select class='form-control'>" + setSelectOption(selectOption['StatusCode'], row.StatusCode) + "</select>"
+                            return "<select class='form-control select-status' data-id='" + row.PackageID + "'>" + setSelectOption(selectOption['StatusCode'], row.StatusCode) + "</select>"
                         }
                     }
                 ]],
                 onLoadSuccess: function (data) {
+                    $('.select-status').on('change', function () {
+                        if (confirm('是否確定要修改訂單狀態?')) {
+                            getOption("@Url.Action("changeOrderStatus", "directLine")", 'post', { packageID: $(this).data('id'), status: $(this).val() }).done(function (response) {
+                                if (response['status']) {
+                                } else {
+                                    alert(response['message']);
+                                }
+                            });
+                        } else {
+                            $(this).find('option').prop('selected', function () { return this.defaultSelected; });
+                        }
+                    });
                 },
                 onBeforeLoad: function (param) {
                 },

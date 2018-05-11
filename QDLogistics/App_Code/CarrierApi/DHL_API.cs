@@ -98,9 +98,8 @@ namespace CarrierApi.DHL
             var shipment = new ShipmentValidateRequestEA();
 
             shipment.Request = requsetInit();
-            //shipment.RegionCode = "AP";
-            shipment.NewShipper = YesNo1.N;
-            shipment.NewShipperSpecified = true;
+            //shipment.NewShipper = YesNo1.N;
+            //shipment.NewShipperSpecified = true;
             shipment.LanguageCode = "tw";
             shipment.PiecesEnabled = PiecesEnabled.Y;
             shipment.PiecesEnabledSpecified = true;
@@ -172,7 +171,7 @@ namespace CarrierApi.DHL
             shipment.Dutiable = new Dutiable1()
             {
                 DeclaredValue = package.DeclaredTotal.ToString(),
-                DeclaredCurrency = Enum.GetName(typeof(QDLogistics.OrderService.CurrencyCodeType2), package.Orders.OrderCurrencyCode.Value),
+                DeclaredCurrency = shipment.ShipmentDetails.CurrencyCode,
                 TermsOfTrade = "DDP"
             };
 
@@ -191,7 +190,7 @@ namespace CarrierApi.DHL
             shipment.SpecialService = new SpecialService1[] { new SpecialService1() {
                 SpecialServiceType = "DD",
                 ChargeValue = package.DeclaredTotal.ToString(),
-                CurrencyCode = Enum.GetName(typeof(QDLogistics.OrderService.CurrencyCodeType2), package.Orders.OrderCurrencyCode.Value)
+                CurrencyCode = shipment.ShipmentDetails.CurrencyCode
             } };
 
             return shipment;
@@ -204,9 +203,8 @@ namespace CarrierApi.DHL
             ShipmentValidateRequestEA shipment = new ShipmentValidateRequestEA();
 
             shipment.Request = requsetInit();
-            //shipment.RegionCode = "AP";
-            shipment.NewShipper = YesNo1.N;
-            shipment.NewShipperSpecified = true;
+            //shipment.NewShipper = YesNo1.N;
+            //shipment.NewShipperSpecified = true;
             shipment.LanguageCode = "tw";
             shipment.PiecesEnabled = PiecesEnabled.Y;
             shipment.PiecesEnabledSpecified = true;

@@ -203,7 +203,7 @@ namespace CarrierApi.FedEx
                 new RequestedPackageLineItem()
                 {
                     SequenceNumber = "1",
-                    InsuredValue = customsValue,
+                    InsuredValue = new QDLogistics.FedExShipService.Money() { Amount = 0, Currency = currency },
                     Weight = commodity.Weight,
                     CustomerReferences = new CustomerReference[]
                     {
@@ -330,7 +330,7 @@ namespace CarrierApi.FedEx
                 new RequestedPackageLineItem()
                 {
                     SequenceNumber = "1",
-                    InsuredValue = customsValue,
+                    InsuredValue = new QDLogistics.FedExShipService.Money() { Amount = 0, Currency = currency },
                     Weight = commodity.Weight,
                     CustomerReferences = new CustomerReference[]
                     {

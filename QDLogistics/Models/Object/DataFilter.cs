@@ -24,12 +24,15 @@ namespace QDLogistics.Models.Object
         public string UserID { get; set; }
         public string Tracking { get; set; }
         public string Comment { get; set; }
+        public string SupplierComment { get; set; }
         public decimal DeclaredTotal { get; set; }
         public DateTime DateFrom { get; set; }
         public DateTime DateTo { get; set; }
         public Nullable<int> PaymentStatus { get; set; }
         public DateTime PaymentDate { get; set; }
         public DateTime DispatchDate { get; set; }
+        public string POId { get; set; }
+        public string POInvoice { get; set; }
         public string TagNo { get; set; }
 
         public Nullable<int> ShippingStatus { get; set; }

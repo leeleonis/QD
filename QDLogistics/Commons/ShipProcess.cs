@@ -10,6 +10,7 @@ using CarrierApi.DHL;
 using CarrierApi.FedEx;
 using CarrierApi.Winit;
 using DirectLineApi.IDS;
+using GemBox.Spreadsheet;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NPOI.HSSF.UserModel;
@@ -176,7 +177,7 @@ namespace QDLogistics.Commons
                                 sheet.GetRow(28).GetCell(11).SetCellValue(!sku.Brand.Equals(0) ? sku.Manufacturers.ManufacturerName : "");
 
                                 sheet.GetRow(32).GetCell(9).SetCellValue(group.Sum(i => i.Qty.Value * i.DeclaredValue).ToString("N"));
-                                sheet.GetRow(32).GetCell(10).SetCellValue(Enum.GetName(typeof(OrderService.CurrencyCodeType2), box.Packages.First().Orders.OrderCurrencyCode.Value));
+                                sheet.GetRow(32).GetCell(10).SetCellValue("USD");
 
                                 using (FileStream fsOut = new FileStream(Path.Combine(filePath, string.Format(CheckList.fileName, sku.Sku)), FileMode.Create))
                                 {
@@ -336,6 +337,15 @@ namespace QDLogistics.Commons
                         if (package.Export == (byte)EnumData.Export.正式)
                         {
                             DHL_SaveFile(result);
+
+                            //string basePath = HostingEnvironment.MapPath("~/FileUploads");
+
+                            //SpreadsheetInfo.SetLicense("FREE-LIMITED-KEY");
+                            //ExcelFile ef = ExcelFile.Load(Path.Combine(basePath, package.FilePath, "Invoice.xls"));
+                            //ef.Save(Path.Combine(basePath, package.FilePath, "Invoice.pdf"));
+
+                            //DHL.UploadInvoice(package.TrackingNumber, File.ReadAllBytes(Path.Combine(basePath, package.FilePath, "Invoice.pdf")));
+                            //File.Delete(Path.Combine(basePath, package.FilePath, "Invoice.pdf"));
                         }
                     }
                     catch (Exception e)
@@ -679,24 +689,25 @@ namespace QDLogistics.Commons
 
                 rowIndex = 26;
                 List<Items> itemList = box.Packages.Where(p => p.IsEnable.Value).SelectMany(p => p.Items.Where(i => i.IsEnable.Value)).ToList();
-                foreach (var group in itemList.GroupBy(i => i.ProductID).ToList())
+                foreach (var item in itemList)
                 {
-                    Skus sku = group.First().Skus;
+                    Skus sku = item.Skus;
                     Country country = MyHelp.GetCountries().FirstOrDefault(c => c.ID.Equals(sku.Origin));
                     sheet.GetRow(rowIndex).GetCell(1).SetCellValue(country.OriginName);
                     string productName = sku.ProductType.ProductTypeName + " - " + sku.ProductName;
                     sheet.GetRow(rowIndex).GetCell(5).SetCellValue(productName);
-                    sheet.GetRow(rowIndex).GetCell(8).SetCellValue(group.Sum(i => i.Qty.Value));
+                    sheet.GetRow(rowIndex).GetCell(8).SetCellValue(item.Qty.Value);
                     sheet.GetRow(rowIndex).GetCell(9).SetCellValue("pieces");
-                    sheet.GetRow(rowIndex).GetCell(10).SetCellValue(group.Sum(i => i.Qty * ((double)sku.Weight / 1000)) + "kg");
-                    sheet.GetRow(rowIndex).GetCell(11).SetCellValue(group.First().DeclaredValue.ToString("N"));
-                    sheet.GetRow(rowIndex).GetCell(16).SetCellValue(group.Sum(i => i.DeclaredValue * i.Qty.Value).ToString("N"));
-                    sheet.GetRow(rowIndex).HeightInPoints = (productName.Length / 30 + 1) * sheet.DefaultRowHeight / 20;
+                    sheet.GetRow(rowIndex).GetCell(10).SetCellValue((item.Qty.Value * (double)sku.Weight / 1000) + "kg");
+                    sheet.GetRow(rowIndex).GetCell(11).SetCellValue(item.DeclaredValue.ToString("N"));
+                    sheet.GetRow(rowIndex).GetCell(16).SetCellValue((item.Qty.Value * item.DeclaredValue).ToString("N"));
+                    sheet.GetRow(rowIndex).HeightInPoints = (productName.Length / 25 + 1) * sheet.DefaultRowHeight / 20;
                     sheet.GetRow(rowIndex++).RowStyle.VerticalAlignment = VerticalAlignment.Center;
                 }
+
                 sheet.GetRow(49).GetCell(3).SetCellValue(1);
                 sheet.GetRow(49).GetCell(10).SetCellValue(itemList.Sum(i => i.Qty.Value * ((double)i.Skus.Weight / 1000)) + "kg");
-                sheet.GetRow(49).GetCell(11).SetCellValue(Enum.GetName(typeof(OrderService.CurrencyCodeType2), box.Packages.First().Orders.OrderCurrencyCode.Value));
+                sheet.GetRow(49).GetCell(11).SetCellValue("USD");
                 sheet.GetRow(49).GetCell(16).SetCellValue(itemList.Sum(i => i.Qty.Value * i.DeclaredValue).ToString("N"));
                 sheet.GetRow(59).GetCell(9).SetCellValue(box.Create_at.ToString("yyyy-MM-dd"));
 

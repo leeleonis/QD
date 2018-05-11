@@ -474,7 +474,7 @@ namespace QDLogistics.Commons
                 PurchaseOrderService.Purchase purchaseOrder = SCWS.Get_PurchaseOrder(package.POId.Value);
                 PurchaseOrderService.PurchaseItemReceiveRequest receiveRequest = new PurchaseOrderService.PurchaseItemReceiveRequest() { PurchaseID = purchaseOrder.ID };
 
-                Warehouses WarehouseData = package.Items.First().ShipWarehouses;
+                Warehouses WarehouseData = package.Items.First(i => i.IsEnable.Value).ShipWarehouses;
                 List<PurchaseItemReceive> PurchaseItemList = PurchaseItems.GetAll(true).Where(p => p.WarehouseName.Equals(WarehouseData.Name)).ToList();
                 string[] SerialList = PurchaseItemList.Select(p => p.SerialNumber).Distinct().ToArray();
 

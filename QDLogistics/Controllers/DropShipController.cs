@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
+using System.Web.Hosting;
 using System.Web.Mvc;
 
 namespace QDLogistics.Controllers
@@ -37,6 +38,12 @@ namespace QDLogistics.Controllers
 
         [CheckSession]
         public ActionResult Wait()
+        {
+            return View();
+        }
+
+        [CheckSession]
+        public ActionResult DirectLine()
         {
             return View();
         }
@@ -73,30 +80,22 @@ namespace QDLogistics.Controllers
 
         public ActionResult AjaxWaitingData(DataFilter filter, int page = 1, int rows = 100)
         {
-            Orders = new GenericRepository<Orders>(db);
-            Packages = new GenericRepository<Packages>(db);
-            Items = new GenericRepository<Items>(db);
-            Payments = new GenericRepository<Payments>(db);
-            Addresses = new GenericRepository<Addresses>(db);
-            Warehouses = new GenericRepository<Warehouses>(db);
-
             int warehouseID = 0, total = 0;
             List<object> dataList = new List<object>();
 
             if (int.TryParse(Session["warehouseId"].ToString(), out warehouseID))
             {
+                Warehouses = new GenericRepository<Warehouses>(db);
                 Warehouses warehouse = Warehouses.Get(warehouseID);
                 if (warehouse != null && warehouse.WarehouseType.Equals((int)WarehouseTypeType.DropShip))
                 {
                     /** Order Filter **/
                     var OrderFilter = db.Orders.AsNoTracking().Where(o => !o.StatusCode.Value.Equals((int)OrderStatusCode.Completed) && o.PaymentStatus.Value.Equals((int)OrderPaymentStatus2.Charged));
                     /** Shipping Method Filter **/
-                    var MethodFilter = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && !m.IsDirectLine);
+                    var MethodFilter = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable);
                     List<OrderJoinData> results = DataFilter(filter, OrderFilter, MethodFilter, EnumData.ProcessStatus.待出貨, warehouseID);
                     if (results.Any())
                     {
-                        SerialNumbers = new GenericRepository<SerialNumbers>(db);
-
                         TimeZoneConvert timeZoneConvert = new TimeZoneConvert();
                         EnumData.TimeZone TimeZone = MyHelp.GetTimeZone((int)Session["TimeZone"]);
 
@@ -105,8 +104,11 @@ namespace QDLogistics.Controllers
                         total = results.Count();
                         results = results.OrderByDescending(oData => oData.order.TimeOfOrder).Skip(start).Take(length).ToList();
 
+                        string[] skus = results.SelectMany(oData => oData.items.Select(i => i.ProductID)).Distinct().ToArray();
+                        Dictionary<string, string> skuNameList = db.Skus.AsNoTracking().Where(s => s.IsEnable.Value && skus.Contains(s.Sku)).ToDictionary(s => s.Sku, s => s.ProductName);
+
                         int[] itemIDs = results.SelectMany(oData => oData.items.Select(i => i.ID)).ToArray();
-                        Dictionary<int, string[]> serialOfItem = SerialNumbers.GetAll(true).Where(s => itemIDs.Contains(s.OrderItemID)).GroupBy(s => s.OrderItemID).ToDictionary(s => s.Key, s => s.Select(ss => ss.SerialNumber).ToArray());
+                        Dictionary<int, string[]> serialOfItem = db.SerialNumbers.AsNoTracking().Where(s => itemIDs.Contains(s.OrderItemID)).GroupBy(s => s.OrderItemID).ToDictionary(s => s.Key, s => s.Select(ss => ss.SerialNumber).ToArray());
 
                         dataList.AddRange(results.Select(oData => new
                         {
@@ -116,7 +118,7 @@ namespace QDLogistics.Controllers
                             ItemID = oData.item.ID,
                             PaymentDate = oData.payment != null ? timeZoneConvert.InitDateTime(oData.payment.AuditDate.Value, EnumData.TimeZone.EST).ConvertDateTime(TimeZone).ToString("MM/dd/yyyy<br />hh:mm tt") : "",
                             Sku = oData.itemCount == 1 ? oData.item.ProductID : "Multi",
-                            DisplayName = oData.itemCount == 1 ? oData.item.DisplayName : "Multi",
+                            DisplayName = oData.itemCount == 1 ? skuNameList[oData.item.ProductID] : "Multi",
                             ItemCount = oData.itemCount,
                             OrderQtyTotal = oData.items.Sum(i => i.Qty),
                             ShippingCountry = oData.address.CountryName,
@@ -136,21 +138,70 @@ namespace QDLogistics.Controllers
             return Content(JsonConvert.SerializeObject(new { total, rows = dataList }), "appllication/json");
         }
 
-        //public Action AjaxDirectLineData(DataFilter filter, int page = 1, int rows = 100)
-        //{
-        //    int warehouseID = 0, total = 0;
-        //    List<object> dataList = new List<object>();
+        public ActionResult AjaxDirectLineData(DataFilter filter, int page = 1, int rows = 100)
+        {
+            int warehouseID = 0, total = 0;
+            List<object> dataList = new List<object>();
 
-        //    if (int.TryParse(Session["warehouseId"].ToString(), out warehouseID))
-        //    {
-        //        Warehouses = new GenericRepository<Warehouses>(db);
-        //        Warehouses warehouse = Warehouses.Get(warehouseID);
-        //        if (warehouse != null && warehouse.WarehouseType.Equals((int)WarehouseTypeType.DropShip))
-        //        {
+            if (int.TryParse(Session["warehouseId"].ToString(), out warehouseID))
+            {
+                Warehouses = new GenericRepository<Warehouses>(db);
+                Warehouses warehouse = Warehouses.Get(warehouseID);
+                if (warehouse != null && warehouse.WarehouseType.Value.Equals((int)WarehouseTypeType.DropShip))
+                {
+                    /** Order Filter **/
+                    var OrderFilter = db.Orders.AsNoTracking().Where(o => !o.StatusCode.Value.Equals((int)OrderStatusCode.Completed) && o.PaymentStatus.Value.Equals((int)OrderPaymentStatus2.Charged));
+                    /** Shipping Method Filter **/
+                    var MethodFilter = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && m.IsDirectLine);
+                    List<OrderJoinData> results = DataFilter(filter, OrderFilter, MethodFilter, EnumData.ProcessStatus.待出貨, warehouseID);
+                    if (results.Any())
+                    {
+                        SerialNumbers = new GenericRepository<SerialNumbers>(db);
 
-        //        }
-        //    }
-        //}
+                        TimeZoneConvert timeZoneConvert = new TimeZoneConvert();
+                        EnumData.TimeZone TimeZone = MyHelp.GetTimeZone((int)Session["TimeZone"]);
+
+                        int length = rows;
+                        int start = (page - 1) * length;
+                        total = results.Count();
+                        results = results.OrderByDescending(oData => oData.order.TimeOfOrder).Skip(start).Take(length).ToList();
+
+                        string[] skus = results.SelectMany(oData => oData.items.Select(i => i.ProductID)).Distinct().ToArray();
+                        Dictionary<string, string> skuNameList = db.Skus.AsNoTracking().Where(s => s.IsEnable.Value && skus.Contains(s.Sku)).ToDictionary(s => s.Sku, s => s.ProductName);
+
+                        int[] methodIDs = results.Select(oData => oData.package.ShippingMethod.Value).Distinct().ToArray();
+                        Dictionary<int, string> methodNameList = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && methodIDs.Contains(m.ID)).ToDictionary(m => m.ID, m => m.ID + "-" + m.Name);
+
+                        int[] itemIDs = results.SelectMany(oData => oData.items.Select(i => i.ID)).ToArray();
+                        Dictionary<int, string[]> serialOfItem = SerialNumbers.GetAll(true).Where(s => itemIDs.Contains(s.OrderItemID)).GroupBy(s => s.OrderItemID).ToDictionary(s => s.Key, s => s.Select(ss => ss.SerialNumber).ToArray());
+
+                        dataList.AddRange(results.Select(oData => new
+                        {
+                            OrderID = oData.order.OrderID,
+                            POId = oData.package.POId,
+                            PackageID = oData.package.ID,
+                            ItemID = oData.item.ID,
+                            PaymentDate = timeZoneConvert.InitDateTime(oData.payment.AuditDate.Value, EnumData.TimeZone.EST).ConvertDateTime(TimeZone).ToString("MM/dd/yyyy<br />hh:mm tt"),
+                            Sku = oData.itemCount == 1 ? oData.item.ProductID : "Multi",
+                            DisplayName = oData.itemCount == 1 ? skuNameList[oData.item.ProductID] : "Multi",
+                            ItemCount = oData.itemCount,
+                            OrderQtyTotal = oData.items.Sum(i => i.Qty),
+                            ShippingCountry = oData.address.CountryName,
+                            ShippingMethod = methodNameList[oData.package.ShippingMethod.Value],
+                            StatusCode = Enum.GetName(typeof(OrderStatusCode), oData.order.StatusCode.Value),
+                            Comment = string.IsNullOrEmpty(oData.package.Comment) ? "" : oData.package.Comment,
+                            SupplierComment = string.IsNullOrEmpty(oData.package.SupplierComment) ? "" : oData.package.SupplierComment,
+                            Serials = oData.items.Where(i => serialOfItem.ContainsKey(i.ID)).ToDictionary(i => i.ID.ToString(), i => serialOfItem[i.ID]),
+                            SerialNumber = oData.itemCount + oData.item.Qty == 2 ? (serialOfItem.ContainsKey(oData.item.ID) ? serialOfItem[oData.item.ID].First() : "") : "Multi",
+                            TagNo = oData.package.TagNo,
+                            POInvoice = string.IsNullOrEmpty(oData.package.POInvoice) ? "" : oData.package.POInvoice
+                        }));
+                    }
+                }
+            }
+
+            return Json(new { total, rows = dataList }, JsonRequestBehavior.AllowGet);
+        }
 
         public ActionResult AjaxShippedData(DataFilter filter, int page = 1, int rows = 100)
         {
@@ -185,7 +236,7 @@ namespace QDLogistics.Controllers
                         int start = (page - 1) * length;
                         total = results.Count();
                         results = results.OrderByDescending(oData => oData.order.TimeOfOrder).Skip(start).Take(length).ToList();
-                        
+
                         int[] itemIDs = results.SelectMany(oData => oData.items.Select(i => i.ID)).ToArray();
                         Dictionary<int, string[]> serialOfItem = SerialNumbers.GetAll(true).Where(s => itemIDs.Contains(s.OrderItemID)).GroupBy(s => s.OrderItemID).ToDictionary(s => s.Key, s => s.Select(ss => ss.SerialNumber).ToArray());
 
@@ -264,7 +315,7 @@ namespace QDLogistics.Controllers
                 .GroupJoin(PaymentFilter, oData => oData.order.OrderID, p => p.OrderID.Value, (oData, p) => new { orderJoinData = oData, payment = p.Take(1) })
                 .SelectMany(o => o.payment.DefaultIfEmpty(), (o, p) => new OrderJoinData(o.orderJoinData) { payment = p }).ToList();
         }
-        
+
         public ActionResult AjaxOrderUpdate(List<OrderUpdateData> data, int reTry = 0, List<string> message = null)
         {
             Packages = new GenericRepository<Packages>(db);
@@ -360,6 +411,61 @@ namespace QDLogistics.Controllers
             return Content(JsonConvert.SerializeObject(new { status = !message.Any(), message = string.Join("\n", message) }), "appllication/json");
         }
 
+        public ActionResult AjaxDirectLineUpdate(List<OrderUpdateData> data, int reTry = 0)
+        {
+            AjaxResult result = new AjaxResult();
+
+            Packages = new GenericRepository<Packages>(db);
+            SerialNumbers = new GenericRepository<SerialNumbers>(db);
+
+            try
+            {
+                if (data == null || !data.Any()) throw new Exception("沒有資料!");
+
+                foreach(OrderUpdateData oData in data)
+                {
+                    MyHelp.Log("Orders", oData.OrderID, string.Format("直發商訂單【{0}】開始更新", oData.OrderID));
+
+                    Packages package = Packages.Get(oData.PackageID);
+
+                    package.POInvoice = oData.POInvoice;
+                    List<SerialNumbers> serialList = db.SerialNumbers.AsNoTracking().Where(s => s.OrderID.Equals(package.OrderID)).ToList();
+                    if (oData.Serials != null)
+                    {
+                        foreach (var serials in oData.Serials)
+                        {
+                            int itemID = int.Parse(serials.Key);
+
+                            foreach (string serial in serials.Value.Where(s => !serialList.Select(ss => ss.SerialNumber).Contains(s)))
+                            {
+                                SerialNumbers.Create(new SerialNumbers()
+                                {
+                                    OrderID = package.OrderID,
+                                    OrderItemID = int.Parse(serials.Key),
+                                    ProductID = package.Items.First(i => i.ID.Equals(itemID)).ProductID,
+                                    SerialNumber = serial,
+                                    KitItemID = 0
+                                });
+                            }
+
+                            foreach (SerialNumbers serial in serialList.Where(s => !oData.Serials.SelectMany(ss => ss.Value).Contains(s.SerialNumber)))
+                            {
+                                SerialNumbers.Delete(serial);
+                            }
+                        }
+                    }
+                    Packages.SaveChanges();
+                    MyHelp.Log("Orders", oData.OrderID, string.Format("直發商訂單【{0}】更新完成", oData.OrderID));
+                }
+            }catch(Exception e)
+            {
+                result.status = false;
+                result.message = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+            }
+
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
         private void UpdatePurchaseOrder(Packages package, int reTry = 0)
         {
             try
@@ -396,6 +502,30 @@ namespace QDLogistics.Controllers
                     UpdatePurchaseOrder(package, reTry + 1);
                 else
                     throw e;
+            }
+        }
+
+        public ActionResult DownloadLabel(int[] packageIDs)
+        {
+            AjaxResult result = new AjaxResult();
+
+            string basePath = HostingEnvironment.MapPath("~/FileUploads");
+            List<Packages> packageList = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && packageIDs.Contains(p.ID)).ToList();
+
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
+        public class AjaxResult
+        {
+            public bool status { get; set; }
+            public string message { get; set; }
+            public object data { get; set; }
+
+            public AjaxResult()
+            {
+                this.status = true;
+                this.message = null;
+                this.data = null;
             }
         }
     }

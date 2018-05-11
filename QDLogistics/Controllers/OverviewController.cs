@@ -86,7 +86,6 @@ namespace QDLogistics.Controllers
                 TimeZoneConvert TimeZoneConvert = new TimeZoneConvert();
                 EnumData.TimeZone TimeZone = MyHelp.GetTimeZone((int)Session["TimeZone"]);
 
-                string link = "<a href='{0}' target='_blank'>{1}</a>";
                 dataList.AddRange(results.Select(data => new
                 {
                     PackageID = data.package.ID,
@@ -103,11 +102,28 @@ namespace QDLogistics.Controllers
                     DeclaredTotal = data.package.DeclaredTotal != 0 ? data.package.DeclaredTotal.ToString("N") : "",
                     OrderCurrencyCode = Enum.GetName(typeof(CurrencyCodeType2), data.order.OrderCurrencyCode),
                     StatusCode = Enum.GetName(typeof(OrderStatusCode), data.order.StatusCode),
-                    ProccessStatus = string.Format(link, Url.Action(data.package.ProcessStatus.Equals(3) ? "shipped" : (data.package.ProcessStatus.Equals(1) ? "waiting" : "index"), "order", new { data.order.OrderID }), Enum.GetName(typeof(EnumData.ProcessStatus), data.package.ProcessStatus)),
+                    ProccessStatus = GetOrderLink(data),
                 }));
             }
 
             return Json(new { total, rows = dataList }, JsonRequestBehavior.AllowGet);
+        }
+
+        private string GetOrderLink(OrderJoinData data)
+        {
+            string link = "<a href='{0}' target='_blank'>{1}</a>";
+            string url = "";
+
+            if (!string.IsNullOrEmpty(data.package.BoxID))
+            {
+                url = Url.Action("boxEdit", "directLine", new { id = data.package.BoxID });
+            }
+            else
+            {
+                url = Url.Action(data.package.ProcessStatus.Equals(3) ? "shipped" : (data.package.ProcessStatus.Equals(1) ? "waiting" : "index"), "order", new { data.order.OrderID });
+            }
+            
+            return string.Format(link, url, Enum.GetName(typeof(EnumData.ProcessStatus), data.package.ProcessStatus));
         }
 
         public ActionResult getSelectOption()
@@ -152,5 +168,5 @@ namespace QDLogistics.Controllers
                 this.data = null;
             }
         }
-    }    
+    }
 }

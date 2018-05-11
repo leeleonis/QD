@@ -429,7 +429,7 @@ namespace QDLogistics.Controllers
 
             var results = PackageFilter.ToList()
                 .Join(OrderFilter, p => p.OrderID.Value, o => o.OrderID, (p, o) => new OrderJoinData() { order = o, package = p })
-                .Join(ItemFilter.GroupBy(i => i.PackageID.Value), oData => oData.package.ID, i => i.Key, (oData, i) => new OrderJoinData(oData) { item = i.First(), items = i.ToList(), itemCount = i.Sum(ii => 1 + ii.KitItemCount).Value }).ToList();
+                .Join(ItemFilter.GroupBy(i => i.PackageID.Value), oData => oData.package.ID, i => i.Key, (oData, i) => new OrderJoinData(oData) { item = i.First(), items = i.ToList(), itemCount = i.Sum(ii => ii.Qty + ii.KitItemCount).Value }).ToList();
 
             if (results.Any())
             {
@@ -447,7 +447,7 @@ namespace QDLogistics.Controllers
                     ProductName = data.itemCount == 1 ? SkuName[data.item.ProductID] : "Multi",
                     SentQty = data.itemCount,
                     ReceivedQty = 0,
-                    Weight = data.items.Sum(i => i.Skus.Weight * i.Qty.Value / 1000),
+                    Weight = data.items.Sum(i => i.Skus.Weight * (float)i.Qty.Value / 1000),
                     data.order.OrderID,
                     Serial = data.itemCount == 1 && data.item.SerialNumbers.Any() ? data.item.SerialNumbers.First().SerialNumber : "Multi",
                     LabelID = string.Format("<a href='http://internal.qd.com.tw/fileUploads/{0}/Label.pdf' target='_blank'>{1}</a>", data.package.FilePath, data.package.TagNo),
@@ -527,58 +527,70 @@ namespace QDLogistics.Controllers
 
                 if (!package.Method.IsDirectLine) throw new Exception("非Direct Line訂單");
 
-                switch (package.ProcessStatus)
+                switch (status)
                 {
-                    case (byte)EnumData.ProcessStatus.待出貨:
-                        if (package.Orders.StatusCode.Equals((int)OrderStatusCode.OnHold) && status.Equals((int)OrderStatusCode.InProcess))
+                    case (int)OrderStatusCode.InProcess:
+                        if(package.Orders.StatusCode.Equals((int)OrderStatusCode.OnHold) && package.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨) && package.Label.Status.Equals((byte)EnumData.LabelStatus.鎖定中))
                         {
-                            if (package.Label.Status.Equals((byte)EnumData.LabelStatus.鎖定中))
+                            Box prevBox = Box.Get(package.Label.PrevBoxID);
+                            Box box = Box.GetAll(true).FirstOrDefault(b => b.IsEnable && b.DirectLine.Equals(prevBox.DirectLine) && b.WarehouseFrom.Equals(prevBox.WarehouseFrom) && b.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.未發貨));
+                            if (box == null)
                             {
-                                Box prevBox = Box.Get(package.Label.PrevBoxID);
-                                Box box = Box.GetAll(true).FirstOrDefault(b => b.IsEnable && b.DirectLine.Equals(prevBox.DirectLine) && b.WarehouseFrom.Equals(prevBox.WarehouseFrom) && b.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.未發貨));
-                                if (box == null)
+                                Warehouses warehouse = db.Warehouses.AsNoTracking().First(w => w.ID.Equals(prevBox.WarehouseFrom));
+                                Dictionary<int, bool> methodData = JsonConvert.DeserializeObject<Dictionary<int, bool>>(warehouse.CarrierData);
+
+                                TimeZoneConvert timeZoneConvert = new TimeZoneConvert();
+                                EnumData.TimeZone TimeZone = MyHelp.GetTimeZone((int)Session["TimeZone"]);
+                                string boxID = string.Format("{0}-{1}", db.DirectLine.AsNoTracking().First(d => d.ID.Equals(prevBox.DirectLine)).Abbreviation, timeZoneConvert.ConvertDateTime(TimeZone).ToString("yyyyMMdd"));
+                                int count = Box.GetAll(true).Count(b => b.IsEnable && b.DirectLine.Equals(prevBox.DirectLine) && b.WarehouseFrom.Equals(prevBox.WarehouseFrom) && b.BoxID.Contains(boxID)) + 1;
+                                byte[] Byte = BitConverter.GetBytes(count);
+                                Byte[0] += 64;
+                                box = new Box()
                                 {
-                                    Warehouses warehouse = db.Warehouses.AsNoTracking().First(w => w.ID.Equals(prevBox.WarehouseFrom));
-                                    Dictionary<int, bool> methodData = JsonConvert.DeserializeObject<Dictionary<int, bool>>(warehouse.CarrierData);
-
-                                    TimeZoneConvert timeZoneConvert = new TimeZoneConvert();
-                                    EnumData.TimeZone TimeZone = MyHelp.GetTimeZone((int)Session["TimeZone"]);
-                                    string boxID = string.Format("{0}-{1}", db.DirectLine.AsNoTracking().First(d => d.ID.Equals(prevBox.DirectLine)).Abbreviation, timeZoneConvert.ConvertDateTime(TimeZone).ToString("yyyyMMdd"));
-                                    int count = Box.GetAll(true).Count(b => b.IsEnable && b.DirectLine.Equals(prevBox.DirectLine) && b.WarehouseFrom.Equals(prevBox.WarehouseFrom) && b.BoxID.Contains(boxID)) + 1;
-                                    byte[] Byte = BitConverter.GetBytes(count);
-                                    Byte[0] += 64;
-                                    box = new Box()
-                                    {
-                                        IsEnable = true,
-                                        BoxID = string.Format("{0}-{1}", boxID, System.Text.Encoding.ASCII.GetString(Byte.Take(1).ToArray())),
-                                        DirectLine = prevBox.DirectLine,
-                                        FirstMileMethod = methodData.First(m => m.Value).Key,
-                                        WarehouseFrom = prevBox.WarehouseFrom,
-                                        BoxType = (byte)EnumData.DirectLineBoxType.DirectLine,
-                                        Create_at = timeZoneConvert.Utc
-                                    };
-                                    Box.Create(box);
-                                    Box.SaveChanges();
-                                }
-
-                                package.BoxID = package.Label.BoxID = box.BoxID;
+                                    IsEnable = true,
+                                    BoxID = string.Format("{0}-{1}", boxID, System.Text.Encoding.ASCII.GetString(Byte.Take(1).ToArray())),
+                                    DirectLine = prevBox.DirectLine,
+                                    FirstMileMethod = methodData.First(m => m.Value).Key,
+                                    WarehouseFrom = prevBox.WarehouseFrom,
+                                    BoxType = (byte)EnumData.DirectLineBoxType.DirectLine,
+                                    Create_at = timeZoneConvert.Utc
+                                };
+                                Box.Create(box);
+                                Box.SaveChanges();
                             }
+
+                            package.BoxID = package.Label.BoxID = box.BoxID;
                         }
-                        else
-                        {
-
-                        }
-
-                        package.Orders.StatusCode = status;
-                        Packages.Update(package, package.ID);
-                        Packages.SaveChanges();
-
-                        SyncOrderStatus(package.Orders, status);
                         break;
-                    case (byte)EnumData.ProcessStatus.已出貨:
-                        throw new Exception("已出貨訂單未開放更改!");
+                    case (int)OrderStatusCode.OnHold:
+                        if (!package.Orders.StatusCode.Equals((int)OrderStatusCode.Completed))
+                        {
+                            package.Label.Status = (byte)EnumData.LabelStatus.鎖定中;
+                        }
+                        break;
+                    case (int)OrderStatusCode.Completed:
+                        if (package.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨))
+                        {
+                            package.ProcessStatus = (byte)EnumData.ProcessStatus.已出貨;
+                        }
+
+                        package.Label.Status = (byte)EnumData.LabelStatus.完成;
+                        break;
+                    case (int)OrderStatusCode.Canceled:
+                        if (package.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨))
+                        {
+                            package.ProcessStatus = (byte)EnumData.ProcessStatus.訂單管理;
+                        }
+
+                        package.Label.Status = (byte)EnumData.LabelStatus.作廢;
                         break;
                 }
+
+                package.Orders.StatusCode = status;
+                Packages.Update(package, package.ID);
+                Packages.SaveChanges();
+
+                SyncOrderStatus(package.Orders, status);
             }
             catch (Exception e)
             {
@@ -1091,7 +1103,7 @@ namespace QDLogistics.Controllers
                 string mailBody;
                 string[] receiveMails;
                 //string[] ccMails = new string[] { "peter0626@hotmail.com", "kellyyang82@hotmail.com", "demi@qd.com.tw" };
-                string[] ccMails = new string[] { "Kellyyang82@hotmail.com", "ella.chou@hotmail.com", "jenny-QD@hotmail.com", "yiing1009@hotmail.com" };
+                string[] ccMails = new string[] { "peter0626@hotmail.com", "Kellyyang82@hotmail.com", "ella.chou@hotmail.com", "jenny-QD@hotmail.com", "yiing1009@hotmail.com" };
 
                 switch (directLine.Abbreviation)
                 {

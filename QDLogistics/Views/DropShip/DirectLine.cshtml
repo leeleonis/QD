@@ -1,0 +1,393 @@
+﻿@section styles{
+    <link href="~/Content/themes/default/easyui.css" rel="stylesheet" />
+    <link href="~/Content/themes/icon.css" rel="stylesheet" />
+    <style>
+        .filterColumn td div {
+            padding: 0
+        }
+    </style>
+}
+<div id="content">
+    <section id="widget-grid" class="">
+        <div class="row table-parent">
+            <div class="tool-content table-row col-xs-12">
+                <div class="table-cell col-xs-10">
+                    <div class="cancel-button col-xs-1">
+                        <button type="button" class="btn btn-default btn-sm btn-block" id="btn-download">標籤下載</button>
+                        <button type="button" class="btn btn-default btn-sm btn-block" id="btn-dispatch">Dispatch</button>
+                    </div>
+                </div>
+                <div class="table-cell col-xs-1">
+                    <div class="action-button col-xs-12">
+                        <button type="button" class="btn btn-default btn-sm btn-block" id="btn-import">匯入 Import</button>
+                        <button type="button" class="btn btn-default btn-sm btn-block" id="btn-export">匯出 Export</button>
+                        <form id="form-data" method="post">
+                            <input type="hidden" name="type" value="dropShip" />
+                            <input type="hidden" name="action" id="input-action" />
+                            <input type="hidden" name="IDs" id="input-IDs" />
+                            <input class="hidden" type="file" name="file" id="file-import" />
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <article class="col-xs-12">
+                <table id="DataGrid"></table>
+            </article>
+        </div>
+    </section>
+</div>
+@section pagespecific {
+    <script src="~/scripts/jquery.easyui-1.4.3.min.js"></script>
+    <script src="~/scripts/datagrid-detailview.js"></script>
+    <script src="~/scripts/jquery.number.min.js"></script>
+    <script type="text/javascript">
+        var pager, pageSize = 100;
+        var selected = false, selectOption, filterValue = {}
+        var $dataGrid;
+        var $downloadBtn = $('#btn-download'), $dispatchBtn = $('#btn-dipatch'), $importBtn = $('#btn-import'), $exportBtn = $('btn-export');
+
+        $(function () {
+            var data = { optionType: ['CountryCode', 'Method', 'StatusCode'] };
+
+            ajaxUrl("@Url.Action("getSelectOption", "directLine")", 'post', data).done(function (response) {
+                if (response['status']) {
+                    selectOption = response['data'];
+
+                    dataInit();
+                } else {
+                    alert(response['message']);
+                }
+            });
+
+            $downloadBtn.click(function () {
+                var rows = $dataGrid.datagrid('getSelections');
+
+                if (rows.length == 0) return alert('請先選擇訂單!');
+
+                var packageIDs = $.map(rows, function (row) {
+                    return row.PackageID;
+                });
+
+                ajaxUrl("@Url.Action("downloadLabel", "dropShip")", 'post', { packageIDs }).done(function (response) {
+                    if (response.status) {
+                        window.open(response.data);
+                    } else {
+                        alert(response.message);
+                    }
+                });                
+            });
+        });
+
+        function dataInit() {
+            $dataGrid = $("#DataGrid").datagrid({
+                title: "DL訂單 列表",
+                idField: "PackageID",
+                url: "@Url.Action("ajaxDirectLineData", "dropShip")",
+                queryParams: {},
+                width: "100%",
+                height: window.screen.availHeight-280,
+                checkOnSelect: false,
+                selectOnCheck: false,
+                singleSelect: false,
+                frozenColumns: [[
+                    { field: "ck", checkbox: true },
+                    {
+                        field: "OrderID", title: "Order ID<br />訂單號碼", width: 100, align: "center", sortable: true,
+                        formatter: function (value, row, index) {
+                            if (!isEmpty(value)) {
+                                return value;
+                            } else {
+                                return "<input type='text' class='form-control s-orderID' value='" + (!isEmpty(filterValue['OrderID']) ? filterValue['OrderID'] : '') + "'>";
+                            }
+                        }
+                    }, {
+                        field: "POId", title: "PO#", width: 100, align: "center", sortable: true,
+                        formatter: function (value, row, index) {
+                            if (!isEmpty(value)) {
+                                return value;
+                            } else {
+                                return "<input type='text' class='form-control s-orderID' value='" + (!isEmpty(filterValue['POId']) ? filterValue['POId'] : '') + "'>";
+                            }
+                        }
+                    }
+                ]],
+                columns: [[
+                    { field: "PaymentDate", title: "Payment Date<br />付款日", width: 120, align: "center", sortable: false },
+                    { field: "Sku", title: "SKU<br />品號", width: 110, align: "center", sortable: false },
+                    { field: "DisplayName", title: "Item Name<br />品名", width: 440, align: "center", sortable: false },
+                    { field: "Qty", title: "QTY<br />數量", width: 60, align: "center", sortable: false },
+                    { field: "ShippingCountry", title: "Country<br />國家", width: 120, align: "center", sortable: false },
+                    { field: "ShippingMethod", title: "Shipping Method<br />運輸方式", width: 150, align: "center", sortable: false },
+                    { field: "StatusCode", title: "Status<br />訂單狀態", width: 120, align: "center", sortable: false },
+                    { field: "Comment", title: "Comment<br />出貨備註", width: 200, align: "center", sortable: false },
+                    { field: "SupplierComment", title: "Supplier Comment", width: 200, align: "center", sortable: false },
+                    {
+                        field: "SerialNumber", title: "Serial Number<br />產品序號", width: 180, align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            if (value != 'Multi') {
+                                if (!isEmpty(row.PackageID)) return "<input type='text' class='form-control input-sm' id='SerialNumber-" + row.PackageID + "' data-id='" + row.ItemID + "' value='" + value + "' onchange='changeSerial(" + row.PackageID + ")'>";
+                            } else {
+                                return value;
+                            }
+                        }
+                    },
+                    { field: "TagNo", title: "Tag No<br />標籤號碼", width: 180, align: "center", sortable: false },
+                    {
+                        field: "POInvoice", title: "Invoice#", width: 150, align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            if (!isEmpty(row.PackageID)) return "<input type='text' class='form-control input-sm' id='POInvoice' value='" + value + "' onchange='onDataChange(" + row.PackageID + ")'>";
+                        }
+                    }, {
+                        field: "save", title: "<button type='button' class='btn btn-default btn-sm' onclick='saveData()'>SAVE</button>", width: "60", sortable: false,
+                        formatter: function (value, row, index) {
+                            return "<button type='button' class='btn btn-default btn-sm' id='btn-save' onclick='saveData(" + row.PackageID + ")' disabled>SAVE</button>"
+                        }
+                    }
+                ]],
+                rowStyler: function (index, row) {
+                    if (isEmpty(row.OrderID)) return { class: 'filterColumn' }
+                },
+                onLoadSuccess: function (data) {
+                    $dataGrid.datagrid('uncheckAll');
+                    $('div.datagrid-body').unbind('dblclick');
+
+                    $dataGrid.datagrid('insertRow', {
+                        index: 0,
+                        row: setFilterColumn(filterValue)
+                    });
+
+                    if (data.total > 0) {
+                        $('.datepicker').datepicker({
+                            dateFormat: 'yy-mm-dd'
+                        });
+
+                        $('.filterColumn').on('change', 'input, select', function () {
+                            if (!$(this).is(':checkbox')) {
+                                filterValue = getFilterData();
+
+                                $dataGrid.datagrid('reload');
+                            }
+                        });
+                    } else {
+                        $dataGrid.datagrid('deleteRow', 0);
+                    }
+                },
+                onBeforeLoad: function (param) {
+                    Object.keys(filterValue).forEach(function (key) {
+                        if (!isEmpty(filterValue[key])) param[key] = filterValue[key];
+                    });
+                },
+                onBeforeSelect: selectAction,
+                onBeforeUnselect: selectAction,
+                onBeforeCheck: function (index, row) { return !isEmpty(row.OrderID); },
+                onCheck: onCheck,
+                onUncheck: onUncheck,
+                onCheckAll: onCheckAll,
+                onUncheckAll: onUncheckAll,
+                view: detailview,
+                detailFormatter: function (index, row) {
+                    return '<div id="itemList"></div>';
+                },
+                onExpandRow: function (index, row) {
+                    if (row.ItemCount == 1) {
+                        $dataGrid.datagrid("collapseRow", index);
+                    } else {
+                        var $itemList = $("div#itemList:eq(" + index + ")");
+
+                        $itemList.panel({
+                            border: false,
+                            cache: false,
+                            href: "@Html.Raw(Url.Action("orderProductList", "directLine", new { PackageID = "_id_", Type = "Order" }))".replace("_id_", row.PackageID),
+                            onLoad: function (response) {
+                                $("#datagrid-row-r1-1-" + index).next("tr").find(".datagrid-row-detail").html($itemList.find("table:hidden").remove().removeClass("hidden"));
+                            }
+                        });
+
+                        $dataGrid.datagrid("fixDetailRowHeight", index);
+                    }
+                },
+                pagination: true,
+                pagePosition: "bottom",
+                pageSize: pageSize
+            });
+
+            pager = $dataGrid.datagrid("getPager");
+            $(pager).pagination({
+                pageSize: pageSize,
+                showPageList: true,
+                pageList: [100, 200, 300, 500],
+                beforePageTest: "第",
+                afterPageTest: "頁，共 {pages} 頁",
+                displayMsg: "顯示 {from} 到 {to} 筆資料，共 {total} 筆資料"
+            });
+        }
+
+        function selectAction(index, row) {
+            if (selected) {
+                selected = false;
+                return true;
+            }
+
+            return false;
+        }
+
+        function onDataChange(PackageID) {
+            var index = $dataGrid.datagrid("getRowIndex", PackageID);
+
+            $dataGrid.datagrid('checkRow', index);
+            $("button#btn-save:eq(" + index + ")").removeAttr("disabled");
+        }
+
+        function onSelect(index) {
+            $dataGrid.datagrid('checkRow', index);
+        }
+
+        function onCheck(index, row) {
+            selected = true;
+            $dataGrid.datagrid('selectRow', index);
+        }
+
+        function onUncheck(index, row) {
+            selected = true;
+            $dataGrid.datagrid('unselectRow', index);
+        }
+
+        function onCheckAll(rows) {
+            $dataGrid.datagrid('selectAll');
+        }
+
+        function onUncheckAll(rows) {
+            $dataGrid.datagrid('unselectAll');
+        }
+
+        function getFilterData() {
+            return {
+                OrderID: $('.filterColumn .s-orderID').val(),
+                POId: $('.filterColumn .s-poId').val(),
+                PaymentDate: $('.filterColumn .s-paymentDate').val(),
+                Sku: $('.filterColumn .s-sku').val(),
+                ItemName: $('.filterColumn .s-displayName').val(),
+                CountryCode: $('.filterColumn .s-countryCode').val(),
+                MethodID: $('.filterColumn .s-method').val(),
+                StatusCode: $('.filterColumn .s-statusCode').val(),
+                TagNo: $('.filterColumn .s-tagNo').val(),
+            };
+        }
+
+        function setFilterColumn(filterValue) {
+            return {
+                ItemCount: 1,
+                OrderID: "",
+                POId: "",
+                PaymentDate: "<input type='text' class='form-control datepicker s-paymentDate' value='" + (!isEmpty(filterValue['PaymentDate']) ? filterValue['PaymentDate'] : '') + "'>",
+                Sku: "<input type='text' class='form-control s-sku' value='" + (!isEmpty(filterValue['Sku']) ? filterValue['Sku'] : '') + "'>",
+                DisplayName: "<input type='text' class='form-control s-displayName' value='" + (!isEmpty(filterValue['ItemName']) ? filterValue['ItemName'] : '') + "'>",
+                Qty: "",
+                ShippingCountry: "<select class='form-control s-countryCode'><option value=''>全部</option>" + setSelectOption(selectOption['CountryCode'], filterValue['CountryCode']) + "</select>",
+                ShippingMethod: "<select class='form-control s-method'><option value=''>全部</option>" + setSelectOption(selectOption['Method'], filterValue['MethodID']) + "</select>",
+                StatusCode: "<select class='form-control s-statusCode'><option value=''>全部</option>" + setSelectOption(selectOption['StatusCode'], filterValue['StatusCode']) + "</select>",
+                SerialNumber: "",
+                TagNo: "<input type='text' class='form-control s-tagNo' value='" + (!isEmpty(filterValue['TagNo']) ? filterValue['TagNo'] : '') + "'>",
+                POInvoice: ""
+            };
+        }
+
+        function changeSerial(PackageID) {
+            var index = $dataGrid.datagrid("getRowIndex", PackageID);
+            var row = $dataGrid.datagrid("getRows")[index];
+            var $serialList = $("input#SerialNumber-" + PackageID);
+
+            row.Serials = {};
+            $serialList.each(function () {
+                if (row.Serials[$(this).data('id')] == undefined) {
+                    row.Serials[$(this).data('id')] = [];
+                }
+
+                row.Serials[$(this).data('id')].push($(this).val());
+            });
+
+            onDataChange(PackageID);
+        }
+
+        function saveData(PackageID) {
+            var data = [];
+            var saveAll = PackageID == undefined;
+
+            if (saveAll) {
+                var rows = $dataGrid.datagrid('getSelections');
+                for (var i in rows) {
+                    index = $dataGrid.datagrid('getRowIndex', rows[i]);
+                    if (!$("button#btn-save:eq(" + index + ")").is("[disabled]")) {
+                        data.push(setData(rows[i], index));
+                        $("button#btn-save:eq(" + index + ")").attr("disabled", "disabled");
+                    }
+                }
+            } else {
+                var index = $dataGrid.datagrid("getRowIndex", PackageID);
+                row = $dataGrid.datagrid("getRows")[index];
+                data.push(setData(row, index));
+                $("button#btn-save:eq(" + index + ")").attr("disabled", "disabled");
+            }
+
+            if (data.length > 0) {
+                updateData(data).done(function (response) {
+                    if (response['status']) {
+                        alert("Success!");
+                    } else {
+                        alert(response['message']);
+                    }
+                    $dataGrid.datagrid('reload');
+                });
+            }
+        }
+
+        function setData(row, index) {
+            return {
+                OrderID: row.OrderID,
+                PackageID: row.PackageID,
+                Serials: row.Serials,
+                POInvoice: $("input#POInvoice:eq(" + index + ")").val()
+            }
+        }
+
+        function updateData(data) {
+            return $.ajax({
+                url: "@Url.Action("ajaxOrderUpdate", "dropShip")",
+                type: "post",
+                data: { data: data },
+                dataType: "json"
+            });
+        }
+
+        function setSelectOption(optionList, value) {
+            var option = "";
+
+            if (!isEmpty(optionList) && optionList.length > 0) {
+                for (var i in optionList) {
+                    option += "<option value='" + optionList[i]["value"] + "' " + (!isEmpty(value) && optionList[i]["value"] == value ? "selected" : "") + ">" + optionList[i]["text"] + "</option>";
+                }
+            }
+
+            return option;
+        }
+
+        function isEmpty(value) {
+            return (value == undefined) || (value == null) || (value == "");
+        }
+
+        function ajaxUrl(url, type, data) {
+            type = !isEmpty(type) ? type : {};
+            data = !isEmpty(data) ? data : {};
+
+            return $.ajax({
+                url: url,
+                type: type,
+                data: data,
+                dataType: "json"
+            });
+        }
+    </script>
+}
