@@ -344,7 +344,7 @@ namespace QDLogistics.Commons
                             //ExcelFile ef = ExcelFile.Load(Path.Combine(basePath, package.FilePath, "Invoice.xls"));
                             //ef.Save(Path.Combine(basePath, package.FilePath, "Invoice.pdf"));
 
-                            //DHL.UploadInvoice(package.TrackingNumber, File.ReadAllBytes(Path.Combine(basePath, package.FilePath, "Invoice.pdf")));
+                            //DHL.UploadInvoice(result, File.ReadAllBytes(Path.Combine(basePath, package.FilePath, "Invoice.pdf")));
                             //File.Delete(Path.Combine(basePath, package.FilePath, "Invoice.pdf"));
                         }
                     }
@@ -653,13 +653,13 @@ namespace QDLogistics.Commons
 
         private void Box_CreateInvoice(Box box, DirectLine directLine, string basePath, string filePath)
         {
-            var Invoice = new { fileName = "Invoice.xls", samplePath = Path.Combine(basePath, "sample", "Invoice.xls") };
+            var Invoice = new { fileName = "Invoice.xls", samplePath = Path.Combine(basePath, "sample", "Invoice-2.xls") };
             using (FileStream fsIn = new FileStream(Invoice.samplePath, FileMode.Open))
             {
                 HSSFWorkbook workbook = new HSSFWorkbook(fsIn);
                 fsIn.Close();
 
-                ISheet sheet = workbook.GetSheetAt(0);
+                HSSFSheet sheet = (HSSFSheet)workbook.GetSheetAt(0);
                 sheet.GetRow(4).GetCell(3).SetCellValue(box.TrackingNumber);
                 sheet.GetRow(7).GetCell(1).SetCellValue(box.Create_at.ToString("MMM dd, yyyy", CultureInfo.CreateSpecificCulture("en-US")));
                 sheet.GetRow(7).GetCell(8).SetCellValue(box.BoxID);
@@ -689,6 +689,23 @@ namespace QDLogistics.Commons
 
                 rowIndex = 26;
                 List<Items> itemList = box.Packages.Where(p => p.IsEnable.Value).SelectMany(p => p.Items.Where(i => i.IsEnable.Value)).ToList();
+                if (itemList.Count() > 22)
+                {
+                    int insertRow = 47, add = itemList.Count() - 22;
+                    MyHelp.ShiftRows(ref sheet, insertRow, sheet.LastRowNum, add);
+
+                    for (int row = insertRow; row < insertRow + add; row++)
+                    {
+                        MyHelp.CopyRow(ref sheet, insertRow - 1, row, true, false, true, false);
+                    }
+
+                    byte[] picData = System.IO.File.ReadAllBytes(@"C:\Users\qdtuk\Downloads\company.png");
+                    int picIndex = workbook.AddPicture(picData, PictureType.PNG);
+                    var drawing = sheet.CreateDrawingPatriarch();
+                    var anchor = new HSSFClientAnchor(400, 50, 500, 50, 4, insertRow + add + 1, 6, insertRow + add + 5);
+                    var pictuer = drawing.CreatePicture(anchor, picIndex);
+                }
+
                 foreach (var item in itemList)
                 {
                     Skus sku = item.Skus;
@@ -701,15 +718,15 @@ namespace QDLogistics.Commons
                     sheet.GetRow(rowIndex).GetCell(10).SetCellValue((item.Qty.Value * (double)sku.Weight / 1000) + "kg");
                     sheet.GetRow(rowIndex).GetCell(11).SetCellValue(item.DeclaredValue.ToString("N"));
                     sheet.GetRow(rowIndex).GetCell(16).SetCellValue((item.Qty.Value * item.DeclaredValue).ToString("N"));
-                    sheet.GetRow(rowIndex).HeightInPoints = (productName.Length / 25 + 1) * sheet.DefaultRowHeight / 20;
-                    sheet.GetRow(rowIndex++).RowStyle.VerticalAlignment = VerticalAlignment.Center;
+                    sheet.GetRow(rowIndex++).HeightInPoints = (productName.Length / 20 + 1) * sheet.DefaultRowHeight / 20;
                 }
 
-                sheet.GetRow(49).GetCell(3).SetCellValue(1);
-                sheet.GetRow(49).GetCell(10).SetCellValue(itemList.Sum(i => i.Qty.Value * ((double)i.Skus.Weight / 1000)) + "kg");
-                sheet.GetRow(49).GetCell(11).SetCellValue("USD");
-                sheet.GetRow(49).GetCell(16).SetCellValue(itemList.Sum(i => i.Qty.Value * i.DeclaredValue).ToString("N"));
-                sheet.GetRow(59).GetCell(9).SetCellValue(box.Create_at.ToString("yyyy-MM-dd"));
+                rowIndex = (rowIndex > 48) ? rowIndex + 1 : 49;
+                sheet.GetRow(rowIndex).GetCell(3).SetCellValue(1);
+                sheet.GetRow(rowIndex).GetCell(10).SetCellValue(itemList.Sum(i => i.Qty.Value * ((double)i.Skus.Weight / 1000)) + "kg");
+                sheet.GetRow(rowIndex).GetCell(11).SetCellValue("USD");
+                sheet.GetRow(rowIndex).GetCell(16).SetCellValue(itemList.Sum(i => i.Qty.Value * i.DeclaredValue).ToString("N"));
+                sheet.GetRow(rowIndex + 10).GetCell(9).SetCellValue(box.Create_at.ToString("yyyy-MM-dd"));
 
                 using (FileStream fsOut = new FileStream(Path.Combine(filePath, Invoice.fileName), FileMode.Create))
                 {
