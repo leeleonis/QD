@@ -990,19 +990,26 @@ namespace QDLogistics.Controllers
                     fileName[0] = "AirWaybill.pdf";
                     filePath[0] = Path.Combine(basePath, "export", "Box", box.Create_at.ToString("yyyy/MM/dd"), box.BoxID, fileName[0]);
                     /***** 提貨單 *****/
-
-                    /***** 商業發票 *****/
-                    fileName[1] = "Invoice.xls";
-                    filePath[1] = Path.Combine(basePath, "export", "Box", box.Create_at.ToString("yyyy/MM/dd"), box.BoxID, fileName[1]);
-                    /***** 商業發票 *****/
-
+                    
                     ShippingMethod method = db.ShippingMethod.AsNoTracking().First(m => m.ID.Equals(methodID));
                     switch (method.Carriers.CarrierAPI.Type)
                     {
                         case (byte)EnumData.CarrierType.DHL:
-                            amount = new int[] { 2, 2 };
+                            bool DHL_pdf = !System.IO.File.Exists(Path.Combine(basePath, "export", "Box", box.Create_at.ToString("yyyy/MM/dd"), box.BoxID, "Invoice.xls"));
+
+                            /***** 商業發票 *****/
+                            fileName[1] = DHL_pdf ? "Invoice.pdf" : "Invoice.xls";
+                            filePath[1] = Path.Combine(basePath, "export", "Box", box.Create_at.ToString("yyyy/MM/dd"), box.BoxID, fileName[1]);
+                            /***** 商業發票 *****/
+
+                            amount = new int[] { 2, DHL_pdf ? 0 : 2 };
                             break;
                         case (byte)EnumData.CarrierType.FedEx:
+                            /***** 商業發票 *****/
+                            fileName[1] = "Invoice.xls";
+                            filePath[1] = Path.Combine(basePath, "export", "Box", box.Create_at.ToString("yyyy/MM/dd"), box.BoxID, fileName[1]);
+                            /***** 商業發票 *****/
+
                             amount = new int[] { 1, 4 };
                             break;
                         case (byte)EnumData.CarrierType.UPS:

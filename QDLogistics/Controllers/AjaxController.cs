@@ -620,17 +620,24 @@ namespace QDLogistics.Controllers
             filePath[0] = Path.Combine(basePath, string.Join("", package.FilePath.Skip(package.FilePath.IndexOf("export"))), fileName[0]);
             /***** 提貨單 *****/
 
-            /***** 商業發票 *****/
-            fileName[1] = "Invoice.xls";
-            filePath[1] = Path.Combine(basePath, string.Join("", package.FilePath.Skip(package.FilePath.IndexOf("export"))), fileName[1]);
-            /***** 商業發票 *****/
-
             switch (package.Method.Carriers.CarrierAPI.Type)
             {
                 case (byte)EnumData.CarrierType.DHL:
-                    amount = new int[] { 2, 2 };
+                    bool DHL_pdf = !System.IO.File.Exists(Path.Combine(basePath, string.Join("", package.FilePath.Skip(package.FilePath.IndexOf("export"))), "Invoice.xls"));
+
+                    /***** 商業發票 *****/
+                    fileName[1] = DHL_pdf ? "Invoice.pdf" : "Invoice.xls";
+                    filePath[1] = Path.Combine(basePath, string.Join("", package.FilePath.Skip(package.FilePath.IndexOf("export"))), fileName[1]);
+                    /***** 商業發票 *****/
+
+                    amount = new int[] { 2, DHL_pdf ? 0 : 2 };
                     break;
                 case (byte)EnumData.CarrierType.FedEx:
+                    /***** 商業發票 *****/
+                    fileName[1] = "Invoice.xls";
+                    filePath[1] = Path.Combine(basePath, string.Join("", package.FilePath.Skip(package.FilePath.IndexOf("export"))), fileName[1]);
+                    /***** 商業發票 *****/
+
                     amount = new int[] { 1, 4 };
                     break;
                 case (byte)EnumData.CarrierType.UPS:
@@ -947,142 +954,6 @@ namespace QDLogistics.Controllers
             package.ProcessStatus = (int)EnumData.ProcessStatus.待出貨;
             Packages.Update(package, package.ID);
             Packages.SaveChanges();
-        }
-
-        [CheckSession]
-        private ActionResult CheckSerialNumber(string serial, int? orderID)
-        {
-            Orders = new GenericRepository<Orders>(db);
-            Packages = new GenericRepository<Packages>(db);
-            Items = new GenericRepository<Items>(db);
-            SerialNumbers = new GenericRepository<SerialNumbers>(db);
-            PickProduct = new GenericRepository<PickProduct>(db);
-            PurchaseItemReceive = new GenericRepository<PurchaseItemReceive>(db);
-
-            string productID = null;
-            int warehouseId = int.Parse(Session["warehouseId"].ToString());
-
-            // 查詢產品序號
-            PurchaseItemReceive PurchaseItem = PurchaseItemReceive.Get(serial);
-            if (PurchaseItem == null)
-            {
-                // 查詢產品品號
-                PurchaseItem = PurchaseItemReceive.GetAll().FirstOrDefault(i => i.ProductID == serial);
-
-                if (PurchaseItem == null)
-                {
-                    // 查詢產品品號
-                    Items item = Items.GetAll().FirstOrDefault(i => i.ProductID == serial);
-
-                    if (item == null) return Content(JsonConvert.SerializeObject(new { status = false, scan = false, message = "找不到此產品!" }), "appllication/json");
-
-                    productID = item.ProductID;
-                }
-                else if (PurchaseItem.IsRequireSerialScan)
-                {
-                    // 要求輸入產品序號
-                    return Content(JsonConvert.SerializeObject(new { status = false, scan = true, message = "需要輸入產品序號" }), "appllication/json");
-                }
-            }
-
-            if (string.IsNullOrEmpty(productID)) productID = PurchaseItem.ProductID;
-
-            List<Items> itemList = null;
-            PickProduct pickProduct = null;
-            try
-            {
-                // 需包貨的包裏項目
-                itemList = Packages.GetAll().Where(p => p.ProcessStatus == (int)EnumData.ProcessStatus.包貨)
-                    .Join(Orders.GetAll().Where(o => (orderID != null ? o.OrderID == orderID : true)), p => p.OrderID, o => o.OrderID, (p, o) => new { order = o, package = p })
-                    .OrderBy(p => p.package.Qty).OrderBy(p => p.order.TimeOfOrder).OrderByDescending(p => p.order.RushOrder)
-                    .Join(Items.GetAll(), p => p.package.ID, i => i.PackageID, (p, i) => i).Where(i => i.ShipFromWarehouseID == warehouseId).ToList();
-
-                // 取得撿貨單產品
-                pickProduct = itemList
-                    .Join(PickProduct.GetAll(), i => i.ID, pp => pp.ItemID, (i, pp) => new { item = i, pickItem = pp })
-                    .Where(i => i.item.ProductID == productID).Select(i => i.pickItem).FirstOrDefault(pp => pp.IsPicked == false);
-
-                // 此產品不在出貨單中
-                if (pickProduct == null) return Content(JsonConvert.SerializeObject(new { status = false, scan = false, message = "此產品無需出貨!" }), "appllication/json");
-
-
-                if (PurchaseItem != null)
-                {
-                    if (SerialNumbers.Get(serial) != null) return Content(JsonConvert.SerializeObject(new { status = false, scan = false, message = "此產品序號已出貨!" }), "appllication/json");
-                    // 將產品序號對應到包裏項目
-                    SerialNumbers.Create(new SerialNumbers
-                    {
-                        OrderID = pickProduct.OrderID,
-                        ProductID = pickProduct.ProductID,
-                        SerialNumber = PurchaseItem.SerialNumber,
-                        OrderItemID = pickProduct.ItemID.Value
-                    });
-                    SerialNumbers.SaveChanges();
-                }
-
-                // 更新撿貨單產品數量
-                pickProduct.QtyPicked += 1;
-                pickProduct.IsPicked = pickProduct.QtyPicked.Equals(pickProduct.Qty);
-                pickProduct.PickUpDate = new TimeZoneConvert().Utc;
-                pickProduct.PickUpBy = int.Parse(Session["AdminId"].ToString());
-                PickProduct.Update(pickProduct);
-                PickProduct.SaveChanges();
-
-                if (pickProduct.IsPicked)
-                {
-                    // 判斷包裏是否全部包貨完
-                    bool isPicked = !itemList.Join(PickProduct.GetAll(), i => i.ID, pp => pp.ItemID, (i, pp) => new { item = i, pickItem = pp })
-                        .Where(i => i.item.PackageID == pickProduct.PackageID).Select(i => i.pickItem).Any(pp => pp.IsPicked == false);
-
-                    // 包裏包貨完成
-                    if (isPicked)
-                    {
-                        Packages package = Packages.Get(pickProduct.PackageID.Value);
-
-                        if (string.IsNullOrEmpty(package.TrackingNumber))
-                        {
-                            return Content(JsonConvert.SerializeObject(new { status = false, scan = false, message = "包裏無提單號碼!" }), "appllication/json");
-                        }
-
-                        string date = package.ShipDate.Value.ToString("yyyy/MM/dd");
-                        string basePath = HostingEnvironment.MapPath("~/FileUploads");
-                        string[] fileName = new string[2];
-                        string[] filePath = new string[2];
-
-                        /***** 提貨單 *****/
-                        fileName[0] = "AirWaybill.pdf";
-                        filePath[0] = Path.Combine(basePath, "export", date, package.ID.ToString(), fileName[0]);
-                        /***** 提貨單 *****/
-
-                        /***** 商業發票 *****/
-                        fileName[1] = "Invoice.xls";
-                        filePath[1] = Path.Combine(basePath, "export", date, package.ID.ToString(), fileName[1]);
-                        /***** 商業發票 *****/
-
-                        // 取得熱感應印表機名稱
-                        string printerName = package.Method.PrinterName;
-                        if (string.IsNullOrEmpty(printerName))
-                        {
-                            return Content(JsonConvert.SerializeObject(new { status = false, scan = false, message = "尚未設定印表機!" }), "appllication/json");
-                        }
-
-                        // 更改包裏狀態
-                        package.ProcessStatus = (int)EnumData.ProcessStatus.已出貨;
-                        Packages.Update(package);
-                        Packages.SaveChanges();
-
-                        // 回傳成功並列印提貨單
-                        return Content(JsonConvert.SerializeObject(new { status = true, print = true, printerName, filePath, fileName }), "appllication/json");
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                return Content(JsonConvert.SerializeObject(new { status = false, scan = false, message = e.Message }), "appllication/json");
-            }
-
-            // 回傳成功
-            return Content(JsonConvert.SerializeObject(new { status = true, scan = false, message = "" }), "appllication/json");
         }
 
         [CheckSession]

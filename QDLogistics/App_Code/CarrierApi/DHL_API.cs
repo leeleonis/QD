@@ -9,7 +9,7 @@ using System.Net;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace CarrierApi.DHL
+namespace CarrierApi.DHL_Old
 {
     public class DHL_API
     {

@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Ionic.Zip;
+using Newtonsoft.Json;
 using QDLogistics.Commons;
 using QDLogistics.Filters;
 using QDLogistics.Models;
@@ -422,7 +423,7 @@ namespace QDLogistics.Controllers
             {
                 if (data == null || !data.Any()) throw new Exception("沒有資料!");
 
-                foreach(OrderUpdateData oData in data)
+                foreach (OrderUpdateData oData in data)
                 {
                     MyHelp.Log("Orders", oData.OrderID, string.Format("直發商訂單【{0}】開始更新", oData.OrderID));
 
@@ -457,7 +458,8 @@ namespace QDLogistics.Controllers
                     Packages.SaveChanges();
                     MyHelp.Log("Orders", oData.OrderID, string.Format("直發商訂單【{0}】更新完成", oData.OrderID));
                 }
-            }catch(Exception e)
+            }
+            catch (Exception e)
             {
                 result.status = false;
                 result.message = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
@@ -509,8 +511,37 @@ namespace QDLogistics.Controllers
         {
             AjaxResult result = new AjaxResult();
 
-            string basePath = HostingEnvironment.MapPath("~/FileUploads");
-            List<Packages> packageList = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && packageIDs.Contains(p.ID)).ToList();
+            try
+            {
+                if (!packageIDs.Any()) throw new Exception("沒有給訂單!");
+
+                string basePath = HostingEnvironment.MapPath("~/FileUploads");
+                List<Packages> packageList = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && packageIDs.Contains(p.ID)).ToList();
+
+                if (!Directory.Exists(Path.Combine(basePath, "download"))) Directory.CreateDirectory(Path.Combine(basePath, "download"));
+                using (var file = new ZipFile())
+                {
+                    foreach (Packages package in packageList)
+                    {
+                        string labelFile = Path.Combine(basePath, package.FilePath, package.TagNo + ".pdf");
+                        if (!System.IO.File.Exists(labelFile))
+                        {
+                            System.IO.File.Copy(Path.Combine(basePath, package.FilePath, "Label.pdf"), labelFile);
+                        }
+
+                        file.AddFile(labelFile, "");
+                    }
+
+                    file.Save(Path.Combine(basePath, "download", "Labels.zip"));
+                }
+
+                string baseUrl = Request.Url.Scheme + "://" + Request.Url.Authority + Request.ApplicationPath.TrimEnd('/') + "/fileUploads";
+                result.data = Path.Combine(baseUrl, "download", "Labels.zip");
+            }catch(Exception e)
+            {
+                result.status = false;
+                result.message = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+            }
 
             return Json(result, JsonRequestBehavior.AllowGet);
         }

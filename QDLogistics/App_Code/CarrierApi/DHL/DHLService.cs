@@ -11,7 +11,7 @@
 // 
 // 此原始程式碼由 xsd 版本=4.6.1055.0 自動產生。
 // 
-namespace CarrierApi.DHL_Test
+namespace CarrierApi.DHL
 {
     using System.Xml.Serialization;
 
@@ -750,7 +750,7 @@ namespace CarrierApi.DHL_Test
 
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Form = System.Xml.Schema.XmlSchemaForm.Unqualified, DataType = "base64Binary")]
-        public byte[] DocImage
+        public byte[] DocImageVal
         {
             get
             {
@@ -1770,7 +1770,7 @@ namespace CarrierApi.DHL_Test
 
         private bool weightUnitFieldSpecified;
 
-        private System.DateTime estDlvyDateField;
+        private string estDlvyDateField;
 
         private bool estDlvyDateFieldSpecified;
 
@@ -1918,7 +1918,7 @@ namespace CarrierApi.DHL_Test
 
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Form = System.Xml.Schema.XmlSchemaForm.Unqualified)]
-        public System.DateTime EstDlvyDate
+        public string EstDlvyDate
         {
             get
             {
@@ -6464,7 +6464,7 @@ namespace CarrierApi.DHL_Test
     public partial class Dutiable
     {
 
-        private float declaredValueField;
+        private decimal declaredValueField;
 
         private bool declaredValueFieldSpecified;
 
@@ -6500,7 +6500,7 @@ namespace CarrierApi.DHL_Test
 
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Form = System.Xml.Schema.XmlSchemaForm.Unqualified)]
-        public float DeclaredValue
+        public decimal DeclaredValue
         {
             get
             {

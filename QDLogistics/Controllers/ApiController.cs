@@ -299,18 +299,25 @@ namespace QDLogistics.Controllers
             fileName[0] = "AirWaybill.pdf";
             filePath[0] = string.Format("{0}/FileUploads/{1}/{2}", baseURL, path, fileName[0]);
             /***** 提貨單 *****/
-
-            /***** 商業發票 *****/
-            fileName[1] = "Invoice.xls";
-            filePath[1] = string.Format("{0}/FileUploads/{1}/{2}", baseURL, path, fileName[1]);
-            /***** 商業發票 *****/
-
+            
             switch (package.Method.Carriers.CarrierAPI.Type)
             {
-                case (int)EnumData.CarrierType.DHL:
-                    amount = new int[] { 2, 2 };
+                case (byte)EnumData.CarrierType.DHL:
+                    bool DHL_pdf = !System.IO.File.Exists(Path.Combine(HostingEnvironment.MapPath("~/FileUploads"), string.Join("", package.FilePath.Skip(package.FilePath.IndexOf("export"))), "Invoice.xls"));
+
+                    /***** 商業發票 *****/
+                    fileName[1] = DHL_pdf ? "Invoice.pdf" : "Invoice.xls";
+                    filePath[1] = string.Format("{0}/FileUploads/{1}/{2}", baseURL, path, fileName[1]);
+                    /***** 商業發票 *****/
+
+                    amount = new int[] { 2, DHL_pdf ? 0 : 2 };
                     break;
-                case (int)EnumData.CarrierType.FedEx:
+                case (byte)EnumData.CarrierType.FedEx:
+                    /***** 商業發票 *****/
+                    fileName[1] = "Invoice.xls";
+                    filePath[1] = string.Format("{0}/FileUploads/{1}/{2}", baseURL, path, fileName[1]);
+                    /***** 商業發票 *****/
+
                     amount = new int[] { 1, 4 };
                     break;
                 case (int)EnumData.CarrierType.UPS:

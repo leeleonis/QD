@@ -110,7 +110,7 @@ namespace QDLogistics.Commons
                 {
                     case (int)EnumData.CarrierType.DHL:
                         DHL_API DHL = new DHL_API(api);
-                        ShipmentValidateResponse boxResult = DHL.CreateBox(box, directLine);
+                        ShipmentResponse boxResult = DHL.CreateBox(box, directLine);
                         box.TrackingNumber = boxResult.AirwayBillNumber;
 
                         basePath = HostingEnvironment.MapPath("~/FileUploads");
@@ -121,7 +121,8 @@ namespace QDLogistics.Commons
                         File.WriteAllBytes(Path.Combine(filePath, "AirWaybill.pdf"), Crop(boxResult.LabelImage.First().OutputImage, 97f, 30f, 356f, 553f));
 
                         /***** Commercial Invoice *****/
-                        Box_CreateInvoice(box, directLine, basePath, filePath);
+                        File.WriteAllBytes(Path.Combine(filePath, "Invoice.pdf"), boxResult.LabelImage.First().MultiLabels.First().DocImageVal);
+                        //Box_CreateInvoice(box, directLine, basePath, filePath);
                         break;
                     case (int)EnumData.CarrierType.FedEx:
                         FedEx_API FedEx = new FedEx_API(api);
@@ -328,7 +329,7 @@ namespace QDLogistics.Commons
                     try
                     {
                         DHL_API DHL = new DHL_API(api);
-                        ShipmentValidateResponse result = DHL.Create(package);
+                        ShipmentResponse result = DHL.Create(package);
 
                         package.TrackingNumber = result.AirwayBillNumber;
                         package.ShipDate = SCWS.SyncOn;
@@ -337,15 +338,6 @@ namespace QDLogistics.Commons
                         if (package.Export == (byte)EnumData.Export.正式)
                         {
                             DHL_SaveFile(result);
-
-                            //string basePath = HostingEnvironment.MapPath("~/FileUploads");
-
-                            //SpreadsheetInfo.SetLicense("FREE-LIMITED-KEY");
-                            //ExcelFile ef = ExcelFile.Load(Path.Combine(basePath, package.FilePath, "Invoice.xls"));
-                            //ef.Save(Path.Combine(basePath, package.FilePath, "Invoice.pdf"));
-
-                            //DHL.UploadInvoice(result, File.ReadAllBytes(Path.Combine(basePath, package.FilePath, "Invoice.pdf")));
-                            //File.Delete(Path.Combine(basePath, package.FilePath, "Invoice.pdf"));
                         }
                     }
                     catch (Exception e)
@@ -384,7 +376,7 @@ namespace QDLogistics.Commons
             return new ShipResult(true);
         }
 
-        private void DHL_SaveFile(ShipmentValidateResponse result)
+        private void DHL_SaveFile(ShipmentResponse result)
         {
             DateTime date = package.ShipDate.Value;
             string basePath = HostingEnvironment.MapPath("~/FileUploads");
@@ -396,7 +388,8 @@ namespace QDLogistics.Commons
             File.WriteAllBytes(Path.Combine(filePath, "AirWaybill.pdf"), Crop(result.LabelImage.First().OutputImage, 97f, 30f, 356f, 553f));
 
             /***** Commercial Invoice *****/
-            TWN_CreateInvoice(basePath, filePath, date);
+            File.WriteAllBytes(Path.Combine(filePath, "Invoice.pdf"), result.LabelImage.First().MultiLabels.First().DocImageVal);
+            //TWN_CreateInvoice(basePath, filePath, date);
         }
 
         private void FedEx_SaveFile(CompletedPackageDetail data)
@@ -699,7 +692,7 @@ namespace QDLogistics.Commons
                         MyHelp.CopyRow(ref sheet, insertRow - 1, row, true, false, true, false);
                     }
 
-                    byte[] picData = System.IO.File.ReadAllBytes(@"C:\Users\qdtuk\Downloads\company.png");
+                    byte[] picData = File.ReadAllBytes(Path.Combine(basePath, "sample", "company.png"));
                     int picIndex = workbook.AddPicture(picData, PictureType.PNG);
                     var drawing = sheet.CreateDrawingPatriarch();
                     var anchor = new HSSFClientAnchor(400, 50, 500, 50, 4, insertRow + add + 1, 6, insertRow + add + 5);

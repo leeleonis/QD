@@ -7,7 +7,7 @@ using System.Net;
 using System.Xml.Serialization;
 using QDLogistics.Models;
 
-namespace CarrierApi.DHL_Test
+namespace CarrierApi.DHL
 {
     public class DHL_API
     {
@@ -27,10 +27,11 @@ namespace CarrierApi.DHL_Test
         public TrackingResponse Tracking(string trackingNumber)
         {
             TrackingResponse result;
-            KnownTrackingRequest track = setTracking(new string[] { trackingNumber });
+            KnownTrackingRequest track = SetTracking(new string[] { trackingNumber });
 
             XmlSerializer serializer = new XmlSerializer(typeof(TrackingResponse));
-            using (TextReader reader = new StringReader(SendRequest(track)))
+            string request = SendRequest(track);
+            using (TextReader reader = new StringReader(request))
             {
                 try
                 {
@@ -38,10 +39,15 @@ namespace CarrierApi.DHL_Test
                 }
                 catch (Exception e)
                 {
+                    TextReader errorReader = new StringReader(request);
+                    XmlSerializer errorSerializer = new XmlSerializer(typeof(ShipmentTrackingErrorResponse));
+                    ShipmentTrackingErrorResponse error = errorSerializer.Deserialize(errorReader) as ShipmentTrackingErrorResponse;
+                    errorReader.Dispose();
+
                     result = new TrackingResponse()
                     {
                         AWBInfo = new AWBInfo[] {
-                            new AWBInfo() { Status = new Status() { ActionStatus = e.Message } }
+                            new AWBInfo() { Status = new Status() { ActionStatus = string.Join("; ", error.Response.Status.Condition.Select(c => c.ConditionData)) } }
                         }
                     };
                 }
@@ -50,15 +56,28 @@ namespace CarrierApi.DHL_Test
             return result;
         }
 
-        private KnownTrackingRequest setTracking(string[] items)
+        private KnownTrackingRequest SetTracking(string[] items)
         {
-            var tracking = new KnownTrackingRequest();
-            tracking.Request = RequsetInit("6.1");
-            tracking.LanguageCode = "tw";
-            tracking.Items = items;
-            tracking.ItemsElementName = new ItemsChoiceType[] { 0 };
-            tracking.LevelOfDetails = LevelOfDetails.ALL_CHECK_POINTS;
-            tracking.PiecesEnabled = KnownTrackingRequestPiecesEnabled.S;
+            var tracking = new KnownTrackingRequest()
+            {
+                Request = new Request()
+                {
+                    ServiceHeader = new ServiceHeader()
+                    {
+                        SiteID = api_siteID,
+                        Password = api_password,
+                        MessageReference = "Esteemed Courier Service of DHL",
+                        MessageTime = today
+                    }
+                },
+                LanguageCode = "tw",
+                Items = items,
+                ItemsElementName = new ItemsChoiceType[] { ItemsChoiceType.AWBNumber },
+                LevelOfDetails = LevelOfDetails.ALL_CHECK_POINTS,
+                PiecesEnabled = KnownTrackingRequestPiecesEnabled.S,
+                PiecesEnabledSpecified = true,
+                schemaVersion = 1.0M
+            };
 
             return tracking;
         }
@@ -140,6 +159,7 @@ namespace CarrierApi.DHL_Test
                 PackageType = PackageType.YP,
                 PackageTypeSpecified = true,
                 Weight = package.Items.Sum(i => i.Qty.Value * ((decimal)i.Skus.Weight / 1000)),
+                WeightSpecified = true,
                 PieceContents = package.Items.First(i => i.IsEnable.Equals(true)).Skus.ProductType.ProductTypeName
             });
 
@@ -167,7 +187,7 @@ namespace CarrierApi.DHL_Test
 
             shipment.Dutiable = new Dutiable()
             {
-                DeclaredValue = (float)package.DeclaredTotal,
+                DeclaredValue = package.DeclaredTotal,
                 DeclaredValueSpecified = true,
                 DeclaredCurrency = currency,
                 TermsOfTrade = TermsOfTrade.DDP,
@@ -191,13 +211,33 @@ namespace CarrierApi.DHL_Test
                 SpecialServiceType = "WY"
             } };
 
-            shipment.DocImages = new DocImage[]
+            int lineNo = 1;
+            shipment.UseDHLInvoice = YesNo.Y;
+            shipment.DHLInvoiceLanguageCode = InvLanguageCode.en;
+            shipment.DHLInvoiceType = InvoiceType.CMI;
+            shipment.ExportDeclaration = new ExportDeclaration()
             {
-                new DocImage() {
-                    Type = Type.INV,
-                    Image = File.ReadAllBytes(Path.Combine(System.Web.Hosting.HostingEnvironment.MapPath("~/FileUploads"), "sample", "A4.pdf")),
-                    ImageFormat = ImageFormat.PDF
-                }
+                SignatureName = "Demi Tian",
+                InvoiceNumber = package.OrderID.ToString(),
+                InvoiceDate = today,
+                BillToCompanyName = shipment.Shipper.CompanyName,
+                BillToContanctName = shipment.Shipper.Contact.PersonName,
+                BillToAddressLine = shipment.Shipper.AddressLine,
+                BillToCity = shipment.Shipper.City,
+                BillToPostcode = shipment.Shipper.PostalCode,
+                BillToCountryName = shipment.Shipper.CountryName,
+                BillToPhoneNumber = shipment.Shipper.Contact.PhoneNumber,
+                ExportLineItem = package.Items.Where(i => i.IsEnable.Value).Select(i => new ExportLineItem()
+                {
+                    LineNumber = (lineNo++).ToString(),
+                    Quantity = i.Qty.ToString(),
+                    QuantityUnit = QuantityUnit.PCS,
+                    Description = i.Skus.ProductName,
+                    Value = (float)i.DeclaredValue,
+                    Weight = new ExportLineItemWeight() { Weight = (decimal)i.Skus.Weight / 1000, WeightUnit = WeightUnit.K },
+                    GrossWeight = new ExportLineItemGrossWeight() { Weight = (decimal)i.Skus.Weight / 1000, WeightSpecified = true, WeightUnit = WeightUnit.K, WeightUnitSpecified = true },
+                    ManufactureCountryCode = i.Skus.Origin
+                }).ToArray()
             };
 
             return shipment;
@@ -219,6 +259,8 @@ namespace CarrierApi.DHL_Test
             shipment.RequestArchiveDoc = YesNo.Y;
             shipment.RequestArchiveDocSpecified = true;
             shipment.Label = new Label() { LabelTemplate = LabelTemplate.Item8X4_A4_PDF };
+            shipment.EProcShip = YesNo.N;
+            shipment.EProcShipSpecified = true;
 
             shipment.Billing = new Billing()
             {
@@ -255,6 +297,7 @@ namespace CarrierApi.DHL_Test
                 PackageType = PackageType.YP,
                 PackageTypeSpecified = true,
                 Weight = itemList.Sum(i => i.Qty.Value * ((decimal)i.Skus.Weight / 1000)),
+                WeightSpecified = true,
                 PieceContents = itemList.First().Skus.ProductType.ProductTypeName
             });
 
@@ -281,7 +324,7 @@ namespace CarrierApi.DHL_Test
 
             shipment.Dutiable = new Dutiable()
             {
-                DeclaredValue = (float)box.Packages.Sum(p => p.DeclaredTotal),
+                DeclaredValue = box.Packages.Sum(p => p.DeclaredTotal),
                 DeclaredValueSpecified = true,
                 DeclaredCurrency = shipment.ShipmentDetails.CurrencyCode,
                 TermsOfTrade = TermsOfTrade.DDP,
@@ -301,8 +344,38 @@ namespace CarrierApi.DHL_Test
             };
 
             shipment.SpecialService = new SpecialService[] { new SpecialService() {
-                SpecialServiceType = "DD"
+                //SpecialServiceType = "DD",
+                SpecialServiceType = "WY"
             } };
+
+            int lineNo = 1;
+            shipment.UseDHLInvoice = YesNo.Y;
+            shipment.DHLInvoiceLanguageCode = InvLanguageCode.en;
+            shipment.DHLInvoiceType = InvoiceType.CMI;
+            shipment.ExportDeclaration = new ExportDeclaration()
+            {
+                SignatureName = "Demi Tian",
+                InvoiceNumber = box.BoxID,
+                InvoiceDate = today,
+                BillToCompanyName = shipment.Shipper.CompanyName,
+                BillToContanctName = shipment.Shipper.Contact.PersonName,
+                BillToAddressLine = shipment.Shipper.AddressLine,
+                BillToCity = shipment.Shipper.City,
+                BillToPostcode = shipment.Shipper.PostalCode,
+                BillToCountryName = shipment.Shipper.CountryName,
+                BillToPhoneNumber = shipment.Shipper.Contact.PhoneNumber,
+                ExportLineItem = itemList.Select(i => new ExportLineItem()
+                {
+                    LineNumber = (lineNo++).ToString(),
+                    Quantity = i.Qty.ToString(),
+                    QuantityUnit = QuantityUnit.PCS,
+                    Description = i.Skus.ProductName,
+                    Value = (float)i.UnitPrice.Value,
+                    Weight = new ExportLineItemWeight() { Weight = (decimal)i.Skus.Weight / 1000, WeightUnit = WeightUnit.K },
+                    GrossWeight = new ExportLineItemGrossWeight() { Weight = (decimal)i.Skus.Weight / 1000, WeightSpecified = true, WeightUnit = WeightUnit.K, WeightUnitSpecified = true },
+                    ManufactureCountryCode = i.Skus.Origin
+                }).ToArray()
+            };
 
             XmlSerializer serializer = new XmlSerializer(typeof(ShipmentResponse));
             string request = SendRequest(shipment);
