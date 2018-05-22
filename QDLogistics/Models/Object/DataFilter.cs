@@ -7,6 +7,9 @@ namespace QDLogistics.Models.Object
 {
     public class DataFilter
     {
+        private string orderIDField { get; set; }
+        private string userIDField { get; set; }
+
         /***** Order Filter *****/
         public Nullable<int> WarehouseID { get; set; }
         public Nullable<int> MethodID { get; set; }
@@ -15,13 +18,13 @@ namespace QDLogistics.Models.Object
         public Nullable<int> StatusCode { get; set; }
         public Nullable<byte> ProccessStatus { get; set; }
 
-        public string OrderID { get; set; }
+        public string OrderID { get { return this.orderIDField; } set { this.orderIDField = !string.IsNullOrEmpty(value) ? value.Trim() : value; } }
         public string ItemName { get; set; }
         public string Country { get; set; }
         public string CountryCode { get; set; }
         public Nullable<int> CurrencyCode { get; set; }
         public Nullable<int> Source { get; set; }
-        public string UserID { get; set; }
+        public string UserID { get { return this.userIDField; } set { this.userIDField = !string.IsNullOrEmpty(value) ? value.Trim() : value; } }
         public string Tracking { get; set; }
         public string Comment { get; set; }
         public string SupplierComment { get; set; }

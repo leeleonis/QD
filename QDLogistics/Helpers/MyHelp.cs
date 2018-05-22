@@ -101,9 +101,9 @@ public static class MyHelp
     public static bool Mail_Send(string MailFrom, string[] MailTos, string[] Ccs, string MailSub, string MailBody, bool isBodyHtml, string[] filePaths, List<Tuple<Stream, string>> filePaths2, bool deleteFileAttachment)
     {
         string smtpServer = "smtp.sendgrid.net";
-        int smtpPort = 25;
-        string mailAccount = "azure_9131e480018e796d9d0b46988542082b@azure.com";
-        string mailPwd = "test#12ab";
+        int smtpPort = 587;
+        string mailAccount = "nexeve";
+        string mailPwd = "96yVfFZ9a81GqnDYTUebjncIsZe5Rvhnbv1j";
 
         try
         {
@@ -206,6 +206,7 @@ public static class MyHelp
         }
         catch (Exception ex)
         {
+            Log("SendMail", null, ex.InnerException != null && !string.IsNullOrEmpty(ex.InnerException.Message) ? ex.InnerException.Message : ex.Message);
             return false;//寄失敗
         }
     }

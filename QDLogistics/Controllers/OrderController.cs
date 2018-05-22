@@ -742,8 +742,14 @@ namespace QDLogistics.Controllers
                                             }
                                             else
                                             {
-                                                SyncProcess sync = new SyncProcess(session);
-                                                sync.Update_Tracking(package);
+                                                ThreadTask syncTask = new ThreadTask("Direct Line訂單包裹SC更新");
+                                                threadTask.AddWork(factory.StartNew(() =>
+                                                {
+                                                    threadTask.Start();
+                                                    SyncProcess sync = new SyncProcess(session);
+                                                    return sync.Update_Tracking(package);
+                                                }));
+
                                                 label.Status = (byte)EnumData.LabelStatus.完成;
                                                 Label.Update(label, label.LabelID);
                                                 Label.SaveChanges();
@@ -847,9 +853,7 @@ namespace QDLogistics.Controllers
             {
                 int[] packageIDs = pickList.Select(p => p.PackageID.Value).ToArray();
                 List<Packages> packageList = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.已出貨) && packageIDs.Contains(p.ID)).ToList();
-
-                List<Packages> test = packageList.Where(p => p.ShippingMethod.Equals(35)).ToList();
-
+                
                 int[] methodIDs = packageList.Where(p => p.ShippingMethod != null).Select(p => p.ShippingMethod.Value).Distinct().ToArray();
                 var carrierList = ShippingMethod.GetAll(true).Where(m => methodIDs.Contains(m.ID)).Distinct().ToDictionary(m => m.ID, m => m.Carriers.Name);
                 var groupList = packageList.GroupBy(p => p.ShippingMethod != null && carrierList.ContainsKey(p.ShippingMethod.Value) ? carrierList[p.ShippingMethod.Value] : "", p => p)
@@ -867,6 +871,7 @@ namespace QDLogistics.Controllers
                 string mailBody;
                 string[] receiveMails;
                 string[] ccMails = new string[] { "peter0626@hotmail.com", "kellyyang82@hotmail.com", "demi@qd.com.tw" };
+                //string[] ccMails = new string[] { };
 
                 foreach (var serviceCode in groupList.Keys)
                 {
@@ -938,6 +943,7 @@ namespace QDLogistics.Controllers
                             DHL_workbook.SaveAs(Path.Combine(filePath, fileName));
 
                             receiveMails = new string[] { "twtxwisa@dhl.com" };
+                            //receiveMails = new string[] { "qd.tuko@hotmail.com" };
                             mailTitle = string.Format("至優網 {0} 第{1}批 {2}筆提單 正式出口報關資料", now.ToString("yyyy-MM-dd"), DateTime.Compare(now, noon.AddHours(3)) <= 0 ? "1" : "2", groupList[serviceCode].Count());
 
                             mailBody = string.Join("<br />", groupList[serviceCode].Select(p => p.TrackingNumber).ToArray());
@@ -1018,6 +1024,7 @@ namespace QDLogistics.Controllers
                             }
 
                             receiveMails = new string[] { "edd@fedex.com" };
+                            //receiveMails = new string[] { "qd.tuko@hotmail.com" };
                             mailTitle = string.Format("至優網 {0} 第{1}批 {2}筆提單 正式出口報關資料", now.ToString("yyyy-MM-dd"), DateTime.Compare(now, noon.AddHours(3)) <= 0 ? "1" : "2", groupList[serviceCode].Count());
 
                             bool FedEx_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, "", true, null, FedExFile, false);

@@ -1760,7 +1760,7 @@ namespace CarrierApi.DHL
 
         private string consigneeNameField;
 
-        private System.DateTime shipmentDateField;
+        private string shipmentDateField;
 
         private object piecesField;
 
@@ -1848,7 +1848,7 @@ namespace CarrierApi.DHL
 
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Form = System.Xml.Schema.XmlSchemaForm.Unqualified)]
-        public System.DateTime ShipmentDate
+        public string ShipmentDate
         {
             get
             {
@@ -9224,7 +9224,7 @@ namespace CarrierApi.DHL
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.dhl.com")]
-    [System.Xml.Serialization.XmlRootAttribute(Namespace = "http://www.dhl.com", IsNullable = false)]
+    [System.Xml.Serialization.XmlRootAttribute(ElementName = "ErrorResponse", Namespace = "http://www.dhl.com", IsNullable = false)]
     public partial class ShipmentValidateErrorResponse
     {
 

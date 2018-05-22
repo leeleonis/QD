@@ -439,7 +439,7 @@ namespace QDLogistics.Controllers
 
             TaskFactory factory = System.Web.HttpContext.Current.Application.Get("TaskFactory") as TaskFactory;
 
-            List<Packages> packageList = Packages.GetAll(true).Where(p => p.IsEnable == true && packageIDs.Contains(p.ID.ToString())).ToList();
+            List<Packages> packageList = Packages.GetAll().Where(p => p.IsEnable == true && packageIDs.Contains(p.ID.ToString())).ToList();
 
             foreach (Packages package in packageList.Where(p => p.ProcessStatus != (int)EnumData.ProcessStatus.已出貨))
             {

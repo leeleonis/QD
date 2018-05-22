@@ -691,14 +691,8 @@ namespace QDLogistics.Commons
                     {
                         MyHelp.CopyRow(ref sheet, insertRow - 1, row, true, false, true, false);
                     }
-
-                    byte[] picData = File.ReadAllBytes(Path.Combine(basePath, "sample", "company.png"));
-                    int picIndex = workbook.AddPicture(picData, PictureType.PNG);
-                    var drawing = sheet.CreateDrawingPatriarch();
-                    var anchor = new HSSFClientAnchor(400, 50, 500, 50, 4, insertRow + add + 1, 6, insertRow + add + 5);
-                    var pictuer = drawing.CreatePicture(anchor, picIndex);
                 }
-
+                
                 foreach (var item in itemList)
                 {
                     Skus sku = item.Skus;
@@ -715,6 +709,13 @@ namespace QDLogistics.Commons
                 }
 
                 rowIndex = (rowIndex > 48) ? rowIndex + 1 : 49;
+
+                byte[] picData = File.ReadAllBytes(Path.Combine(basePath, "sample", "company.png"));
+                int picIndex = workbook.AddPicture(picData, PictureType.PNG);
+                var drawing = sheet.CreateDrawingPatriarch();
+                var anchor = new HSSFClientAnchor(400, 50, 500, 50, 4, rowIndex-1, 6, rowIndex + 3);
+                var pictuer = drawing.CreatePicture(anchor, picIndex);
+
                 sheet.GetRow(rowIndex).GetCell(3).SetCellValue(1);
                 sheet.GetRow(rowIndex).GetCell(10).SetCellValue(itemList.Sum(i => i.Qty.Value * ((double)i.Skus.Weight / 1000)) + "kg");
                 sheet.GetRow(rowIndex).GetCell(11).SetCellValue("USD");

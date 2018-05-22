@@ -299,7 +299,10 @@ namespace QDLogistics.Controllers
 
                 if (fileName.Any(f => pdfList.Contains(f)))
                 {
-                    ClientPrintJob cpj2 = new ClientPrintJob();
+                    ClientPrintJob cpj2 = new ClientPrintJob()
+                    {
+                        ClientPrinter = new InstalledPrinter(HttpUtility.UrlDecode(printerName))
+                    };
 
                     int index = 0;
                     if (fileName.Any(f => f.Equals("AirWaybill.pdf")))
@@ -311,22 +314,30 @@ namespace QDLogistics.Controllers
                         index = fileName.IndexOf("Label.pdf");
                     }
 
-                    cpj2.PrintFile = new PrintFile(HttpUtility.UrlDecode(filePath[index]), HttpUtility.UrlDecode(fileName[index]), amount[index]);
-                    cpj2.ClientPrinter = new InstalledPrinter(HttpUtility.UrlDecode(printerName));
-                    cpjg.Add(cpj2);
+                    if(amount[index] > 0)
+                    {
+                        cpj2.PrintFile = new PrintFile(HttpUtility.UrlDecode(filePath[index]), HttpUtility.UrlDecode(fileName[index]), amount[index]);
+                        cpjg.Add(cpj2);
+                    }
                 }
 
                 var normalList = fileName.Select((value, i) => new { i, value }).Where(n => !string.IsNullOrEmpty(n.value) && !n.value.Equals("AirWaybill.pdf") && !n.value.Equals("Label.pdf")).ToList();
                 if (normalList.Count() > 0)
                 {
-                    ClientPrintJob cpj1 = new ClientPrintJob();
+                    ClientPrintJob cpj1 = new ClientPrintJob()
+                    {
+                        ClientPrinter = new DefaultPrinter()
+                    };
+
                     foreach (var name in normalList)
                     {
-                        cpj1.PrintFileGroup.Add(new PrintFile(HttpUtility.UrlDecode(filePath[name.i]), HttpUtility.UrlDecode(name.value), amount[name.i]));
+                        if(amount[name.i] > 0)
+                        {
+                            cpj1.PrintFileGroup.Add(new PrintFile(HttpUtility.UrlDecode(filePath[name.i]), HttpUtility.UrlDecode(name.value), amount[name.i]));
+                        }
                     }
 
-                    cpj1.ClientPrinter = new DefaultPrinter();
-                    cpjg.Add(cpj1);
+                    if (cpj1.PrintFileGroup.Any()) cpjg.Add(cpj1);
                 }
 
                 System.Web.HttpContext.Current.Response.ContentType = "application/octet-stream";
