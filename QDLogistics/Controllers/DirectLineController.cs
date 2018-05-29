@@ -94,7 +94,7 @@ namespace QDLogistics.Controllers
 
             if (box == null) return RedirectToAction("delivery", "directLine");
 
-            ViewData["Carrier"] = db.ShippingMethod.AsNoTracking().First(m => m.IsEnable && m.ID.Equals(box.FirstMileMethod)).Carriers.Name;
+            ViewData["Carrier"] = !box.FirstMileMethod.Equals(0) ? db.ShippingMethod.AsNoTracking().First(m => m.IsEnable && m.ID.Equals(box.FirstMileMethod)).Carriers.Name : "";
 
             ViewBag.logList = db.ActionLog.AsNoTracking().Where(log => log.TableName.Equals("Box") && log.TargetID.Equals(box.BoxID)).OrderBy(log => log.CreateDate).ToList();
 
@@ -449,7 +449,7 @@ namespace QDLogistics.Controllers
                     ReceivedQty = 0,
                     Weight = data.items.Sum(i => i.Skus.Weight * (float)i.Qty.Value / 1000),
                     data.order.OrderID,
-                    Serial = data.itemCount == 1 && data.item.SerialNumbers.Any() ? data.item.SerialNumbers.First().SerialNumber : "Multi",
+                    Serial = data.item.SerialNumbers.Any() ? (data.itemCount == 1 ? data.item.SerialNumbers.First().SerialNumber : "Multi") : "找不到",
                     LabelID = string.Format("<a href='http://internal.qd.com.tw/fileUploads/{0}/Label.pdf' target='_blank'>{1}</a>", data.package.FilePath, data.package.TagNo),
                     data.order.StatusCode
                 }));
@@ -532,7 +532,7 @@ namespace QDLogistics.Controllers
                     case (int)OrderStatusCode.InProcess:
                         if(package.Orders.StatusCode.Equals((int)OrderStatusCode.OnHold) && package.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨) && package.Label.Status.Equals((byte)EnumData.LabelStatus.鎖定中))
                         {
-                            Box prevBox = Box.Get(package.Label.PrevBoxID);
+                            Box prevBox = Box.Get(!string.IsNullOrEmpty(package.Label.PrevBoxID) ? package.Label.PrevBoxID : package.Label.BoxID);
                             Box box = Box.GetAll(true).FirstOrDefault(b => b.IsEnable && b.DirectLine.Equals(prevBox.DirectLine) && b.WarehouseFrom.Equals(prevBox.WarehouseFrom) && b.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.未發貨));
                             if (box == null)
                             {
@@ -542,7 +542,7 @@ namespace QDLogistics.Controllers
                                 TimeZoneConvert timeZoneConvert = new TimeZoneConvert();
                                 EnumData.TimeZone TimeZone = MyHelp.GetTimeZone((int)Session["TimeZone"]);
                                 string boxID = string.Format("{0}-{1}", db.DirectLine.AsNoTracking().First(d => d.ID.Equals(prevBox.DirectLine)).Abbreviation, timeZoneConvert.ConvertDateTime(TimeZone).ToString("yyyyMMdd"));
-                                int count = Box.GetAll(true).Count(b => b.IsEnable && b.DirectLine.Equals(prevBox.DirectLine) && b.WarehouseFrom.Equals(prevBox.WarehouseFrom) && b.BoxID.Contains(boxID)) + 1;
+                                int count = Box.GetAll(true).Count(b => b.IsEnable && b.DirectLine.Equals(prevBox.DirectLine) && b.BoxID.Contains(boxID)) + 1;
                                 byte[] Byte = BitConverter.GetBytes(count);
                                 Byte[0] += 64;
                                 box = new Box()
@@ -727,7 +727,7 @@ namespace QDLogistics.Controllers
                     TimeZoneConvert timeZoneConvert = new TimeZoneConvert();
                     EnumData.TimeZone TimeZone = MyHelp.GetTimeZone((int)Session["TimeZone"]);
                     string boxID = string.Format("{0}-{1}", db.DirectLine.AsNoTracking().First(d => d.ID.Equals(type)).Abbreviation, timeZoneConvert.ConvertDateTime(TimeZone).ToString("yyyyMMdd"));
-                    int count = Box.GetAll(true).Count(b => b.IsEnable && b.DirectLine.Equals(type) && b.WarehouseFrom.Equals(warehouseID) && b.BoxID.Contains(boxID)) + 1;
+                    int count = Box.GetAll(true).Count(b => b.IsEnable && b.DirectLine.Equals(type) && b.BoxID.Contains(boxID)) + 1;
                     byte[] Byte = BitConverter.GetBytes(count);
                     Byte[0] += 64;
                     box = new Box()
@@ -900,6 +900,7 @@ namespace QDLogistics.Controllers
         {
             AjaxResult result = new AjaxResult();
 
+            Packages = new GenericRepository<Packages>(db);
             Box = new GenericRepository<Box>(db);
             Label = new GenericRepository<DirectLineLabel>(db);
 
@@ -921,17 +922,19 @@ namespace QDLogistics.Controllers
                 List<object> errorList = new List<object>();
                 foreach (Packages package in box.Packages.Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨)).ToList())
                 {
-                    DirectLineLabel label = Label.Get(package.TagNo);
+                    DirectLineLabel label = package.Label;
                     OrderData order = SCWS.Get_OrderData(package.OrderID.Value);
                     if (CheckOrderStatus(package, order.Order))
                     {
-                        foreach (Items item in package.Items.Where(i => i.IsEnable.Value).ToList())
+                        if (label.Status.Equals((byte)EnumData.LabelStatus.正常))
                         {
-                            if (item.SerialNumbers.Any()) SCWS.Update_ItemSerialNumber(item.ID, item.SerialNumbers.Select(s => s.SerialNumber).ToArray());
-                        }
+                            foreach (Items item in package.Items.Where(i => i.IsEnable.Value).ToList())
+                            {
+                                if (item.SerialNumbers.Any()) SCWS.Update_ItemSerialNumber(item.ID, item.SerialNumbers.Select(s => s.SerialNumber).ToArray());
+                            }
 
-                        package.ProcessStatus = (int)EnumData.ProcessStatus.已出貨;
-                        label.Status = (byte)EnumData.LabelStatus.正常;
+                            package.ProcessStatus = (int)EnumData.ProcessStatus.已出貨;
+                        }
                     }
                     else
                     {
@@ -964,6 +967,9 @@ namespace QDLogistics.Controllers
 
                         errorList.Add(new { package.OrderID, label.LabelID, ErrorMsg = string.Format("訂單【{0}】資料狀態異常，請重新取出!", package.OrderID.Value) });
                     }
+
+                    Packages.Update(package, package.ID);
+                    Label.Update(label, label.LabelID);
                 }
 
                 MyHelp.Log("Box", box.BoxID, string.Format("Box【{0}】儲存資料", box.BoxID), Session);
@@ -1110,7 +1116,7 @@ namespace QDLogistics.Controllers
                 string mailBody;
                 string[] receiveMails;
                 //string[] ccMails = new string[] { "peter0626@hotmail.com", "kellyyang82@hotmail.com", "demi@qd.com.tw" };
-                string[] ccMails = new string[] { "peter0626@hotmail.com", "Kellyyang82@hotmail.com", "ella.chou@hotmail.com", "jenny-QD@hotmail.com", "yiing1009@hotmail.com" };
+                string[] ccMails = new string[] { "peter0626@hotmail.com", "Kellyyang82@hotmail.com", "yiing1009@hotmail.com" };
 
                 switch (directLine.Abbreviation)
                 {

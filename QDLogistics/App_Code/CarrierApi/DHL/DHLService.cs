@@ -9224,7 +9224,7 @@ namespace CarrierApi.DHL
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.dhl.com")]
-    [System.Xml.Serialization.XmlRootAttribute(ElementName = "ErrorResponse", Namespace = "http://www.dhl.com", IsNullable = false)]
+    [System.Xml.Serialization.XmlRootAttribute(Namespace = "http://www.dhl.com", IsNullable = false)]
     public partial class ShipmentValidateErrorResponse
     {
 
@@ -9557,4 +9557,27 @@ namespace CarrierApi.DHL
             }
         }
     }
+
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.dhl.com")]
+    [System.Xml.Serialization.XmlRootAttribute(ElementName = "ErrorResponse", Namespace = "http://www.dhl.com", IsNullable = false)]
+    public partial class OtherErrorResponse
+    {
+
+        private ErrorResponse responseField;
+
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Form = System.Xml.Schema.XmlSchemaForm.Unqualified)]
+        public ErrorResponse Response
+        {
+            get
+            {
+                return this.responseField;
+            }
+            set
+            {
+                this.responseField = value;
+            }
+        }
+    }
+
 }

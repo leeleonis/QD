@@ -7022,6 +7022,7 @@
     <Content Include="Views\Shipping\DirectLine.cshtml" />
     <Content Include="Views\Shipping\DirectLineEdit.cshtml" />
     <Content Include="Views\DropShip\DirectLine.cshtml" />
+    <Content Include="Views\DropShip\List_DirectLine.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

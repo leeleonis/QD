@@ -487,7 +487,7 @@ namespace QDLogistics.Controllers
                             using (Hubs.ServerHub server = new Hubs.ServerHub())
                                 server.BroadcastOrderChange(package.OrderID.Value, EnumData.OrderChangeStatus.取消出貨);
 
-                            MyHelp.Log("Packages", package.OrderID, "取消訂單出貨", (HttpSessionStateBase)Session);
+                            MyHelp.Log("Orders", package.OrderID, "取消訂單出貨", (HttpSessionStateBase)Session);
                         }
                         catch (DbEntityValidationException ex)
                         {

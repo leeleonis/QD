@@ -43,7 +43,6 @@ namespace QDLogistics.Controllers
         public FileController()
         {
             db = new QDLogisticsEntities();
-            //
             basePath = HostingEnvironment.MapPath("~/FileUploads");
         }
 
@@ -70,9 +69,15 @@ namespace QDLogistics.Controllers
                     {
                         case "dropShip":
                             MyHelp.Log("DropShip", null, "匯入直發商訂單資料");
-                            List<Packages> packageData = new List<Packages>();
-                            List<SerialNumbers> serialData = new List<SerialNumbers>();
-                            checkResult = import.CheckImportData(packageData, Session);
+                            List<Packages> dropshipData = new List<Packages>();
+                            checkResult = import.CheckDropshipImportData(dropshipData, Session);
+                            //if (checkResult.Success) import.SaveImportData(packageData);
+                            break;
+
+                        case "dropshipDL":
+                            MyHelp.Log("DropShip", null, "匯入直發商DL訂單資料");
+                            List<Packages> dropshipDLData = new List<Packages>();
+                            checkResult = import.CheckDropshipDLImportData(dropshipDLData, Session);
                             //if (checkResult.Success) import.SaveImportData(packageData);
                             break;
 
@@ -122,6 +127,7 @@ namespace QDLogistics.Controllers
             typeList.Add("country", new Dictionary<string, string>() { { "sheetName", "運送國家" }, { "fileName", "CountryData" } });
             typeList.Add("sku", new Dictionary<string, string>() { { "sheetName", "品號" }, { "fileName", "SkuData" } });
             typeList.Add("dropShip", new Dictionary<string, string>() { { "sheetName", "DropShipper" }, { "fileName", "DropShipData" } });
+            typeList.Add("dropshipDL", new Dictionary<string, string>() { { "sheetName", "DropShipperDL" }, { "fileName", "DropShipData" } });
 
             MyHelp.Log("", null, "匯出" + typeList[type]["sheetName"]);
             return new ExportExcelResult
@@ -276,6 +282,60 @@ namespace QDLogistics.Controllers
                         }
                     }
                     break;
+                case "dropshipDL":
+                    int[] packageIDs = id.Select(i => int.Parse(i)).ToArray();
+
+                    orderDataList = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && packageIDs.Contains(p.ID)).ToList()
+                        .Join(db.Orders.AsNoTracking(), p => p.OrderID, o => o.OrderID, (p, o) => new OrderJoinData() { package = p, order = o })
+                        .Join(db.Addresses.AsNoTracking().Where(a => a.IsEnable.Value), data => data.order.ShippingAddress.Value, a => a.Id, (data, a) => new OrderJoinData(data) { address = a })
+                        .Join(db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && m.IsDirectLine), data => data.package.ShippingMethod, m => m.ID, (data, m) => new OrderJoinData(data) { method = m })
+                        .Join(db.Items.AsNoTracking().Where(i => i.IsEnable.Value), data => data.package.ID, i => i.PackageID.Value, (data, i) => new OrderJoinData(data) { item = i }).ToList();
+
+
+                    if (orderDataList.Any())
+                    {
+                        long Tracking;
+
+                        int[] itemIDs = orderDataList.Select(oData => oData.item.ID).ToArray();
+                        var serialGroup = db.SerialNumbers.AsNoTracking().Where(s => itemIDs.Contains(s.OrderItemID)).GroupBy(s => s.OrderItemID).ToDictionary(g => g.Key, g => g.Select(s => s.SerialNumber).ToList());
+
+                        string[] productIDs = orderDataList.Select(oData => oData.item.ProductID).Distinct().ToArray();
+                        var skuName = db.Skus.AsNoTracking().Where(s => s.IsEnable.Value && productIDs.Contains(s.Sku)).ToDictionary(s => s.Sku, s => s.ProductName);
+
+                        foreach (var oData in orderDataList)
+                        {
+                            for (int i = 0; i < oData.item.Qty; i++)
+                            {
+                                jObjects.Add(new JObject()
+                                {
+                                    { "OrderID", oData.order.OrderID },
+                                    { "PO#", oData.package.POId.Value },
+                                    { "Invoice#", !string.IsNullOrEmpty(oData.package.POInvoice) ? oData.package.POInvoice : "" },
+                                    { "ProductID", oData.item.ProductID },
+                                    { "DisplayName", skuName[oData.item.ProductID] },
+                                    { "Qty", 1 },
+                                    { "GrandTotal", oData.package.DeclaredTotal.ToString() },
+                                    { "Currency", Enum.GetName(typeof(CurrencyCodeType), oData.order.OrderCurrencyCode.Value) },
+                                    { "Shipping Method", oData.package.ShippingMethod.Value },
+                                    { "Tracking", !string.IsNullOrEmpty(oData.package.TrackingNumber) && long.TryParse(oData.package.TrackingNumber, out Tracking) ? Tracking : (long?)null },
+                                    { "Serial", serialGroup.ContainsKey(oData.item.ID) && serialGroup[oData.item.ID].Skip(i).Any() ? serialGroup[oData.item.ID].Skip(i).First() : null },
+                                    { "ShipFirstName", oData.address.FirstName },
+                                    { "ShipLastName", oData.address.LastName },
+                                    { "ShipCompanyName", oData.address.CompanyName },
+                                    { "ShipAddress1", oData.address.StreetLine1 },
+                                    { "ShipAddress2", oData.address.StreetLine2 },
+                                    { "ShipCity", oData.address.City },
+                                    { "ShipState", string.IsNullOrEmpty(oData.address.StateName) ? oData.address.StateCode : oData.address.StateName },
+                                    { "ShipZipCode", oData.address.PostalCode },
+                                    { "ShipCountry", string.IsNullOrEmpty(oData.address.CountryName) ? MyHelp.GetCountries().First(c => c.ID.Equals(oData.address.CountryCode)).Name : oData.address.CountryName },
+                                    { "Tel.", oData.address.PhoneNumber },
+                                    { "Comment", oData.package.Comment },
+                                    { "Supplier Comment", !string.IsNullOrEmpty(oData.package.SupplierComment) ? oData.package.SupplierComment : "" }
+                                });
+                            }
+                        }
+                    }
+                    break;
             }
 
             return jObjects;
@@ -314,7 +374,7 @@ namespace QDLogistics.Controllers
                         index = fileName.IndexOf("Label.pdf");
                     }
 
-                    if(amount[index] > 0)
+                    if (amount[index] > 0)
                     {
                         cpj2.PrintFile = new PrintFile(HttpUtility.UrlDecode(filePath[index]), HttpUtility.UrlDecode(fileName[index]), amount[index]);
                         cpjg.Add(cpj2);
@@ -331,7 +391,7 @@ namespace QDLogistics.Controllers
 
                     foreach (var name in normalList)
                     {
-                        if(amount[name.i] > 0)
+                        if (amount[name.i] > 0)
                         {
                             cpj1.PrintFileGroup.Add(new PrintFile(HttpUtility.UrlDecode(filePath[name.i]), HttpUtility.UrlDecode(name.value), amount[name.i]));
                         }
@@ -432,7 +492,7 @@ namespace QDLogistics.Controllers
         }
 
         [CheckSession]
-        public CheckResult CheckImportData(List<Packages> importData, HttpSessionStateBase Session)
+        public CheckResult CheckDropshipImportData(List<Packages> importData, HttpSessionStateBase Session)
         {
             if (!checkExists()) return result;
 
@@ -586,6 +646,102 @@ namespace QDLogistics.Controllers
             }
 
             return error;
+        }
+
+        public CheckResult CheckDropshipDLImportData(List<Packages> importData, HttpSessionStateBase Session)
+        {
+            if (!checkExists()) return result;
+
+            var excelContent = excelFile.Worksheet("DropShipper").Where(row => !row["OrderID"].Equals(null));
+
+            int errorCount = 0;
+            var importErrorMessages = new List<string>();
+
+            if (excelContent.Count() > 0)
+            {
+                TaskFactory factory = HttpContext.Current.Application.Get("TaskFactory") as TaskFactory;
+                ThreadTask threadTask = new ThreadTask("直發商待出貨區 - 匯入DL訂單資料");
+
+                lock (factory)
+                {
+                    threadTask.AddWork(factory.StartNew(() =>
+                    {
+                        threadTask.Start();
+
+                        string error = "";
+                        List<string> message = new List<string>();
+                        Packages = new GenericRepository<Packages>(db);
+                        SerialNumbers = new GenericRepository<SerialNumbers>(db);
+
+                        try
+                        {
+                            int warehouseID = 0;
+                            int[] OrderIDs = excelContent.Select(row => int.Parse(row["OrderID"].ToString())).ToArray();
+                            List<Packages> packageList = Packages.GetAll().Where(p => p.IsEnable.Equals(true) && OrderIDs.Contains(p.OrderID.Value) && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨)).ToList();
+                            if (packageList.Any() && int.TryParse(Session["warehouseId"].ToString(), out warehouseID))
+                            {
+                                foreach (Packages package in packageList)
+                                {
+                                    try
+                                    {
+                                        List<Items> itemList = package.Items.Where(i => i.IsEnable.Equals(true) && i.ShipFromWarehouseID.Equals(warehouseID)).ToList();
+                                        if (itemList.Any())
+                                        {
+                                            var packageData = excelContent.First(row => row["OrderID"].Equals(package.OrderID));
+
+                                            package.POInvoice = packageData["Invoice#"].ToString();
+                                            Packages.Update(package, package.ID);
+
+                                            foreach (Items item in itemList)
+                                            {
+                                                foreach (SerialNumbers serial in item.SerialNumbers.ToList())
+                                                {
+                                                    SerialNumbers.Delete(serial);
+                                                }
+
+                                                foreach (var row in excelContent.Where(row => row["OrderID"].Equals(item.OrderID) && row["ProductID"].Equals(item.ProductID) && !row["Serial"].Equals(null)).ToList())
+                                                {
+                                                    SerialNumbers.Create(new SerialNumbers()
+                                                    {
+                                                        OrderID = item.OrderID,
+                                                        OrderItemID = item.ID,
+                                                        ProductID = item.ProductID,
+                                                        SerialNumber = row["Serial"].ToString()
+                                                    });
+                                                }
+                                            }
+
+                                            Packages.SaveChanges();
+                                            MyHelp.Log("Orders", package.OrderID, string.Format("直發商訂單【{0}】更新完成", package.OrderID));
+                                        }
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        MyHelp.ErrorLog(e, string.Format("直發商訂單【{0}】更新失敗", package.OrderID), package.OrderID.ToString());
+                                        message.Add(string.Format("直發商訂單【{0}】更新失敗，錯誤：", package.OrderID) + (e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim()));
+                                    }
+                                }
+
+                                error = string.Join("; ", message);
+                            }
+                        }
+                        catch (DbEntityValidationException ex)
+                        {
+                            var errorMessages = ex.EntityValidationErrors.SelectMany(x => x.ValidationErrors).Select(x => x.ErrorMessage);
+                            error = string.Join("; ", errorMessages);
+                        }
+                        catch (Exception e)
+                        {
+                            MyHelp.ErrorLog(e, "匯入訂單資料失敗");
+                            error = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+                        }
+
+                        return error;
+                    }));
+                }
+            }
+
+            return returnResult(errorCount, excelContent.Count(), importErrorMessages);
         }
 
         public CheckResult CheckImportData(List<Services> importData)

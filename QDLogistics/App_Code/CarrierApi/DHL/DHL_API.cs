@@ -97,11 +97,23 @@ namespace CarrierApi.DHL
                 }
                 catch (Exception e)
                 {
+                    string errorMsg;
                     TextReader errorReader = new StringReader(request);
                     XmlSerializer errorSerializer = new XmlSerializer(typeof(ShipmentValidateErrorResponse));
-                    ShipmentValidateErrorResponse error = errorSerializer.Deserialize(errorReader) as ShipmentValidateErrorResponse;
+                    try
+                    {
+                        ShipmentValidateErrorResponse error = errorSerializer.Deserialize(errorReader) as ShipmentValidateErrorResponse;
+                        errorMsg = string.Join("; ", error.Response.Status.Condition.Select(c => c.ConditionData));
+                    }
+                    catch (Exception)
+                    {
+                        errorSerializer = new XmlSerializer(typeof(OtherErrorResponse));
+                        OtherErrorResponse error = errorSerializer.Deserialize(errorReader) as OtherErrorResponse;
+                        errorMsg = string.Join("; ", error.Response.Status.Condition.Select(c => c.ConditionData));
+
+                    }
                     errorReader.Dispose();
-                    throw new Exception(string.Join("; ", error.Response.Status.Condition.Select(c => c.ConditionData)));
+                    throw new Exception(errorMsg);
                 }
             }
 
@@ -421,7 +433,8 @@ namespace CarrierApi.DHL
                     LocalProductCode = "P",
                     Date = today,
                 },
-                Shipper = new Shipper() {
+                Shipper = new Shipper()
+                {
                     OriginServiceAreaCode = AWBResult.Shipper.OriginServiceAreaCode,
                     OriginFacilityCode = AWBResult.Shipper.OriginFacilityCode,
                     CountryCode = AWBResult.Shipper.CountryCode
@@ -449,11 +462,23 @@ namespace CarrierApi.DHL
                 }
                 catch (Exception e)
                 {
+                    string errorMsg;
                     TextReader errorReader = new StringReader(request);
                     XmlSerializer errorSerializer = new XmlSerializer(typeof(ShipmentValidateErrorResponse));
-                    ShipmentValidateErrorResponse error = errorSerializer.Deserialize(errorReader) as ShipmentValidateErrorResponse;
+                    try
+                    {
+                        ShipmentValidateErrorResponse error = errorSerializer.Deserialize(errorReader) as ShipmentValidateErrorResponse;
+                        errorMsg = string.Join("; ", error.Response.Status.Condition.Select(c => c.ConditionData));
+                    }
+                    catch (Exception)
+                    {
+                        errorSerializer = new XmlSerializer(typeof(OtherErrorResponse));
+                        OtherErrorResponse error = errorSerializer.Deserialize(errorReader) as OtherErrorResponse;
+                        errorMsg = string.Join("; ", error.Response.Status.Condition.Select(c => c.ConditionData));
+
+                    }
                     errorReader.Dispose();
-                    throw new Exception(string.Join("; ", error.Response.Status.Condition.Select(c => c.ConditionData)));
+                    throw new Exception(errorMsg);
                 }
             }
 

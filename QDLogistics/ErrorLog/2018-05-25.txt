@@ -1,0 +1,9 @@
+ActionName : 直發商訂單【5470196】更新失敗
+Message : 可為 Null 的物件必須具有值。
+StackTrace : 於 System.ThrowHelper.ThrowInvalidOperationException(ExceptionResource resource)
+   於 System.Nullable`1.get_Value()
+   於 QDLogistics.Controllers.DropShipController.AjaxOrderUpdate(List`1 data, Int32 reTry, List`1 message)
+Date : 2018/5/25 下午 05:08:41
+
+-----------------------------------------------------------------------------
+

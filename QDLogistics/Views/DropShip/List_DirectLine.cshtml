@@ -1,0 +1,85 @@
+﻿@using QDLogistics.Models;
+@{ Packages package = ViewBag.package; }
+
+<table class="text-center hidden">
+    <tbody>
+        @{
+            foreach (Items item in package.Items.Where(i => i.IsEnable.Value).ToList())
+            {
+                for (int i = 0; i < item.Qty; i++)
+                {
+                    <tr class="datagrid-row">
+                        <td width="24"><div class="datagrid-cell"></div></td>
+                        <td><div class="datagrid-cell-check"><!--<input type="checkbox" name="ck" value="">--></div></td>
+                        <td><div class="datagrid-cell datagrid-cell-c1-OrderID"></div></td>
+                        <td><div class="datagrid-cell datagrid-cell-c1-POId"></div></td>
+                    </tr>
+                    if (item.KitItemCount > 0)
+                    {
+                        foreach (BundleItems bundle in item.BundleItems.ToList())
+                        {
+                            <tr class="datagrid-row">
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        }
+                    }
+                }
+            }
+        }
+    </tbody>
+</table>
+<table class="text-center">
+    <tbody class="datagrid-body">
+        @foreach (Items item in package.Items.Where(i => i.IsEnable.Value).ToList())
+        {
+            List<string> serials = item.SerialNumbers.Select(s => s.SerialNumber).ToList();
+            for (int i = 0; i < item.Qty; i++)
+            {
+                string serial = serials.Skip(i).Any() ? serials.Skip(i).First() : "";
+                <tr class="datagrid-row">
+                    <td><div class="datagrid-cell datagrid-cell-c1-PaymentDate"></div></td>
+                    <td><div class="datagrid-cell datagrid-cell-c1-Sku">@item.ProductID</div></td>
+                    <td><div class="datagrid-cell datagrid-cell-c1-DisplayName">@item.Skus.ProductName</div></td>
+                    <td><div class="datagrid-cell datagrid-cell-c1-OrderQtyTotal">1</div></td>
+                    <td><div class="datagrid-cell datagrid-cell-c1-ShippingCountry"></div></td>
+                    <td><div class="datagrid-cell datagrid-cell-c1-ShippingMethod"></div></td>
+                    <td><div class="datagrid-cell datagrid-cell-c1-StatusCode"></div></td>
+                    <td><div class="datagrid-cell datagrid-cell-c1-Comment"></div></td>
+                    <td><div class="datagrid-cell datagrid-cell-c1-SupplierComment"></div></td>
+                    <td>
+                        <div style="text-align:center;height:auto;" class="datagrid-cell datagrid-cell-c1-SerialNumber">
+                            <input type='text' class='form-control input-sm' id="SerialNumber-@item.PackageID" data-id="@item.ID" value="@serial" onchange="changeSerial(@item.PackageID)" />
+                        </div>
+                    </td>
+                    <td><div class="datagrid-cell datagrid-cell-c1-TagNo"></div></td>
+                    <td><div class="datagrid-cell datagrid-cell-c1-POInvoice"></div></td>
+                    <td><div class="datagrid-cell datagrid-cell-c1-save"></div></td>
+                </tr>
+                if (item.KitItemCount > 0)
+                {
+                    foreach (BundleItems bundle in item.BundleItems.ToList())
+                    {
+                        <tr class="datagrid-row">
+                            <td><div class="datagrid-cell datagrid-cell-c1-PaymentDate"></div></td>
+                            <td><div class="datagrid-cell datagrid-cell-c1-Sku">@bundle.ProductID</div></td>
+                            <td><div class="datagrid-cell datagrid-cell-c1-DisplayName">@bundle.Skus.ProductName</div></td>
+                            <td><div class="datagrid-cell datagrid-cell-c1-OrderQtyTotal">@bundle.Qty</div></td>
+                            <td><div class="datagrid-cell datagrid-cell-c1-ShippingCountry"></div></td>
+                            <td><div class="datagrid-cell datagrid-cell-c1-ShippingMethod"></div></td>
+                            <td><div class="datagrid-cell datagrid-cell-c1-StatusCode"></div></td>
+                            <td><div class="datagrid-cell datagrid-cell-c1-Comment"></div></td>
+                            <td><div class="datagrid-cell datagrid-cell-c1-SupplierComment"></div></td>
+                            <td><div class="datagrid-cell datagrid-cell-c1-SerialNumber"></div></td>
+                            <td><div class="datagrid-cell datagrid-cell-c1-TagNo"></div></td>
+                            <td><div class="datagrid-cell datagrid-cell-c1-POInvoice"></div></td>
+                            <td><div class="datagrid-cell datagrid-cell-c1-save"></div></td>
+                        </tr>
+                    }
+                }
+            }
+        }
+    </tbody>
+</table>

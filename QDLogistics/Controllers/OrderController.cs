@@ -144,7 +144,7 @@ namespace QDLogistics.Controllers
                                         if (!string.IsNullOrEmpty(packageData.Method.CountryData))
                                         {
                                             var countryData = JsonConvert.DeserializeObject<Dictionary<string, bool>>(packageData.Method.CountryData);
-                                            if (!countryData.ContainsKey(packageData.Orders.Addresses.CountryCode))
+                                            if (!countryData.ContainsKey(packageData.Orders.Addresses.CountryCode.ToUpper()))
                                             {
                                                 throw new Exception(string.Format("訂單【{0}】國家名稱不合，請重新確認", packageData.OrderID));
                                             }
@@ -648,7 +648,7 @@ namespace QDLogistics.Controllers
                         string mailTitle;
                         string mailBody;
                         string[] receiveMails;
-                        string[] ccMails = new string[] { "peter0626@hotmail.com", "Kellyyang82@hotmail.com", "ella.chou@hotmail.com", "jenny-QD@hotmail.com", "yiing1009@hotmail.com" };
+                        string[] ccMails = new string[] { "peter0626@hotmail.com", "Kellyyang82@hotmail.com", "yiing1009@hotmail.com" };
                         //string[] ccMails = new string[] { };
 
                         try
@@ -742,10 +742,10 @@ namespace QDLogistics.Controllers
                                             }
                                             else
                                             {
-                                                ThreadTask syncTask = new ThreadTask("Direct Line訂單包裹SC更新");
-                                                threadTask.AddWork(factory.StartNew(() =>
+                                                ThreadTask syncTask = new ThreadTask(string.Format("Direct Line 訂單【{0}】SC更新", package.OrderID));
+                                                syncTask.AddWork(factory.StartNew(() =>
                                                 {
-                                                    threadTask.Start();
+                                                    syncTask.Start();
                                                     SyncProcess sync = new SyncProcess(session);
                                                     return sync.Update_Tracking(package);
                                                 }));
@@ -848,7 +848,8 @@ namespace QDLogistics.Controllers
             PickProduct = new GenericRepository<PickProduct>(db);
             ShippingMethod = new GenericRepository<ShippingMethod>(db);
 
-            List<PickProduct> pickList = db.PickProduct.AsNoTracking().Where(p => p.IsEnable && p.IsPicked && !p.IsMail).ToList();
+            List<PickProduct> pickList = db.PickProduct.AsNoTracking().Where(p => p.IsEnable && p.IsPicked && !p.IsMail)
+                .Join(db.Warehouses.AsNoTracking().Where(w => w.IsEnable.Value && !w.WarehouseType.Equals((int)WarehouseTypeType.DropShip)), pick => pick.WarehouseID, w => w.ID, (pick, w) => pick).ToList();
             if (pickList.Any())
             {
                 int[] packageIDs = pickList.Select(p => p.PackageID.Value).ToArray();

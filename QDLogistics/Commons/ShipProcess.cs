@@ -342,7 +342,7 @@ namespace QDLogistics.Commons
                     }
                     catch (Exception e)
                     {
-                        return new ShipResult(false, e.Message);
+                        return new ShipResult(false, e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message);
                     }
                     break;
                 case (int)EnumData.CarrierType.FedEx:
@@ -692,7 +692,7 @@ namespace QDLogistics.Commons
                         MyHelp.CopyRow(ref sheet, insertRow - 1, row, true, false, true, false);
                     }
                 }
-                
+
                 foreach (var item in itemList)
                 {
                     Skus sku = item.Skus;
@@ -713,7 +713,7 @@ namespace QDLogistics.Commons
                 byte[] picData = File.ReadAllBytes(Path.Combine(basePath, "sample", "company.png"));
                 int picIndex = workbook.AddPicture(picData, PictureType.PNG);
                 var drawing = sheet.CreateDrawingPatriarch();
-                var anchor = new HSSFClientAnchor(400, 50, 500, 50, 4, rowIndex-1, 6, rowIndex + 3);
+                var anchor = new HSSFClientAnchor(400, 50, 500, 50, 4, rowIndex - 1, 6, rowIndex + 3);
                 var pictuer = drawing.CreatePicture(anchor, picIndex);
 
                 sheet.GetRow(rowIndex).GetCell(3).SetCellValue(1);
