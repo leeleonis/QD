@@ -32,6 +32,7 @@ namespace QDLogistics.Models
         public string ProductIDOriginal { get; set; }
         public string ProductIDRequest { get; set; }
         public decimal DeclaredValue { get; set; }
+        public decimal DLDeclaredValue { get; set; }
         public Nullable<int> Qty { get; set; }
         public Nullable<int> QtyReturned { get; set; }
         public Nullable<int> QtyShipped { get; set; }

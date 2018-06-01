@@ -149,7 +149,7 @@ namespace QDLogistics.Controllers
                                                 throw new Exception(string.Format("訂單【{0}】國家名稱不合，請重新確認", packageData.OrderID));
                                             }
 
-                                            if (!countryData[packageData.Orders.Addresses.CountryCode])
+                                            if (!countryData[packageData.Orders.Addresses.CountryCode.ToUpper()])
                                             {
                                                 throw new Exception(string.Format("訂單【{0}】不可寄送至國家{1}", packageData.OrderID, packageData.Orders.Addresses.CountryName));
                                             }
@@ -732,9 +732,15 @@ namespace QDLogistics.Controllers
                                             }
                                         }
 
-                                        DateTime paymentDate = package.Orders.Payments.First().AuditDate.Value;
+                                        DateTime paymentDate = package.Orders.Payments.Any() ? package.Orders.Payments.First().AuditDate.Value : package.Orders.TimeOfOrder.Value;
 
-                                        if (label.Box.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.已到貨) && DateTime.Compare(today, paymentDate.AddDays(3)) > 0)
+                                        int checkDays = package.Items.First(i => i.IsEnable.Value).ShipWarehouses.WarehouseType.Value.Equals((int)WarehouseTypeType.DropShip) ? 2 : 3;
+
+                                        paymentDate = paymentDate.AddDays(checkDays);
+                                        if (paymentDate.DayOfWeek == DayOfWeek.Saturday) paymentDate = paymentDate.AddDays(2);
+                                        if (paymentDate.DayOfWeek == DayOfWeek.Sunday) paymentDate = paymentDate.AddDays(1);
+
+                                        if (label.Box.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.已到貨) && DateTime.Compare(today, paymentDate) > 0)
                                         {
                                             if (string.IsNullOrEmpty(package.TrackingNumber))
                                             {
@@ -849,7 +855,7 @@ namespace QDLogistics.Controllers
             ShippingMethod = new GenericRepository<ShippingMethod>(db);
 
             List<PickProduct> pickList = db.PickProduct.AsNoTracking().Where(p => p.IsEnable && p.IsPicked && !p.IsMail)
-                .Join(db.Warehouses.AsNoTracking().Where(w => w.IsEnable.Value && !w.WarehouseType.Equals((int)WarehouseTypeType.DropShip)), pick => pick.WarehouseID, w => w.ID, (pick, w) => pick).ToList();
+                .Join(db.Warehouses.AsNoTracking().Where(w => w.IsEnable.Value && !w.WarehouseType.Value.Equals((int)WarehouseTypeType.DropShip)), pick => pick.WarehouseID, w => w.ID, (pick, w) => pick).ToList();
             if (pickList.Any())
             {
                 int[] packageIDs = pickList.Select(p => p.PackageID.Value).ToArray();

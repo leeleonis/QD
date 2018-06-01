@@ -407,7 +407,7 @@
                 OrderID: row.OrderID,
                 PackageID: row.PackageID,
                 Serials: row.Serials,
-                POInvoice: $("input#POInvoice:eq(" + index + ")").val()
+                POInvoice: $("input#POInvoice:eq(" + (index-1) + ")").val()
             }
         }
 

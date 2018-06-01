@@ -48,7 +48,7 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public void CheckDHL(int OrderID)
+        private void CheckDHL(int OrderID)
         {
             IRepository<Orders> Orders = new GenericRepository<Orders>(db);
             Orders order = Orders.Get(OrderID);
@@ -56,7 +56,7 @@ namespace QDLogistics.Controllers
             TrackResult result = track.track();
         }
 
-        public void DHL_Test(int OrderID)
+        private void DHL_Test(int OrderID)
         {
             SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
 
@@ -136,7 +136,7 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public void CheckFedEx(int OrderID)
+        private void CheckFedEx(int OrderID)
         {
             IRepository<Orders> Orders = new GenericRepository<Orders>(db);
             Orders order = Orders.Get(OrderID);
@@ -144,7 +144,7 @@ namespace QDLogistics.Controllers
             TrackResult result = track.track();
         }
 
-        public void FedEx_Test(int OrderID)
+        private void FedEx_Test(int OrderID)
         {
             IRepository<Orders> Orders = new GenericRepository<Orders>(db);
 
@@ -233,7 +233,7 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public void Preset_Test(int OrderID)
+        private void Preset_Test(int OrderID)
         {
             using (IRepository<Orders> Orders = new GenericRepository<Orders>(db))
             {
@@ -244,13 +244,13 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public ActionResult Hub_Test(string clientName)
+        private ActionResult Hub_Test(string clientName)
         {
             ViewData["clientName"] = clientName;
             return View();
         }
 
-        public void Hub_Push()
+        private void Hub_Push()
         {
             using (Hubs.ServerHub server = new Hubs.ServerHub())
             {
@@ -258,7 +258,7 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public ActionResult Hub_Clients()
+        private ActionResult Hub_Clients()
         {
             using (Hubs.ServerHub server = new Hubs.ServerHub())
             {
@@ -266,7 +266,7 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public ActionResult Check_Winit(int OrderID)
+        private ActionResult Check_Winit(int OrderID)
         {
             using (IRepository<Packages> Packages = new GenericRepository<Packages>(db))
             {
@@ -330,7 +330,7 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public void IDS_Test(int orderID)
+        private void IDS_Test(int orderID)
         {
             Packages package = db.Packages.AsNoTracking().First(p => p.OrderID.Value.Equals(orderID));
 
@@ -342,7 +342,7 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public void Box_Test(string boxID)
+        private void Box_Test(string boxID)
         {
             using (IRepository<Box> Box = new GenericRepository<Box>(db))
             {
@@ -352,7 +352,7 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public void Excel_Test()
+        private void Excel_Test()
         {
             string basePath = HostingEnvironment.MapPath("~/FileUploads");
 
@@ -384,6 +384,12 @@ namespace QDLogistics.Controllers
                     fsOut.Close();
                 }
             }
+        }
+
+        public void Date_Test(int day = 0)
+        {
+            DateTime today = DateTime.Now;
+            Response.Write((int)today.AddDays(day).DayOfWeek % 7);
         }
     }
 }

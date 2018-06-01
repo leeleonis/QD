@@ -454,6 +454,8 @@ namespace QDLogistics.Controllers
                             }
                         }
                     }
+
+                    Packages.Update(package, package.ID);
                     Packages.SaveChanges();
                     MyHelp.Log("Orders", oData.OrderID, string.Format("直發商訂單【{0}】更新完成", oData.OrderID));
                 }
@@ -609,10 +611,7 @@ namespace QDLogistics.Controllers
                                         OrderData order = SCWS.Get_OrderData(package.OrderID.Value);
                                         if (CheckOrderStatus(package, order.Order) && label.Status.Equals((byte)EnumData.LabelStatus.正常))
                                         {
-                                            foreach (Items item in package.Items.Where(i => i.IsEnable.Value).ToList())
-                                            {
-                                                if (item.SerialNumbers.Any()) SCWS.Update_ItemSerialNumber(item.ID, item.SerialNumbers.Select(s => s.SerialNumber).ToArray());
-                                            }
+                                            UpdatePurchaseOrder(package);
 
                                             package.ProcessStatus = (int)EnumData.ProcessStatus.已出貨;
                                             package.BoxID = label.BoxID = boxID;

@@ -9558,6 +9558,10 @@ namespace CarrierApi.DHL
         }
     }
 
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.6.1055.0")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://www.dhl.com")]
     [System.Xml.Serialization.XmlRootAttribute(ElementName = "ErrorResponse", Namespace = "http://www.dhl.com", IsNullable = false)]
     public partial class OtherErrorResponse

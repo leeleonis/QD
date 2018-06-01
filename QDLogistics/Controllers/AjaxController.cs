@@ -150,7 +150,7 @@ namespace QDLogistics.Controllers
                     ParentOrderID = data.order.ParentOrderID,
                     OrderSourceOrderId = data.order.OrderSourceOrderId,
                     eBayUserID = data.order.eBayUserID,
-                    Items = data.items.ToDictionary(i => i.ID.ToString(), i => new { ItemID = i.ID, DeclaredValue = (i.DeclaredValue != 0 ? i.DeclaredValue : i.UnitPrice), Qty = i.Qty }),
+                    Items = data.items.ToDictionary(i => i.ID.ToString(), i => new { ItemID = i.ID, i.DeclaredValue, i.DLDeclaredValue, i.Qty }),
                     ItemCount = data.itemCount,
                     ShipWarehouse = data.item.ShipFromWarehouseID,
                     PaymentDate = data.payment != null ? TimeZoneConvert.InitDateTime(data.payment.AuditDate.Value, EnumData.TimeZone.EST).ConvertDateTime(TimeZone).ToString("MM/dd/yyyy<br />hh:mm tt") : "",
@@ -163,6 +163,7 @@ namespace QDLogistics.Controllers
                     //SubTotal = data.order.SubTotal.Value.ToString("N"),
                     SubTotal = data.items.Sum(i => i.Qty * i.UnitPrice).Value.ToString("N"),
                     DeclaredTotal = data.package.DeclaredTotal != 0 ? data.package.DeclaredTotal.ToString("N") : "",
+                    DLDeclaredTotal = !data.package.DLDeclaredTotal.Equals(0) ? data.package.DLDeclaredTotal.ToString("N") : "",
                     OrderCurrencyCode = data.order.OrderCurrencyCode,
                     AvailableQty = 1,
                     ShippingServiceSelected = data.order.ShippingServiceSelected,
@@ -213,6 +214,7 @@ namespace QDLogistics.Controllers
 
                     // update package data
                     package.DeclaredTotal = oData.DeclaredTotal.Value;
+                    package.DLDeclaredTotal = oData.DLDeclaredTotal.Value;
                     package.ShippingMethod = oData.MethodID.Value;
                     package.Export = oData.Export.Value;
                     package.ExportMethod = oData.ExportMethod.Value;
@@ -225,6 +227,7 @@ namespace QDLogistics.Controllers
                     {
                         item.ShipFromWarehouseID = oData.ShipWarehouse.Value;
                         item.DeclaredValue = oData.Items[item.ID.ToString()].DeclaredValue;
+                        item.DLDeclaredValue = oData.Items[item.ID.ToString()].DLDeclaredValue;
                         Items.Update(item, item.ID);
                     }
 
@@ -794,7 +797,7 @@ namespace QDLogistics.Controllers
 
             return false;
         }
-        
+
         [CheckSession]
         [HttpPost]
         public ActionResult UpdatePicked(List<PickProduct> picked, Dictionary<string, string[]> serial, int reTry = 0, AjaxResult result = null)

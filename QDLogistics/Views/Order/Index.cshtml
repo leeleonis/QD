@@ -433,7 +433,13 @@
                         field: "DeclaredTotal", title: "Export Value<br />出口價值", width: 90, align: "center", sortable: false,
                         formatter: function (value, row, index) {
                             value = value != '' ? value : row.SubTotal;
-                            return "<input type='text' class='form-control input-sm' id='DeclaredTotal' value='" + value + "' onchange='changePrice(" + row.PackageID + ")' " + (row.ItemCount > 1 ? "readonly" : "") + ">"
+                            return "<input type='text' class='form-control input-sm' id='DeclaredTotal' value='" + value + "' onchange='changePrice(" + row.PackageID + ", 1)' " + (row.ItemCount > 1 ? "readonly" : "") + ">"
+                        }
+                    }, {
+                        field: "DLDeclaredTotal", title: "DL Export Value<br />DL出口價值", width: 90, align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            value = value != '' ? value : row.SubTotal;
+                            return "<input type='text' class='form-control input-sm' id='DLDeclaredTotal' value='" + value + "' onchange='changePrice(" + row.PackageID + ", 2)' " + (row.ItemCount > 1 ? "readonly" : "") + ">"
                         }
                     }, {
                         field: "OrderCurrencyCode", title: "Currency<br />幣別", width: 80, align: "center", sortable: false,
@@ -601,27 +607,47 @@
             $dataGrid.datagrid('unselectAll');
         }
 
-        function changePrice(PackageID) {
+        function changePrice(packageID, type) {
             var DeclaredTotal = 0;
-            var index = $dataGrid.datagrid("getRowIndex", PackageID);
+            var index = $dataGrid.datagrid("getRowIndex", packageID);
             var Package = $dataGrid.datagrid("getRows")[index];
-            var $DeclaredTotal = $("input#DeclaredTotal:eq(" + index + ")");
 
-            if ($DeclaredTotal.is("[readonly]")) {
-                $("div#itemList:eq(" + index + ")").find("input#DeclaredValue").each(function () {
-                    Package.Items[$(this).data("id")].DeclaredValue = $(this).val();
-                    DeclaredTotal += parseFloat($(this).val().replace(',', '')) * parseFloat($(this).data('qty'));
-                    $(this).number(true, 2);
-                });
+            var $DeclaredTotal;
+            switch (type) {
+                case 1:
+                    $DeclaredTotal = $("input#DeclaredTotal:eq(" + index + ")");
+                    if ($DeclaredTotal.is("[readonly]")) {
+                        $("div#itemList:eq(" + index + ")").find("input#DeclaredValue").each(function () {
+                            Package.Items[$(this).data("id")].DeclaredValue = $(this).val();
+                            DeclaredTotal += parseFloat($(this).val().replace(',', '')) * parseFloat($(this).data('qty'));
+                            $(this).number(true, 2);
+                        });
 
-                $DeclaredTotal.val(DeclaredTotal).number(true, 2);
-            } else {
-                var itemID = Object.keys(Package.Items)[0];
-                Package.Items[itemID].DeclaredValue = parseFloat($DeclaredTotal.val().replace(',', '')) / parseFloat(Package.Items[itemID].Qty);
-                $DeclaredTotal.number(true, 2)
+                        $DeclaredTotal.val(DeclaredTotal).number(true, 2);
+                    } else {
+                        var itemID = Object.keys(Package.Items)[0];
+                        Package.Items[itemID].DeclaredValue = parseFloat($DeclaredTotal.val().replace(',', '')) / parseFloat(Package.Items[itemID].Qty);
+                        $DeclaredTotal.number(true, 2)
+                    }
+                    break;
+                case 2:
+                    $DeclaredTotal = $("input#DLDeclaredTotal:eq(" + index + ")");
+                    if ($DeclaredTotal.is("[readonly]")) {
+                        $("div#itemList:eq(" + index + ")").find("input#DLDeclaredValue").each(function () {
+                            Package.Items[$(this).data("id")].DLDeclaredValue = $(this).val();
+                            DeclaredTotal += parseFloat($(this).val().replace(',', '')) * parseFloat($(this).data('qty'));
+                            $(this).number(true, 2);
+                        });
+
+                        $DeclaredTotal.val(DeclaredTotal).number(true, 2);
+                    } else {
+                        var itemID = Object.keys(Package.Items)[0];
+                        Package.Items[itemID].DLDeclaredValue = parseFloat($DeclaredTotal.val().replace(',', '')) / parseFloat(Package.Items[itemID].Qty);
+                        $DeclaredTotal.number(true, 2)
+                    }
+                    break;
             }
-
-            onDataChange(PackageID);
+            onDataChange(packageID);
         }
 
         function saveData(PackageID) {
@@ -671,6 +697,7 @@
                 PackageID: row.PackageID,
                 Items: row.Items,
                 DeclaredTotal: $("input#DeclaredTotal:eq(" + index + ")").val().replace(',', ''),
+                DLDeclaredTotal: $("input#DLDeclaredTotal:eq(" + index + ")").val().replace(',', ''),
                 OrderCurrencyCode: $("select#OrderCurrencyCode:eq(" + index + ")").val(),
                 ShipWarehouse: $("select#ShipWarehouse:eq(" + index + ")").val(),
                 MethodID: $("select#MethodID:eq(" + index + ")").val(),

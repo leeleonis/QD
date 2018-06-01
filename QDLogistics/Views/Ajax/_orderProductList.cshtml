@@ -45,7 +45,15 @@
                             @{
                                 var DeclaredValue = item.DeclaredValue != 0 ? item.DeclaredValue : item.UnitPrice.Value;
                             }
-                            <input type='text' class='form-control input-sm' id="DeclaredValue" data-id="@item.ID" data-qty="@item.Qty" value="@DeclaredValue.ToString("N")" onchange="changePrice(@item.PackageID)" />
+                            <input type='text' class='form-control input-sm' id="DeclaredValue" data-id="@item.ID" data-qty="@item.Qty" value="@DeclaredValue.ToString("N")" onchange="changePrice(@item.PackageID, 1)" />
+                        </div>
+                    </td>
+                    <td>
+                        <div style="text-align:center;height:auto;" class="datagrid-cell datagrid-cell-c1-DLDeclaredTotal">
+                            @{
+                                var DLDeclaredValue = item.DLDeclaredValue != 0 ? item.DLDeclaredValue : item.UnitPrice.Value;
+                            }
+                            <input type='text' class='form-control input-sm' id="DLDeclaredValue" data-id="@item.ID" data-qty="@item.Qty" value="@DLDeclaredValue.ToString("N")" onchange="changePrice(@item.PackageID, 2)" />
                         </div>
                     </td>
                     <td><div class="datagrid-cell datagrid-cell-c1-OrderCurrencyCode"></div></td>
@@ -58,7 +66,6 @@
                     <td><div class="datagrid-cell datagrid-cell-c1-StatusCode"></div></td>
                     <td><div class="datagrid-cell datagrid-cell-c1-RushOrder"></div></td>
                     <td><div class="datagrid-cell datagrid-cell-c1-UploadTracking"></div></td>
-                    <td><div class="datagrid-cell datagrid-cell-c1-InBox"></div></td>
                     <td><div class="datagrid-cell datagrid-cell-c1-Instructions"></div></td>
                     <td><div class="datagrid-cell datagrid-cell-c1-Comment"></div></td>
                     <td><div class="datagrid-cell datagrid-cell-c1-save"></div></td>
@@ -77,6 +84,7 @@
                             <td><div class="datagrid-cell datagrid-cell-c1-PostalCode"></div></td>
                             <td><div class="datagrid-cell datagrid-cell-c1-SubTotal"></div></td>
                             <td><div class="datagrid-cell datagrid-cell-c1-DeclaredTotal"></div></td>
+                            <td><div class="datagrid-cell datagrid-cell-c1-DLDeclaredTotal"></div></td>
                             <td><div class="datagrid-cell datagrid-cell-c1-OrderCurrencyCode"></div></td>
                             <td><div class="datagrid-cell datagrid-cell-c1-ShipWarehouse"></div></td>
                             <td><div class="datagrid-cell datagrid-cell-c1-AvailableQty"></div></td>
@@ -87,7 +95,6 @@
                             <td><div class="datagrid-cell datagrid-cell-c1-StatusCode"></div></td>
                             <td><div class="datagrid-cell datagrid-cell-c1-RushOrder"></div></td>
                             <td><div class="datagrid-cell datagrid-cell-c1-UploadTracking"></div></td>
-                            <td><div class="datagrid-cell datagrid-cell-c1-InBox"></div></td>
                             <td><div class="datagrid-cell datagrid-cell-c1-Instructions"></div></td>
                             <td><div class="datagrid-cell datagrid-cell-c1-Comment"></div></td>
                             <td><div class="datagrid-cell datagrid-cell-c1-save"></div></td>

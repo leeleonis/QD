@@ -61,7 +61,12 @@ namespace QDLogistics.Commons
                 string[] ProductIDs = itemList.Select(i => i.ProductID).ToArray();
                 var methodOfSku = db.Skus.AsNoTracking().Where(s => ProductIDs.Contains(s.Sku)).ToDictionary(s => s.Sku, s => new Dictionary<string, byte?>() { { "export", s.Export }, { "exportMethod", s.ExportMethod } });
 
-                package.DeclaredTotal = itemList.Sum(i => i.UnitPrice.Value * i.Qty.Value);
+                package.DeclaredTotal = package.DLDeclaredTotal = itemList.Sum(i => i.UnitPrice.Value * i.Qty.Value);
+                foreach (Items item in itemList)
+                {
+                    item.DeclaredValue = item.DLDeclaredValue = item.UnitPrice.Value;
+                    Items.Update(item, item.ID);
+                }
                 package.ShippingMethod = MethodOfService.ContainsKey(Order.ShippingServiceSelected) ? MethodOfService[Order.ShippingServiceSelected] : 9;
                 package.Export = itemList.Min(i => methodOfSku.ContainsKey(i.ProductID) ? methodOfSku[i.ProductID]["export"] : 0);
                 package.ExportMethod = itemList.Min(i => methodOfSku.ContainsKey(i.ProductID) ? methodOfSku[i.ProductID]["exportMethod"] : 0);
@@ -81,10 +86,10 @@ namespace QDLogistics.Commons
                                 break;
                             case 3:
                                 var subTotal = package.Items.Sum(i => i.UnitPrice.Value * i.Qty.Value);
-                                package.DeclaredTotal = preset.ValueType.Equals(0) ? subTotal * preset.Value / 100 : preset.Value;
+                                package.DeclaredTotal = package.DLDeclaredTotal = preset.ValueType.Equals(0) ? subTotal * preset.Value / 100 : preset.Value;
                                 foreach (Items item in itemList)
                                 {
-                                    item.DeclaredValue = item.UnitPrice.Value * (package.DeclaredTotal / subTotal);
+                                    item.DeclaredValue = item.DLDeclaredValue = item.UnitPrice.Value * (package.DeclaredTotal / subTotal);
                                     Items.Update(item, item.ID);
                                 }
                                 break;
@@ -198,12 +203,14 @@ namespace QDLogistics.Commons
 
                                         packageData.ProcessStatus = (int)EnumData.ProcessStatus.待出貨;
                                     }
-                                    else {
+                                    else
+                                    {
                                         message = result.Message;
                                         packageData.ProcessStatus = (int)EnumData.ProcessStatus.訂單管理;
                                     }
                                 }
-                                else {
+                                else
+                                {
                                     message = "Payment status is different";
                                     packageData.Orders.StatusCode = (int)OrderStatusCode.OnHold;
                                     packageData.ProcessStatus = (int)EnumData.ProcessStatus.訂單管理;

@@ -18,7 +18,6 @@ namespace QDLogistics.Models
         public QDLogisticsEntities()
             : base("name=QDLogisticsEntities")
         {
-            //((IObjectContextAdapter)this).ObjectContext.CommandTimeout = 180;
         }
     
         protected override void OnModelCreating(DbModelBuilder modelBuilder)

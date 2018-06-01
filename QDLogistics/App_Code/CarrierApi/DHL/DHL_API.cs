@@ -108,9 +108,8 @@ namespace CarrierApi.DHL
                     catch (Exception)
                     {
                         errorSerializer = new XmlSerializer(typeof(OtherErrorResponse));
-                        OtherErrorResponse error = errorSerializer.Deserialize(errorReader) as OtherErrorResponse;
+                        OtherErrorResponse error = errorSerializer.Deserialize(new StringReader(request)) as OtherErrorResponse;
                         errorMsg = string.Join("; ", error.Response.Status.Condition.Select(c => c.ConditionData));
-
                     }
                     errorReader.Dispose();
                     throw new Exception(errorMsg);

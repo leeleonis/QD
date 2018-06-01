@@ -30,6 +30,7 @@ namespace QDLogistics.Models
         public byte ProcessStatus { get; set; }
         public bool ProcessBack { get; set; }
         public decimal DeclaredTotal { get; set; }
+        public decimal DLDeclaredTotal { get; set; }
         public Nullable<int> Qty { get; set; }
         public Nullable<System.DateTime> ShipDate { get; set; }
         public string ShippingMethodName { get; set; }

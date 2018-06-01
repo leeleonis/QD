@@ -187,6 +187,7 @@
           <Property Name="ProductIDOriginal" Type="nvarchar" MaxLength="50" />
           <Property Name="ProductIDRequest" Type="nvarchar" MaxLength="50" />
           <Property Name="DeclaredValue" Type="decimal" Precision="18" Scale="2" Nullable="false" />
+          <Property Name="DLDeclaredValue" Type="decimal" Precision="18" Scale="2" Nullable="false" />
           <Property Name="Qty" Type="int" />
           <Property Name="QtyReturned" Type="int" />
           <Property Name="QtyShipped" Type="int" />
@@ -293,6 +294,7 @@
           <Property Name="ProcessStatus" Type="tinyint" Nullable="false" />
           <Property Name="ProcessBack" Type="bit" Nullable="false" />
           <Property Name="DeclaredTotal" Type="decimal" Precision="18" Scale="2" Nullable="false" />
+          <Property Name="DLDeclaredTotal" Type="decimal" Precision="18" Scale="2" Nullable="false" />
           <Property Name="Qty" Type="int" />
           <Property Name="ShipDate" Type="datetime2" Precision="7" />
           <Property Name="ShippingMethodName" Type="nvarchar" MaxLength="150" />
@@ -1180,6 +1182,7 @@
           <Property Name="ProductIDOriginal" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="ProductIDRequest" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="DeclaredValue" Type="Decimal" Nullable="false" Precision="18" Scale="2" DefaultValue="0" />
+          <Property Name="DLDeclaredValue" Type="Decimal" Nullable="false" Precision="18" Scale="2" />
           <Property Name="Qty" Type="Int32" />
           <Property Name="QtyReturned" Type="Int32" />
           <Property Name="QtyShipped" Type="Int32" />
@@ -1287,6 +1290,7 @@
           <Property Name="ProcessStatus" Type="Byte" Nullable="false" />
           <Property Name="ProcessBack" Type="Boolean" Nullable="false" />
           <Property Name="DeclaredTotal" Type="Decimal" Nullable="false" Precision="18" Scale="2" DefaultValue="0" />
+          <Property Name="DLDeclaredTotal" Type="Decimal" Nullable="false" Precision="18" Scale="2" />
           <Property Name="Qty" Type="Int32" />
           <Property Name="ShipDate" Type="DateTime" Precision="7" />
           <Property Name="ShippingMethodName" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
@@ -2054,6 +2058,7 @@
           <EntitySetMapping Name="Items">
             <EntityTypeMapping TypeName="QDLogisticsModel.Items">
               <MappingFragment StoreEntitySet="Items">
+                <ScalarProperty Name="DLDeclaredValue" ColumnName="DLDeclaredValue" />
                 <ScalarProperty Name="SalesRecordNumber" ColumnName="SalesRecordNumber" />
                 <ScalarProperty Name="eBayTransactionId" ColumnName="eBayTransactionId" />
                 <ScalarProperty Name="DeclaredValue" ColumnName="DeclaredValue" />
@@ -2152,6 +2157,7 @@
           <EntitySetMapping Name="Packages">
             <EntityTypeMapping TypeName="QDLogisticsModel.Packages">
               <MappingFragment StoreEntitySet="Packages">
+                <ScalarProperty Name="DLDeclaredTotal" ColumnName="DLDeclaredTotal" />
                 <ScalarProperty Name="TagNo" ColumnName="TagNo" />
                 <ScalarProperty Name="BoxID" ColumnName="BoxID" />
                 <ScalarProperty Name="ShippingMethod" ColumnName="ShippingMethod" />
