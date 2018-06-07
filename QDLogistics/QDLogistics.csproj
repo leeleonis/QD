@@ -6740,6 +6740,7 @@
     <Compile Include="App_Code\CarrierApi\Winit\Token.cs" />
     <Compile Include="App_Code\Postmen_SDK.cs" />
     <Compile Include="App_Code\SC_WebService.cs" />
+    <Compile Include="Commons\CaseLog.cs" />
     <Compile Include="Commons\DataProcess.cs" />
     <Compile Include="Commons\EnumData.cs" />
     <Compile Include="Commons\OrderPreset.cs" />
@@ -6801,6 +6802,9 @@
       <DependentUpon>QDModel.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\Carriers.cs">
+      <DependentUpon>QDModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\CaseEvent.cs">
       <DependentUpon>QDModel.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\Companies.cs">

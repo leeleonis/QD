@@ -611,7 +611,34 @@ namespace QDLogistics.Controllers
                                         OrderData order = SCWS.Get_OrderData(package.OrderID.Value);
                                         if (CheckOrderStatus(package, order.Order) && label.Status.Equals((byte)EnumData.LabelStatus.正常))
                                         {
-                                            UpdatePurchaseOrder(package);
+                                            ThreadTask uploadPOTask = new ThreadTask(string.Format("直發商待出貨區 - 更新訂單【{0}】以及PO【{1}】資料至SC", package.OrderID, package.POId), session);
+
+                                            lock (factory)
+                                            {
+                                                uploadPOTask.AddWork(factory.StartNew(() =>
+                                                {
+                                                    uploadPOTask.Start();
+
+                                                    string error = "";
+
+                                                    try
+                                                    {
+                                                        SyncProcess Sync = new SyncProcess(session, factory);
+                                                        error = Sync.Update_PurchaseOrder(package.ID, false);
+
+                                                        foreach (Items item in package.Items.Where(i => i.IsEnable.Value).ToList())
+                                                        {
+                                                            if (item.SerialNumbers.Any()) SCWS.Update_ItemSerialNumber(item.ID, item.SerialNumbers.Select(s => s.SerialNumber).ToArray());
+                                                        }
+                                                    }
+                                                    catch (Exception e)
+                                                    {
+                                                        error = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+                                                    }
+
+                                                    return error;
+                                                }));
+                                            }
 
                                             package.ProcessStatus = (int)EnumData.ProcessStatus.已出貨;
                                             package.BoxID = label.BoxID = boxID;

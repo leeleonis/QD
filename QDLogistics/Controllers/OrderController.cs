@@ -552,7 +552,7 @@ namespace QDLogistics.Controllers
 
                             if (trackList.Any())
                             {
-                                var dataList = Orders.GetAll(true).Where(o => trackList.Any(track => track.sellerOrderNo.Contains(o.OrderID.ToString()))).ToList()
+                                var dataList = Orders.GetAll(true).Where(o => trackList.Any(track => track.sellerOrderNo.Equals(o.OrderID.ToString()))).ToList()
                                     .Join(Packages.GetAll(true).Where(p => p.IsEnable == true && p.DeliveryStatus != (int)DeliveryStatusType.Delivered).ToList(), o => o.OrderID, p => p.OrderID, (o, p) => new { order = o, package = p }).ToList();
 
                                 if (dataList.Any())

@@ -1,4 +1,5 @@
-﻿using QDLogistics.Models;
+﻿using Newtonsoft.Json;
+using QDLogistics.Models;
 using QDLogistics.Models.Repositiry;
 using QDLogistics.OrderService;
 using SellerCloud_WebService;
@@ -167,6 +168,21 @@ namespace QDLogistics.Commons
                                     var address = SC_order.ShippingAddress;
                                     DataProcess.SetAddressData(packageData.Orders.Addresses, address, SC_order.BillingAddress);
 
+                                    /***** 檢查運送國家 *****/
+                                    if (!string.IsNullOrEmpty(packageData.Method.CountryData))
+                                    {
+                                        var countryData = JsonConvert.DeserializeObject<Dictionary<string, bool>>(packageData.Method.CountryData);
+                                        if (!countryData.ContainsKey(packageData.Orders.Addresses.CountryCode.ToUpper()))
+                                        {
+                                            throw new Exception(string.Format("訂單【{0}】國家名稱不合，請重新確認", packageData.OrderID));
+                                        }
+
+                                        if (!countryData[packageData.Orders.Addresses.CountryCode.ToUpper()])
+                                        {
+                                            throw new Exception(string.Format("訂單【{0}】不可寄送至國家{1}", packageData.OrderID, packageData.Orders.Addresses.CountryName));
+                                        }
+                                    }
+
                                     shipProcess.Init(packageData);
                                     var result = shipProcess.Dispatch();
 
@@ -174,11 +190,11 @@ namespace QDLogistics.Commons
                                     {
                                         MyHelp.Log("Orders", packageData.OrderID, "訂單提交完成", session);
 
-                                        byte[] carrierType = new byte[] { (byte)EnumData.CarrierType.DHL, (byte)EnumData.CarrierType.FedEx };
+                                        byte[] carrierType = new byte[] { (byte)EnumData.CarrierType.DHL, (byte)EnumData.CarrierType.FedEx, (byte)EnumData.CarrierType.IDS };
                                         if (!shipProcess.isDropShip && carrierType.Contains(package.Method.Carriers.CarrierAPI.Type.Value))
                                         {
-                                            List<PickProduct> pickList = db.PickProduct.AsNoTracking().Where(p => packageData.Items.Where(i => i.IsEnable.Value).Select(i => i.ID).Contains(p.ItemID.Value)).ToList();
-                                            foreach (Items item in packageData.Items.Where(i => i.IsEnable.Value))
+                                            List<PickProduct> pickList = PickProduct.GetAll(true).Where(p => packageData.Items.Where(i => i.IsEnable == true).Select(i => i.ID).Contains(p.ItemID.Value)).ToList();
+                                            foreach (Items item in packageData.Items.Where(i => i.IsEnable == true))
                                             {
                                                 PickProduct pick = pickList.FirstOrDefault(pk => pk.ItemID == item.ID);
 

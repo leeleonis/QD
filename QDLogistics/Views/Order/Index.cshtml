@@ -501,6 +501,8 @@
                 onLoadSuccess: function (data) {
                     $dataGrid.datagrid('uncheckAll');
                     $('div.datagrid-body').unbind('dblclick');
+                    $("input#DeclaredTotal").number(true, 2);
+                    $("input#DLDeclaredTotal").number(true, 2);
                 },
                 onBeforeLoad: function (param) {
                     param.WarehouseID = $warehouseSelect.val() || $warehouseSearch.val();
@@ -541,6 +543,8 @@
                             href: "@Html.Raw(Url.Action("orderProductList", "ajax", new { PackageID = "_id_", Type = "Order" }))".replace("_id_", row.PackageID),
                             onLoad: function (response) {
                                 $("#datagrid-row-r1-1-" + index).next("tr").find(".datagrid-row-detail").html($itemList.find("table:hidden").remove().removeClass("hidden"));
+                                $itemList.find("input#DeclaredValue").number(true, 2);
+                                $itemList.find("input#DLDeclaredValue").number(true, 2);
                             }
                         });
 
@@ -620,14 +624,12 @@
                         $("div#itemList:eq(" + index + ")").find("input#DeclaredValue").each(function () {
                             Package.Items[$(this).data("id")].DeclaredValue = $(this).val();
                             DeclaredTotal += parseFloat($(this).val().replace(',', '')) * parseFloat($(this).data('qty'));
-                            $(this).number(true, 2);
                         });
 
-                        $DeclaredTotal.val(DeclaredTotal).number(true, 2);
+                        $DeclaredTotal.val(DeclaredTotal);
                     } else {
                         var itemID = Object.keys(Package.Items)[0];
                         Package.Items[itemID].DeclaredValue = parseFloat($DeclaredTotal.val().replace(',', '')) / parseFloat(Package.Items[itemID].Qty);
-                        $DeclaredTotal.number(true, 2)
                     }
                     break;
                 case 2:
@@ -636,14 +638,12 @@
                         $("div#itemList:eq(" + index + ")").find("input#DLDeclaredValue").each(function () {
                             Package.Items[$(this).data("id")].DLDeclaredValue = $(this).val();
                             DeclaredTotal += parseFloat($(this).val().replace(',', '')) * parseFloat($(this).data('qty'));
-                            $(this).number(true, 2);
                         });
 
-                        $DeclaredTotal.val(DeclaredTotal).number(true, 2);
+                        $DeclaredTotal.val(DeclaredTotal);
                     } else {
                         var itemID = Object.keys(Package.Items)[0];
                         Package.Items[itemID].DLDeclaredValue = parseFloat($DeclaredTotal.val().replace(',', '')) / parseFloat(Package.Items[itemID].Qty);
-                        $DeclaredTotal.number(true, 2)
                     }
                     break;
             }

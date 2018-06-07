@@ -458,7 +458,7 @@ namespace QDLogistics.Commons
             return Message;
         }
 
-        public string Update_PurchaseOrder(int PackageID)
+        public string Update_PurchaseOrder(int PackageID, bool needUpload = true)
         {
             string Message = "";
             Packages package = Packages.Get(PackageID);
@@ -527,7 +527,8 @@ namespace QDLogistics.Commons
                 SCWS.Update_PurchaseOrder(purchaseOrder);
 
                 MyHelp.Log("Orders", package.OrderID, string.Format("訂單包裹 - PO【{0}】更新完成", package.POId), Session);
-                Message = Update_Tracking(package);
+
+                if (needUpload) Message = Update_Tracking(package);
             }
             catch (Exception e)
             {

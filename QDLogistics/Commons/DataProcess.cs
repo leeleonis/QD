@@ -305,6 +305,8 @@ namespace QDLogistics.Commons
             item.SalesRecordNumber = itemDetail.SalesRecordNumber.Trim();
             item.BackOrderQty = itemDetail.BackOrderQty;
             item.UnitPrice = itemDetail.PricePerCase;
+            item.DeclaredValue = item.DeclaredValue.Equals(0) ? itemDetail.PricePerCase : item.DeclaredValue;
+            item.DLDeclaredValue = item.DLDeclaredValue.Equals(0) ? itemDetail.PricePerCase : item.DLDeclaredValue;
             item.ReturnedToWarehouseID = itemDetail.ReturnedToWarehouseID;
             item.Weight = itemDetail.Weight;
 
