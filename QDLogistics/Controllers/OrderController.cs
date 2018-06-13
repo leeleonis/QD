@@ -131,6 +131,8 @@ namespace QDLogistics.Controllers
                                         var SC_items = SC_order.Items.Where(i => packageData.Items.Where(dbItem => dbItem.IsEnable == true).Select(dbItem => dbItem.ID).Contains(i.ID)).ToArray();
                                         foreach (var item in SC_items)
                                         {
+                                            if (!db.Skus.AsNoTracking().Any(s => s.Sku.Equals(item.ProductID))) throw new Exception(string.Format("系統尚未有品號 {0} 資料!", item.ProductID));
+
                                             item.ShipFromWareHouseID = packageData.Items.First(i => i.IsEnable == true && i.ID == item.ID).ShipFromWarehouseID.Value;
                                         }
                                         SCWS.Update_OrderItem(SC_items);
@@ -310,7 +312,7 @@ namespace QDLogistics.Controllers
                                 oldItem.IsEnable = !item.Qty.Equals(0);
                                 if (oldItem.IsEnable.Value)
                                 {
-                                    SCWS.Update_ItemData(item);
+                                    SCWS.Update_OrderItem(item);
                                 }
                                 else
                                 {
@@ -340,7 +342,7 @@ namespace QDLogistics.Controllers
                                     item.ID = newItem.ID;
                                     newItem.PackageID = item.PackageID = newPackage.ID;
                                     Items.Create(DataProcess.SetItemData(new Items() { IsEnable = true, ID = newItem.ID }, newItem));
-                                    SCWS.Update_ItemData(newItem);
+                                    SCWS.Update_OrderItem(newItem);
                                 }
                                 newPackage.OrderItemID = newData.Item2.First().ID;
                                 SCWS.Update_PackageData(newPackage);
@@ -648,7 +650,7 @@ namespace QDLogistics.Controllers
                         string mailTitle;
                         string mailBody;
                         string[] receiveMails;
-                        string[] ccMails = new string[] { "peter0626@hotmail.com", "Kellyyang82@hotmail.com", "yiing1009@hotmail.com" };
+                        string[] ccMails = new string[] { "peter@qd.com.tw", "kelly@qd.com.tw", "demi@qd.com.tw" };
                         //string[] ccMails = new string[] { };
 
                         try
@@ -860,7 +862,7 @@ namespace QDLogistics.Controllers
             {
                 int[] packageIDs = pickList.Select(p => p.PackageID.Value).ToArray();
                 List<Packages> packageList = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.已出貨) && packageIDs.Contains(p.ID)).ToList();
-                
+
                 int[] methodIDs = packageList.Where(p => p.ShippingMethod != null).Select(p => p.ShippingMethod.Value).Distinct().ToArray();
                 var carrierList = ShippingMethod.GetAll(true).Where(m => methodIDs.Contains(m.ID)).Distinct().ToDictionary(m => m.ID, m => m.Carriers.Name);
                 var groupList = packageList.GroupBy(p => p.ShippingMethod != null && carrierList.ContainsKey(p.ShippingMethod.Value) ? carrierList[p.ShippingMethod.Value] : "", p => p)
@@ -877,185 +879,234 @@ namespace QDLogistics.Controllers
                 string mailTitle;
                 string mailBody;
                 string[] receiveMails;
-                string[] ccMails = new string[] { "peter0626@hotmail.com", "kellyyang82@hotmail.com", "demi@qd.com.tw" };
+                string[] ccMails = new string[] { "peter@qd.com.tw", "kelly@qd.com.tw", "demi@qd.com.tw" };
                 //string[] ccMails = new string[] { };
 
+                TaskFactory factory = System.Web.HttpContext.Current.Application.Get("TaskFactory") as TaskFactory;
                 foreach (var serviceCode in groupList.Keys)
                 {
                     switch (serviceCode)
                     {
                         case "DHL":
-                            MyHelp.Log("PickProduct", null, "寄送DHL出口報單");
-
-                            string[] ProductIDs = groupList[serviceCode].SelectMany(p => p.Items.Where(i => i.IsEnable.Value).Select(i => i.ProductID)).Distinct().ToArray();
-                            Dictionary<string, string> skuList = db.Skus.AsNoTracking().Where(sku => sku.IsEnable.Value && ProductIDs.Contains(sku.Sku)).ToDictionary(sku => sku.Sku, sku => sku.PurchaseInvoice);
-
-                            XLWorkbook DHL_workbook = new XLWorkbook();
-                            JArray jObjects = new JArray();
-                            List<string> DHLFile = new List<string>();
-
-                            foreach (Packages package in groupList[serviceCode])
+                            lock (factory)
                             {
-                                Orders order = package.Orders;
-                                Addresses address = order.Addresses;
-                                string name = string.Join(" ", new string[] { address.FirstName, address.MiddleInitial, address.LastName });
-
-                                List<Items> itemList = package.Items.Where(i => i.IsEnable.Value).ToList();
-                                foreach (Items item in itemList)
+                                ThreadTask DHL_MailTask = new ThreadTask("寄送DHL出口報關資料");
+                                DHL_MailTask.AddWork(factory.StartNew(Session =>
                                 {
-                                    JObject jo = new JObject();
-                                    jo.Add("1", package.ExportMethod.Value.Equals(0) ? "G3" : "G5");
-                                    jo.Add("2", package.ExportMethod.Value.Equals(0) ? "81" : "02");
-                                    jo.Add("3", skuList[item.ProductID]);
-                                    jo.Add("4", name);
-                                    jo.Add("5", string.Join(" - ", new string[] { item.Skus.ProductType.ProductTypeName, item.Skus.ProductName }));
-                                    jo.Add("6", package.TrackingNumber);
-                                    jo.Add("7", Enum.GetName(typeof(CurrencyCodeType), order.OrderCurrencyCode));
-                                    jo.Add("8", (item.DeclaredValue * item.Qty.Value).ToString("N"));
-                                    jo.Add("9", address.StreetLine1);
-                                    jo.Add("10", address.City);
-                                    jo.Add("11", address.StateName);
-                                    jo.Add("12", address.PostalCode);
-                                    jo.Add("13", address.CountryName);
-                                    jo.Add("14", address.PhoneNumber);
-                                    if (item.Qty > 1) jo.Add("15", item.Qty);
-                                    jObjects.Add(jo);
-                                }
-                            }
+                                    DHL_MailTask.Start();
 
-                            var DHL_sheet = DHL_workbook.Worksheets.Add(JsonConvert.DeserializeObject<DataTable>(jObjects.ToString()), "檢核表");
-                            DHL_sheet.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
-                            DHL_sheet.Style.Font.FontName = "Times New Roman";
-                            DHL_sheet.Style.Font.FontSize = 11;
-                            DHL_sheet.Row(1).Hide();
-                            DHL_sheet.Column(1).Width = 10;
-                            DHL_sheet.Column(2).Width = 10;
-                            DHL_sheet.Column(3).Width = 17;
-                            DHL_sheet.Column(4).Width = 24;
-                            DHL_sheet.Column(5).Width = 70;
-                            DHL_sheet.Column(6).Width = 15;
-                            DHL_sheet.Column(7).Width = 13;
-                            DHL_sheet.Column(8).Width = 13;
-                            DHL_sheet.Column(9).Width = 50;
-                            DHL_sheet.Column(10).Width = 20;
-                            DHL_sheet.Column(11).Width = 20;
-                            DHL_sheet.Column(12).Width = 20;
-                            DHL_sheet.Column(13).Width = 20;
-                            DHL_sheet.Column(14).Width = 20;
+                                    string message = "";
+                                    MyHelp.Log("PickProduct", null, "寄送DHL出口報單");
 
-                            filePath = Path.Combine(basePath, "mail", now.ToString("yyyy/MM/dd"));
-                            if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
+                                    try
+                                    {
+                                        string[] ProductIDs = groupList[serviceCode].SelectMany(p => p.Items.Where(i => i.IsEnable.Value).Select(i => i.ProductID)).Distinct().ToArray();
+                                        Dictionary<string, string> skuList = db.Skus.AsNoTracking().Where(sku => sku.IsEnable.Value && ProductIDs.Contains(sku.Sku)).ToDictionary(sku => sku.Sku, sku => sku.PurchaseInvoice);
 
-                            string fileName = string.Format("DHL 出口報關表格 第{0}批.xlsx", DateTime.Compare(now, noon.AddHours(3)) <= 0 ? "1" : "2");
-                            DHL_workbook.SaveAs(Path.Combine(filePath, fileName));
+                                        XLWorkbook DHL_workbook = new XLWorkbook();
+                                        JArray jObjects = new JArray();
+                                        List<string> DHLFile = new List<string>();
 
-                            receiveMails = new string[] { "twtxwisa@dhl.com" };
-                            //receiveMails = new string[] { "qd.tuko@hotmail.com" };
-                            mailTitle = string.Format("至優網 {0} 第{1}批 {2}筆提單 正式出口報關資料", now.ToString("yyyy-MM-dd"), DateTime.Compare(now, noon.AddHours(3)) <= 0 ? "1" : "2", groupList[serviceCode].Count());
+                                        foreach (Packages package in groupList[serviceCode])
+                                        {
+                                            Orders order = package.Orders;
+                                            Addresses address = order.Addresses;
+                                            string name = string.Join(" ", new string[] { address.FirstName, address.MiddleInitial, address.LastName });
 
-                            mailBody = string.Join("<br />", groupList[serviceCode].Select(p => p.TrackingNumber).ToArray());
+                                            List<Items> itemList = package.Items.Where(i => i.IsEnable.Value).ToList();
+                                            foreach (Items item in itemList)
+                                            {
+                                                JObject jo = new JObject();
+                                                jo.Add("1", package.ExportMethod.Value.Equals(0) ? "G3" : "G5");
+                                                jo.Add("2", package.ExportMethod.Value.Equals(0) ? "81" : "02");
+                                                jo.Add("3", skuList[item.ProductID]);
+                                                jo.Add("4", name);
+                                                jo.Add("5", string.Join(" - ", new string[] { item.Skus.ProductType.ProductTypeName, item.Skus.ProductName }));
+                                                jo.Add("6", package.TrackingNumber);
+                                                jo.Add("7", Enum.GetName(typeof(CurrencyCodeType), order.OrderCurrencyCode));
+                                                jo.Add("8", (item.DeclaredValue * item.Qty.Value).ToString("N"));
+                                                jo.Add("9", address.StreetLine1);
+                                                jo.Add("10", address.City);
+                                                jo.Add("11", address.StateName);
+                                                jo.Add("12", address.PostalCode);
+                                                jo.Add("13", address.CountryName);
+                                                jo.Add("14", address.PhoneNumber);
+                                                if (item.Qty > 1) jo.Add("15", item.Qty);
+                                                jObjects.Add(jo);
+                                            }
+                                        }
 
-                            DHLFile.Add(Path.Combine(filePath, fileName));
-                            bool DHL_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, DHLFile.ToArray(), null, false);
+                                        var DHL_sheet = DHL_workbook.Worksheets.Add(JsonConvert.DeserializeObject<DataTable>(jObjects.ToString()), "檢核表");
+                                        DHL_sheet.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+                                        DHL_sheet.Style.Font.FontName = "Times New Roman";
+                                        DHL_sheet.Style.Font.FontSize = 11;
+                                        DHL_sheet.Row(1).Hide();
+                                        DHL_sheet.Column(1).Width = 10;
+                                        DHL_sheet.Column(2).Width = 10;
+                                        DHL_sheet.Column(3).Width = 17;
+                                        DHL_sheet.Column(4).Width = 24;
+                                        DHL_sheet.Column(5).Width = 70;
+                                        DHL_sheet.Column(6).Width = 15;
+                                        DHL_sheet.Column(7).Width = 13;
+                                        DHL_sheet.Column(8).Width = 13;
+                                        DHL_sheet.Column(9).Width = 50;
+                                        DHL_sheet.Column(10).Width = 20;
+                                        DHL_sheet.Column(11).Width = 20;
+                                        DHL_sheet.Column(12).Width = 20;
+                                        DHL_sheet.Column(13).Width = 20;
+                                        DHL_sheet.Column(14).Width = 20;
 
-                            if (DHL_Status)
-                            {
-                                MyHelp.Log("PickProdcut", null, mailTitle);
-                                foreach (PickProduct pick in pickList.Where(pick => groupList[serviceCode].Select(p => p.ID).ToArray().Contains(pick.PackageID.Value)).ToList())
-                                {
-                                    pick.IsMail = true;
-                                    PickProduct.Update(pick, pick.ID);
-                                }
-                            }
-                            else
-                            {
-                                MyHelp.Log("PickProduct", null, string.Format("{0} 寄送失敗", mailTitle));
+                                        filePath = Path.Combine(basePath, "mail", now.ToString("yyyy/MM/dd"));
+                                        if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
+
+                                        string fileName = string.Format("DHL 出口報關表格 第{0}批.xlsx", DateTime.Compare(now, noon.AddHours(3)) <= 0 ? "1" : "2");
+                                        DHL_workbook.SaveAs(Path.Combine(filePath, fileName));
+
+                                        receiveMails = new string[] { "twtxwisa@dhl.com" };
+                                        //receiveMails = new string[] { "qd.tuko@hotmail.com" };
+                                        mailTitle = string.Format("至優網 {0} 第{1}批 {2}筆提單 正式出口報關資料", now.ToString("yyyy-MM-dd"), DateTime.Compare(now, noon.AddHours(3)) <= 0 ? "1" : "2", groupList[serviceCode].Count());
+
+                                        mailBody = string.Join("<br />", groupList[serviceCode].Select(p => p.TrackingNumber).ToArray());
+
+                                        DHLFile.Add(Path.Combine(filePath, fileName));
+                                        bool DHL_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, DHLFile.ToArray(), null, false);
+
+                                        if (DHL_Status)
+                                        {
+                                            MyHelp.Log("PickProduct", null, mailTitle);
+                                            foreach (PickProduct pick in pickList.Where(pick => groupList[serviceCode].Select(p => p.ID).ToArray().Contains(pick.PackageID.Value)).ToList())
+                                            {
+                                                pick.IsMail = true;
+                                                PickProduct.Update(pick, pick.ID);
+                                            }
+
+                                            PickProduct.SaveChanges();
+                                        }
+                                        else
+                                        {
+                                            message = string.Format("{0} 寄送失敗", mailTitle);
+                                            MyHelp.Log("PickProduct", null, message);
+                                        }
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        message = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+                                    }
+
+                                    return message;
+                                }, Session));
                             }
                             break;
                         case "FedEx":
-                            MyHelp.Log("PickProduct", null, "寄送FedEx出口報單");
 
-                            List<Tuple<Stream, string>> FedExFile = new List<Tuple<Stream, string>>();
-
-                            foreach (Packages package in groupList[serviceCode])
+                            lock (factory)
                             {
-                                filePath = string.Join("", package.FilePath.Skip(package.FilePath.IndexOf("export")));
-
-                                decimal declaredTotal = package.DeclaredTotal;
-                                List<Items> itemList = package.Items.Where(i => i.IsEnable.Value).ToList();
-                                int lastItemID = itemList.Last().ID;
-
-                                using (FileStream fsIn = new FileStream(Path.Combine(basePath, filePath, "Invoice.xls"), FileMode.Open))
+                                ThreadTask FedEx_MailTask = new ThreadTask("寄送FedEx出口報關資料");
+                                FedEx_MailTask.AddWork(factory.StartNew(Session =>
                                 {
-                                    HSSFWorkbook FedEx_workbook = new HSSFWorkbook(fsIn);
-                                    fsIn.Close();
+                                    FedEx_MailTask.Start();
 
-                                    ISheet FedEx_sheet = FedEx_workbook.GetSheetAt(0);
+                                    string message = "";
+                                    MyHelp.Log("PickProduct", null, "寄送FedEx出口報單");
 
-                                    int rowIndex = 26;
-                                    foreach (Items item in itemList)
+                                    try
                                     {
-                                        Country country = MyHelp.GetCountries().FirstOrDefault(c => c.ID == item.Skus.Origin);
-                                        FedEx_sheet.GetRow(rowIndex).GetCell(1).SetCellValue(country.OriginName);
-                                        string productName = item.Skus.ProductType.ProductTypeName + " - " + item.Skus.ProductName;
-                                        FedEx_sheet.GetRow(rowIndex).GetCell(5).SetCellValue(productName);
-                                        FedEx_sheet.GetRow(rowIndex).GetCell(8).SetCellValue(item.Qty.Value);
-                                        FedEx_sheet.GetRow(rowIndex).GetCell(9).SetCellValue("pieces");
-                                        FedEx_sheet.GetRow(rowIndex).GetCell(10).SetCellValue(item.Qty * ((double)item.Skus.Weight / 1000) + "kg");
-                                        FedEx_sheet.GetRow(rowIndex).GetCell(11).SetCellValue(item.DeclaredValue.ToString("N"));
-                                        FedEx_sheet.GetRow(rowIndex).GetCell(16).SetCellValue((item.DeclaredValue * item.Qty.Value).ToString("N"));
-                                        FedEx_sheet.GetRow(rowIndex).HeightInPoints = (productName.Length / 30 + 1) * FedEx_sheet.DefaultRowHeight / 20;
-                                        FedEx_sheet.GetRow(rowIndex++).RowStyle.VerticalAlignment = VerticalAlignment.Center;
+                                        List<Tuple<Stream, string>> FedExFile = new List<Tuple<Stream, string>>();
+                                        foreach (Packages package in groupList[serviceCode])
+                                        {
+                                            filePath = string.Join("", package.FilePath.Skip(package.FilePath.IndexOf("export")));
+
+                                            decimal declaredTotal = package.DeclaredTotal;
+                                            List<Items> itemList = package.Items.Where(i => i.IsEnable.Value).ToList();
+                                            int lastItemID = itemList.Last().ID;
+
+                                            using (FileStream fsIn = new FileStream(Path.Combine(basePath, filePath, "Invoice.xls"), FileMode.Open))
+                                            {
+                                                HSSFWorkbook FedEx_workbook = new HSSFWorkbook(fsIn);
+                                                fsIn.Close();
+
+                                                ISheet FedEx_sheet = FedEx_workbook.GetSheetAt(0);
+
+                                                int rowIndex = 26;
+                                                foreach (Items item in itemList)
+                                                {
+                                                    Country country = MyHelp.GetCountries().FirstOrDefault(c => c.ID == item.Skus.Origin);
+                                                    FedEx_sheet.GetRow(rowIndex).GetCell(1).SetCellValue(country.OriginName);
+                                                    string productName = item.Skus.ProductType.ProductTypeName + " - " + item.Skus.ProductName;
+                                                    FedEx_sheet.GetRow(rowIndex).GetCell(5).SetCellValue(productName);
+                                                    FedEx_sheet.GetRow(rowIndex).GetCell(8).SetCellValue(item.Qty.Value);
+                                                    FedEx_sheet.GetRow(rowIndex).GetCell(9).SetCellValue("pieces");
+                                                    FedEx_sheet.GetRow(rowIndex).GetCell(10).SetCellValue(item.Qty * ((double)item.Skus.Weight / 1000) + "kg");
+                                                    FedEx_sheet.GetRow(rowIndex).GetCell(11).SetCellValue(item.DeclaredValue.ToString("N"));
+                                                    FedEx_sheet.GetRow(rowIndex).GetCell(16).SetCellValue((item.DeclaredValue * item.Qty.Value).ToString("N"));
+                                                    FedEx_sheet.GetRow(rowIndex).HeightInPoints = (productName.Length / 30 + 1) * FedEx_sheet.DefaultRowHeight / 20;
+                                                    FedEx_sheet.GetRow(rowIndex++).RowStyle.VerticalAlignment = VerticalAlignment.Center;
+                                                }
+
+                                                using (FileStream fsOut = new FileStream(Path.Combine(basePath, filePath, "Invoice2.xls"), FileMode.Create))
+                                                {
+                                                    FedEx_workbook.Write(fsOut);
+                                                    fsOut.Close();
+                                                }
+                                            }
+
+                                            var memoryStream = new MemoryStream();
+
+                                            using (var file = new ZipFile())
+                                            {
+                                                file.AddFile(Path.Combine(basePath, filePath, "Invoice2.xls"), "");
+                                                file.AddFile(Path.Combine(basePath, filePath, "CheckList.xlsx"), "");
+                                                file.AddFile(Path.Combine(basePath, "sample", "Fedex_Recognizances.pdf"), "");
+
+                                                file.Save(memoryStream);
+                                            }
+
+                                            memoryStream.Seek(0, SeekOrigin.Begin);
+                                            FedExFile.Add(new Tuple<Stream, string>(memoryStream, package.TrackingNumber + ".zip"));
+                                        }
+
+                                        receiveMails = new string[] { "edd@fedex.com" };
+                                        //receiveMails = new string[] { "qd.tuko@hotmail.com" };
+                                        mailTitle = string.Format("至優網 {0} 第{1}批 {2}筆提單 正式出口報關資料", now.ToString("yyyy-MM-dd"), DateTime.Compare(now, noon.AddHours(3)) <= 0 ? "1" : "2", groupList[serviceCode].Count());
+
+                                        bool FedEx_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, "", true, null, FedExFile, false);
+
+                                        if (FedEx_Status)
+                                        {
+                                            MyHelp.Log("PickProduct", null, mailTitle);
+                                            foreach (PickProduct pick in pickList.Where(pick => groupList[serviceCode].Select(p => p.ID).ToArray().Contains(pick.PackageID.Value)).ToList())
+                                            {
+                                                pick.IsMail = true;
+                                                PickProduct.Update(pick, pick.ID);
+                                            }
+
+                                            PickProduct.SaveChanges();
+                                        }
+                                        else
+                                        {
+                                            MyHelp.Log("PickProduct", null, string.Format("{0} 寄送失敗", mailTitle));
+                                        }
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        message = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
                                     }
 
-                                    using (FileStream fsOut = new FileStream(Path.Combine(basePath, filePath, "Invoice2.xls"), FileMode.Create))
-                                    {
-                                        FedEx_workbook.Write(fsOut);
-                                        fsOut.Close();
-                                    }
-                                }
-
-                                var memoryStream = new MemoryStream();
-
-                                using (var file = new ZipFile())
-                                {
-                                    file.AddFile(Path.Combine(basePath, filePath, "Invoice2.xls"), "");
-                                    file.AddFile(Path.Combine(basePath, filePath, "CheckList.xlsx"), "");
-                                    file.AddFile(Path.Combine(basePath, "sample", "Fedex_Recognizances.pdf"), "");
-
-                                    file.Save(memoryStream);
-                                }
-
-                                memoryStream.Seek(0, SeekOrigin.Begin);
-                                FedExFile.Add(new Tuple<Stream, string>(memoryStream, package.TrackingNumber + ".zip"));
-                            }
-
-                            receiveMails = new string[] { "edd@fedex.com" };
-                            //receiveMails = new string[] { "qd.tuko@hotmail.com" };
-                            mailTitle = string.Format("至優網 {0} 第{1}批 {2}筆提單 正式出口報關資料", now.ToString("yyyy-MM-dd"), DateTime.Compare(now, noon.AddHours(3)) <= 0 ? "1" : "2", groupList[serviceCode].Count());
-
-                            bool FedEx_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, "", true, null, FedExFile, false);
-
-                            if (FedEx_Status)
-                            {
-                                MyHelp.Log("PickProduct", null, mailTitle);
-                                foreach (PickProduct pick in pickList.Where(pick => groupList[serviceCode].Select(p => p.ID).ToArray().Contains(pick.PackageID.Value)).ToList())
-                                {
-                                    pick.IsMail = true;
-                                    PickProduct.Update(pick, pick.ID);
-                                }
-                            }
-                            else
-                            {
-                                MyHelp.Log("PickProduct", null, string.Format("{0} 寄送失敗", mailTitle));
-                            }
+                                    return message;
+                                }, Session));
+                            }                            
                             break;
                         default:
-                            var orderList = string.Join(",", groupList[serviceCode].OrderBy(p => p.OrderID).Select(o => o.OrderID));
+                            foreach (PickProduct pick in pickList.Where(pick => groupList[serviceCode].Select(p => p.ID).ToArray().Contains(pick.PackageID.Value)).ToList())
+                            {
+                                pick.IsMail = true;
+                                PickProduct.Update(pick, pick.ID);
+                            }
+
+                            PickProduct.SaveChanges();
                             break;
                     }
                 }
-                PickProduct.SaveChanges();
             }
 
             return Content("");

@@ -31,7 +31,6 @@ namespace SellerCloud_WebService
 
         public int UserID;
         public DateTime SyncOn;
-        public DateTime Today;
 
         public bool Is_login
         {
@@ -230,9 +229,14 @@ namespace SellerCloud_WebService
             return OS_sellerCloud.Orders_UpdateShippingStatusPackage(OS_authHeader, OS_options, package.OrderID, package, TrackingNumber, Carrier, Service, package.Weight.ToString(), package.FinalShippingFee.ToString(), package.StationID, 0);
         }
 
-        public QDLogistics.OrderService.OrderItem Update_OrderItem(QDLogistics.OrderService.OrderItem[] list)
+        public QDLogistics.OrderService.OrderItem Update_OrderItem(QDLogistics.OrderService.OrderItem item)
         {
-            return OS_sellerCloud.Orders_UpdateItem(OS_authHeader, OS_options, list.First());
+            return OS_sellerCloud.Orders_UpdateItem(OS_authHeader, OS_options, item);
+        }
+
+        public bool Update_OrderItem(QDLogistics.OrderService.OrderItem[] itemList)
+        {
+            return OS_sellerCloud.Orders_UpdateOrderItems(OS_authHeader, OS_options, itemList);
         }
 
         public bool Update_ItemSerialNumber(int ItemID, string[] SerialNumbers)
@@ -253,11 +257,6 @@ namespace SellerCloud_WebService
         public bool Update_PackageData(QDLogistics.OrderService.Package Package)
         {
             return OS_sellerCloud.Orders_UpdatePackage(OS_authHeader, OS_options, ref Package);
-        }
-
-        public QDLogistics.OrderService.OrderItem Update_ItemData(QDLogistics.OrderService.OrderItem item)
-        {
-            return OS_sellerCloud.Orders_UpdateItem(OS_authHeader, OS_options, item);
         }
         /***** 更新資料 *****/
 

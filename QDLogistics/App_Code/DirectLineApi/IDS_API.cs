@@ -144,6 +144,13 @@ namespace DirectLineApi.IDS
             return Request<string[]>("GetServiceTypeList", "GET");
         }
 
+        public string GetServiceType(int index)
+        {
+            string[] serviceTypeList = GetServiceTypeList();
+
+            return serviceTypeList.Skip(index).FirstOrDefault();
+        }
+
         public T Request<T>(string func, string method, object data = null)
         {
             string result = "";

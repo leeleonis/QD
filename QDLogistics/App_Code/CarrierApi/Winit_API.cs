@@ -12,8 +12,8 @@ namespace CarrierApi.Winit
     public class Winit_API
     {
         private string api_url = "http://api.winit.com.cn/ADInterface/api";
-        private string api_key = "peter0626@hotmail.com";
-        private string api_userName = "peter0626@hotmail.com";
+        private string api_key = "peter@qd.com.tw";
+        private string api_userName = "peter@qd.com.tw";
         private string api_password = "gubu67qaP5e$ra*t";
         private string api_token;
 

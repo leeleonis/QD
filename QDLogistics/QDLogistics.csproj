@@ -6749,6 +6749,7 @@
     <Compile Include="Commons\ThreadTask.cs" />
     <Compile Include="Commons\TrackOrder.cs" />
     <Compile Include="Controllers\ApiController.cs" />
+    <Compile Include="Controllers\CaseEventController.cs" />
     <Compile Include="Controllers\CompanyController.cs" />
     <Compile Include="Controllers\DirectLineController.cs" />
     <Compile Include="Controllers\DropShipController.cs" />
@@ -7037,6 +7038,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Views\CaseEvent\" />
     <Folder Include="Views\File\" />
     <Folder Include="Views\OrderSync\" />
   </ItemGroup>

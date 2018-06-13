@@ -133,6 +133,22 @@
           <Property Name="Email" Type="nvarchar" MaxLength="150" />
           <Property Name="Api" Type="int" />
         </EntityType>
+        <EntityType Name="CaseEvent">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="OrderID" Type="int" Nullable="false" />
+          <Property Name="PackageID" Type="int" Nullable="false" />
+          <Property Name="LabelID" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="MethodID" Type="int" Nullable="false" />
+          <Property Name="Type" Type="tinyint" Nullable="false" />
+          <Property Name="Request" Type="tinyint" Nullable="false" />
+          <Property Name="Status" Type="tinyint" Nullable="false" />
+          <Property Name="Create_at" Type="datetime" Nullable="false" />
+          <Property Name="Request_at" Type="datetime" />
+          <Property Name="Response_at" Type="datetime" />
+        </EntityType>
         <EntityType Name="Companies">
           <Key>
             <PropertyRef Name="ID" />
@@ -844,6 +860,7 @@
           <EntitySet Name="BundleItems" EntityType="Self.BundleItems" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="CarrierAPI" EntityType="Self.CarrierAPI" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Carriers" EntityType="Self.Carriers" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="CaseEvent" EntityType="Self.CaseEvent" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Companies" EntityType="Self.Companies" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="DirectLine" EntityType="Self.DirectLine" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="DirectLineLabel" EntityType="Self.DirectLineLabel" Schema="dbo" store:Type="Tables" />
@@ -1106,6 +1123,7 @@
             <End Role="Packages" EntitySet="Packages" />
           </AssociationSet>
           <EntitySet Name="DirectLine" EntityType="QDLogisticsModel.DirectLine" />
+          <EntitySet Name="CaseEvent" EntityType="QDLogisticsModel.CaseEvent" />
           </EntityContainer>
         <EntityType Name="Addresses">
           <Key>
@@ -1989,6 +2007,22 @@
           <Property Name="StateName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="PostalCode" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
         </EntityType>
+        <EntityType Name="CaseEvent">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="OrderID" Type="Int32" Nullable="false" />
+          <Property Name="PackageID" Type="Int32" Nullable="false" />
+          <Property Name="LabelID" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="MethodID" Type="Int32" Nullable="false" />
+          <Property Name="Type" Type="Byte" Nullable="false" />
+          <Property Name="Request" Type="Byte" Nullable="false" />
+          <Property Name="Status" Type="Byte" Nullable="false" />
+          <Property Name="Create_at" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="Request_at" Type="DateTime" Precision="3" />
+          <Property Name="Response_at" Type="DateTime" Precision="3" />
+        </EntityType>
         </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -2536,6 +2570,23 @@
                 <ScalarProperty Name="Abbreviation" ColumnName="Abbreviation" />
                 <ScalarProperty Name="Name" ColumnName="Name" />
                 <ScalarProperty Name="IsEnable" ColumnName="IsEnable" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="CaseEvent">
+            <EntityTypeMapping TypeName="QDLogisticsModel.CaseEvent">
+              <MappingFragment StoreEntitySet="CaseEvent">
+                <ScalarProperty Name="MethodID" ColumnName="MethodID" />
+                <ScalarProperty Name="Response_at" ColumnName="Response_at" />
+                <ScalarProperty Name="Request_at" ColumnName="Request_at" />
+                <ScalarProperty Name="Create_at" ColumnName="Create_at" />
+                <ScalarProperty Name="Status" ColumnName="Status" />
+                <ScalarProperty Name="Request" ColumnName="Request" />
+                <ScalarProperty Name="Type" ColumnName="Type" />
+                <ScalarProperty Name="LabelID" ColumnName="LabelID" />
+                <ScalarProperty Name="PackageID" ColumnName="PackageID" />
+                <ScalarProperty Name="OrderID" ColumnName="OrderID" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

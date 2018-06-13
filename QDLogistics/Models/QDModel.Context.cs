@@ -53,5 +53,6 @@ namespace QDLogistics.Models
         public virtual DbSet<Box> Box { get; set; }
         public virtual DbSet<DirectLineLabel> DirectLineLabel { get; set; }
         public virtual DbSet<DirectLine> DirectLine { get; set; }
+        public virtual DbSet<CaseEvent> CaseEvent { get; set; }
     }
 }

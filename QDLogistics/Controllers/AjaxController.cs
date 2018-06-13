@@ -1164,7 +1164,7 @@ namespace QDLogistics.Controllers
                                             {
                                                 string sendMail = "dispatch-qd@hotmail.com";
                                                 string[] receiveMails = new string[] { carrier.Email };
-                                                string[] ccMails = new string[] { "peter0626@hotmail.com", "kellyyang82@hotmail.com", "demi@qd.com.tw" };
+                                                string[] ccMails = new string[] { "peter@qd.com.tw", "kelly@qd.com.tw", "demi@qd.com.tw" };
                                                 string mailTitle = string.Format("至優網有限公司 (53362065) 退件請求 提單號碼: {0}", package.TrackingNumber);
                                                 string mailBody = "<p>你好<p>";
                                                 mailBody += string.Format("<p>提單號碼 {0} 急需安排退件. 請退回到以下地址:</p>", package.TrackingNumber);

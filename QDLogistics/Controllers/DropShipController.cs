@@ -753,8 +753,8 @@ namespace QDLogistics.Controllers
                 string mailTitle;
                 string mailBody;
                 string[] receiveMails;
-                //string[] ccMails = new string[] { "peter0626@hotmail.com", "kellyyang82@hotmail.com", "demi@qd.com.tw" };
-                string[] ccMails = new string[] { "peter0626@hotmail.com", "Kellyyang82@hotmail.com", "yiing1009@hotmail.com" };
+                //string[] ccMails = new string[] { "peter@qd.com.tw", "kelly@qd.com.tw", "demi@qd.com.tw" };
+                string[] ccMails = new string[] { "peter@qd.com.tw", "kelly@qd.com.tw", "demi@qd.com.tw" };
 
                 switch (directLine.Abbreviation)
                 {

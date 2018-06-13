@@ -44,7 +44,7 @@
         <EntityTypeShape EntityType="QDLogisticsModel.PurchaseItemReceive" Width="1.5" PointX="13.375" PointY="10.75" />
         <EntityTypeShape EntityType="QDLogisticsModel.TaskScheduler" Width="1.5" PointX="11.375" PointY="0.875" />
         <AssociationConnector Association="QDLogisticsModel.FK_TaskLog_TaskScheduler" />
-        <EntityTypeShape EntityType="QDLogisticsModel.Services" Width="1.5" PointX="11.5" PointY="15" />
+        <EntityTypeShape EntityType="QDLogisticsModel.Services" Width="1.5" PointX="10.875" PointY="14.125" />
         <AssociationConnector Association="QDLogisticsModel.FK_Orders_Services" />
         <EntityTypeShape EntityType="QDLogisticsModel.Preset" Width="1.5" PointX="13.625" PointY="4.625" />
         <EntityTypeShape EntityType="QDLogisticsModel.CarrierAPI" Width="1.5" PointX="6.125" PointY="9.125" />
@@ -60,6 +60,7 @@
         <AssociationConnector Association="QDLogisticsModel.FK_DirectLineLabel_Box" />
         <AssociationConnector Association="QDLogisticsModel.FK_Packages_DirectLineLabel" />
         <EntityTypeShape EntityType="QDLogisticsModel.DirectLine" Width="1.5" PointX="15.375" PointY="10.75" />
+        <EntityTypeShape EntityType="QDLogisticsModel.CaseEvent" Width="1.5" PointX="13.25" PointY="15" />
         </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

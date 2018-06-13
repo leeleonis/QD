@@ -65,7 +65,7 @@ namespace QDLogistics.Commons
                 { 3, "other" }
             };
         }
-        
+
         public enum DirectLineStatus { 未發貨, 運輸中, 已到貨 }
         public enum DirectLineBoxType { DirectLine, InventoryTransfer, FBA }
         public static Dictionary<DirectLineBoxType, string> BoxTypeList()
@@ -79,5 +79,19 @@ namespace QDLogistics.Commons
         }
 
         public enum LabelStatus { 正常, 鎖定中, 完成, 作廢 }
+
+        public enum CaseEventType { CancelShipment, UpdateTracking, UpdateShipment, ChangeShippingMethod }
+        public static Dictionary<CaseEventType, string> CaseEventTypeList()
+        {
+            return new Dictionary<CaseEventType, string>()
+            {
+                {CaseEventType.CancelShipment, "Cancel Shipment" },
+                {CaseEventType.UpdateTracking, "Update Tracking" },
+                {CaseEventType.UpdateShipment, "Update Shipment" },
+                {CaseEventType.ChangeShippingMethod, "Change Shipping Method" }
+            };
+        }
+        public enum CaseEventRequest { None, Successful, Investigating, InTransit, Lost, Failed }
+        public enum CaseEventStatus { Open, Locked, Close, Error }
     }
 }

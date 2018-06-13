@@ -159,6 +159,8 @@ namespace QDLogistics.Commons
                                     var SC_items = SC_order.Items.Where(i => packageData.Items.Where(dbItem => dbItem.IsEnable == true).Select(dbItem => dbItem.ID).Contains(i.ID)).ToArray();
                                     foreach (var item in SC_items)
                                     {
+                                        if (!db.Skus.AsNoTracking().Any(s => s.Sku.Equals(item.ProductID))) throw new Exception(string.Format("系統尚未有品號 {0} 資料!", item.ProductID));
+
                                         item.ShipFromWareHouseID = packageData.Items.First(i => i.IsEnable == true && i.ID == item.ID).ShipFromWarehouseID.Value;
                                     }
                                     SCWS.Update_OrderItem(SC_items);

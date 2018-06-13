@@ -102,8 +102,10 @@ public static class MyHelp
     {
         string smtpServer = "smtp.sendgrid.net";
         int smtpPort = 587;
-        string mailAccount = "nexeve";
-        string mailPwd = "96yVfFZ9a81GqnDYTUebjncIsZe5Rvhnbv1j";
+        string mailAccount = "azure_d6e7b8a9c9606ce581770e3a9db11a27@azure.com";
+        string mailPwd = "6S2OHhiXob9Q";
+        //string mailAccount = "nexeve";
+        //string mailPwd = "96yVfFZ9a81GqnDYTUebjncIsZe5Rvhnbv1j";
 
         try
         {

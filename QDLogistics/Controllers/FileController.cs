@@ -652,7 +652,7 @@ namespace QDLogistics.Controllers
         {
             if (!checkExists()) return result;
 
-            var excelContent = excelFile.Worksheet("DropShipper").Where(row => !row["OrderID"].Equals(null));
+            var excelContent = excelFile.Worksheet("DropShipperDL").Where(row => !row["OrderID"].Equals(null));
 
             int errorCount = 0;
             var importErrorMessages = new List<string>();

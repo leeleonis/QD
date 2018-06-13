@@ -386,10 +386,45 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public void Date_Test(int day = 0)
+        public void Case_Test(int orderID)
         {
-            DateTime today = DateTime.Now;
-            Response.Write((int)today.AddDays(day).DayOfWeek % 7);
+            //***Send Tracking Mail***
+            //using (CaseLog CaseLog = new CaseLog(HttpContext.Session))
+            //{
+            //    Box box = db.Box.AsNoTracking().First(b => b.BoxID.Equals(boxID));
+            //    DirectLine directLine = db.DirectLine.AsNoTracking().First(d => d.ID.Equals(box.DirectLine));
+            //    CaseLog.SendTrackingMail(directLine.Abbreviation, box.DirectLineLabel.Where(l => l.IsEnable).ToList());
+            //}
+
+            //Box box = db.Box.AsNoTracking().First(b => b.BoxID.Equals(boxID));
+            //foreach(Packages package in box.Packages.Where(p => p.IsEnable.Value).ToList())
+            //{
+            //    using (CaseLog CaseLog = new CaseLog(package, HttpContext.Session))
+            //    {
+            //        if(CaseLog.CaseExit(EnumData.CaseEventType.UpdateTracking))
+            //        {
+            //            CaseLog.TrackingResponse();
+            //        }
+            //    }
+            //}
+
+            using (CaseLog CaseLog = new CaseLog(db.Packages.AsNoTracking().First(p => p.IsEnable.Value && p.OrderID.Value.Equals(orderID)), HttpContext.Session))
+            {
+                CaseLog.SendUpdateShipmentMail();
+                CaseLog.SendChangeShippingMethodMail(34);
+            }
+        }
+
+        public void Mail_Test()
+        {
+            string mailFrom = "dispatch-qd@hotmail.com";
+            string[] mailTo = new string[] { "qd.tuko@hotmail.com" };
+
+            bool mailResult = MyHelp.Mail_Send(mailFrom, mailTo, null, "Mail Test", "Mail Test", true, null, null, false);
+            if (mailResult)
+            {
+                Response.Write("Success!");
+            }
         }
     }
 }
