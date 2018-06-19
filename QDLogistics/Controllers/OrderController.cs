@@ -128,14 +128,14 @@ namespace QDLogistics.Controllers
 
                                         /***** 上傳Item出貨倉 *****/
                                         var SC_order = SCWS.Get_OrderData(packageData.OrderID.Value).Order;
-                                        var SC_items = SC_order.Items.Where(i => packageData.Items.Where(dbItem => dbItem.IsEnable == true).Select(dbItem => dbItem.ID).Contains(i.ID)).ToArray();
+                                        var SC_items = SC_order.Items.Where(i => i.PackageID.Equals(packageData.ID)).ToArray();
                                         foreach (var item in SC_items)
                                         {
                                             if (!db.Skus.AsNoTracking().Any(s => s.Sku.Equals(item.ProductID))) throw new Exception(string.Format("系統尚未有品號 {0} 資料!", item.ProductID));
 
                                             item.ShipFromWareHouseID = packageData.Items.First(i => i.IsEnable == true && i.ID == item.ID).ShipFromWarehouseID.Value;
+                                            SCWS.Update_OrderItem(item);
                                         }
-                                        SCWS.Update_OrderItem(SC_items);
                                         MyHelp.Log("Orders", packageData.OrderID, "更新訂單包裏的出貨倉", session);
 
                                         /***** 更新客戶地址 *****/
@@ -726,7 +726,7 @@ namespace QDLogistics.Controllers
                                                     var IDS_Result = IDS.GetTrackingNumber(package);
                                                     if (IDS_Result.trackingnumber.Any(t => t.First().Equals(package.OrderID.ToString())))
                                                     {
-                                                        package.TrackingNumber = IDS_Result.trackingnumber.First(t => t.First().Equals(package.OrderID.ToString()))[1];
+                                                        package.TrackingNumber = IDS_Result.trackingnumber.Last(t => t.First().Equals(package.OrderID.ToString()))[1];
                                                         Packages.Update(package, package.ID);
                                                         Packages.SaveChanges();
                                                     }

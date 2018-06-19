@@ -330,7 +330,7 @@ namespace QDLogistics.Controllers
             }
         }
 
-        private void IDS_Test(int orderID)
+        public void IDS_Test(int orderID)
         {
             Packages package = db.Packages.AsNoTracking().First(p => p.OrderID.Value.Equals(orderID));
 
@@ -338,7 +338,7 @@ namespace QDLogistics.Controllers
             var result = IDS.GetTrackingNumber(package);
             if (result.trackingnumber.Any(t => t.First().Equals(package.OrderID.ToString())))
             {
-                string tracking = result.trackingnumber.First(t => t.First().Equals(package.OrderID.ToString()))[1];
+                string tracking = result.trackingnumber.Last(t => t.First().Equals(package.OrderID.ToString()))[1];
             }
         }
 

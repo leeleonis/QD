@@ -141,6 +141,7 @@
           <Property Name="OrderID" Type="int" Nullable="false" />
           <Property Name="PackageID" Type="int" Nullable="false" />
           <Property Name="LabelID" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="NewLabelID" Type="nvarchar" MaxLength="50" />
           <Property Name="MethodID" Type="int" Nullable="false" />
           <Property Name="Type" Type="tinyint" Nullable="false" />
           <Property Name="Request" Type="tinyint" Nullable="false" />
@@ -430,6 +431,17 @@
           <Property Name="LocationBinID" Type="int" />
           <Property Name="BinName" Type="nvarchar" MaxLength="50" />
         </EntityType>
+        <EntityType Name="SerialNumberForRefundLabel">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="int" Nullable="false" />
+          <Property Name="oldLabelID" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="newLabelID" Type="nvarchar" MaxLength="50" />
+          <Property Name="Sku" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="SerailNumber" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="WarehouseID" Type="int" Nullable="false" />
+        </EntityType>
         <EntityType Name="SerialNumbers">
           <Key>
             <PropertyRef Name="SerialNumber" />
@@ -584,6 +596,18 @@
             </Principal>
             <Dependent Role="Carriers">
               <PropertyRef Name="Api" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_CaseEvent_Packages">
+          <End Role="Packages" Type="Self.Packages" Multiplicity="1" />
+          <End Role="CaseEvent" Type="Self.CaseEvent" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Packages">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="CaseEvent">
+              <PropertyRef Name="PackageID" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -874,6 +898,7 @@
           <EntitySet Name="Preset" EntityType="Self.Preset" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="ProductType" EntityType="Self.ProductType" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="PurchaseItemReceive" EntityType="Self.PurchaseItemReceive" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="SerialNumberForRefundLabel" EntityType="Self.SerialNumberForRefundLabel" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="SerialNumbers" EntityType="Self.SerialNumbers" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Services" EntityType="Self.Services" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="ShippingMethod" EntityType="Self.ShippingMethod" Schema="dbo" store:Type="Tables" />
@@ -896,6 +921,10 @@
           <AssociationSet Name="FK_Carriers_CarrierAPI" Association="Self.FK_Carriers_CarrierAPI">
             <End Role="CarrierAPI" EntitySet="CarrierAPI" />
             <End Role="Carriers" EntitySet="Carriers" />
+          </AssociationSet>
+          <AssociationSet Name="FK_CaseEvent_Packages" Association="Self.FK_CaseEvent_Packages">
+            <End Role="Packages" EntitySet="Packages" />
+            <End Role="CaseEvent" EntitySet="CaseEvent" />
           </AssociationSet>
           <AssociationSet Name="FK_DirectLineLabel_Box" Association="Self.FK_DirectLineLabel_Box">
             <End Role="Box" EntitySet="Box" />
@@ -1124,6 +1153,11 @@
           </AssociationSet>
           <EntitySet Name="DirectLine" EntityType="QDLogisticsModel.DirectLine" />
           <EntitySet Name="CaseEvent" EntityType="QDLogisticsModel.CaseEvent" />
+          <AssociationSet Name="FK_CaseEvent_Packages" Association="QDLogisticsModel.FK_CaseEvent_Packages">
+            <End Role="Packages" EntitySet="Packages" />
+            <End Role="CaseEvent" EntitySet="CaseEvent" />
+          </AssociationSet>
+          <EntitySet Name="SerialNumberForRefundLabel" EntityType="QDLogisticsModel.SerialNumberForRefundLabel" />
           </EntityContainer>
         <EntityType Name="Addresses">
           <Key>
@@ -1342,6 +1376,7 @@
           <NavigationProperty Name="Method" Relationship="QDLogisticsModel.FK_Packages_Carriers" FromRole="Packages" ToRole="ShippingMethod" />
           <NavigationProperty Name="Box" Relationship="QDLogisticsModel.FK_Packages_Box" FromRole="Packages" ToRole="Box" />
           <NavigationProperty Name="Label" Relationship="QDLogisticsModel.FK_Packages_DirectLineLabel" FromRole="Packages" ToRole="DirectLineLabel" />
+          <NavigationProperty Name="CaseEvent" Relationship="QDLogisticsModel.FK_CaseEvent_Packages" FromRole="Packages" ToRole="CaseEvent" />
         </EntityType>
         <EntityType Name="Payments">
           <Key>
@@ -2015,6 +2050,7 @@
           <Property Name="OrderID" Type="Int32" Nullable="false" />
           <Property Name="PackageID" Type="Int32" Nullable="false" />
           <Property Name="LabelID" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="NewLabelID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="MethodID" Type="Int32" Nullable="false" />
           <Property Name="Type" Type="Byte" Nullable="false" />
           <Property Name="Request" Type="Byte" Nullable="false" />
@@ -2022,6 +2058,30 @@
           <Property Name="Create_at" Type="DateTime" Nullable="false" Precision="3" />
           <Property Name="Request_at" Type="DateTime" Precision="3" />
           <Property Name="Response_at" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="Packages" Relationship="QDLogisticsModel.FK_CaseEvent_Packages" FromRole="CaseEvent" ToRole="Packages" />
+        </EntityType>
+        <Association Name="FK_CaseEvent_Packages">
+          <End Type="QDLogisticsModel.Packages" Role="Packages" Multiplicity="1" />
+          <End Type="QDLogisticsModel.CaseEvent" Role="CaseEvent" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Packages">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="CaseEvent">
+              <PropertyRef Name="PackageID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityType Name="SerialNumberForRefundLabel">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" />
+          <Property Name="oldLabelID" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="newLabelID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Sku" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="SerailNumber" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="WarehouseID" Type="Int32" Nullable="false" />
         </EntityType>
         </Schema>
     </edmx:ConceptualModels>
@@ -2576,6 +2636,7 @@
           <EntitySetMapping Name="CaseEvent">
             <EntityTypeMapping TypeName="QDLogisticsModel.CaseEvent">
               <MappingFragment StoreEntitySet="CaseEvent">
+                <ScalarProperty Name="NewLabelID" ColumnName="NewLabelID" />
                 <ScalarProperty Name="MethodID" ColumnName="MethodID" />
                 <ScalarProperty Name="Response_at" ColumnName="Response_at" />
                 <ScalarProperty Name="Request_at" ColumnName="Request_at" />
@@ -2586,6 +2647,18 @@
                 <ScalarProperty Name="LabelID" ColumnName="LabelID" />
                 <ScalarProperty Name="PackageID" ColumnName="PackageID" />
                 <ScalarProperty Name="OrderID" ColumnName="OrderID" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="SerialNumberForRefundLabel">
+            <EntityTypeMapping TypeName="QDLogisticsModel.SerialNumberForRefundLabel">
+              <MappingFragment StoreEntitySet="SerialNumberForRefundLabel">
+                <ScalarProperty Name="WarehouseID" ColumnName="WarehouseID" />
+                <ScalarProperty Name="SerailNumber" ColumnName="SerailNumber" />
+                <ScalarProperty Name="Sku" ColumnName="Sku" />
+                <ScalarProperty Name="newLabelID" ColumnName="newLabelID" />
+                <ScalarProperty Name="oldLabelID" ColumnName="oldLabelID" />
                 <ScalarProperty Name="ID" ColumnName="ID" />
               </MappingFragment>
             </EntityTypeMapping>

@@ -53,11 +53,11 @@ namespace DirectLineApi.IDS
             return response;
         }
 
-        public CreateOrderResponse CreateOrder(Packages package)
+        public CreateOrderResponse CreateOrder(Packages package, ShippingMethod method = null)
         {
             Orders order = package.Orders;
             Addresses address = order.Addresses;
-            ShippingMethod method = package.Method;
+            if(method == null) method = package.Method;
             CreateOrderResponse response;
 
             try

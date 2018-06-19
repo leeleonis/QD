@@ -1,0 +1,214 @@
+﻿@using QDLogistics.OrderService
+
+@section styles{
+    <link href="~/Content/themes/default/easyui.css" rel="stylesheet" />
+    <link href="~/Content/themes/icon.css" rel="stylesheet" />
+    <style>
+        .datagrid-btable .filterColumn:first-child td div {
+            padding: 0
+        }
+    </style>
+}
+<div id="content">
+    <section id="widget-grid" class="">
+        <div class="row">
+            <article class="col-xs-12">
+                <table id="DataGrid"></table>
+            </article>
+        </div>
+    </section>
+</div>
+@section pagespecific {
+    <script src="~/scripts/jquery.easyui-1.4.3.min.js"></script>
+    <script src="~/scripts/datagrid-detailview.js"></script>
+    <script src="~/scripts/jquery.number.min.js"></script>
+    <script type="text/javascript">
+        var pager, pageSize = 100, selectOption, filterValue = {};
+        var selected = false;
+        var $dataGrid;
+
+        $(function () {
+            var data = { optionType: ['CaseType', 'CaseRequest', 'CaseStatus'] };
+
+            ajaxUrl("@Url.Action("getSelectOption", "caseEvent")", 'post', data).done(function (response) {
+                if (response['status']) {
+                    selectOption = response['data'];
+
+                    dataInit();
+                } else {
+                    alert(response['message']);
+                }
+            });
+        });
+
+        function dataInit() {
+            $dataGrid = $("#DataGrid").datagrid({
+                title: "Case Event 列表",
+                idField: "CaseID",
+                url: "@Url.Action("getCaseEventData", "caseEvent")",
+                queryParams: {},
+                width: "100%",
+                height: window.screen.availHeight-200,
+                checkOnSelect: false,
+                selectOnCheck: false,
+                singleSelect: false,
+                frozenColumns: [[
+                    { field: "OrderID", title: "Order ID<br />訂單號碼", width: 150, align: "center", sortable: true },
+                    { field: "LabelID", title: "Label ID<br />標籤號碼", width: 200, align: "center", sortable: true }
+                ]],
+                columns: [[
+                    { field: "CreateDate", title: "Create Date<br />建立日期", width: 200, align: "center", sortable: false },
+                    { field: "RequestDate", title: "Request Date<br />請求日期", width: 200, align: "center", sortable: false },
+                    { field: "ResponseDate", title: "Response Date<br />回覆日期", width: 200, align: "center", sortable: false },
+                    { field: "CaseType", title: "Type", width: 180, align: "center", sortable: false },
+                    { field: "CaseRequest", title: "Request", width: 120, align: "center", sortable: false },
+                    {
+                        field: "CaseStatus", title: "Status", width: 120, align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            if (!isEmpty(row.CaseID)) {
+                                return "<select class='form-control input-sm' id='CaseStatus' onchange='onStatusChange(" + row.CaseID + ")'>" + setSelectOption(selectOption.CaseStatus, value) + "</select>";
+                            } else {
+                                return "<select class='form-control s-caseStatus'><option value=''>全部</option>" + setSelectOption(selectOption['CaseStatus'], filterValue['CaseStatus']) + "</CaseStatus>";
+                            }
+                        }
+                    }
+                ]],
+                rowStyler: function (index) {
+                    if (index == 0) return { class: 'filterColumn' }
+                },
+                onLoadSuccess: function (data) {
+                    $dataGrid.datagrid('insertRow', {
+                        index: 0,
+                        row: setFilterColumn(filterValue)
+                    });
+
+                    if (data.total > 0) {
+                        $('.datepicker').datepicker({
+                            dateFormat: 'yy-mm-dd'
+                        });
+
+                        $('.filterColumn').on('change', 'input, select', function () {
+                            filterValue = getFilterData();
+
+                            $dataGrid.datagrid('reload');
+                        });
+
+                        var rows = $dataGrid.datagrid("getRows");
+                        for (var i in rows) {
+                            var Case = rows[i];
+                            if (Case.CaseStatus != 2) {
+                                if (Case.CaseRequest == 5 || Case.CaseStatus == 3) {
+                                    selected = true;
+                                    $dataGrid.datagrid('selectRow', i);
+                                }
+                            } else {
+                                $('select#CaseStatus:eq(' + (i - 1) + ')').attr("disabled", "disabled")
+                            }
+                        }
+                    } else {
+                        $dataGrid.datagrid('deleteRow', 0);
+                    }
+                },
+                onBeforeLoad: function (param) {
+                    Object.keys(filterValue).forEach(function (key) {
+                        if (!isEmpty(filterValue[key])) param[key] = filterValue[key];
+                    });
+                },
+                onBeforeSelect: selectAction,
+                onBeforeUnselect: selectAction,
+                pagination: true,
+                pagePosition: "bottom",
+                pageSize: pageSize
+            });
+
+            pager = $dataGrid.datagrid("getPager");
+            $(pager).pagination({
+                pageSize: pageSize,
+                showPageList: true,
+                pageList: [100, 200, 300, 500],
+                beforePageTest: "第",
+                afterPageTest: "頁，共 {pages} 頁",
+                displayMsg: "顯示 {from} 到 {to} 筆資料，共 {total} 筆資料"
+            });
+        }
+
+        function selectAction(index, row) {
+            if (selected) {
+                selected = false;
+                return true;
+            }
+            return false;
+        }
+        
+        function getFilterData() {
+            return {
+                OrderID: $('.filterColumn .s-orderID').val(),
+                LabelID: $('.filterColumn .s-labelID').val(),
+                CreateDate: $('.filterColumn .s-createDate').val(),
+                RequestDate: $('.filterColumn .s-requestDate').val(),
+                ResponseDate: $('.filterColumn .s-responseDate').val(),
+                CaseType: $('.filterColumn .s-caseType').val(),
+                CaseRequest: $('.filterColumn .s-caseRequest').val(),
+                CaseStatus: $('.filterColumn .s-caseStatus').val()
+            };
+        }
+
+        function setFilterColumn(filterValue) {
+            return {
+                OrderID: "<input type='text' class='form-control s-orderID' value='" + (!isEmpty(filterValue['OrderID']) ? filterValue['OrderID'] : '') + "'>",
+                LabelID: "<input type='text' class='form-control s-labelID' value='" + (!isEmpty(filterValue['LabelID']) ? filterValue['LabelID'] : '') + "'>",
+                CreateDate: "<input type='text' class='form-control datepicker s-createDate' value='" + (!isEmpty(filterValue['CreateDate']) ? filterValue['CreateDate'] : '') + "'>",
+                RequestDate: "<input type='text' class='form-control datepicker s-requestDate' value='" + (!isEmpty(filterValue['RequestDate']) ? filterValue['RequestDate'] : '') + "'>",
+                ResponseDate: "<input type='text' class='form-control datepicker s-responseDate' value='" + (!isEmpty(filterValue['ResponseDate']) ? filterValue['ResponseDate'] : '') + "'>",
+                CaseType: "<select class='form-control s-caseType'><option value=''>全部</option>" + setSelectOption(selectOption['CaseType'], filterValue['CaseType']) + "</select>",
+                CaseRequest: "<select class='form-control s-caseRequest'><option value=''>全部</option>" + setSelectOption(selectOption['CaseRequest'], filterValue['CaseRequest']) + "</select>",
+                CaseStatus: ""
+            };
+        }
+
+        function setSelectOption(optionList, value) {
+            var option = "";
+
+            if (optionList.length > 0) {
+                for (var i in optionList) {
+                    option += "<option value='" + optionList[i]["value"] + "' " + (!isEmpty(value) && optionList[i]["value"] == value ? "selected" : "") + ">" + optionList[i]["text"] + "</option>";
+                }
+            }
+
+            return option;
+        }
+
+        function onStatusChange(CaseID) {
+            if (confirm("是否確定要修改?")) {
+                var index = $dataGrid.datagrid("getRowIndex", CaseID) - 1;
+                var CaseStatus = $('select#CaseStatus:eq(' + index + ')').val();
+                ajaxUrl('@Url.Action("updateStatus", "caseEvent")', 'post', { CaseID, CaseStatus }).done(function (response) {
+                    if (response.status) {
+                        alert("Success!");
+                        $dataGrid.datagrid('reload');
+                    } else {
+                        alert(response.message);
+                    }
+                });
+            }
+        }
+
+        function isEmpty(value) {
+            return (value == undefined) || (value == null) || (value == "");
+        }
+
+        function ajaxUrl(url, type, data) {
+            type = !isEmpty(type) ? type : {};
+            data = !isEmpty(data) ? data : {};
+
+            return $.ajax({
+                url: url,
+                type: type,
+                data: data,
+                dataType: "json"
+            });
+        }
+    </script>
+}
+
+

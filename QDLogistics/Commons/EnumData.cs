@@ -78,7 +78,7 @@ namespace QDLogistics.Commons
             };
         }
 
-        public enum LabelStatus { 正常, 鎖定中, 完成, 作廢 }
+        public enum LabelStatus { 正常, 鎖定中, 完成, 作廢, 回收 }
 
         public enum CaseEventType { CancelShipment, UpdateTracking, UpdateShipment, ChangeShippingMethod }
         public static Dictionary<CaseEventType, string> CaseEventTypeList()

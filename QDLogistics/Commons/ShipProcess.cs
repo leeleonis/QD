@@ -306,6 +306,7 @@ namespace QDLogistics.Commons
                     });
                 }
 
+                package.ShipDate = SCWS.SyncOn;
                 package.POId = newPurchase.ID;
                 package.TrackingNumber = "";
                 MyHelp.Log("PurchaseOrder", package.OrderID, string.Format("開啟 Purchase Order【{0}】成功", package.POId));
@@ -495,7 +496,7 @@ namespace QDLogistics.Commons
                 string[] productType = package.Items.Where(i => i.IsEnable == true).Select(i => i.Skus.ProductType.ChtName).Distinct().ToArray();
                 sheet.GetRow(26).GetCell(6).SetCellValue(string.Join(", ", productType));
 
-                string[] brandName = package.Items.Where(i => i.IsEnable.Value && !i.Skus.Brand.Equals(0)).Select(i => i.Skus.Manufacturers.ManufacturerName).Distinct().ToArray();
+                string[] brandName = package.Items.Where(i => i.IsEnable.Value && !i.Skus.Brand.Equals(0) && !i.Skus.Brand.Equals(-1)).Select(i => i.Skus.Manufacturers.ManufacturerName).Distinct().ToArray();
                 sheet.GetRow(28).GetCell(brandName.Any() ? 8 : 4).SetCellValue("✔");
                 sheet.GetRow(28).GetCell(11).SetCellValue(string.Join(", ", brandName));
 

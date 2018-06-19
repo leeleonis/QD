@@ -18,6 +18,7 @@ namespace QDLogistics.Models
         public int OrderID { get; set; }
         public int PackageID { get; set; }
         public string LabelID { get; set; }
+        public string NewLabelID { get; set; }
         public int MethodID { get; set; }
         public byte Type { get; set; }
         public byte Request { get; set; }
@@ -25,5 +26,7 @@ namespace QDLogistics.Models
         public System.DateTime Create_at { get; set; }
         public Nullable<System.DateTime> Request_at { get; set; }
         public Nullable<System.DateTime> Response_at { get; set; }
+    
+        public virtual Packages Packages { get; set; }
     }
 }

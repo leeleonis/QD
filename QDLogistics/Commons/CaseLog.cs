@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using DirectLineApi.IDS;
+using Newtonsoft.Json;
 using QDLogistics.Models;
 using QDLogistics.Models.Repositiry;
 using QDLogistics.OrderService;
@@ -16,6 +17,7 @@ namespace QDLogistics.Commons
         private IRepository<CaseEvent> CaseEvent;
         private IRepository<Packages> Packages;
         private IRepository<Items> Items;
+        private IRepository<SerialNumberForRefundLabel> RefundLabelSerial;
 
         private Orders orderData;
         private Packages packageData;
@@ -60,14 +62,14 @@ namespace QDLogistics.Commons
         {
             if (!CaseExit(caseType)) return CreateEvent(orderData.OrderID, packageData.ID, packageData.TagNo, caseType);
 
-            return db.CaseEvent.AsNoTracking().First(c => c.PackageID.Equals(packageData.ID) && c.LabelID.Equals(packageData.TagNo) && c.Type.Equals((byte)caseType));
+            return packageData.CaseEvent.First(c => c.LabelID.Equals(packageData.TagNo) && c.Type.Equals((byte)caseType));
         }
 
         public bool CaseExit(EnumData.CaseEventType caseType)
         {
             if (packageData == null) throw new Exception("未設定訂單!");
 
-            return db.CaseEvent.AsNoTracking().Where(c => c.PackageID.Equals(packageData.ID) && c.LabelID.Equals(packageData.TagNo) && c.Type.Equals((byte)caseType)).Any();
+            return packageData.CaseEvent.Where(c => c.LabelID.Equals(packageData.TagNo) && c.Type.Equals((byte)caseType)).Any();
         }
 
         public void SendTrackingMail(string directLine, List<DirectLineLabel> labelList)
@@ -178,7 +180,6 @@ namespace QDLogistics.Commons
             if (packageData == null) throw new Exception("未設定訂單!");
 
             if (CaseEvent == null) CaseEvent = new GenericRepository<CaseEvent>(db);
-            if (Items == null) Items = new GenericRepository<Items>(db);
 
             CaseEvent eventData = GetCaseEvent(EnumData.CaseEventType.CancelShipment);
             try
@@ -193,21 +194,40 @@ namespace QDLogistics.Commons
 
                 if (eventData.Request.Equals((byte)EnumData.CaseEventRequest.Successful))
                 {
+                    if (Items == null) Items = new GenericRepository<Items>(db);
+                    if (RefundLabelSerial == null) RefundLabelSerial = new GenericRepository<SerialNumberForRefundLabel>(db);
+
                     try
                     {
                         MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】開始更新退貨倉", orderData.OrderID), session);
 
                         if (SCWS != null) SCWS = new SC_WebService("tim@weypro.com", "timfromweypro");
 
-                        var SC_items = SCWS.Get_OrderData(orderData.OrderID).Order.Items;
+                        var SC_order = SCWS.Get_OrderData(orderData.OrderID).Order;
+                        SCWS.Update_PackageShippingStatus(SC_order.Packages.First(p => p.ID.Equals(packageData.ID)), packageData.TrackingNumber, packageData.Method.Carriers.Name);
+                        var SC_items = SC_order.Items.Where(i => i.PackageID.Equals(packageData.ID)).ToArray();
                         foreach (Items item in itemList)
                         {
                             SC_items.First(i => i.ID.Equals(item.ID)).ReturnedToWarehouseID = returnWarehouseID;
+                            SCWS.Update_OrderItem(SC_items.First(i => i.ID.Equals(item.ID)));
+
                             item.ReturnedToWarehouseID = returnWarehouseID;
                             Items.Update(item, item.ID);
-                        }
 
-                        SCWS.Update_OrderItem(SC_items);
+                            if (item.SerialNumbers.Any())
+                            {
+                                foreach (var serial in item.SerialNumbers.ToList())
+                                {
+                                    RefundLabelSerial.Create(new SerialNumberForRefundLabel()
+                                    {
+                                        oldLabelID = eventData.LabelID,
+                                        Sku = item.ProductID,
+                                        SerailNumber = serial.SerialNumber,
+                                        WarehouseID = returnWarehouseID
+                                    });
+                                }
+                            }
+                        }
                         Items.SaveChanges();
 
                         MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0} 完成更新退貨倉", orderData.OrderID), session);
@@ -336,9 +356,9 @@ namespace QDLogistics.Commons
 
             if (CaseEvent == null) CaseEvent = new GenericRepository<CaseEvent>(db);
 
+            CaseEvent eventData = GetCaseEvent(EnumData.CaseEventType.UpdateShipment);
             try
             {
-                CaseEvent eventData = GetCaseEvent(EnumData.CaseEventType.UpdateShipment);
                 eventData.Request = request;
                 eventData.Request_at = DateTime.UtcNow;
 
@@ -352,6 +372,10 @@ namespace QDLogistics.Commons
             }
             catch (Exception e)
             {
+                eventData.Status = (byte)EnumData.CaseEventStatus.Error;
+                CaseEvent.Update(eventData, eventData.ID);
+                CaseEvent.SaveChanges();
+
                 MyHelp.Log("CaseEvent", orderData.OrderID, e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message, session);
             }
         }
@@ -367,15 +391,16 @@ namespace QDLogistics.Commons
                 ShippingMethod method = db.ShippingMethod.AsNoTracking().FirstOrDefault(m => m.IsEnable && m.ID.Equals(methodID));
                 if (method == null) throw new Exception("找不到選擇的運輸方式!!");
 
+                DirectLine directLine = db.DirectLine.AsNoTracking().FirstOrDefault(d => d.ID.Equals(packageData.Method.DirectLine));
+                if (directLine == null) throw new Exception("找不到Direct Line運輸廠商!");
+
                 CaseEvent eventData = GetCaseEvent(EnumData.CaseEventType.ChangeShippingMethod);
-                eventData.MethodID = methodID;
+                eventData.NewLabelID = CreateNewLabel(directLine.Abbreviation, method);
+                eventData.MethodID = method.ID;
                 eventData.Request_at = DateTime.UtcNow;
 
                 CaseEvent.Update(eventData, eventData.ID);
                 CaseEvent.SaveChanges();
-
-                DirectLine directLine = db.DirectLine.AsNoTracking().FirstOrDefault(d => d.ID.Equals(packageData.Method.DirectLine));
-                if (directLine == null) throw new Exception("找不到Direct Line運輸廠商!");
 
                 switch (directLine.Abbreviation)
                 {
@@ -383,7 +408,7 @@ namespace QDLogistics.Commons
                         //receiveMails = new string[] { "gloria.chiu@contin-global.com", "cherry.chen@contin-global.com", "TWCS@contin-global.com", "contincs@gmail.com" };
                         receiveMails = new string[] { "qd.tuko@hotmail.com" };
 
-                        IDS_Api = new IDS_API();
+                        IDS_Api = new IDS_API(method.Carriers.CarrierAPI);
                         string oldMethodType = IDS_Api.GetServiceType(packageData.Method.MethodType.Value);
                         string newMethodType = IDS_Api.GetServiceType(method.MethodType.Value);
                         mailTitle = string.Format("TW018 - Change Shipping Method for {0} (from {1} to {2})", packageData.TagNo, oldMethodType, newMethodType);
@@ -406,6 +431,44 @@ namespace QDLogistics.Commons
             }
         }
 
+        private string CreateNewLabel(string directLine, ShippingMethod method)
+        {
+            if (packageData == null) throw new Exception("未設定訂單!");
+
+            MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("開始建立訂單【{0}】新標籤號碼", orderData.OrderID), session);
+
+            string labelID = "";
+
+            try
+            {
+                switch (directLine)
+                {
+                    case "IDS":
+                        IDS_Api = new IDS_API(method.Carriers.CarrierAPI);
+                        CreateOrderResponse IDS_Result = IDS_Api.CreateOrder(packageData, method);
+
+                        if (!IDS_Result.status.Equals("200"))
+                        {
+                            var error = JsonConvert.DeserializeObject<List<List<List<object>>>>(JsonConvert.SerializeObject(IDS_Result.error));
+                            var msg = JsonConvert.SerializeObject(error.SelectMany(e => e).First(e => e[0].Equals(packageData.OrderID.ToString()))[1]);
+                            throw new Exception(JsonConvert.DeserializeObject<string[]>(msg)[0]);
+                        }
+
+                        labelID = IDS_Result.labels.First(l => l.salesRecordNumber.Equals(packageData.OrderID.ToString())).orderid;
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                string msg = e.InnerException != null && string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+                throw new Exception(string.Format("建立【{0}】標籤號碼失敗", directLine));
+            }
+
+            MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("成功建立訂單【{0}】新標籤號碼", orderData.OrderID), session);
+
+            return labelID;
+        }
+
         public void ChangeShippingMethodResponse(byte request)
         {
             if (packageData == null) throw new Exception("未設定訂單!");
@@ -413,22 +476,72 @@ namespace QDLogistics.Commons
             if (CaseEvent == null) CaseEvent = new GenericRepository<CaseEvent>(db);
             if (Packages == null) Packages = new GenericRepository<Packages>(db);
 
+            CaseEvent eventData = GetCaseEvent(EnumData.CaseEventType.ChangeShippingMethod);
             try
             {
-                CaseEvent eventData = GetCaseEvent(EnumData.CaseEventType.UpdateShipment);
-                eventData.Request = request;
-                eventData.Request_at = DateTime.UtcNow;
-                
-                packageData.ShippingMethod = eventData.MethodID;
-                Packages.Update(packageData, packageData.ID);
+                MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】開始更新運輸方式", orderData.OrderID), session);
 
+                eventData.Request = request;
+                eventData.Status = (byte)EnumData.CaseEventStatus.Locked;
+                eventData.Request_at = DateTime.UtcNow;
                 CaseEvent.Update(eventData, eventData.ID);
                 CaseEvent.SaveChanges();
+
+                if (eventData.Request.Equals((byte)EnumData.CaseEventRequest.Successful))
+                {
+                    packageData.TrackingNumber = GetTrackingNumber();
+                    packageData.ShippingMethod = eventData.MethodID;
+                    packageData.TagNo = eventData.NewLabelID;
+                    Packages.Update(packageData, packageData.ID);
+
+                    eventData.Status = (byte)EnumData.CaseEventStatus.Close;
+                    CaseEvent.Update(eventData, eventData.ID);
+                    CaseEvent.SaveChanges();
+                }
+
+                MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】完成更新運輸方式", orderData.OrderID), session);
             }
             catch (Exception e)
             {
+                eventData.Status = (byte)EnumData.CaseEventStatus.Error;
+                CaseEvent.Update(eventData, eventData.ID);
+                CaseEvent.SaveChanges();
+
                 MyHelp.Log("CaseEvent", orderData.OrderID, e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message, session);
             }
+        }
+
+        private string GetTrackingNumber()
+        {
+            if (packageData == null) throw new Exception("未設定訂單!");
+
+            string tracking = "";
+
+            try
+            {
+                DirectLine directLine = db.DirectLine.AsNoTracking().FirstOrDefault(d => d.ID.Equals(packageData.Method.DirectLine));
+                if (directLine == null) throw new Exception("找不到Direct Line運輸廠商!");
+
+                switch (directLine.Abbreviation)
+                {
+                    case "IDS":
+                        IDS_Api = new IDS_API();
+                        var IDS_Result = IDS_Api.GetTrackingNumber(packageData);
+                        if (IDS_Result.trackingnumber.Any(t => t.First().Equals(packageData.OrderID.ToString())))
+                        {
+                            tracking = IDS_Result.trackingnumber.Last(t => t.First().Equals(packageData.OrderID.ToString()))[1];
+                        }
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                string msg = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+
+                throw new Exception(string.Format("訂單【{0}】建立RMA失敗! - {1}", orderData.OrderID, msg));
+            }
+
+            return tracking;
         }
 
         private CaseEvent CreateEvent(int orderID, int packageID, string labelID, EnumData.CaseEventType caseType)
@@ -553,6 +666,7 @@ namespace QDLogistics.Commons
                 if (CaseEvent != null) CaseEvent.Dispose();
                 if (Packages != null) Packages.Dispose();
                 if (Items != null) Items.Dispose();
+                if (RefundLabelSerial != null) RefundLabelSerial.Dispose();
             }
 
             db.Dispose();

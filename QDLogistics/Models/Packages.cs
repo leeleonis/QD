@@ -20,6 +20,7 @@ namespace QDLogistics.Models
             this.DeclaredTotal = 0m;
             this.UploadTracking = true;
             this.Items = new HashSet<Items>();
+            this.CaseEvent = new HashSet<CaseEvent>();
         }
     
         public Nullable<bool> IsEnable { get; set; }
@@ -66,5 +67,7 @@ namespace QDLogistics.Models
         public virtual ShippingMethod Method { get; set; }
         public virtual Box Box { get; set; }
         public virtual DirectLineLabel Label { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<CaseEvent> CaseEvent { get; set; }
     }
 }
