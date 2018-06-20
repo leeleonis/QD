@@ -28,6 +28,44 @@ namespace QDLogistics.Controllers
             return View();
         }
 
+        [HttpPost]
+        public ActionResult CreateCaseEvent(int packageID, byte caseType, int methodID)
+        {
+            AjaxResult result = new AjaxResult();
+
+            try
+            {
+                Packages package = db.Packages.AsNoTracking().First(p => p.IsEnable.Value && p.ID.Equals(packageID));
+                if (package == null) throw new Exception("找不到訂單!");
+
+
+                using (CaseLog CaseLog = new CaseLog(package, Session))
+                {
+                    switch (caseType)
+                    {
+                        case (byte)EnumData.CaseEventType.CancelShipment:
+                            CaseLog.SendCancelMail();
+                            break;
+
+                        case (byte)EnumData.CaseEventType.UpdateShipment:
+                            CaseLog.SendUpdateShipmentMail();
+                            break;
+
+                        case (byte)EnumData.CaseEventType.ChangeShippingMethod:
+                            CaseLog.SendChangeShippingMethodMail(methodID);
+                            break;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                result.status = false;
+                result.message = e.InnerException != null && string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+            }
+
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
         [HttpGet]
         public void Receive()
         {
@@ -65,6 +103,11 @@ namespace QDLogistics.Controllers
                                         SyncProcess sync = new SyncProcess(Session);
                                         return sync.Sync_Order(package.OrderID.Value);
                                     }));
+
+                                    DirectLineLabel label = db.DirectLineLabel.AsNoTracking().First(l => l.IsEnable && l.LabelID.Equals(eventData.LabelID));
+                                    label.Status = (byte)EnumData.LabelStatus.作廢;
+                                    Label.Update(label, label.LabelID);
+                                    Label.SaveChanges();
                                 }
                                 break;
 

@@ -725,8 +725,7 @@ namespace QDLogistics.Controllers
                     Dictionary<int, bool> methodData = JsonConvert.DeserializeObject<Dictionary<int, bool>>(warehouse.CarrierData);
 
                     TimeZoneConvert timeZoneConvert = new TimeZoneConvert();
-                    EnumData.TimeZone TimeZone = MyHelp.GetTimeZone((int)Session["TimeZone"]);
-                    string boxID = string.Format("{0}-{1}", db.DirectLine.AsNoTracking().First(d => d.ID.Equals(type)).Abbreviation, timeZoneConvert.ConvertDateTime(TimeZone).ToString("yyyyMMdd"));
+                    string boxID = string.Format("{0}-{1}", db.DirectLine.AsNoTracking().First(d => d.ID.Equals(type)).Abbreviation, timeZoneConvert.Utc.ToString("yyyyMMdd"));
                     int count = Box.GetAll(true).Count(b => b.IsEnable && b.DirectLine.Equals(type) && b.BoxID.Contains(boxID)) + 1;
                     byte[] Byte = BitConverter.GetBytes(count);
                     Byte[0] += 64;

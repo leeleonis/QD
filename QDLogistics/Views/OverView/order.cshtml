@@ -4,6 +4,10 @@
     <link href="~/Content/themes/default/easyui.css" rel="stylesheet" />
     <link href="~/Content/themes/icon.css" rel="stylesheet" />
     <style>
+        table tbody tr td {
+            vertical-align: middle !important;
+        }
+
         .filterColumn td div {
             padding: 0
         }
@@ -11,6 +15,31 @@
 }
 <div id="content">
     <section id="widget-grid" class="">
+        <div class="hidden">
+            <div id="dialog-case" class="easyui-dialog" title="請選擇Case Type" data-options="iconCls:'icon-edit',closed:true,resizable:false" style="width:500px;">
+                <div class="col-sm-12" style="text-align:center; padding:0px;">
+                    <form id="form-case">
+                        <input type="hidden" id="packageID" name="packageID" />
+                        <table class="table table-bordered text-left" style="margin:0;">
+                            <tr>
+                                <td width="50"><input class="form-control" type="radio" name="caseType" value="0" style="height:20px;" checked /></td>
+                                <td colspan="2">Cancel Shipment</td>
+                            </tr>
+                            <tr>
+                                <td width="50"><input class="form-control" type="radio" name="caseType" value="2" style="height:20px;" /></td>
+                                <td colspan="2">Update Shipment</td>
+                            </tr>
+                            <tr>
+                                <td width="50"><input class="form-control" type="radio" name="caseType" value="3" style="height:20px;" /></td>
+                                <td width="40%">Change Shipping Method</td>
+                                <td style="padding:0px;"><select class="form-control" id="select-method" name="methodID"></select></td>
+                            </tr>
+                            <tr><td style="text-align:right;" colspan="3"><button type="button" class="btn btn-default btn-sm" id="btn-submit">送出</button></td></tr>
+                        </table>
+                    </form>
+                </div>
+            </div>
+        </div>
         <div class="row">
             <article class="col-xs-12">
                 <table id="DataGrid"></table>
@@ -21,10 +50,10 @@
 @section pagespecific {
     <script src="~/scripts/jquery.easyui-1.4.3.min.js"></script>
     <script src="~/scripts/datagrid-detailview.js"></script>
-    <script src="~/scripts/jquery.number.min.js"></script>
     <script type="text/javascript">
         var pager, pageSize = 100, selectOption, filterValue = {}
         var $dataGrid;
+        var $caseDialog = $('#dialog-case'), $caseForm = $('#form-case'), $methodSelect = $('#select-method'), $submitBtn = $('#btn-submit');
 
         $(function () {
             getOption("@Url.Action("getSelectOption", "overview")").done(function (response) {
@@ -35,6 +64,20 @@
                 }
 
                 dataInit();
+            });
+
+            $submitBtn.click(function () {
+                if (confirm("是否確定送出?")) {
+                    var data = $caseForm.serializeArray();
+                    ajaxUrl('@Url.Action("createCaseEvent", "caseEvent")', 'post', data).done(function (response) {
+                        if (response.status) {
+                            alert("Success!");
+                            $caseDialog.dialog("close");
+                        } else {
+                            alert(response.message);
+                        }
+                    });
+                }
             });
         });
 
@@ -87,7 +130,15 @@
                     { field: "DeclaredTotal", title: "Export Value<br />出口價值", width: 90, align: "center", sortable: false },
                     { field: "OrderCurrencyCode", title: "Currency<br />幣別", width: 80, align: "center", sortable: false },
                     { field: "StatusCode", title: "Status<br />訂單狀態", width: 120, align: "center", sortable: false },
-                    { field: "ProccessStatus", title: "工作區塊", width: 120, align: "center", sortable: false }
+                    { field: "ProccessStatus", title: "工作區塊", width: 120, align: "center", sortable: false },
+                    {
+                        field: "HasCaseAction", title: "Case Action", width: 80, align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            if (!isEmpty(row.OrderID)) {
+                                return "<button type='button' class='btn btn-default btn-sm' onclick='createCase(" + row.PackageID + ")' " + (row.HasCaseAction ? '' : 'disabled') + ">CASE</button>"
+                            }
+                        }
+                    }
                 ]],
                 rowStyler: function (index, value) {
                     if (index == 0) return { class: 'filterColumn' }
@@ -155,6 +206,30 @@
                 beforePageTest: "第",
                 afterPageTest: "頁，共 {pages} 頁",
                 displayMsg: "顯示 {from} 到 {to} 筆資料，共 {total} 筆資料"
+            });
+        }
+
+        function createCase(packageID) {
+            $('#packageID').val(packageID);
+            ajaxUrl('@Url.Action("getShippingMethodByDirectLine", "overview")', 'get', { packageID }).done(function (response) {
+                if (response.status) {
+                    $methodSelect.html(response.data);
+                    $caseDialog.dialog('open');
+                } else {
+                    alert(response.message);
+                }
+            });
+        }
+
+        function ajaxUrl(url, type, data) {
+            type = !isEmpty(type) ? type : {};
+            data = !isEmpty(data) ? data : {};
+
+            return $.ajax({
+                url: url,
+                type: type,
+                data: data,
+                dataType: "json"
             });
         }
 

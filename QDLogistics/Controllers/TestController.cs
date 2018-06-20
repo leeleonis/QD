@@ -408,9 +408,8 @@ namespace QDLogistics.Controllers
             //    }
             //}
 
-            using (CaseLog CaseLog = new CaseLog(db.Packages.AsNoTracking().First(p => p.IsEnable.Value && p.OrderID.Value.Equals(orderID)), HttpContext.Session))
+            using (CaseLog CaseLog = new CaseLog(db.Packages.AsNoTracking().First(p => p.IsEnable.Value && p.OrderID.Value.Equals(orderID)), Session))
             {
-                CaseLog.SendUpdateShipmentMail();
                 CaseLog.SendChangeShippingMethodMail(34);
             }
         }

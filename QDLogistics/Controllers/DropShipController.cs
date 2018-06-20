@@ -588,7 +588,6 @@ namespace QDLogistics.Controllers
                             List<DirectLine> directLineList = db.DirectLine.AsNoTracking().Where(d => d.IsEnable).ToList();
 
                             TimeZoneConvert timeZoneConvert = new TimeZoneConvert();
-                            EnumData.TimeZone TimeZone = MyHelp.GetTimeZone((int)session["TimeZone"]);
 
                             List<Packages> dispatchList;
                             List<string> errorList = new List<string>();
@@ -598,7 +597,7 @@ namespace QDLogistics.Controllers
                                 if (group.Join(packageList, m => m.ID, p => p.ShippingMethod, (m, p) => p).Any())
                                 {
                                     DirectLine directLine = directLineList.First(d => d.ID.Equals(group.Key));
-                                    string boxID = string.Format("{0}-{1}", directLine.Abbreviation, timeZoneConvert.ConvertDateTime(TimeZone).ToString("yyyyMMdd"));
+                                    string boxID = string.Format("{0}-{1}", directLine.Abbreviation, timeZoneConvert.Utc.ToString("yyyyMMdd"));
                                     int count = Box.GetAll(true).Count(b => b.IsEnable && b.DirectLine.Equals(directLine.ID) && b.BoxID.Contains(boxID)) + 1;
                                     byte[] Byte = BitConverter.GetBytes(count);
                                     Byte[0] += 64;
@@ -609,7 +608,7 @@ namespace QDLogistics.Controllers
                                     {
                                         DirectLineLabel label = package.Label;
                                         OrderData order = SCWS.Get_OrderData(package.OrderID.Value);
-                                        if (CheckOrderStatus(package, order.Order) && label.Status.Equals((byte)EnumData.LabelStatus.正常))
+                                        if (CheckOrderStatus(package, order.Order))
                                         {
                                             ThreadTask uploadPOTask = new ThreadTask(string.Format("直發商待出貨區 - 更新訂單【{0}】以及PO【{1}】資料至SC", package.OrderID, package.POId), session);
 
@@ -642,6 +641,7 @@ namespace QDLogistics.Controllers
 
                                             package.ProcessStatus = (int)EnumData.ProcessStatus.已出貨;
                                             package.BoxID = label.BoxID = boxID;
+                                            label.Status = (byte)EnumData.LabelStatus.正常;
                                             dispatchList.Add(package);
                                         }
                                         else

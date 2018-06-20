@@ -86,6 +86,8 @@ namespace QDLogistics.Controllers
                 TimeZoneConvert TimeZoneConvert = new TimeZoneConvert();
                 EnumData.TimeZone TimeZone = MyHelp.GetTimeZone((int)Session["TimeZone"]);
 
+                Dictionary<int, bool> isDirectLine = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable).ToDictionary(m => m.ID, m => m.IsDirectLine);
+
                 dataList.AddRange(results.Select(data => new
                 {
                     PackageID = data.package.ID,
@@ -103,6 +105,7 @@ namespace QDLogistics.Controllers
                     OrderCurrencyCode = Enum.GetName(typeof(CurrencyCodeType2), data.order.OrderCurrencyCode),
                     StatusCode = Enum.GetName(typeof(OrderStatusCode), data.order.StatusCode),
                     ProccessStatus = GetOrderLink(data),
+                    HasCaseAction = data.package.ProcessStatus.Equals((byte)EnumData.ProcessStatus.已出貨) && data.package.ShippingMethod.HasValue && isDirectLine.ContainsKey(data.package.ShippingMethod.Value) && isDirectLine[data.package.ShippingMethod.Value]
                 }));
             }
 
@@ -122,7 +125,7 @@ namespace QDLogistics.Controllers
             {
                 url = Url.Action(data.package.ProcessStatus.Equals(3) ? "shipped" : (data.package.ProcessStatus.Equals(1) ? "waiting" : "index"), "order", new { data.order.OrderID });
             }
-            
+
             return string.Format(link, url, Enum.GetName(typeof(EnumData.ProcessStatus), data.package.ProcessStatus));
         }
 
@@ -151,6 +154,46 @@ namespace QDLogistics.Controllers
             }
 
             result.data = new { CountryCode, CurrencyCode, StatusCode, ProccessStatusCode };
+
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
+        public ActionResult GetShippingMethodByDirectLine(int packageID)
+        {
+            AjaxResult result = new AjaxResult();
+
+            try
+            {
+                Packages package = db.Packages.AsNoTracking().First(p => p.IsEnable.Value && p.ID.Equals(packageID));
+                if (package == null) throw new Exception("找不到訂單!");
+
+                int warehouseID = package.Items.First(i => i.IsEnable.Value).ShipFromWarehouseID.Value;
+                Warehouses warehouse = db.Warehouses.AsNoTracking().First(w => w.IsEnable.Value);
+                if (warehouse == null) throw new Exception("找不到出貨倉!");
+
+                int[] methodIDs = new int[] { };
+                if (!string.IsNullOrEmpty(warehouse.CarrierData))
+                {
+                    Dictionary<string, bool> carrierData = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, bool>>(warehouse.CarrierData);
+                    methodIDs = carrierData.Where(c => c.Value).Select(c => int.Parse(c.Key)).ToArray();
+                }
+
+                var methodFilter = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && m.IsDirectLine && m.DirectLine.Equals(package.Method.DirectLine));
+                if (methodIDs.Any()) methodFilter = methodFilter.Where(m => methodIDs.Contains(m.ID));
+
+                string option = "";
+                foreach(var method in methodFilter.ToList())
+                {
+                    option += string.Format("<option value='{0}' {1}>{2}</option>", method.ID, (method.ID.Equals(package.ShippingMethod.Value) ? "selected" : ""), method.Name);
+                }
+
+                result.data = option;
+            }
+            catch (Exception e)
+            {
+                result.status = false;
+                result.message = e.InnerException != null && string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+            }
 
             return Json(result, JsonRequestBehavior.AllowGet);
         }

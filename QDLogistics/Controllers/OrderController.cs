@@ -758,6 +758,11 @@ namespace QDLogistics.Controllers
                                                     return sync.Update_Tracking(package);
                                                 }));
 
+                                                using (CaseLog CaseLog = new CaseLog(package, session))
+                                                {
+                                                    CaseLog.TrackingResponse();
+                                                }
+
                                                 label.Status = (byte)EnumData.LabelStatus.完成;
                                                 Label.Update(label, label.LabelID);
                                                 Label.SaveChanges();
@@ -766,7 +771,7 @@ namespace QDLogistics.Controllers
                                     }
                                     else
                                     {
-                                        MyHelp.Log("Box ", label.BoxID, string.Format("訂單【{0}】資料狀態異常", package.OrderID.Value), session);
+                                        MyHelp.Log("Box ", label.BoxID, string.Format("Direct Line訂單【{0}】資料狀態異常", package.OrderID.Value), session);
 
                                         package.Orders.StatusCode = (int)orderData.StatusCode;
                                         package.Orders.PaymentStatus = (int)orderData.PaymentStatus;
@@ -774,6 +779,11 @@ namespace QDLogistics.Controllers
 
                                         if (orderData.StatusCode.Equals((int)OrderStatusCode.Canceled))
                                         {
+                                            using (CaseLog CaseLog = new CaseLog(package, session))
+                                            {
+                                                CaseLog.SendCancelMail();
+                                            }
+
                                             label.Status = (byte)EnumData.LabelStatus.作廢;
                                         }
 
@@ -787,22 +797,14 @@ namespace QDLogistics.Controllers
                                 {
                                     MyHelp.Log("Box", null, "開始寄送Direct Line Tracking通知", session);
 
-                                    foreach (var group in remindList.GroupBy(l => l.BoxID))
+                                    using (CaseLog CaseLog = new CaseLog(session))
                                     {
-                                        Box box = db.Box.AsNoTracking().First(b => b.IsEnable && b.BoxID.Equals(group.Key));
-                                        DirectLine directLine = db.DirectLine.AsNoTracking().First(d => d.IsEnable && d.ID.Equals(box.DirectLine));
-
-                                        switch (directLine.Abbreviation)
+                                        foreach (var group in remindList.GroupBy(l => l.BoxID))
                                         {
-                                            case "IDS":
-                                                receiveMails = new string[] { "gloria.chiu@contin-global.com", "cherry.chen@contin-global.com", "TWCS@contin-global.com", "contincs@gmail.com" };
-                                                //receiveMails = new string[] { "qd.tuko@hotmail.com" };
-                                                mailTitle = string.Format("TW018 - {0} Orders Awaiting Dispatch", group.Count());
-                                                mailBody = "Hello<br /><br />We still could not find the last mile tracking for the below packages:<br />{0}<br />...<br /><br />Please update tracking info ASAP.Thank you<br /><br />Regards<br /><br />QD Team";
-                                                mailBody = string.Format(mailBody, string.Join("<br />", group.Select(l => l.LabelID)));
-                                                bool IDS_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, null, null, false);
-                                                if (!IDS_Status) MyHelp.Log("Box", null, "寄送IDS Direct Line Tracking通知失敗", session);
-                                                break;
+                                            Box box = db.Box.AsNoTracking().First(b => b.IsEnable && b.BoxID.Equals(group.Key));
+                                            DirectLine directLine = db.DirectLine.AsNoTracking().First(d => d.IsEnable && d.ID.Equals(box.DirectLine));
+
+                                            CaseLog.SendTrackingMail(directLine.Abbreviation, group.ToList());
                                         }
                                     }
 
@@ -819,6 +821,68 @@ namespace QDLogistics.Controllers
 
                         return message;
                     }, HttpContext.Session));
+                }
+
+                lock (factory)
+                {
+                    ThreadTask threadTask = new ThreadTask("檢查 Case Event 進度");
+                    threadTask.AddWork(factory.StartNew(Session =>
+                    {
+                        threadTask.Start();
+
+                        db = new QDLogisticsEntities();
+                        IRepository<CaseEvent> CaseEvent = new GenericRepository<CaseEvent>(db);
+
+                        string message = "";
+
+                        try
+                        {
+                            HttpSessionStateBase session = (HttpSessionStateBase)Session;
+                            MyHelp.Log("CaseEvent", null, "開始檢查 Case Event 進度", session);
+
+                            byte[] CaseType = new byte[] { (byte)EnumData.CaseEventType.CancelShipment, (byte)EnumData.CaseEventType.ChangeShippingMethod };
+                            List<CaseEvent> CaseEventList = db.CaseEvent.AsNoTracking().Where(c => CaseType.Contains(c.Type) && c.Request.Equals((byte)EnumData.CaseEventRequest.None) && c.Status.Equals((byte)EnumData.CaseEventStatus.Open)).ToList();
+                            if (CaseEventList.Any())
+                            {
+                                using(CaseLog CaseLog = new CaseLog(session))
+                                {
+                                    DateTime today = DateTime.UtcNow;
+                                    foreach (CaseEvent eventData in CaseEventList)
+                                    {
+                                        if(eventData.Request_at.Value.AddDays(1).CompareTo(today) >= 0)
+                                        {
+                                            if(eventData.Create_at.AddDays(2).CompareTo(today) >= 0)
+                                            {
+                                                eventData.Request = (byte)EnumData.CaseEventRequest.Failed;
+                                                CaseEvent.Update(eventData, eventData.ID);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            switch (eventData.Type)
+                                            {
+                                                case (byte)EnumData.CaseEventType.CancelShipment:
+                                                    CaseLog.SendCancelMail();
+                                                    break;
+
+                                                case (byte)EnumData.CaseEventType.ChangeShippingMethod:
+                                                    CaseLog.SendChangeShippingMethodMail(eventData.MethodID, eventData.NewLabelID);
+                                                    break;
+                                            }
+                                        }
+                                    }
+                                    CaseEvent.SaveChanges();
+                                }
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            message = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+                        }
+
+                        return message;
+                    }, HttpContext.Session));
+
                 }
             }
             catch (DbEntityValidationException ex)
@@ -1094,7 +1158,7 @@ namespace QDLogistics.Controllers
 
                                     return message;
                                 }, Session));
-                            }                            
+                            }
                             break;
                         default:
                             foreach (PickProduct pick in pickList.Where(pick => groupList[serviceCode].Select(p => p.ID).ToArray().Contains(pick.PackageID.Value)).ToList())

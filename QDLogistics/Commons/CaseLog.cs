@@ -34,8 +34,8 @@ namespace QDLogistics.Commons
         private string mailTitle;
         private string mailBody;
         private string[] receiveMails;
-        //private string[] ccMails = new string[] { "peter@qd.com.tw", "kelly@qd.com.tw", "demi@qd.com.tw" };
-        private string[] ccMails = new string[] { };
+        private string[] ccMails = new string[] { "peter@qd.com.tw", "kelly@qd.com.tw", "demi@qd.com.tw" };
+        //private string[] ccMails = new string[] { };
 
         public CaseLog(HttpSessionStateBase session) : this(null, session) { }
 
@@ -80,6 +80,8 @@ namespace QDLogistics.Commons
 
             try
             {
+                MyHelp.Log("CaseEvent", null, string.Format("開始寄送 {0} - Direct Line Tracking通知", directLine), session);
+
                 CaseEvent eventData;
                 int[] packageIDs = labelList.Select(l => l.PackageID).ToArray();
                 foreach (Packages package in db.Packages.AsNoTracking().Where(p => packageIDs.Contains(p.ID)).ToList())
@@ -104,14 +106,20 @@ namespace QDLogistics.Commons
 
                         if (!MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, null, null, false))
                         {
-                            throw new Exception("寄送IDS Direct Line Tracking通知失敗");
+                            throw new Exception("寄送 IDS - Direct Line Tracking 通知失敗");
                         }
                         break;
                 }
+
+                MyHelp.Log("CaseEvent", null, string.Format("完成寄送 {0} - Direct Line Tracking通知", directLine), session);
             }
             catch (Exception e)
             {
-                MyHelp.Log("CaseEvent", null, e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message, session);
+                string errorMsg = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+
+                MyHelp.Log("CaseEvent", null, errorMsg, session);
+
+                throw new Exception(errorMsg);
             }
         }
 
@@ -151,8 +159,8 @@ namespace QDLogistics.Commons
                 switch (directLine.Abbreviation)
                 {
                     case "IDS":
-                        //receiveMails = new string[] { "gloria.chiu@contin-global.com", "cherry.chen@contin-global.com", "TWCS@contin-global.com", "contincs@gmail.com" };
-                        receiveMails = new string[] { "qd.tuko@hotmail.com" };
+                        receiveMails = new string[] { "gloria.chiu@contin-global.com", "cherry.chen@contin-global.com", "TWCS@contin-global.com", "contincs@gmail.com" };
+                        //receiveMails = new string[] { "qd.tuko@hotmail.com" };
                         mailTitle = string.Format("TW018 - Cancel Shipment Request for {0} (in {1} tracking {2})", packageData.TagNo, packageData.Method.Carriers.Name, packageData.TrackingNumber);
                         mailBody = CreateCancelMailBody(directLine.Abbreviation, eventData);
 
@@ -171,7 +179,11 @@ namespace QDLogistics.Commons
             }
             catch (Exception e)
             {
-                MyHelp.Log("CaseEvent", orderData.OrderID, e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message, session);
+                string errorMsg = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+
+                MyHelp.Log("CaseEvent", orderData.OrderID, errorMsg, session);
+
+                throw new Exception(errorMsg);
             }
         }
 
@@ -325,8 +337,8 @@ namespace QDLogistics.Commons
                 switch (directLine.Abbreviation)
                 {
                     case "IDS":
-                        //receiveMails = new string[] { "gloria.chiu@contin-global.com", "cherry.chen@contin-global.com", "TWCS@contin-global.com", "contincs@gmail.com" };
-                        receiveMails = new string[] { "qd.tuko@hotmail.com" };
+                        receiveMails = new string[] { "gloria.chiu@contin-global.com", "cherry.chen@contin-global.com", "TWCS@contin-global.com", "contincs@gmail.com" };
+                        //receiveMails = new string[] { "qd.tuko@hotmail.com" };
 
                         IDS_Api = new IDS_API();
                         string methodType = IDS_Api.GetServiceType(packageData.Method.MethodType.Value);
@@ -346,7 +358,11 @@ namespace QDLogistics.Commons
             }
             catch (Exception e)
             {
-                MyHelp.Log("CaseEvent", orderData.OrderID, e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message, session);
+                string errorMsg = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+
+                MyHelp.Log("CaseEvent", orderData.OrderID, errorMsg, session);
+
+                throw new Exception(errorMsg);
             }
         }
 
@@ -380,7 +396,7 @@ namespace QDLogistics.Commons
             }
         }
 
-        public void SendChangeShippingMethodMail(int methodID)
+        public void SendChangeShippingMethodMail(int methodID, string newLabelID)
         {
             if (packageData == null) throw new Exception("未設定訂單!");
 
@@ -395,7 +411,7 @@ namespace QDLogistics.Commons
                 if (directLine == null) throw new Exception("找不到Direct Line運輸廠商!");
 
                 CaseEvent eventData = GetCaseEvent(EnumData.CaseEventType.ChangeShippingMethod);
-                eventData.NewLabelID = CreateNewLabel(directLine.Abbreviation, method);
+                eventData.NewLabelID = string.IsNullOrEmpty(newLabelID) ? CreateNewLabel(directLine.Abbreviation, method) : newLabelID;
                 eventData.MethodID = method.ID;
                 eventData.Request_at = DateTime.UtcNow;
 
@@ -405,8 +421,8 @@ namespace QDLogistics.Commons
                 switch (directLine.Abbreviation)
                 {
                     case "IDS":
-                        //receiveMails = new string[] { "gloria.chiu@contin-global.com", "cherry.chen@contin-global.com", "TWCS@contin-global.com", "contincs@gmail.com" };
-                        receiveMails = new string[] { "qd.tuko@hotmail.com" };
+                        receiveMails = new string[] { "gloria.chiu@contin-global.com", "cherry.chen@contin-global.com", "TWCS@contin-global.com", "contincs@gmail.com" };
+                        //receiveMails = new string[] { "qd.tuko@hotmail.com" };
 
                         IDS_Api = new IDS_API(method.Carriers.CarrierAPI);
                         string oldMethodType = IDS_Api.GetServiceType(packageData.Method.MethodType.Value);
@@ -427,7 +443,11 @@ namespace QDLogistics.Commons
             }
             catch (Exception e)
             {
-                MyHelp.Log("CaseEvent", orderData.OrderID, e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message, session);
+                string errorMsg = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+
+                MyHelp.Log("CaseEvent", orderData.OrderID, errorMsg, session);
+
+                throw new Exception(errorMsg);
             }
         }
 
@@ -578,8 +598,8 @@ namespace QDLogistics.Commons
             switch (directLine)
             {
                 case "IDS":
-                    string HK_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Successful } });
-                    string UK_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Successful } });
+                    string HK_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Successful }, { "warehouseID", 163 } });
+                    string UK_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Successful }, { "warehouseID", 215 } });
                     string failed_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Failed } });
                     mailBody = "Hi All<br /><br />Please cancel the shipment for {0} and keep it in inventory.<br /><br />";
                     mailBody += "If you have successfully cancelled in Hong Kong, click <a href='{1}' target='_bland'>here</a>.<br /><br />";
@@ -615,6 +635,7 @@ namespace QDLogistics.Commons
 
             return mailBody;
         }
+
         private string CreateChangeShippingMethodMailBody(string directLine, string methodTypeChange, CaseEvent eventData)
         {
             string mailBody = "";
@@ -625,11 +646,12 @@ namespace QDLogistics.Commons
                 case "IDS":
                     string confirm_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Successful } });
                     string faild_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Failed } });
-                    mailBody = "Hi All<br /><br />The shipping method for {0} needs to change from {1}.<br /><br />";
-                    mailBody += "If you confirm the change, click <a href='{2}' target='_bland'>here</a>.<br /><br />";
-                    mailBody += "If you could not change, click <a href='{3}' target='_bland'>here</a>.<br /><br />";
+                    mailBody = "Hi All<br /><br />The shipping method for {0} needs to change from {1}. The new code is {2}. <br /><br />";
+                    mailBody += "Old: {0} <br />New: {2}<br /><br />";
+                    mailBody += "If you confirm the change, click <a href='{3}' target='_bland'>here</a>.<br /><br />";
+                    mailBody += "If you could not change, click <a href='{4}' target='_bland'>here</a>.<br /><br />";
                     mailBody += "You can only click on either of the links above ONCE. Please make sure to choose correctly.<br /><br />Please email us if the above sitaution doesn't apply.<br /><br />Regards<br /><br />QD Shipping";
-                    mailBody = string.Format(mailBody, eventData.LabelID, methodTypeChange, confirm_link, faild_link);
+                    mailBody = string.Format(mailBody, eventData.LabelID, methodTypeChange, eventData.NewLabelID, confirm_link, faild_link);
                     break;
             }
 
