@@ -637,7 +637,7 @@ namespace QDLogistics.Controllers
                 lock (factory)
                 {
                     ThreadTask threadTask = new ThreadTask("追蹤Direct Line訂單");
-                    threadTask.AddWork(factory.StartNew(Session =>
+                    threadTask.AddWork(factory.StartNew(HttpContext =>
                     {
                         threadTask.Start();
 
@@ -655,7 +655,8 @@ namespace QDLogistics.Controllers
 
                         try
                         {
-                            HttpSessionStateBase session = (HttpSessionStateBase)Session;
+                            HttpContextBase currentHttpContext = (HttpContextBase)HttpContext;
+                            HttpSessionStateBase session = currentHttpContext.Session;
                             MyHelp.Log("Box", null, "追蹤Direct Line訂單開始", session);
 
                             List<Box> boxList = Box.GetAll(true).Where(b => b.IsEnable && b.BoxType.Equals((byte)EnumData.DirectLineBoxType.DirectLine) && b.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.運輸中)).ToList();
@@ -758,9 +759,12 @@ namespace QDLogistics.Controllers
                                                     return sync.Update_Tracking(package);
                                                 }));
 
-                                                using (CaseLog CaseLog = new CaseLog(package, session))
+                                                using (CaseLog CaseLog = new CaseLog(package, currentHttpContext))
                                                 {
-                                                    CaseLog.TrackingResponse();
+                                                    if (CaseLog.CaseExit(EnumData.CaseEventType.UpdateTracking))
+                                                    {
+                                                        CaseLog.TrackingResponse();
+                                                    }
                                                 }
 
                                                 label.Status = (byte)EnumData.LabelStatus.完成;
@@ -779,7 +783,7 @@ namespace QDLogistics.Controllers
 
                                         if (orderData.StatusCode.Equals((int)OrderStatusCode.Canceled))
                                         {
-                                            using (CaseLog CaseLog = new CaseLog(package, session))
+                                            using (CaseLog CaseLog = new CaseLog(package, currentHttpContext))
                                             {
                                                 CaseLog.SendCancelMail();
                                             }
@@ -797,7 +801,7 @@ namespace QDLogistics.Controllers
                                 {
                                     MyHelp.Log("Box", null, "開始寄送Direct Line Tracking通知", session);
 
-                                    using (CaseLog CaseLog = new CaseLog(session))
+                                    using (CaseLog CaseLog = new CaseLog(currentHttpContext))
                                     {
                                         foreach (var group in remindList.GroupBy(l => l.BoxID))
                                         {
@@ -820,7 +824,7 @@ namespace QDLogistics.Controllers
                         }
 
                         return message;
-                    }, HttpContext.Session));
+                    }, HttpContext));
                 }
 
                 lock (factory)
@@ -837,21 +841,21 @@ namespace QDLogistics.Controllers
 
                         try
                         {
-                            HttpSessionStateBase session = (HttpSessionStateBase)Session;
-                            MyHelp.Log("CaseEvent", null, "開始檢查 Case Event 進度", session);
+                            HttpContextBase currentHttpContext = (HttpContextBase)HttpContext;
+                            MyHelp.Log("CaseEvent", null, "開始檢查 Case Event 進度", currentHttpContext.Session);
 
-                            byte[] CaseType = new byte[] { (byte)EnumData.CaseEventType.CancelShipment, (byte)EnumData.CaseEventType.ChangeShippingMethod };
+                            List<byte> CaseType = new List<byte>() { (byte)EnumData.CaseEventType.CancelShipment, (byte)EnumData.CaseEventType.ChangeShippingMethod };
                             List<CaseEvent> CaseEventList = db.CaseEvent.AsNoTracking().Where(c => CaseType.Contains(c.Type) && c.Request.Equals((byte)EnumData.CaseEventRequest.None) && c.Status.Equals((byte)EnumData.CaseEventStatus.Open)).ToList();
                             if (CaseEventList.Any())
                             {
-                                using(CaseLog CaseLog = new CaseLog(session))
+                                using (CaseLog CaseLog = new CaseLog(currentHttpContext))
                                 {
                                     DateTime today = DateTime.UtcNow;
                                     foreach (CaseEvent eventData in CaseEventList)
                                     {
-                                        if(eventData.Request_at.Value.AddDays(1).CompareTo(today) >= 0)
+                                        if (eventData.Request_at.Value.AddDays(1).CompareTo(today) >= 0)
                                         {
-                                            if(eventData.Create_at.AddDays(2).CompareTo(today) >= 0)
+                                            if (eventData.Create_at.AddDays(2).CompareTo(today) >= 0)
                                             {
                                                 eventData.Request = (byte)EnumData.CaseEventRequest.Failed;
                                                 CaseEvent.Update(eventData, eventData.ID);
@@ -859,6 +863,7 @@ namespace QDLogistics.Controllers
                                         }
                                         else
                                         {
+                                            CaseLog.OrderInit(eventData.Packages);
                                             switch (eventData.Type)
                                             {
                                                 case (byte)EnumData.CaseEventType.CancelShipment:
@@ -881,8 +886,7 @@ namespace QDLogistics.Controllers
                         }
 
                         return message;
-                    }, HttpContext.Session));
-
+                    }, HttpContext));
                 }
             }
             catch (DbEntityValidationException ex)

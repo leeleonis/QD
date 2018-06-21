@@ -6760,6 +6760,7 @@
     <Compile Include="Controllers\TestController.cs" />
     <Compile Include="Controllers\WebClientPrintAPIController.cs" />
     <Compile Include="Controllers\Website\PresetController.cs" />
+    <Compile Include="Helpers\HttpContextFactory.cs" />
     <Compile Include="Helpers\MyHelp.cs" />
     <Compile Include="App_Helpers\DashRouteHandler.cs" />
     <Compile Include="App_Helpers\HtmlHelperExtensions.cs" />

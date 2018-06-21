@@ -17,6 +17,8 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
+using System.Web;
 using System.Web.Hosting;
 using System.Web.Mvc;
 
@@ -388,29 +390,68 @@ namespace QDLogistics.Controllers
 
         public void Case_Test(int orderID)
         {
-            //***Send Tracking Mail***
-            //using (CaseLog CaseLog = new CaseLog(HttpContext.Session))
-            //{
-            //    Box box = db.Box.AsNoTracking().First(b => b.BoxID.Equals(boxID));
-            //    DirectLine directLine = db.DirectLine.AsNoTracking().First(d => d.ID.Equals(box.DirectLine));
-            //    CaseLog.SendTrackingMail(directLine.Abbreviation, box.DirectLineLabel.Where(l => l.IsEnable).ToList());
-            //}
+            TaskFactory factory = System.Web.HttpContext.Current.Application.Get("TaskFactory") as TaskFactory;
 
-            //Box box = db.Box.AsNoTracking().First(b => b.BoxID.Equals(boxID));
-            //foreach(Packages package in box.Packages.Where(p => p.IsEnable.Value).ToList())
-            //{
-            //    using (CaseLog CaseLog = new CaseLog(package, HttpContext.Session))
-            //    {
-            //        if(CaseLog.CaseExit(EnumData.CaseEventType.UpdateTracking))
-            //        {
-            //            CaseLog.TrackingResponse();
-            //        }
-            //    }
-            //}
-
-            using (CaseLog CaseLog = new CaseLog(db.Packages.AsNoTracking().First(p => p.IsEnable.Value && p.OrderID.Value.Equals(orderID)), Session))
+            lock (factory)
             {
-                CaseLog.SendChangeShippingMethodMail(34);
+                ThreadTask threadTask = new ThreadTask("檢查 Case Event 進度");
+                threadTask.AddWork(factory.StartNew(Session =>
+                {
+                    threadTask.Start();
+
+                    db = new QDLogisticsEntities();
+                    IRepository<CaseEvent> CaseEvent = new GenericRepository<CaseEvent>(db);
+
+                    string message = "";
+
+                    try
+                    {
+                        HttpSessionStateBase session = (HttpSessionStateBase)Session;
+                        MyHelp.Log("CaseEvent", null, "開始檢查 Case Event 進度", session);
+
+                        List<byte> CaseType = new List<byte>() { (byte)EnumData.CaseEventType.CancelShipment, (byte)EnumData.CaseEventType.ChangeShippingMethod };
+                        List<CaseEvent> CaseEventList = db.CaseEvent.AsNoTracking().Where(c => CaseType.Contains(c.Type) && c.Request.Equals((byte)EnumData.CaseEventRequest.None) && c.Status.Equals((byte)EnumData.CaseEventStatus.Open)).ToList();
+                        if (CaseEventList.Any())
+                        {
+                            using (CaseLog CaseLog = new CaseLog(session))
+                            {
+                                DateTime today = DateTime.UtcNow;
+                                foreach (CaseEvent eventData in CaseEventList)
+                                {
+                                    if (eventData.Request_at.Value.AddDays(1).CompareTo(today) >= 0)
+                                    {
+                                        if (eventData.Create_at.AddDays(2).CompareTo(today) >= 0)
+                                        {
+                                            eventData.Request = (byte)EnumData.CaseEventRequest.Failed;
+                                            CaseEvent.Update(eventData, eventData.ID);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        switch (eventData.Type)
+                                        {
+                                            case (byte)EnumData.CaseEventType.CancelShipment:
+                                                //CaseLog.SendCancelMail();
+                                                break;
+
+                                            case (byte)EnumData.CaseEventType.ChangeShippingMethod:
+                                                //CaseLog.SendChangeShippingMethodMail(eventData.MethodID, eventData.NewLabelID);
+                                                break;
+                                        }
+                                    }
+                                }
+                                CaseEvent.SaveChanges();
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        message = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+                    }
+
+                    return message;
+                }, HttpContext.Session));
+
             }
         }
 

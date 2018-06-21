@@ -115,6 +115,11 @@
                         formatter: function (value, row, index) {
                             return "<select class='form-control select-status' data-id='" + row.PackageID + "'>" + setSelectOption(selectOption['StatusCode'], row.StatusCode) + "</select>"
                         }
+                    }, {
+                        field: "CaseLink", width: 100, align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            return "<a href='@Url.Action("index", "caseEvent")?OrderID=" + row.OrderID + "' target='_blank'>CaseEvent</a>";
+                        }
                     }
                 ]],
                 onLoadSuccess: function (data) {
