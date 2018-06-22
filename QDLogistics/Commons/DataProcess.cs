@@ -76,6 +76,7 @@ namespace QDLogistics.Commons
                     obj.Add("UPC", data.item.Skus.UPC);
                     obj.Add("MarkettingSourceID", data.order.MarkettingSourceID);
                     break;
+                case "waiting":
                 case "shipped":
                     obj.Add("OrderID", data.order.OrderID);
                     obj.Add("PaymentDate", data.order.Payments.Any() ? MyHelp.DateTimeWithZone(data.order.Payments.First().AuditDate.Value).ToString("MM/dd/yyyy hh:mm:ss tt") : "");

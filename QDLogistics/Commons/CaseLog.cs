@@ -223,7 +223,7 @@ namespace QDLogistics.Commons
 
                 eventData.Request = request;
                 eventData.Status = (byte)EnumData.CaseEventStatus.Locked;
-                eventData.Request_at = DateTime.UtcNow;
+                eventData.Response_at = DateTime.UtcNow;
                 CaseEvent.Update(eventData, eventData.ID);
                 CaseEvent.SaveChanges();
 
@@ -401,7 +401,7 @@ namespace QDLogistics.Commons
                 MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】更新運輸進度", orderData.OrderID), session);
 
                 eventData.Request = request;
-                eventData.Request_at = DateTime.UtcNow;
+                eventData.Response_at = DateTime.UtcNow;
 
                 CaseEvent.Update(eventData, eventData.ID);
                 CaseEvent.SaveChanges();
@@ -523,7 +523,7 @@ namespace QDLogistics.Commons
 
                 eventData.Request = request;
                 eventData.Status = (byte)EnumData.CaseEventStatus.Locked;
-                eventData.Request_at = DateTime.UtcNow;
+                eventData.Response_at = DateTime.UtcNow;
                 CaseEvent.Update(eventData, eventData.ID);
                 CaseEvent.SaveChanges();
 

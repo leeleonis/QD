@@ -122,6 +122,7 @@ namespace QDLogistics.Controllers
 
             var typeList = new Dictionary<string, Dictionary<string, string>>();
             typeList.Add("order", new Dictionary<string, string>() { { "sheetName", "待出貨訂單" }, { "fileName", "OrderData" } });
+            typeList.Add("waiting", new Dictionary<string, string>() { { "sheetName", "待出貨訂單" }, { "fileName", "OrderData" } });
             typeList.Add("shipped", new Dictionary<string, string>() { { "sheetName", "已出貨訂單" }, { "fileName", "OrderData" } });
             typeList.Add("service", new Dictionary<string, string>() { { "sheetName", "預設運輸方式" }, { "fileName", "ServiceData" } });
             typeList.Add("country", new Dictionary<string, string>() { { "sheetName", "運送國家" }, { "fileName", "CountryData" } });
@@ -146,6 +147,7 @@ namespace QDLogistics.Controllers
             List<Packages> packageList;
             List<Items> itemList;
             List<OrderJoinData> orderDataList;
+            int[] packageIDs;
 
             switch (type)
             {
@@ -177,6 +179,23 @@ namespace QDLogistics.Controllers
                                 if (serialNumbers.Any()) data.item.SerialNumber = serialNumbers.Skip(i).FirstOrDefault().SerialNumber;
                                 jObjects.Add(DataProcess.SetOrderExcelData(type, data, new JObject()));
                             }
+                        }
+                    }
+                    break;
+
+                case "waiting":
+                    packageIDs = id.Select(i => int.Parse(i)).ToArray();
+                    var OrderData = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && packageIDs.Contains(p.ID)).ToList()
+                        .Join(db.Orders.AsNoTracking(), p => p.OrderID.Value, o => o.OrderID, (p, o) => new OrderJoinData() { order = o, package = p })
+                        .Join(db.Items.AsNoTracking().Where(i => i.IsEnable.Value), oData => oData.package.ID, i => i.PackageID.Value, (oData, i) => new OrderJoinData(oData) { item = i }).ToList();
+
+                    foreach (var oData in OrderData)
+                    {
+                        List<SerialNumbers> serials = oData.item.SerialNumbers.Where(s => string.IsNullOrEmpty(s.SerialNumber)).ToList();
+                        for (int i = 0; i < oData.item.Qty; i++)
+                        {
+                            if (serials.Skip(i).Any()) oData.item.SerialNumber = serials.Skip(i).First().SerialNumber;
+                            jObjects.Add(DataProcess.SetOrderExcelData(type, oData, new JObject()));
                         }
                     }
                     break;
@@ -283,7 +302,7 @@ namespace QDLogistics.Controllers
                     }
                     break;
                 case "dropshipDL":
-                    int[] packageIDs = id.Select(i => int.Parse(i)).ToArray();
+                    packageIDs = id.Select(i => int.Parse(i)).ToArray();
 
                     orderDataList = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && packageIDs.Contains(p.ID)).ToList()
                         .Join(db.Orders.AsNoTracking(), p => p.OrderID, o => o.OrderID, (p, o) => new OrderJoinData() { package = p, order = o })

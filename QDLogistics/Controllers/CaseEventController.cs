@@ -188,7 +188,11 @@ namespace QDLogistics.Controllers
                 int length = rows;
                 int start = (page - 1) * length;
                 total = results.Count();
-                results = results.OrderByDescending(c => c.ID).Skip(start).Take(length).ToList();
+
+                if(!string.IsNullOrEmpty(filter.Sort) && filter.Sort.Equals("RequestDate"))
+                {
+                    results = filter.Order.Equals("asc") ? results.OrderBy(c => c.Request_at).Skip(start).Take(length).ToList() : results.OrderByDescending(c => c.Request_at).Skip(start).Take(length).ToList();
+                }
 
                 dataList.AddRange(results.Select(c => new
                 {
@@ -281,6 +285,9 @@ namespace QDLogistics.Controllers
             public byte? CaseType { get; set; }
             public byte? CaseRequest { get; set; }
             public byte? CaseStatus { get; set; }
+
+            public string Sort { get; set; }
+            public string Order { get; set; }
         }
 
         public class LinkReceive : IDisposable

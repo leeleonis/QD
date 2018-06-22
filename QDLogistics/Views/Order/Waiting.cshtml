@@ -105,9 +105,13 @@
                 </div>
                 <div class="table-cell col-xs-2">
                     <div class="action-button col-xs-12">
-                        <button type="button" class="btn btn-default btn-sm btn-block" id="btn-import">Import</button>
                         <button type="button" class="btn btn-default btn-sm btn-block" id="btn-export">Export</button>
-                        <button type="button" class="btn btn-default btn-sm btn-block" id="btn-download">Excel 模組下載</button>
+                        <form id="form-data" method="post">
+                            <input type="hidden" name="type" value="waiting" />
+                            <input type="hidden" name="action" id="input-action" />
+                            <input type="hidden" name="IDs" id="input-IDs" />
+                            <input class="hidden" type="file" name="file" id="file-import" />
+                        </form>
                     </div>
                 </div>
             </div>
@@ -127,7 +131,7 @@
     <script type="text/javascript">
         var pager, pageSize = 100;
         var selected = false;
-        var $dataGrid, $searchBtn = $('#btn-search'), $cancelBtn = $('#btn-cancel'), $updateBtn = $('#btn-update');
+        var $dataGrid, $searchBtn = $('#btn-search'), $cancelBtn = $('#btn-cancel'), $updateBtn = $('#btn-update'), $exportBtn = $('#btn-export');
         var $orderIDSearch = $("#search-orderID"), $itemSearch = $("#search-item"), $userIDSearch = $("#search-userID"), $sourceIDSearch = $("#search-sourceID"),
             $statusSearch = $("#search-status"), $warehouseSearch = $("#search-warehouse"), $countrySearch = $("#search-country"), $channelSearch = $("#search-channel"),
             $dateFromSearch = $("#search-dateFrom"), $dateToSearch = $("#search-dateTo");
@@ -165,6 +169,21 @@
                     });
                 }
             });
+
+            $exportBtn.click(function () {
+                var rows = $dataGrid.datagrid('getSelections');
+
+                if (rows.length == 0) return alert('請先選擇訂單!');
+
+                var packageIDs = $.map(rows, function (row) {
+                    return row.PackageID;
+                });
+
+                $("#input-IDs").val(packageIDs);
+                $("#form-data").attr("action", "@Url.Action("export", "file")").submit();
+
+                $dataGrid.datagrid('reload')
+            });
         });
         
         function dataInit() {
@@ -173,7 +192,7 @@
                 url: "@Url.Action("orderWaitingData", "ajax")",
                 queryParams: {},
                 width: "100%",
-                height: "700",
+                height: window.screen.availHeight - 370,
                 checkOnSelect: false,
                 selectOnCheck: false,
                 singleSelect: false,
@@ -208,6 +227,10 @@
                     { field: "DispatchDate", title: "Dispatch Date<br />出貨日", width: 120, align: "center", sortable: false },
                     { field: "TrackingNumber", title: "Tracking<br />提單號碼", width: 150, align: "center", sortable: false }
                 ]],
+                onLoadSuccess: function (data) {
+                    $dataGrid.datagrid('uncheckAll');
+                    $('div.datagrid-body').unbind('dblclick');
+                },
                 onBeforeLoad: function (param) {
                     param.OrderID = $orderIDSearch.val();
                     param.ItemName = $itemSearch.val();

@@ -268,14 +268,11 @@ namespace QDLogistics.Controllers
             }
         }
 
-        private ActionResult Check_Winit(int OrderID)
+        public void Check_Winit(int OrderID)
         {
-            using (IRepository<Packages> Packages = new GenericRepository<Packages>(db))
+            using (Winit_API winitAPI = new Winit_API())
             {
-                Packages package = Packages.GetAll().First(p => p.OrderID.Value.Equals(OrderID));
-                Winit_API winit = new Winit_API(package.Method.Carriers.CarrierAPI);
-                Received result = winit.Order(package.WinitNo);
-                return Content(result.data.ToString());
+                Received result = winitAPI.Order(OrderID);
             }
         }
 
@@ -332,7 +329,7 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public void IDS_Test(int orderID)
+        private void IDS_Test(int orderID)
         {
             Packages package = db.Packages.AsNoTracking().First(p => p.OrderID.Value.Equals(orderID));
 
@@ -388,7 +385,7 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public void Case_Test(int orderID)
+        private void Case_Test(int orderID)
         {
             TaskFactory factory = System.Web.HttpContext.Current.Application.Get("TaskFactory") as TaskFactory;
 
@@ -455,7 +452,7 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public void Mail_Test()
+        private void Mail_Test()
         {
             string mailFrom = "dispatch-qd@hotmail.com";
             string[] mailTo = new string[] { "qd.tuko@hotmail.com" };

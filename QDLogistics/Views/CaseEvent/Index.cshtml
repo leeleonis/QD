@@ -34,7 +34,8 @@
                 if (response['status']) {
                     selectOption = response['data'];
 
-                    filterValue['OrderID'] = urlParam('OrderID')
+                    filterValue['OrderID'] = urlParam('OrderID');
+                    filterValue['CaseStatus'] = "0";
 
                     dataInit();
                 } else {
@@ -50,17 +51,18 @@
                 url: "@Url.Action("getCaseEventData", "caseEvent")",
                 queryParams: {},
                 width: "100%",
-                height: window.screen.availHeight-200,
+                height: window.screen.availHeight - 200,
                 checkOnSelect: false,
                 selectOnCheck: false,
                 singleSelect: false,
                 frozenColumns: [[
-                    { field: "OrderID", title: "Order ID<br />訂單號碼", width: 150, align: "center", sortable: true },
-                    { field: "LabelID", title: "Label ID<br />標籤號碼", width: 200, align: "center", sortable: true }
+                    { field: "CaseID", title: "Case ID", width: 150, align: "center", sortable: false },
+                    { field: "OrderID", title: "Order ID<br />訂單號碼", width: 150, align: "center", sortable: false },
+                    { field: "LabelID", title: "Label ID<br />標籤號碼", width: 200, align: "center", sortable: false }
                 ]],
                 columns: [[
                     { field: "CreateDate", title: "Create Date<br />建立日期", width: 200, align: "center", sortable: false },
-                    { field: "RequestDate", title: "Request Date<br />請求日期", width: 200, align: "center", sortable: false },
+                    { field: "RequestDate", title: "Request Date<br />請求日期", width: 200, align: "center", sortable: true },
                     { field: "ResponseDate", title: "Response Date<br />回覆日期", width: 200, align: "center", sortable: false },
                     { field: "CaseType", title: "Type", width: 180, align: "center", sortable: false },
                     { field: "CaseRequest", title: "Request", width: 120, align: "center", sortable: false },
