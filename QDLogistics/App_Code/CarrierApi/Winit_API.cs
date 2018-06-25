@@ -9,38 +9,35 @@ using System.Web;
 
 namespace CarrierApi.Winit
 {
-    public class Winit_API
+    public class Winit_API : IDisposable
     {
+        private QDLogisticsEntities db;
+
+        private bool disposed = false;
+
         private string api_url = "http://api.winit.com.cn/ADInterface/api";
         private string api_key = "peter@qd.com.tw";
         private string api_userName = "peter@qd.com.tw";
         private string api_password = "gubu67qaP5e$ra*t";
         private string api_token;
 
-        private QDLogisticsEntities db = new QDLogisticsEntities();
-        private IRepository<Warehouses> Warehouses;
-        private IRepository<CarrierAPI> CarrierAPI;
         public Dictionary<int, string> warehouseIDs
         {
             get
             {
-                return Warehouses.GetAll(true).Where(w => w.IsEnable == true & w.IsSellable == true && !w.WinitWarehouseID.Equals("0")).ToDictionary(w => w.ID, w => w.WinitWarehouseID);
+                return db.Warehouses.AsNoTracking().Where(w => w.IsEnable.Value & w.IsSellable.Value && !w.WinitWarehouseID.Equals("0")).ToDictionary(w => w.ID, w => w.WinitWarehouseID);
             }
         }
 
-        public Winit_API() : this(null)
-        {
-        }
+        public Winit_API() : this(null) { }
 
         public Winit_API(CarrierAPI Api)
         {
-            Warehouses = new QDLogistics.Models.Repositiry.GenericRepository<Warehouses>(db);
+            db = new QDLogisticsEntities();
 
             if (Api == null)
             {
-                CarrierAPI = new QDLogistics.Models.Repositiry.GenericRepository<CarrierAPI>(db);
-
-                Api = CarrierAPI.Get(17);
+                Api = db.CarrierAPI.AsNoTracking().FirstOrDefault(api => api.Id.Equals(17));
 
                 if (Api == null) throw new Exception("Carrier Api not found!");
             }
@@ -65,6 +62,30 @@ namespace CarrierApi.Winit
                 status = "valid",
                 pageSize = pageSize,
                 pageNum = pageNum
+            };
+
+            queryOutboundOrderList request = _RequestInit<queryOutboundOrderList>("queryOutboundOrderList", JsonConvert.SerializeObject(data));
+            request.data = data;
+
+            Received result = Resfun.funresult(request, api_url);
+
+            return result;
+        }
+
+        public Received Order(int orderID, int days = 1)
+        {
+            TimeZoneConvert timeZone = new TimeZoneConvert();
+            DateTime endDate = timeZone.ConvertDateTime(QDLogistics.Commons.EnumData.TimeZone.TST);
+            DateTime startDate = endDate.AddDays(-days);
+
+            queryOutboundOrderList_data data = new queryOutboundOrderList_data()
+            {
+                sellerOrderNo = orderID.ToString(),
+                dateOrderedStartDate = startDate.ToString("yyyy-MM-dd"),
+                dateOrderedEndDate = endDate.ToString("yyyy-MM-dd"),
+                status = "valid",
+                pageSize = "100",
+                pageNum = "1"
             };
 
             queryOutboundOrderList request = _RequestInit<queryOutboundOrderList>("queryOutboundOrderList", JsonConvert.SerializeObject(data));
@@ -223,6 +244,25 @@ namespace CarrierApi.Winit
             if (!result.code.Equals("0")) throw (new Exception(result.msg));
 
             return result.data;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed) return;
+
+            if (disposing)
+            {
+            }
+
+            db.Dispose();
+            db = null;
+            disposed = true;
         }
     }
 }

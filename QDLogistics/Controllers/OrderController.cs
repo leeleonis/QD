@@ -853,26 +853,28 @@ namespace QDLogistics.Controllers
                                     DateTime today = DateTime.UtcNow;
                                     foreach (CaseEvent eventData in CaseEventList)
                                     {
-                                        if (eventData.Request_at.Value.AddDays(1).CompareTo(today) >= 0)
+                                        DateTime RequestDate = MyHelp.SkipWeekend(eventData.Request_at.Value.AddDays(1));
+                                        DateTime CreateDate = MyHelp.SkipWeekend(MyHelp.SkipWeekend(eventData.Create_at, 2, 2).AddDays(2));
+                                        if (RequestDate.CompareTo(today) <= 0)
                                         {
-                                            if (eventData.Create_at.AddDays(2).CompareTo(today) >= 0)
+                                            if (CreateDate.CompareTo(today) <= 0)
                                             {
                                                 eventData.Request = (byte)EnumData.CaseEventRequest.Failed;
                                                 CaseEvent.Update(eventData, eventData.ID);
                                             }
-                                        }
-                                        else
-                                        {
-                                            CaseLog.OrderInit(eventData.Packages);
-                                            switch (eventData.Type)
+                                            else
                                             {
-                                                case (byte)EnumData.CaseEventType.CancelShipment:
-                                                    CaseLog.SendCancelMail();
-                                                    break;
+                                                CaseLog.OrderInit(eventData.Packages);
+                                                switch (eventData.Type)
+                                                {
+                                                    case (byte)EnumData.CaseEventType.CancelShipment:
+                                                        CaseLog.SendCancelMail();
+                                                        break;
 
-                                                case (byte)EnumData.CaseEventType.ChangeShippingMethod:
-                                                    CaseLog.SendChangeShippingMethodMail(eventData.MethodID, eventData.NewLabelID);
-                                                    break;
+                                                    case (byte)EnumData.CaseEventType.ChangeShippingMethod:
+                                                        CaseLog.SendChangeShippingMethodMail(eventData.MethodID, eventData.NewLabelID);
+                                                        break;
+                                                }
                                             }
                                         }
                                     }

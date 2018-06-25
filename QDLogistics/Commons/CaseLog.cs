@@ -155,6 +155,7 @@ namespace QDLogistics.Commons
             CaseEvent eventData = GetCaseEvent(EnumData.CaseEventType.UpdateTracking);
             eventData.Response_at = DateTime.UtcNow;
             eventData.Request = (byte)EnumData.CaseEventRequest.Successful;
+            eventData.Status = (byte)EnumData.CaseEventStatus.Close;
 
             CaseEvent.Update(eventData, eventData.ID);
             CaseEvent.SaveChanges();

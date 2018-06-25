@@ -414,6 +414,14 @@ public static class MyHelp
                     CopyRow(ref sheet, i, i + n, true, true, copyRowHeight, resetOriginalRowHeight);
         }
     }
+
+    public static DateTime SkipWeekend(DateTime checkDate, int skipDaysOfSat = 2, int skipDaysOfSun = 1)
+    {
+        if (checkDate.DayOfWeek == DayOfWeek.Saturday) checkDate = checkDate.AddDays(skipDaysOfSat);
+        if (checkDate.DayOfWeek == DayOfWeek.Sunday) checkDate = checkDate.AddDays(skipDaysOfSun);
+
+        return checkDate;
+    }
 }
 
 public class Country
