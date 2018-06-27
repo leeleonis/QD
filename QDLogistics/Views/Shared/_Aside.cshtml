@@ -23,7 +23,10 @@
 
                     <li class="@(active ? "active" : "")">
                         <a href="@(!menu.SubMenu.Any() ? Url.Action(menu.Action, menu.Controller) : "#")" title="@menu.Name">
-                            <span class="">@menu.Name</span>
+                            @foreach(string name in menu.Name.Split('-'))
+                            {
+                                <span class="">@name</span><br />
+                            }
                         </a>
                         @if (menu.SubMenu.Any())
                         {
@@ -34,7 +37,10 @@
                                     {
                                         <li>
                                             <a href="@Url.Action(sub.Action, sub.Controller)" title="@sub.Name">
-                                                <span class="">@sub.Name</span>
+                                                @foreach (string name in sub.Name.Split('-'))
+                                                {
+                                                    <span class="">@name</span><br />
+                                                }
                                             </a>
                                         </li>
                                     }

@@ -46,7 +46,7 @@
                 queryParams: {
                 },
                 width: "100%",
-                height: "700",
+                height: window.screen.availHeight - 240,
                 columns: [[
                     {
                         field: "IsDirectLine", title: "DL運輸", width: "7%", align: "center", sortable: false,
@@ -79,12 +79,12 @@
                             return setCheckBox(index, this.field, value);
                         }
                     }, {
-                        field: "IsBattery", title: "運電池", width: "7%", align: "center", sortable: false,
+                        field: "IsBattery", title: "Battery<br />運電池", width: "7%", align: "center", sortable: false,
                         formatter: function (value, row, index) {
                             return setCheckBox(index, this.field, value);
                         }
                     }, {
-                        field: "InBox", title: "裝箱", width: "7%", align: "center", sortable: false,
+                        field: "InBox", title: "Box Req.<br />裝箱", width: "7%", align: "center", sortable: false,
                         formatter: function (value, row, index) {
                             return setCheckBox(index, this.field, value);
                         }

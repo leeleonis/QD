@@ -256,6 +256,7 @@ namespace QDLogistics.Commons
                             Items.Update(item, item.ID);
                         }
                         Items.SaveChanges();
+                        SCWS.Update_OrderStatus(orderData.OrderID, (int)OrderStatusCode.Canceled);
 
                         MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0} 完成更新退貨倉", orderData.OrderID), session);
                     }
@@ -287,7 +288,7 @@ namespace QDLogistics.Commons
             if (packageData == null) throw new Exception("未設定訂單!");
 
             if (Packages == null) Packages = new GenericRepository<Packages>(db);
-            if (SCWS != null) SCWS = new SC_WebService("tim@weypro.com", "timfromweypro");
+            if (SCWS == null) SCWS = new SC_WebService("tim@weypro.com", "timfromweypro");
 
             try
             {
@@ -350,10 +351,12 @@ namespace QDLogistics.Commons
                         {
                             oldOrderID = serial.OrderID.Value,
                             oldLabelID = eventData.LabelID,
+                            RMAID = packageData.RMAId.Value,
                             Sku = item.ProductID,
                             SerailNumber = serial.SerialNumber,
-                            WarehouseID = item.ReturnedToWarehouseID.Value
-                        });
+                            WarehouseID = item.ReturnedToWarehouseID.Value,
+                            Create_at = DateTime.UtcNow
+                        }).ToArray();
 
                         foreach (var refund in refundList)
                         {

@@ -123,20 +123,20 @@
                 url: "@Url.Action("TaskSchedulerData", "ajax")",
                 queryParams: {},
                 width: "100%",
-                height: "700",
+                height: window.screen.availHeight - 310,
                 singleSelect: true,
                 columns: [[
-                    { field: "ID", title: "工作 ID", width: "7%", align: "center", sortable: false },
-                    { field: "Date", title: "執行時間", width: "16%", align: "center", sortable: false },
-                    { field: "Description", title: "執行項目", width: "25%", align: "center", sortable: false },
+                    { field: "ID", title: "工作 ID<br />Job ID", width: "7%", align: "center", sortable: false },
+                    { field: "Date", title: "執行時間<br />Date Executed", width: "16%", align: "center", sortable: false },
+                    { field: "Description", title: "執行項目<br />Description", width: "25%", align: "center", sortable: false },
                     {
-                        field: "Message", title: "錯誤訊息", width: "30%", align: "center", sortable: false,
+                        field: "Message", title: "錯誤訊息<br >Error", width: "30%", align: "center", sortable: false,
                         formatter: function (value, row, index) {
                             return "<span class='easyui-tooltip' title='" + $.trim(value) + "'>" + $.trim(value) + "</span>";
                         }
                     },
-                    { field: "AdminName", title: "執行人員", width: "13%", align: "center", sortable: false },
-                    { field: "Status", title: "狀態", width: "8%", align: "center", sortable: false }
+                    { field: "AdminName", title: "執行人員<br />Personnel", width: "13%", align: "center", sortable: false },
+                    { field: "Status", title: "狀態<br />Status", width: "8%", align: "center", sortable: false }
                 ]],
                 onBeforeLoad: function (param) {
                     param.TaskID = $("#search-id").val();

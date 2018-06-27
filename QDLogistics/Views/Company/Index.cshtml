@@ -40,10 +40,9 @@
             $dataGrid = $("#DataGrid").datagrid({
                 title: "公司 列表",
                 url: "@Url.Action("CompanyData", "ajax")",
-                queryParams: {
-                },
+                queryParams: {},
                 width: "100%",
-                height: "700",
+                height: window.screen.availHeight - 240,
                 columns: [[
                     { field: "ID", title: "Company ID / 公司 ID", width: "10%", align: "center", sortable: false },
                     { field: "Name", title: "Name / 公司名稱", width: "50%", align: "center", sortable: false },
