@@ -15,10 +15,14 @@ namespace QDLogistics.Models
     public partial class SerialNumberForRefundLabel
     {
         public int ID { get; set; }
+        public int oldOrderID { get; set; }
+        public Nullable<int> newOrderID { get; set; }
         public string oldLabelID { get; set; }
         public string newLabelID { get; set; }
+        public int RMAID { get; set; }
         public string Sku { get; set; }
         public string SerailNumber { get; set; }
         public int WarehouseID { get; set; }
+        public System.DateTime Create_at { get; set; }
     }
 }

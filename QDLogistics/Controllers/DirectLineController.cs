@@ -1114,7 +1114,6 @@ namespace QDLogistics.Controllers
                 string mailTitle;
                 string mailBody;
                 string[] receiveMails;
-                //string[] ccMails = new string[] { "peter@qd.com.tw", "kelly@qd.com.tw", "demi@qd.com.tw" };
                 string[] ccMails = new string[] { "peter@qd.com.tw", "kelly@qd.com.tw", "demi@qd.com.tw" };
 
                 switch (directLine.Abbreviation)
@@ -1122,7 +1121,7 @@ namespace QDLogistics.Controllers
                     case "IDS":
                         MyHelp.Log("PickProduct", null, "寄送IDS出貨通知");
 
-                        receiveMails = new string[] { "gloria.chiu@contin-global.com", "cherry.chen@contin-global.com", "TWCS@contin-global.com", "contincs@gmail.com" };
+                        receiveMails = new string[] { "gloria.chiu@contin-global.com", "cherry.chen@contin-global.com", "TWCS@contin-global.com", "contincs@gmail.com", "shipping_qd@hotmail.com" };
                         mailTitle = string.Format("To IDS Peter and Cherry - 1 parcels-sent out via {0} under tracking {1}", method.Carriers.Name, box.TrackingNumber);
                         mailBody = string.Format("{0}<br /><br />Box 1 will send out via {1} under tracking no {2}", string.Join("<br />", box.DirectLineLabel.Where(l => l.IsEnable).Select(l => l.LabelID)), method.Carriers.Name, box.TrackingNumber);
 

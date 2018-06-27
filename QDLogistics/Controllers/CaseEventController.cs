@@ -89,9 +89,9 @@ namespace QDLogistics.Controllers
                         switch (receive.Type)
                         {
                             case (byte)EnumData.CaseEventType.CancelShipment:
-                                if (!receive.ReturnWarehouseID.HasValue) throw new Exception("沒有選擇退貨倉!");
+                                if (!receive.Request.Equals((byte)EnumData.CaseEventRequest.Failed) && !receive.ReturnWarehouseID.HasValue) throw new Exception("沒有選擇退貨倉!");
 
-                                CaseLog.CancelShipmentResponse(receive.Request, receive.ReturnWarehouseID.Value);
+                                CaseLog.CancelShipmentResponse(receive.Request, receive.ReturnWarehouseID);
 
                                 eventData = CaseLog.GetCaseEvent(EnumData.CaseEventType.CancelShipment);
                                 if (eventData.Request.Equals((byte)EnumData.CaseEventRequest.Successful) && eventData.Status.Equals((byte)EnumData.CaseEventStatus.Locked))
@@ -116,22 +116,26 @@ namespace QDLogistics.Controllers
                                 break;
 
                             case (byte)EnumData.CaseEventType.ChangeShippingMethod:
-                                CaseLog.ChangeShippingMethodResponse(receive.Request);
-
-                                eventData = CaseLog.GetCaseEvent(EnumData.CaseEventType.ChangeShippingMethod);
+                                eventData = CaseLog.ChangeShippingMethodResponse(receive.Request);
                                 if (eventData.Request.Equals((byte)EnumData.CaseEventRequest.Successful) && eventData.Status.Equals((byte)EnumData.CaseEventStatus.Close))
                                 {
-                                    ThreadTask threadTask = new ThreadTask(string.Format("Direct Line 訂單【{0}】SC更新", package.OrderID));
-                                    threadTask.AddWork(factory.StartNew(() =>
-                                    {
-                                        threadTask.Start();
-                                        SyncProcess sync = new SyncProcess(Session);
-                                        return sync.Update_Tracking(package);
-                                    }));
-
                                     DirectLineLabel label = db.DirectLineLabel.AsNoTracking().First(l => l.IsEnable && l.LabelID.Equals(eventData.LabelID));
                                     label.LabelID = eventData.NewLabelID;
-                                    label.Status = (byte)EnumData.LabelStatus.完成;
+
+                                    package = db.Packages.AsNoTracking().First(p => p.ID.Equals(eventData.PackageID));
+                                    if (!string.IsNullOrEmpty(package.TrackingNumber))
+                                    {
+                                        label.Status = (byte)EnumData.LabelStatus.完成;
+
+                                        ThreadTask threadTask = new ThreadTask(string.Format("Direct Line 訂單【{0}】SC更新", package.OrderID));
+                                        threadTask.AddWork(factory.StartNew(() =>
+                                        {
+                                            threadTask.Start();
+                                            SyncProcess sync = new SyncProcess(Session);
+                                            return sync.Update_Tracking(package);
+                                        }));
+                                    }
+
                                     Label.Update(label, label.LabelID);
                                     Label.SaveChanges();
                                 }
@@ -194,7 +198,7 @@ namespace QDLogistics.Controllers
                     results = filter.Order.Equals("asc") ? results.OrderBy(c => c.Request_at).Skip(start).Take(length).ToList() : results.OrderByDescending(c => c.Request_at).Skip(start).Take(length).ToList();
                 }
 
-                dataList.AddRange(results.Select(c => new
+                dataList.AddRange(results.Skip(start).Take(length).Select(c => new
                 {
                     CaseID = c.ID,
                     c.OrderID,

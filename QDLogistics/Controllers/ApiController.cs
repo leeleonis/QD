@@ -489,11 +489,11 @@ namespace QDLogistics.Controllers
                 if (!package.Orders.StatusCode.Equals((int)OrderStatusCode.InProcess)) throw new Exception(string.Format("訂單【{0}】無法出貨因為並非InProcess的狀態", package.OrderID));
                 if (!package.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨)) throw new Exception(string.Format("訂單【{0}】無法出貨因為並非待出貨的狀態", package.OrderID));
 
-                MyHelp.Log("Package", package.ID, "訂單包裹開始更新", Session);
+                MyHelp.Log("Package", package.ID, string.Format("訂單【{0}】開始更新", package.OrderID), Session);
 
                 DateTime PickUpDate = new TimeZoneConvert().Utc;
 
-                foreach (PickProduct pick in pickList)
+                foreach (PickProduct pick in pickList.Where(pick => pick.PackageID.Equals(package.ID)))
                 {
                     pick.IsPicked = true;
                     pick.IsMail = false;
@@ -508,7 +508,7 @@ namespace QDLogistics.Controllers
 
                 if (receiveData.itemData.Any(i => i.Item2.Any()))
                 {
-                    MyHelp.Log("Packages", package.ID, "訂單產品上傳序號", Session);
+                    MyHelp.Log("Packages", package.ID, string.Format("訂單【{0}】產品建立序號", package.OrderID), Session);
 
                     foreach (var itemData in receiveData.itemData.Where(i => i.Item2.Any()).ToList())
                     {
@@ -528,7 +528,7 @@ namespace QDLogistics.Controllers
                 }
 
                 Packages.SaveChanges();
-                MyHelp.Log("Packages", package.ID, "訂單包裹出貨完成", Session);
+                MyHelp.Log("Packages", package.ID, string.Format("訂單【{0}】出貨完成", package.OrderID), Session);
             }
             catch (Exception e)
             {

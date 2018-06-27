@@ -761,7 +761,7 @@ namespace QDLogistics.Controllers
                     case "IDS":
                         MyHelp.Log("PickProduct", null, "寄送IDS出貨通知");
 
-                        receiveMails = new string[] { "gloria.chiu@contin-global.com", "cherry.chen@contin-global.com", "TWCS@contin-global.com", "contincs@gmail.com" };
+                        receiveMails = new string[] { "gloria.chiu@contin-global.com", "cherry.chen@contin-global.com", "TWCS@contin-global.com", "contincs@gmail.com", "shipping_qd@hotmail.com" };
                         mailTitle = "To IDS Peter and Cherry - 1 parcels-sent out";
                         mailBody = string.Format("{0}<br /><br />Box 1 will send out", string.Join("<br />", box.DirectLineLabel.Where(l => l.IsEnable).Select(l => l.LabelID)));
 

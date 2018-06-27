@@ -682,7 +682,7 @@ namespace QDLogistics.Controllers
                                         switch (directLine.Abbreviation)
                                         {
                                             case "IDS":
-                                                receiveMails = new string[] { "gloria.chiu@contin-global.com", "cherry.chen@contin-global.com", "TWCS@contin-global.com", "contincs@gmail.com" };
+                                                receiveMails = new string[] { "gloria.chiu@contin-global.com", "cherry.chen@contin-global.com", "TWCS@contin-global.com", "contincs@gmail.com", "shipping_qd@hotmail.com" };
                                                 //receiveMails = new string[] { "qd.tuko@hotmail.com" };
                                                 mailTitle = string.Format("TW018 至優網有限公司 First Mile 包裹 {0} {1} ({2} 件包裹) 已抵達", method.Carriers.Name, box.TrackingNumber, box.DirectLineLabel.Count(l => l.IsEnable));
                                                 mailBody = "您好<br /><br />包裹已抵達:<br />{0}<br /><br />內容包含:<br />{1}<br /><br />請盡速處理並確認已經全數收到<br />謝謝!";
@@ -853,28 +853,21 @@ namespace QDLogistics.Controllers
                                     DateTime today = DateTime.UtcNow;
                                     foreach (CaseEvent eventData in CaseEventList)
                                     {
-                                        DateTime RequestDate = MyHelp.SkipWeekend(eventData.Request_at.Value.AddDays(1));
-                                        DateTime CreateDate = MyHelp.SkipWeekend(MyHelp.SkipWeekend(eventData.Create_at, 2, 2).AddDays(2));
+                                        DateTime RequestDate = MyHelp.SkipWeekend(eventData.Request_at.Value.AddDays(2));
+                                        //DateTime CreateDate = MyHelp.SkipWeekend(MyHelp.SkipWeekend(eventData.Create_at, 2, 2).AddDays(2));
                                         if (RequestDate.CompareTo(today) <= 0)
                                         {
-                                            if (CreateDate.CompareTo(today) <= 0)
-                                            {
-                                                eventData.Request = (byte)EnumData.CaseEventRequest.Failed;
-                                                CaseEvent.Update(eventData, eventData.ID);
-                                            }
-                                            else
-                                            {
-                                                CaseLog.OrderInit(eventData.Packages);
-                                                switch (eventData.Type)
-                                                {
-                                                    case (byte)EnumData.CaseEventType.CancelShipment:
-                                                        CaseLog.SendCancelMail();
-                                                        break;
 
-                                                    case (byte)EnumData.CaseEventType.ChangeShippingMethod:
-                                                        CaseLog.SendChangeShippingMethodMail(eventData.MethodID, eventData.NewLabelID);
-                                                        break;
-                                                }
+                                            CaseLog.OrderInit(eventData.Packages);
+                                            switch (eventData.Type)
+                                            {
+                                                case (byte)EnumData.CaseEventType.CancelShipment:
+                                                    CaseLog.SendCancelMail();
+                                                    break;
+
+                                                case (byte)EnumData.CaseEventType.ChangeShippingMethod:
+                                                    CaseLog.SendChangeShippingMethodMail(eventData.MethodID, eventData.NewLabelID);
+                                                    break;
                                             }
                                         }
                                     }

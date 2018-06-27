@@ -435,12 +435,16 @@
           <Key>
             <PropertyRef Name="ID" />
           </Key>
-          <Property Name="ID" Type="int" Nullable="false" />
+          <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="oldOrderID" Type="int" Nullable="false" />
+          <Property Name="newOrderID" Type="int" />
           <Property Name="oldLabelID" Type="nvarchar" MaxLength="50" Nullable="false" />
           <Property Name="newLabelID" Type="nvarchar" MaxLength="50" />
+          <Property Name="RMAID" Type="int" Nullable="false" />
           <Property Name="Sku" Type="nvarchar" MaxLength="50" Nullable="false" />
           <Property Name="SerailNumber" Type="nvarchar" MaxLength="50" Nullable="false" />
           <Property Name="WarehouseID" Type="int" Nullable="false" />
+          <Property Name="Create_at" Type="datetime" Nullable="false" />
         </EntityType>
         <EntityType Name="SerialNumbers">
           <Key>
@@ -2077,11 +2081,15 @@
             <PropertyRef Name="ID" />
           </Key>
           <Property Name="ID" Type="Int32" Nullable="false" />
+          <Property Name="oldOrderID" Type="Int32" Nullable="false" />
+          <Property Name="newOrderID" Type="Int32" />
           <Property Name="oldLabelID" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="newLabelID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="RMAID" Type="Int32" Nullable="false" />
           <Property Name="Sku" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="SerailNumber" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="WarehouseID" Type="Int32" Nullable="false" />
+          <Property Name="Create_at" Type="DateTime" Nullable="false" Precision="3" />
         </EntityType>
         </Schema>
     </edmx:ConceptualModels>
@@ -2654,6 +2662,10 @@
           <EntitySetMapping Name="SerialNumberForRefundLabel">
             <EntityTypeMapping TypeName="QDLogisticsModel.SerialNumberForRefundLabel">
               <MappingFragment StoreEntitySet="SerialNumberForRefundLabel">
+                <ScalarProperty Name="Create_at" ColumnName="Create_at" />
+                <ScalarProperty Name="RMAID" ColumnName="RMAID" />
+                <ScalarProperty Name="newOrderID" ColumnName="newOrderID" />
+                <ScalarProperty Name="oldOrderID" ColumnName="oldOrderID" />
                 <ScalarProperty Name="WarehouseID" ColumnName="WarehouseID" />
                 <ScalarProperty Name="SerailNumber" ColumnName="SerailNumber" />
                 <ScalarProperty Name="Sku" ColumnName="Sku" />

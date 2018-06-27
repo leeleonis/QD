@@ -36,6 +36,11 @@ namespace QDLogistics.Commons
         private string[] ccMails = new string[] { "peter@qd.com.tw", "kelly@qd.com.tw", "demi@qd.com.tw" };
         //private string[] ccMails = new string[] { };
 
+        private Dictionary<string, string[]> MailList = new Dictionary<string, string[]>()
+        {
+            { "IDS", new string[]{ "gloria.chiu@contin-global.com", "cherry.chen@contin-global.com", "TWCS@contin-global.com", "contincs@gmail.com", "shipping_qd@hotmail.com" } }
+        };
+
         private HttpContextBase _currentHttpContext;
         public HttpContextBase CurrentHttpContext
         {
@@ -57,7 +62,7 @@ namespace QDLogistics.Commons
 
         public CaseLog(HttpContextBase httpContext) : this(null, httpContext) { }
 
-        public CaseLog(Packages package, HttpContextBase httpContext) :this(package, httpContext.Session)
+        public CaseLog(Packages package, HttpContextBase httpContext) : this(package, httpContext.Session)
         {
             CurrentHttpContext = httpContext;
         }
@@ -121,7 +126,7 @@ namespace QDLogistics.Commons
                 switch (directLine)
                 {
                     case "IDS":
-                        receiveMails = new string[] { "gloria.chiu@contin-global.com", "cherry.chen@contin-global.com", "TWCS@contin-global.com", "contincs@gmail.com" };
+                        receiveMails = MailList["IDS"];
                         //receiveMails = new string[] { "qd.tuko@hotmail.com" };
                         mailTitle = string.Format("TW018 - {0} Orders Awaiting Dispatch", labelList.Count());
                         mailBody = "Hello<br /><br />We still could not find the last mile tracking for the below packages:<br />{0}<br />...<br /><br />Please update tracking info ASAP.Thank you<br /><br />Regards<br /><br />QD Team";
@@ -183,7 +188,7 @@ namespace QDLogistics.Commons
                 switch (directLine.Abbreviation)
                 {
                     case "IDS":
-                        receiveMails = new string[] { "gloria.chiu@contin-global.com", "cherry.chen@contin-global.com", "TWCS@contin-global.com", "contincs@gmail.com" };
+                        receiveMails = MailList["IDS"];
                         //receiveMails = new string[] { "qd.tuko@hotmail.com" };
                         mailTitle = string.Format("TW018 - Cancel Shipment Request for {0} (in {1} tracking {2})", packageData.TagNo, packageData.Method.Carriers.Name, packageData.TrackingNumber);
                         mailBody = CreateCancelMailBody(directLine.Abbreviation, eventData);
@@ -211,7 +216,7 @@ namespace QDLogistics.Commons
             }
         }
 
-        public void CancelShipmentResponse(byte request, int returnWarehouseID)
+        public void CancelShipmentResponse(byte request, int? returnWarehouseID)
         {
             if (packageData == null) throw new Exception("未設定訂單!");
 
@@ -231,38 +236,24 @@ namespace QDLogistics.Commons
                 if (eventData.Request.Equals((byte)EnumData.CaseEventRequest.Successful))
                 {
                     if (Items == null) Items = new GenericRepository<Items>(db);
-                    if (RefundLabelSerial == null) RefundLabelSerial = new GenericRepository<SerialNumberForRefundLabel>(db);
 
                     try
                     {
                         MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】開始更新退貨倉", orderData.OrderID), session);
 
-                        if (SCWS != null) SCWS = new SC_WebService("tim@weypro.com", "timfromweypro");
+                        if (SCWS == null) SCWS = new SC_WebService("tim@weypro.com", "timfromweypro");
 
                         var SC_order = SCWS.Get_OrderData(orderData.OrderID).Order;
                         SCWS.Update_PackageShippingStatus(SC_order.Packages.First(p => p.ID.Equals(packageData.ID)), packageData.TrackingNumber, packageData.Method.Carriers.Name);
                         var SC_items = SC_order.Items.Where(i => i.PackageID.Equals(packageData.ID)).ToArray();
                         foreach (Items item in itemList)
                         {
-                            SC_items.First(i => i.ID.Equals(item.ID)).ReturnedToWarehouseID = returnWarehouseID;
-                            SCWS.Update_OrderItem(SC_items.First(i => i.ID.Equals(item.ID)));
+                            var SC_item = SC_items.First(i => i.ID.Equals(item.ID));
+                            SC_item.ReturnedToWarehouseID = returnWarehouseID.Value;
+                            SCWS.Update_OrderItem(SC_item);
 
                             item.ReturnedToWarehouseID = returnWarehouseID;
                             Items.Update(item, item.ID);
-
-                            if (item.SerialNumbers.Any())
-                            {
-                                foreach (var serial in item.SerialNumbers.ToList())
-                                {
-                                    RefundLabelSerial.Create(new SerialNumberForRefundLabel()
-                                    {
-                                        oldLabelID = eventData.LabelID,
-                                        Sku = item.ProductID,
-                                        SerailNumber = serial.SerialNumber,
-                                        WarehouseID = returnWarehouseID
-                                    });
-                                }
-                            }
                         }
                         Items.SaveChanges();
 
@@ -276,6 +267,7 @@ namespace QDLogistics.Commons
                     }
 
                     CreateRMA();
+                    MoveSku();
                 }
 
                 MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0} 完成退貨動作", orderData.OrderID), session);
@@ -307,18 +299,15 @@ namespace QDLogistics.Commons
                 {
                     int RMAId = SCWS.Create_RMA(order.ID);
 
-                    if (itemList.Any())
+                    foreach (Items item in itemList)
                     {
-                        foreach (Items item in itemList)
-                        {
-                            SCWS.Create_RMA_Item(item.OrderID.Value, item.ID, RMAId, item.Qty.Value, 16, "");
+                        SCWS.Create_RMA_Item(item.OrderID.Value, item.ID, RMAId, item.Qty.Value, 16, "");
 
-                            if (item.BundleItems.Any())
+                        if (item.BundleItems.Any())
+                        {
+                            foreach (var bundleItem in item.BundleItems.ToList())
                             {
-                                foreach (var bundleItem in item.BundleItems.ToList())
-                                {
-                                    SCWS.Create_RMA_Item(bundleItem.OrderID.Value, bundleItem.ID, RMAId, bundleItem.Qty.Value, 16, "");
-                                }
+                                SCWS.Create_RMA_Item(bundleItem.OrderID.Value, bundleItem.ID, RMAId, bundleItem.Qty.Value, 16, "");
                             }
                         }
                     }
@@ -338,6 +327,50 @@ namespace QDLogistics.Commons
                 string msg = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
 
                 throw new Exception(string.Format("訂單【{0}】建立RMA失敗! - {1}", orderData.OrderID, msg));
+            }
+        }
+
+        private void MoveSku()
+        {
+            if (packageData == null) throw new Exception("未設定訂單!");
+
+            if (RefundLabelSerial == null) RefundLabelSerial = new GenericRepository<SerialNumberForRefundLabel>(db);
+
+            CaseEvent eventData = GetCaseEvent(EnumData.CaseEventType.CancelShipment);
+
+            try
+            {
+                MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("記錄訂單【{0}】取消出貨產品", orderData.OrderID), session);
+
+                foreach (Items item in packageData.Items.Where(i => i.IsEnable.Value).ToList())
+                {
+                    if (item.SerialNumbers.Any())
+                    {
+                        var refundList = item.SerialNumbers.Select(serial => new SerialNumberForRefundLabel()
+                        {
+                            oldOrderID = serial.OrderID.Value,
+                            oldLabelID = eventData.LabelID,
+                            Sku = item.ProductID,
+                            SerailNumber = serial.SerialNumber,
+                            WarehouseID = item.ReturnedToWarehouseID.Value
+                        });
+
+                        foreach (var refund in refundList)
+                        {
+                            RefundLabelSerial.Create(refund);
+                        }
+                    }
+                }
+
+                RefundLabelSerial.SaveChanges();
+
+                MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("記錄訂單【{0}】取消出貨產品成功", orderData.OrderID), session);
+            }
+            catch (Exception e)
+            {
+                string msg = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+
+                throw new Exception(string.Format("記錄訂單【{0}】取消出貨產品失敗! - {1}", orderData.OrderID, msg));
             }
         }
 
@@ -361,7 +394,7 @@ namespace QDLogistics.Commons
                 switch (directLine.Abbreviation)
                 {
                     case "IDS":
-                        receiveMails = new string[] { "gloria.chiu@contin-global.com", "cherry.chen@contin-global.com", "TWCS@contin-global.com", "contincs@gmail.com" };
+                        receiveMails = MailList["IDS"];
                         //receiveMails = new string[] { "qd.tuko@hotmail.com" };
 
                         IDS_Api = new IDS_API(packageData.Method.Carriers.CarrierAPI);
@@ -442,7 +475,7 @@ namespace QDLogistics.Commons
                 switch (directLine.Abbreviation)
                 {
                     case "IDS":
-                        receiveMails = new string[] { "gloria.chiu@contin-global.com", "cherry.chen@contin-global.com", "TWCS@contin-global.com", "contincs@gmail.com" };
+                        receiveMails = MailList["IDS"];
                         //receiveMails = new string[] { "qd.tuko@hotmail.com" };
 
                         IDS_Api = new IDS_API(method.Carriers.CarrierAPI);
@@ -510,7 +543,7 @@ namespace QDLogistics.Commons
             return labelID;
         }
 
-        public void ChangeShippingMethodResponse(byte request)
+        public CaseEvent ChangeShippingMethodResponse(byte request)
         {
             if (packageData == null) throw new Exception("未設定訂單!");
 
@@ -550,6 +583,8 @@ namespace QDLogistics.Commons
 
                 MyHelp.Log("CaseEvent", orderData.OrderID, e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message, session);
             }
+
+            return eventData;
         }
 
         private string GetTrackingNumber()
@@ -721,6 +756,7 @@ namespace QDLogistics.Commons
             itemList = null;
             IDS_Api = null;
             SCWS = null;
+            MailList = null;
             session = null;
             disposed = true;
         }

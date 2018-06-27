@@ -101,7 +101,7 @@
                         for (var i in rows) {
                             var Case = rows[i];
                             if (Case.CaseStatus != 2) {
-                                if (Case.CaseRequest == 5 || Case.CaseStatus == 3) {
+                                if (Case.CaseRequest == 'Failed' || Case.CaseStatus == 3) {
                                     selected = true;
                                     $dataGrid.datagrid('selectRow', i);
                                 }
