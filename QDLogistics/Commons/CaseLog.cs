@@ -299,19 +299,17 @@ namespace QDLogistics.Commons
                 if (SCWS.Update_Order(order))
                 {
                     int RMAId = SCWS.Create_RMA(order.ID);
+                    PurchaseOrderService.RMAData order_RMA = SCWS.Get_RMA_Data(RMAId);
 
+                    MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】開始Receive RMA", orderData.OrderID), session);
                     foreach (Items item in itemList)
                     {
                         SCWS.Create_RMA_Item(item.OrderID.Value, item.ID, RMAId, item.Qty.Value, 16, "");
-
-                        if (item.BundleItems.Any())
-                        {
-                            foreach (var bundleItem in item.BundleItems.ToList())
-                            {
-                                SCWS.Create_RMA_Item(bundleItem.OrderID.Value, bundleItem.ID, RMAId, bundleItem.Qty.Value, 16, "");
-                            }
-                        }
+                        string serialsList = string.Join(", ", item.SerialNumbers.Where(s => !string.IsNullOrEmpty(s.SerialNumber)).Select(s => s.SerialNumber).ToArray());
+                        SCWS.Receive_RMA_Item(RMAId, order_RMA.Items.First(i => i.OriginalOrderItemID.Equals(item.ID)).ID, item.ProductID, item.Qty.Value, item.ReturnedToWarehouseID.Value, serialsList);
+                        SCWS.Delete_ItemSerials(item.OrderID.Value, item.ID);
                     }
+                    MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】完成Receive RMA", orderData.OrderID), session);
 
                     packageData.RMAId = RMAId;
                     Packages.Update(packageData, packageData.ID);
@@ -750,6 +748,7 @@ namespace QDLogistics.Commons
                 if (Packages != null) Packages.Dispose();
                 if (Items != null) Items.Dispose();
                 if (RefundLabelSerial != null) RefundLabelSerial.Dispose();
+                if (SCWS != null) SCWS.Dispose();
             }
 
             db.Dispose();
@@ -758,7 +757,6 @@ namespace QDLogistics.Commons
             packageData = null;
             itemList = null;
             IDS_Api = null;
-            SCWS = null;
             MailList = null;
             session = null;
             disposed = true;

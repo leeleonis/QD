@@ -1158,7 +1158,7 @@ namespace QDLogistics.Controllers
                                         Carriers carrier = package.Method.Carriers;
                                         description = string.Format("{0} {1}, {2}", carrier.Name, package.TrackingNumber, description);
 
-                                        if (carrier != null)
+                                        if (carrier != null && !string.IsNullOrEmpty(carrier.Email))
                                         {
                                             if (!string.IsNullOrEmpty(carrier.Email))
                                             {

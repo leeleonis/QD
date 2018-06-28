@@ -316,7 +316,7 @@ namespace QDLogistics.Controllers
                                 }
                                 else
                                 {
-                                    SCWS.Delete_Items(item.OrderID, item.ID);
+                                    SCWS.Delete_Item(item.OrderID, item.ID);
                                     orderPackages.First(op => op.PackageID == oldPackage.ID && op.OrderItemID == item.ID).Qty = item.Qty;
                                 }
                                 Items.Update(DataProcess.SetItemData(oldItem, item), item.ID);
@@ -845,7 +845,7 @@ namespace QDLogistics.Controllers
                             MyHelp.Log("CaseEvent", null, "開始檢查 Case Event 進度", currentHttpContext.Session);
 
                             List<byte> CaseType = new List<byte>() { (byte)EnumData.CaseEventType.CancelShipment, (byte)EnumData.CaseEventType.ChangeShippingMethod };
-                            List<CaseEvent> CaseEventList = db.CaseEvent.AsNoTracking().Where(c => CaseType.Contains(c.Type) && c.Request.Equals((byte)EnumData.CaseEventRequest.None) && c.Status.Equals((byte)EnumData.CaseEventStatus.Open)).ToList();
+                            List<CaseEvent> CaseEventList = db.CaseEvent.Where(c => CaseType.Contains(c.Type) && c.Request.Equals((byte)EnumData.CaseEventRequest.None) && c.Status.Equals((byte)EnumData.CaseEventStatus.Open)).ToList();
                             if (CaseEventList.Any())
                             {
                                 using (CaseLog CaseLog = new CaseLog(currentHttpContext))
