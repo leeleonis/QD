@@ -126,7 +126,7 @@ namespace QDLogistics.Controllers
                 url = Url.Action(data.package.ProcessStatus.Equals(3) ? "shipped" : (data.package.ProcessStatus.Equals(1) ? "waiting" : "index"), "order", new { data.order.OrderID });
             }
 
-            return string.Format(link, url, Enum.GetName(typeof(EnumData.ProcessStatus), data.package.ProcessStatus));
+            return string.Format(link, url, EnumData.ProcessStatusList()[(EnumData.ProcessStatus)data.package.ProcessStatus]);
         }
 
         public ActionResult getSelectOption()

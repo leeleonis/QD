@@ -441,7 +441,7 @@ namespace QDLogistics.Commons
                 string carrier = package.Method.Carriers != null ? package.Method.Carriers.Name : "";
                 SCWS.Update_PackageShippingStatus(SC_package, (package.UploadTracking ? package.TrackingNumber : ""), carrier);
 
-                if (db.Packages.AsNoTracking().Where(p => p.OrderID.Value.Equals(package.OrderID.Value)).All(p => p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.已出貨)))
+                if (db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.OrderID.Value.Equals(package.OrderID.Value)).All(p => p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.已出貨)))
                 {
                     MyHelp.Log("Orders", package.ID, string.Format("訂單【{0}】SC完成出貨", package.OrderID), Session);
                     SCWS.Update_OrderShippingStatus(SC_order, carrier);

@@ -467,20 +467,29 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public void RMA_Test(int OrderID)
+        private void RMA_Test(int OrderID)
         {
             Packages package = db.Packages.AsNoTracking().First(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID));
 
             SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
+
+            //Order order = SCWS.Get_OrderData(OrderID).Order;
             PurchaseOrderService.RMAData order_RMA = SCWS.Get_RMA_Data(package.RMAId.Value);
             foreach (var SC_Item in order_RMA.Items)
             {
                 Items item = db.Items.AsNoTracking().First(i => i.ID.Equals(SC_Item.OriginalOrderItemID));
                 string serialsList = string.Join(", ", item.SerialNumbers.Where(s => !string.IsNullOrEmpty(s.SerialNumber)).Select(s => s.SerialNumber).ToArray());
-                bool result = SCWS.Delete_ItemSerials(item.OrderID.Value, item.ID);
-                //bool result = SCWS.Receive_RMA_Item(SC_Item.RMAID, SC_Item.ID, item.ProductID, item.Qty.Value, item.ReturnedToWarehouseID.Value, serialsList);
+                //bool result = SCWS.Delete_ItemSerials(item.OrderID.Value, item.ID);
+                bool result = SCWS.Receive_RMA_Item(SC_Item.RMAID, SC_Item.ID, item.ProductID, item.Qty.Value, item.ReturnedToWarehouseID.Value, serialsList);
                 //bool result = SCWS.Update_RAM_Item(SC_Item);
             }
+            //order.OrderCreationSourceApplication = OrderCreationSourceApplicationType.Default;
+            //SCWS.Update_Order(order);
+
+            //using (CaseLog CaseLog = new CaseLog(package, Session))
+            //{
+            //    CaseLog.MoveSku();
+            //}
         }
     }
 }

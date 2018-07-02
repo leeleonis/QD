@@ -26,6 +26,7 @@ namespace QDLogistics.Models
         public System.DateTime Create_at { get; set; }
         public Nullable<System.DateTime> Request_at { get; set; }
         public Nullable<System.DateTime> Response_at { get; set; }
+        public int Update_by { get; set; }
     
         public virtual Packages Packages { get; set; }
     }

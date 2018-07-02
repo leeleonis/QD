@@ -149,6 +149,7 @@
           <Property Name="Create_at" Type="datetime" Nullable="false" />
           <Property Name="Request_at" Type="datetime" />
           <Property Name="Response_at" Type="datetime" />
+          <Property Name="Update_by" Type="int" Nullable="false" />
         </EntityType>
         <EntityType Name="Companies">
           <Key>
@@ -435,6 +436,7 @@
           <Key>
             <PropertyRef Name="ID" />
           </Key>
+          <Property Name="IsUsed" Type="bit" Nullable="false" />
           <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="oldOrderID" Type="int" Nullable="false" />
           <Property Name="newOrderID" Type="int" />
@@ -442,7 +444,7 @@
           <Property Name="newLabelID" Type="nvarchar" MaxLength="50" />
           <Property Name="RMAID" Type="int" Nullable="false" />
           <Property Name="Sku" Type="nvarchar" MaxLength="50" Nullable="false" />
-          <Property Name="SerailNumber" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="SerialNumber" Type="nvarchar" MaxLength="50" Nullable="false" />
           <Property Name="WarehouseID" Type="int" Nullable="false" />
           <Property Name="Create_at" Type="datetime" Nullable="false" />
         </EntityType>
@@ -2063,6 +2065,7 @@
           <Property Name="Request_at" Type="DateTime" Precision="3" />
           <Property Name="Response_at" Type="DateTime" Precision="3" />
           <NavigationProperty Name="Packages" Relationship="QDLogisticsModel.FK_CaseEvent_Packages" FromRole="CaseEvent" ToRole="Packages" />
+          <Property Name="Update_by" Type="Int32" Nullable="false" />
         </EntityType>
         <Association Name="FK_CaseEvent_Packages">
           <End Type="QDLogisticsModel.Packages" Role="Packages" Multiplicity="1" />
@@ -2080,6 +2083,7 @@
           <Key>
             <PropertyRef Name="ID" />
           </Key>
+          <Property Name="IsUsed" Type="Boolean" Nullable="false" />
           <Property Name="ID" Type="Int32" Nullable="false" />
           <Property Name="oldOrderID" Type="Int32" Nullable="false" />
           <Property Name="newOrderID" Type="Int32" />
@@ -2087,7 +2091,7 @@
           <Property Name="newLabelID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="RMAID" Type="Int32" Nullable="false" />
           <Property Name="Sku" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Name="SerailNumber" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="SerialNumber" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="WarehouseID" Type="Int32" Nullable="false" />
           <Property Name="Create_at" Type="DateTime" Nullable="false" Precision="3" />
         </EntityType>
@@ -2644,6 +2648,7 @@
           <EntitySetMapping Name="CaseEvent">
             <EntityTypeMapping TypeName="QDLogisticsModel.CaseEvent">
               <MappingFragment StoreEntitySet="CaseEvent">
+                <ScalarProperty Name="Update_by" ColumnName="Update_by" />
                 <ScalarProperty Name="NewLabelID" ColumnName="NewLabelID" />
                 <ScalarProperty Name="MethodID" ColumnName="MethodID" />
                 <ScalarProperty Name="Response_at" ColumnName="Response_at" />
@@ -2662,12 +2667,13 @@
           <EntitySetMapping Name="SerialNumberForRefundLabel">
             <EntityTypeMapping TypeName="QDLogisticsModel.SerialNumberForRefundLabel">
               <MappingFragment StoreEntitySet="SerialNumberForRefundLabel">
+                <ScalarProperty Name="IsUsed" ColumnName="IsUsed" />
+                <ScalarProperty Name="SerialNumber" ColumnName="SerialNumber" />
                 <ScalarProperty Name="Create_at" ColumnName="Create_at" />
                 <ScalarProperty Name="RMAID" ColumnName="RMAID" />
                 <ScalarProperty Name="newOrderID" ColumnName="newOrderID" />
                 <ScalarProperty Name="oldOrderID" ColumnName="oldOrderID" />
                 <ScalarProperty Name="WarehouseID" ColumnName="WarehouseID" />
-                <ScalarProperty Name="SerailNumber" ColumnName="SerailNumber" />
                 <ScalarProperty Name="Sku" ColumnName="Sku" />
                 <ScalarProperty Name="newLabelID" ColumnName="newLabelID" />
                 <ScalarProperty Name="oldLabelID" ColumnName="oldLabelID" />

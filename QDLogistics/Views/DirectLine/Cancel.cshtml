@@ -4,7 +4,7 @@
     <link href="~/Content/themes/default/easyui.css" rel="stylesheet" />
     <link href="~/Content/themes/icon.css" rel="stylesheet" />
     <style>
-        .datagrid-btable .filterColumn:first-child td div {
+        .datagrid-body .filterColumn:first-child td div {
             padding: 0
         }
     </style>
@@ -28,14 +28,11 @@
         var $dataGrid;
 
         $(function () {
-            var data = { optionType: ['CaseType', 'CaseRequest', 'CaseStatus'] };
+            var data = { optionType: ['Warehouse'] };
 
-            ajaxUrl("@Url.Action("getSelectOption", "caseEvent")", 'post', data).done(function (response) {
+            ajaxUrl("@Url.Action("getSelectOption", "directLine")", 'post', data).done(function (response) {
                 if (response['status']) {
                     selectOption = response['data'];
-
-                    filterValue['OrderID'] = urlParam('OrderID');
-                    filterValue['CaseStatus'] = "0";
 
                     dataInit();
                 } else {
@@ -46,9 +43,9 @@
 
         function dataInit() {
             $dataGrid = $("#DataGrid").datagrid({
-                title: "Case Event 列表",
-                idField: "CaseID",
-                url: "@Url.Action("getCaseEventData", "caseEvent")",
+                title: "Direct Line Cancel列表",
+                idField: "LabelID",
+                url: "@Url.Action("getCancelData", "directLine")",
                 queryParams: {},
                 width: "100%",
                 height: window.screen.availHeight - 200,
@@ -56,27 +53,18 @@
                 selectOnCheck: false,
                 singleSelect: false,
                 frozenColumns: [[
-                    { field: "CaseID", title: "Case ID", width: 150, align: "center", sortable: false },
-                    { field: "OrderID", title: "Order ID<br />訂單號碼", width: 150, align: "center", sortable: false },
-                    { field: "LabelID", title: "Label ID<br />標籤號碼", width: 200, align: "center", sortable: false }
+                    { field: "LabelID", title: "Label ID<br />原標籤號碼", width: 200, align: "center", sortable: false },
+                    { field: "OrderID", title: "Order ID<br />原訂單號碼", width: 120, align: "center", sortable: false }
                 ]],
                 columns: [[
-                    { field: "CreateDate", title: "Create Date<br />建立日期", width: 200, align: "center", sortable: false },
-                    { field: "RequestDate", title: "Request Date<br />請求日期", width: 200, align: "center", sortable: true },
-                    { field: "ResponseDate", title: "Response Date<br />回覆日期", width: 200, align: "center", sortable: false },
-                    { field: "CaseType", title: "Type", width: 180, align: "center", sortable: false },
-                    { field: "CaseRequest", title: "Request", width: 120, align: "center", sortable: false },
-                    {
-                        field: "CaseStatus", title: "Status", width: 120, align: "center", sortable: false,
-                        formatter: function (value, row, index) {
-                            if (!isEmpty(row.CaseID)) {
-                                return "<select class='form-control input-sm' id='CaseStatus' onchange='onStatusChange(" + row.CaseID + ")'>" + setSelectOption(selectOption.CaseStatus, value) + "</select>";
-                            } else {
-                                return "<select class='form-control s-caseStatus'><option value=''>全部</option>" + setSelectOption(selectOption['CaseStatus'], filterValue['CaseStatus']) + "</CaseStatus>";
-                            }
-                        }
-                    },
-                    { field: "UpdateBy", title: "Update By", width: 100, align: "center", sortable: false }
+                    { field: "NewLabelID", title: "New Label ID<br />新標籤號碼", width: 200, align: "center", sortable: false },
+                    { field: "NewOrderID", title: "New Order ID<br />新訂單號碼", width: 120, align: "center", sortable: false },
+                    { field: "RMAID", title: "RMA ID", width: 80, align: "center", sortable: false },
+                    { field: "Sku", title: "Sku<br />品號", width: 120, align: "center", sortable: false },
+                    { field: "ProductName", title: "Product Name<br />產品名稱", width: 500, align: "center", sortable: true },
+                    { field: "SerialNumber", title: "Serial Number<br />序號", width: 150, align: "center", sortable: false },
+                    { field: "WarehouseID", title: "Warehouse<br />入庫倉庫", width: 150, align: "center", sortable: false },
+                    { field: "CreateDate", title: "入庫日期", width: 150, align: "center", sortable: false }
                 ]],
                 rowStyler: function (index) {
                     if (index == 0) return { class: 'filterColumn' }
@@ -97,19 +85,6 @@
 
                             $dataGrid.datagrid('reload');
                         });
-
-                        var rows = $dataGrid.datagrid("getRows");
-                        for (var i in rows) {
-                            var Case = rows[i];
-                            if (Case.CaseStatus != 2) {
-                                if (Case.CaseRequest == 'Failed' || Case.CaseStatus == 3) {
-                                    selected = true;
-                                    $dataGrid.datagrid('selectRow', i);
-                                }
-                            } else {
-                                $('select#CaseStatus:eq(' + (i - 1) + ')').attr("disabled", "disabled")
-                            }
-                        }
                     } else {
                         $dataGrid.datagrid('deleteRow', 0);
                     }
@@ -144,30 +119,34 @@
             }
             return false;
         }
-        
+
         function getFilterData() {
             return {
-                OrderID: $('.filterColumn .s-orderID').val(),
                 LabelID: $('.filterColumn .s-labelID').val(),
-                CreateDate: $('.filterColumn .s-createDate').val(),
-                RequestDate: $('.filterColumn .s-requestDate').val(),
-                ResponseDate: $('.filterColumn .s-responseDate').val(),
-                CaseType: $('.filterColumn .s-caseType').val(),
-                CaseRequest: $('.filterColumn .s-caseRequest').val(),
-                CaseStatus: $('.filterColumn .s-caseStatus').val()
+                OrderID: $('.filterColumn .s-orderID').val(),
+                NewLabelID: $('.filterColumn .s-newLabelID').val(),
+                NewOrderID: $('.filterColumn .s-newOrderID').val(),
+                RMAID: $('.filterColumn .s-RMAID').val(),
+                Sku: $('.filterColumn .s-sku').val(),
+                ProductName: $('.filterColumn .s-productName').val(),
+                SerialNumber: $('.filterColumn .s-serialNumber').val(),
+                WarehouseID: $('.filterColumn .s-warehouseID').val(),
+                CreateDate: $('.filterColumn .s-createDate').val()
             };
         }
 
         function setFilterColumn(filterValue) {
             return {
-                OrderID: "<input type='text' class='form-control s-orderID' value='" + (!isEmpty(filterValue['OrderID']) ? filterValue['OrderID'] : '') + "'>",
                 LabelID: "<input type='text' class='form-control s-labelID' value='" + (!isEmpty(filterValue['LabelID']) ? filterValue['LabelID'] : '') + "'>",
-                CreateDate: "<input type='text' class='form-control datepicker s-createDate' value='" + (!isEmpty(filterValue['CreateDate']) ? filterValue['CreateDate'] : '') + "'>",
-                RequestDate: "<input type='text' class='form-control datepicker s-requestDate' value='" + (!isEmpty(filterValue['RequestDate']) ? filterValue['RequestDate'] : '') + "'>",
-                ResponseDate: "<input type='text' class='form-control datepicker s-responseDate' value='" + (!isEmpty(filterValue['ResponseDate']) ? filterValue['ResponseDate'] : '') + "'>",
-                CaseType: "<select class='form-control s-caseType'><option value=''>全部</option>" + setSelectOption(selectOption['CaseType'], filterValue['CaseType']) + "</select>",
-                CaseRequest: "<select class='form-control s-caseRequest'><option value=''>全部</option>" + setSelectOption(selectOption['CaseRequest'], filterValue['CaseRequest']) + "</select>",
-                CaseStatus: ""
+                OrderID: "<input type='text' class='form-control s-orderID' value='" + (!isEmpty(filterValue['OrderID']) ? filterValue['OrderID'] : '') + "'>",
+                NewLabelID: "<input type='text' class='form-control s-newLabelID' value='" + (!isEmpty(filterValue['NewLabelID']) ? filterValue['NewLabelID'] : '') + "'>",
+                NewOrderID: "<input type='text' class='form-control s-newOrderID' value='" + (!isEmpty(filterValue['NewOrderID']) ? filterValue['NewOrderID'] : '') + "'>",
+                RMAID: "<input type='text' class='form-control s-RMAID' value='" + (!isEmpty(filterValue['RMAID']) ? filterValue['RMAID'] : '') + "'>",
+                Sku: "<input type='text' class='form-control s-sku' value='" + (!isEmpty(filterValue['Sku']) ? filterValue['Sku'] : '') + "'>",
+                ProductName: "<input type='text' class='form-control s-productName' value='" + (!isEmpty(filterValue['ProductName']) ? filterValue['ProductName'] : '') + "'>",
+                SerialNumber: "<input type='text' class='form-control s-serialNumber' value='" + (!isEmpty(filterValue['SerialNumber']) ? filterValue['SerialNumber'] : '') + "'>",
+                WarehouseID: "<select class='form-control s-warehouseID'><option value=''>全部</option>" + setSelectOption(selectOption['Warehouse'], filterValue['WarehouseID']) + "</select>",
+                CreateDate: "<input type='text' class='form-control datepicker s-createDate' value='" + (!isEmpty(filterValue['CreateDate']) ? filterValue['CreateDate'] : '') + "'>"
             };
         }
 

@@ -198,7 +198,10 @@ namespace QDLogistics.Controllers
                     results = filter.Order.Equals("asc") ? results.OrderBy(c => c.Request_at).Skip(start).Take(length).ToList() : results.OrderByDescending(c => c.Request_at).Skip(start).Take(length).ToList();
                 }
 
-                dataList.AddRange(results.Skip(start).Take(length).Select(c => new
+                Dictionary<int, string> AdminName = db.AdminUsers.AsNoTracking().Where(u => u.IsEnable).ToDictionary(u => u.Id, u => u.Name);
+                AdminName.Add(0, "無");
+
+                dataList.AddRange(results.Select(c => new
                 {
                     CaseID = c.ID,
                     c.OrderID,
@@ -208,7 +211,8 @@ namespace QDLogistics.Controllers
                     ResponseDate = c.Response_at.HasValue ? timeZoneConvert.InitDateTime(c.Response_at.Value, EnumData.TimeZone.UTC).ConvertDateTime(TimeZone).ToString("MM/dd/yyyy tt hh:mm") : "",
                     CaseType = EnumData.CaseEventTypeList()[(EnumData.CaseEventType)c.Type],
                     CaseRequest = Enum.GetName(typeof(EnumData.CaseEventRequest), c.Request),
-                    CaseStatus = c.Status
+                    CaseStatus = c.Status,
+                    UpdateBy = AdminName[c.Update_by]
                 }));
             }
 
@@ -264,6 +268,7 @@ namespace QDLogistics.Controllers
                 if (eventData == null) throw new Exception("找不到資料!");
 
                 eventData.Status = CaseStatus;
+                eventData.Update_by = int.Parse(Session["AdminId"].ToString());
                 CaseEvent.Update(eventData, eventData.ID);
                 CaseEvent.SaveChanges();
             }

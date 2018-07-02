@@ -101,6 +101,11 @@ namespace QDLogistics.Controllers
             return View(box);
         }
 
+        public ActionResult Cancel()
+        {
+            return View();
+        }
+
         public ActionResult GetWaitingData(DataFilter filter, int page = 1, int rows = 100)
         {
             int total = 0;
@@ -458,6 +463,69 @@ namespace QDLogistics.Controllers
             return Json(new { total, rows = dataList }, JsonRequestBehavior.AllowGet);
         }
 
+        public ActionResult GetCancelData(CancelFilter filter, int page = 1, int rows = 100)
+        {
+            int total = 0;
+            List<object> dataList = new List<object>();
+
+            TimeZoneConvert timeZoneConvert = new TimeZoneConvert();
+            EnumData.TimeZone TimeZone = MyHelp.GetTimeZone((int)Session["TimeZone"]);
+
+            var LabelFilter = db.SerialNumberForRefundLabel.AsNoTracking().AsQueryable();
+            if (filter.IsUsed.HasValue) LabelFilter = LabelFilter.Where(l => l.IsUsed.Equals(filter.IsUsed.Value));
+            if (!string.IsNullOrEmpty(filter.OrderID)) LabelFilter = LabelFilter.Where(l => l.oldOrderID.Equals(filter.OrderID));
+            if (!string.IsNullOrEmpty(filter.LabelID)) LabelFilter = LabelFilter.Where(l => l.oldLabelID.Equals(filter.LabelID));
+            if (!string.IsNullOrEmpty(filter.NewOrderID)) LabelFilter = LabelFilter.Where(l => l.newOrderID.Equals(filter.NewOrderID));
+            if (!string.IsNullOrEmpty(filter.NewLabelID)) LabelFilter = LabelFilter.Where(l => l.newLabelID.Equals(filter.NewLabelID));
+            if (filter.RMAID.HasValue) LabelFilter = LabelFilter.Where(l => l.RMAID.Equals(filter.RMAID.Value));
+            if (!string.IsNullOrEmpty(filter.Sku)) LabelFilter = LabelFilter.Where(l => l.Sku.Contains(filter.Sku));
+            if (!string.IsNullOrEmpty(filter.SerialNumber)) LabelFilter = LabelFilter.Where(l => l.SerialNumber.Contains(filter.SerialNumber));
+            if (filter.WarehouseID.HasValue) LabelFilter = LabelFilter.Where(l => l.WarehouseID.Equals(filter.WarehouseID.Value));
+            if (filter.CreateDate.HasValue)
+            {
+                DateTime dateFrom = timeZoneConvert.InitDateTime(filter.CreateDate.Value, TimeZone).Utc;
+                DateTime dateTO = timeZoneConvert.Utc.AddDays(1);
+                LabelFilter = LabelFilter.Where(l => l.Create_at.CompareTo(dateFrom) >= 0 && l.Create_at.CompareTo(dateTO) < 0);
+            }
+
+            string[] Skus = LabelFilter.Select(l => l.Sku).Distinct().ToArray();
+            var SkuFilter = db.Skus.AsNoTracking().Where(s => s.IsEnable.Value && Skus.Contains(s.Sku));
+            if (!string.IsNullOrEmpty(filter.ProductName)) SkuFilter = SkuFilter.Where(s => s.ProductName.Contains(filter.ProductName));
+
+            var results = LabelFilter.ToList().Join(SkuFilter, l => l.Sku, s => s.Sku, (l, s) => l).GroupBy(l => l.oldLabelID).Select(g => new { label = g.First(), qty = g.Count() }).ToList();
+            if (results.Any())
+            {
+                int length = rows;
+                int start = (page - 1) * length;
+                total = results.Count();
+                results = results.OrderByDescending(data => data.label.Create_at).Skip(start).Take(length).ToList();
+
+                Skus = results.Where(data => data.qty == 1).Select(data => data.label.Sku).ToArray();
+                Dictionary<string, string> ProductName = SkuFilter.Where(s => Skus.Contains(s.Sku)).ToDictionary(s => s.Sku, s => s.ProductName);
+
+                int[] WarehouseIDs = results.Select(data => data.label.WarehouseID).Distinct().ToArray();
+                Dictionary<int, string> WarehouseName = db.Warehouses.AsNoTracking().Where(w => w.IsEnable.Value && WarehouseIDs.Contains(w.ID)).ToDictionary(w => w.ID, w => w.Name);
+
+                dataList.AddRange(results.Select(data => new
+                {
+                    data.label.IsUsed,
+                    LabelID = data.label.oldLabelID,
+                    OrderID = data.label.oldOrderID,
+                    data.label.newLabelID,
+                    data.label.newOrderID,
+                    data.label.RMAID,
+                    data.qty,
+                    Sku = data.qty == 1 ? data.label.Sku : "Multi",
+                    ProductName = data.qty == 1 ? ProductName[data.label.Sku] : "Multi",
+                    SerialNumber = data.qty == 1 ? data.label.SerialNumber : "Multi",
+                    WarehouseID = WarehouseName[data.label.WarehouseID],
+                    CreateDate = timeZoneConvert.InitDateTime(data.label.Create_at, EnumData.TimeZone.UTC).ConvertDateTime(TimeZone).ToString("MM/dd/yyyy tt hh:mm")
+                }));
+            }
+
+            return Json(new { total, rows = dataList }, JsonRequestBehavior.AllowGet);
+        }
+
         public ActionResult GetSelectOption(List<string> optionType)
         {
             AjaxResult result = new AjaxResult();
@@ -530,7 +598,7 @@ namespace QDLogistics.Controllers
                 switch (status)
                 {
                     case (int)OrderStatusCode.InProcess:
-                        if(package.Orders.StatusCode.Equals((int)OrderStatusCode.OnHold) && package.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨) && package.Label.Status.Equals((byte)EnumData.LabelStatus.鎖定中))
+                        if (package.Orders.StatusCode.Equals((int)OrderStatusCode.OnHold) && package.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨) && package.Label.Status.Equals((byte)EnumData.LabelStatus.鎖定中))
                         {
                             Box prevBox = Box.Get(!string.IsNullOrEmpty(package.Label.PrevBoxID) ? package.Label.PrevBoxID : package.Label.BoxID);
                             Box box = Box.GetAll(true).FirstOrDefault(b => b.IsEnable && b.DirectLine.Equals(prevBox.DirectLine) && b.WarehouseFrom.Equals(prevBox.WarehouseFrom) && b.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.未發貨));
@@ -691,11 +759,11 @@ namespace QDLogistics.Controllers
             List<SerialNumbers> itemSerials = db.SerialNumbers.AsNoTracking().Where(s => productIDs.Contains(s.ProductID)).ToList();
             List<PurchaseItemReceive> purchaseItemSerial = db.PurchaseItemReceive.AsNoTracking().Where(s => productIDs.Contains(s.ProductID)).ToList();
             var serialList = productIDs.ToDictionary(p => p, p => new
-                {
-                    isRequire = purchaseItemSerial.Any(s => s.ProductID.Equals(p)) ? purchaseItemSerial.Where(s => s.ProductID.Equals(p)).Max(sn => sn.IsRequireSerialScan) : false,
-                    serials = purchaseItemSerial.Where(sn => sn.ProductID.Equals(p)).Select(sn => sn.SerialNumber.Trim()).ToArray(),
-                    used = itemSerials.Where(i => i.ProductID.Equals(p)).Select(i => i.SerialNumber.Trim()).ToArray()
-                });
+            {
+                isRequire = purchaseItemSerial.Any(s => s.ProductID.Equals(p)) ? purchaseItemSerial.Where(s => s.ProductID.Equals(p)).Max(sn => sn.IsRequireSerialScan) : false,
+                serials = purchaseItemSerial.Where(sn => sn.ProductID.Equals(p)).Select(sn => sn.SerialNumber.Trim()).ToArray(),
+                used = itemSerials.Where(i => i.ProductID.Equals(p)).Select(i => i.SerialNumber.Trim()).ToArray()
+            });
 
             var groupList = ProductList.Select(p => p.pick).GroupBy(p => p.PackageID).GroupBy(p => p.First().OrderID)
                 .ToDictionary(o => o.Key.ToString(), o => o.ToDictionary(p => p.Key.ToString(), p => p.ToDictionary(pp => pp.ItemID.ToString(),
@@ -995,7 +1063,7 @@ namespace QDLogistics.Controllers
                     fileName[0] = "AirWaybill.pdf";
                     filePath[0] = Path.Combine(basePath, "export", "Box", box.Create_at.ToString("yyyy/MM/dd"), box.BoxID, fileName[0]);
                     /***** 提貨單 *****/
-                    
+
                     ShippingMethod method = db.ShippingMethod.AsNoTracking().First(m => m.ID.Equals(methodID));
                     switch (method.Carriers.CarrierAPI.Type)
                     {
@@ -1294,6 +1362,32 @@ namespace QDLogistics.Controllers
             public Nullable<byte> Status { get; set; }
             public Nullable<byte> Type { get; set; }
             public string Notes { get; set; }
+        }
+
+        public class CancelFilter
+        {
+            private string OrderIDField { get; set; }
+            private string LabelIDField { get; set; }
+            private string NewOrderIDField { get; set; }
+            private string NewLabelIDField { get; set; }
+            private string SkuField { get; set; }
+            private string ProductNameField { get; set; }
+            private string SerialNumberField { get; set; }
+
+            public bool? IsUsed { get; set; }
+            public string OrderID { get { return this.OrderIDField; } set { this.OrderIDField = !string.IsNullOrEmpty(value) ? value.Trim() : value; } }
+            public string LabelID { get { return this.LabelIDField; } set { this.LabelIDField = !string.IsNullOrEmpty(value) ? value.Trim() : value; } }
+            public string NewOrderID { get { return this.NewOrderIDField; } set { this.NewOrderIDField = !string.IsNullOrEmpty(value) ? value.Trim() : value; } }
+            public string NewLabelID { get { return this.NewLabelIDField; } set { this.NewLabelIDField = !string.IsNullOrEmpty(value) ? value.Trim() : value; } }
+            public int? RMAID { get; set; }
+            public string Sku { get { return this.SkuField; } set { this.SkuField = !string.IsNullOrEmpty(value) ? value.Trim() : value; } }
+            public string ProductName { get { return this.ProductNameField; } set { this.ProductNameField = !string.IsNullOrEmpty(value) ? value.Trim() : value; } }
+            public string SerialNumber { get { return this.SerialNumberField; } set { this.SerialNumberField = !string.IsNullOrEmpty(value) ? value.Trim() : value; } }
+            public int? WarehouseID { get; set; }
+            public DateTime? CreateDate { get; set; }
+
+            public string Sort { get; set; }
+            public string Order { get; set; }
         }
 
         public class AjaxResult

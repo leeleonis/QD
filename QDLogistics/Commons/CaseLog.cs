@@ -299,14 +299,13 @@ namespace QDLogistics.Commons
                 if (SCWS.Update_Order(order))
                 {
                     int RMAId = SCWS.Create_RMA(order.ID);
-                    PurchaseOrderService.RMAData order_RMA = SCWS.Get_RMA_Data(RMAId);
 
                     MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】開始Receive RMA", orderData.OrderID), session);
                     foreach (Items item in itemList)
                     {
-                        SCWS.Create_RMA_Item(item.OrderID.Value, item.ID, RMAId, item.Qty.Value, 16, "");
+                        int RMAItemID = SCWS.Create_RMA_Item(item.OrderID.Value, item.ID, RMAId, item.Qty.Value, 16, "");
                         string serialsList = string.Join(", ", item.SerialNumbers.Where(s => !string.IsNullOrEmpty(s.SerialNumber)).Select(s => s.SerialNumber).ToArray());
-                        SCWS.Receive_RMA_Item(RMAId, order_RMA.Items.First(i => i.OriginalOrderItemID.Equals(item.ID)).ID, item.ProductID, item.Qty.Value, item.ReturnedToWarehouseID.Value, serialsList);
+                        SCWS.Receive_RMA_Item(RMAId, RMAItemID, item.ProductID, item.Qty.Value, item.ReturnedToWarehouseID.Value, serialsList);
                         SCWS.Delete_ItemSerials(item.OrderID.Value, item.ID);
                     }
                     MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】完成Receive RMA", orderData.OrderID), session);
@@ -347,11 +346,12 @@ namespace QDLogistics.Commons
                     {
                         var refundList = item.SerialNumbers.Select(serial => new SerialNumberForRefundLabel()
                         {
+                            IsUsed = false,
                             oldOrderID = serial.OrderID.Value,
                             oldLabelID = eventData.LabelID,
                             RMAID = packageData.RMAId.Value,
                             Sku = item.ProductID,
-                            SerailNumber = serial.SerialNumber,
+                            SerialNumber = serial.SerialNumber,
                             WarehouseID = item.ReturnedToWarehouseID.Value,
                             Create_at = DateTime.UtcNow
                         }).ToArray();
