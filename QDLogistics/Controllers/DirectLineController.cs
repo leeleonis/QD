@@ -38,6 +38,8 @@ namespace QDLogistics.Controllers
         private IRepository<PickProduct> PickProduct;
         private IRepository<SerialNumbers> SerialNumbers;
 
+        private SC_WebService SCWS;
+
         public DirectLineController()
         {
             db = new QDLogisticsEntities();
@@ -1165,6 +1167,236 @@ namespace QDLogistics.Controllers
 
             ViewBag.productList = productList;
             return PartialView(string.Format("List_{0}", Type));
+        }
+
+        public ActionResult ReDispatch(int labelID, int methodID, int? newOrderID)
+        {
+            AjaxResult result = new AjaxResult();
+
+            try
+            {
+                Packages oldPackage = db.Packages.FirstOrDefault(p => p.IsEnable.Value && p.TagNo.Equals(labelID));
+                var serials = db.SerialNumberForRefundLabel.AsNoTracking().Where(s => !s.IsUsed && s.oldLabelID.Equals(labelID) && s.oldOrderID.Equals(oldPackage.OrderID.Value)).ToList();
+
+                if (oldPackage == null) throw new Exception("沒有找到此訂單!");
+                if (!serials.Any()) throw new Exception("沒有找到任何序號!");
+
+                Orders = new GenericRepository<Orders>(db);
+                Addresses = new GenericRepository<Addresses>(db);
+                Packages = new GenericRepository<Packages>(db);
+                Items = new GenericRepository<Items>(db);
+                SerialNumbers = new GenericRepository<SerialNumbers>(db);
+
+                if (!newOrderID.HasValue)
+                {
+                    MyHelp.Log("Orders", oldPackage.OrderID.Value, string.Format("訂單【{0}】Set Resolution to Replace", oldPackage.OrderID.Value), Session);
+
+                    using (SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString()))
+                    {
+                        if (!SCWS.Is_login) throw new Exception("SC is not login");
+
+                        PurchaseOrderService.RMAData SC_RMA = SCWS.Get_RMA_Data(oldPackage.RMAId.Value);
+                        foreach (var SC_RMAItem in SC_RMA.Items)
+                        {
+                            SC_RMAItem.ReturnResolution = PurchaseOrderService.ReturnResolutionCodeType.Replace;
+                            SCWS.Update_RAM_Item(SC_RMAItem);
+                        }
+
+                        OrderCreationService.RMAItem SC_Item = SCWS.Get_RMA_Item(oldPackage.OrderID.Value).FirstOrDefault(i => !i.NewOrderID.Equals(0));
+                        if (SC_Item == null) throw new Exception("沒有新訂單號碼!");
+
+                        newOrderID = SC_Item.NewOrderID;
+                        SyncNewOrder(oldPackage, newOrderID.Value);
+                    }
+                }
+
+                Orders newOrder = Orders.Get(newOrderID.Value);
+                if (!CheckLabelSku(newOrder, serials)) throw new Exception(string.Format("新訂單【{0}】產品、數量不符合!", newOrder.OrderID));
+
+                MyHelp.Log("Orders", newOrder.OrderID, string.Format("開始訂單【{0}】更新出貨倉、運輸方式、產品序號", newOrder.OrderID), Session);
+                Packages newPackage = newOrder.Packages.First(p => p.IsEnable.Value);
+                newPackage.ShippingMethod = methodID;
+                Packages.Update(newPackage, newPackage.ID);
+
+                int shipWarehouseID = oldPackage.Items.First(i => i.IsEnable.Value).ReturnedToWarehouseID.Value;
+                foreach (Items newItem in newPackage.Items.Where(i => i.IsEnable.Value).ToList())
+                {
+                    newItem.ShipFromWarehouseID = shipWarehouseID;
+                    Items.Update(newItem, newItem.ID);
+
+                    foreach (string serial in serials.Where(s => s.Sku.Equals(newItem.ProductID)).Select(s => s.Sku).ToArray())
+                    {
+                        SerialNumbers.Create(new SerialNumbers()
+                        {
+                            OrderID = newItem.OrderID,
+                            OrderItemID = newItem.ID,
+                            ProductID = newItem.ProductID,
+                            SerialNumber = serial,
+                            KitItemID = 0
+                        });
+                    }
+                }
+                Packages.SaveChanges();
+                MyHelp.Log("Orders", newOrder.OrderID, string.Format("新訂單【{0}】更新出貨倉、運輸方式、產品序號完成", newOrder.OrderID), Session);
+
+                ShipProcess Process = new ShipProcess(SCWS);
+                Process.Init(newPackage);
+                ShipResult ShipResult = Process.Dispatch();
+                if (ShipResult.Status)
+                {
+                    MyHelp.Log("Orders", newOrder.OrderID, string.Format("新訂單【{0}】提交成功", newOrder.OrderID), Session);
+
+                    IRepository<DirectLineLabel> DirectLineLabel = new GenericRepository<DirectLineLabel>(db);
+
+                    newOrder = Orders.Get(newOrder.OrderID);
+                    newPackage = newOrder.Packages.First(p => p.IsEnable.Value);
+
+                    MyHelp.Log("Orders", newOrder.OrderID, string.Format("新訂單【{0}】置入Box", newOrder.OrderID), Session);
+
+                    DirectLine directLine = db.DirectLine.AsNoTracking().FirstOrDefault(d => d.ID.Equals(newPackage.Method.DirectLine));
+                    Box box = db.Box.AsNoTracking().Where(b => b.IsEnable && b.DirectLine.Equals(directLine.ID) && b.WarehouseFrom.Equals(shipWarehouseID))
+                        .FirstOrDefault(b => b.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.未發貨));
+                    if(box == null)
+                    {
+                        MyHelp.Log("Box", null, string.Format("開始建立【{0}】新Box", directLine.Abbreviation), Session);
+
+                        IRepository<Box> Box = new GenericRepository<Box>(db);
+
+                        TimeZoneConvert timeZoneConvert = new TimeZoneConvert();
+                        string boxID = string.Format("{0}-{1}", directLine.Abbreviation, timeZoneConvert.Utc.ToString("yyyyMMdd"));
+                        int count = db.Box.AsNoTracking().Count(b => b.IsEnable && b.DirectLine.Equals(directLine.ID) && b.BoxID.Contains(boxID)) + 1;
+                        byte[] Byte = BitConverter.GetBytes(count);
+                        Byte[0] += 64;
+                        box = new Box()
+                        {
+                            IsEnable = true,
+                            BoxID = string.Format("{0}-{1}", boxID, System.Text.Encoding.ASCII.GetString(Byte.Take(1).ToArray())),
+                            DirectLine = directLine.ID,
+                            FirstMileMethod = 0,
+                            WarehouseFrom = shipWarehouseID,
+                            BoxType = (byte)EnumData.DirectLineBoxType.DirectLine,
+                            Create_at = timeZoneConvert.Utc
+                        };
+                        Box.Create(box);
+                        Box.SaveChanges();
+
+                        MyHelp.Log("Box", box.BoxID, string.Format("Box【{0}】建立完成", box.BoxID), Session);
+                    }
+
+                    DirectLineLabel newLabel = newPackage.Label;
+                    newPackage.BoxID = newLabel.BoxID = box.BoxID;
+                    Packages.Update(newPackage, newPackage.ID);
+                    DirectLineLabel.Update(newLabel, newLabel.LabelID);
+                    Packages.SaveChanges();
+
+                    MyHelp.Log("Orders", newOrder.OrderID, string.Format("新訂單【{0}】置入完成", newOrder.OrderID), Session);
+
+                    switch (directLine.Abbreviation)
+                    {
+                        case "IDS":
+                            break;
+                    }
+                }
+                else
+                {
+                    string msg = string.Format("新訂單【{0}】提交失敗", newOrder.OrderID);
+                    MyHelp.Log("Orders", newOrder.OrderID, msg + " - " + ShipResult.Message, Session);
+                    throw new Exception(msg + "!");
+                }
+            }
+            catch (Exception e)
+            {
+                result.status = false;
+                result.message = e.InnerException != null && string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+                MyHelp.Log("DirectLineLabel", labelID, string.Format("標籤【{0}】再次寄送失敗 - {1}", labelID, result.message), Session);
+            }
+
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
+        private bool SyncNewOrder(Packages oldPackage, int newOrderID)
+        {
+            bool syncResult = true;
+
+            try
+            {
+                MyHelp.Log("Orders", newOrderID, string.Format("開始新訂單【{0}】資料同步", newOrderID), Session);
+
+                var SC_Order = SCWS.Get_OrderData(newOrderID);
+                Addresses address = new Addresses() { IsEnable = true };
+                Addresses.Create(address);
+                Addresses.SaveChanges();
+
+                Orders.Create(new Orders() { OrderID = SC_Order.Order.ID, ShippingAddress = address.Id, eBayUserID = SC_Order.User.eBayUserID });
+                Orders.SaveChanges();
+
+                SyncProcess Sync = new SyncProcess(Session);
+                string syncError = Sync.Sync_Order(newOrderID);
+                if (!string.IsNullOrEmpty(syncError)) throw new Exception(syncError);
+
+                Orders newOrder = Orders.Get(newOrderID);
+                Orders oldOrder = oldPackage.Orders;
+                if (!newOrder.ParentOrderID.Equals(oldOrder.OrderID)) throw new Exception("新、舊訂單號碼不相同!");
+
+                newOrder.OrderCurrencyCode = oldOrder.OrderCurrencyCode;
+                Orders.Update(newOrder, newOrder.OrderID);
+
+                // 分批資料同步太過複雜，所以暫時不考慮 //
+                Packages newPackage = newOrder.Packages.First(p => p.IsEnable.Value);
+                newPackage.DeclaredTotal = oldPackage.DeclaredTotal;
+                newPackage.DLDeclaredTotal = oldPackage.DLDeclaredTotal;
+                newPackage.ShippingMethod = oldPackage.ShippingMethod;
+                newPackage.Export = oldPackage.Export;
+                newPackage.ExportMethod = oldPackage.ExportMethod;
+                newPackage.UploadTracking = oldPackage.UploadTracking;
+                Packages.Update(newPackage, newPackage.ID);
+
+                foreach (Items newItem in newPackage.Items.Where(i => i.IsEnable.Value))
+                {
+                    Items oldItem = oldPackage.Items.First(i => i.IsEnable.Value && i.ProductID.Equals(newItem.ProductID));
+                    newItem.ShipFromWarehouseID = oldItem.ShipFromWarehouseID;
+                    newItem.DeclaredValue = oldItem.DeclaredValue;
+                    newItem.DLDeclaredValue = oldItem.DLDeclaredValue;
+                    Items.Update(newItem, newItem.ID);
+                }
+
+                Orders.SaveChanges();
+                MyHelp.Log("Orders", newOrderID, string.Format("新訂單【{0}】資料同步完成", newOrderID), Session);
+            }
+            catch (Exception e)
+            {
+                syncResult = false;
+                string msg = e.InnerException != null && string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+                MyHelp.Log("Orders", newOrderID, string.Format("新訂單【{0}】同步失敗 - {1}", newOrderID, msg), Session);
+            }
+
+            return syncResult;
+        }
+
+        private bool CheckLabelSku(Orders order, List<SerialNumberForRefundLabel> serials)
+        {
+            bool checkResult = true;
+
+            try
+            {
+                List<Items> itemList = order.Items.Where(i => i.IsEnable.Value).ToList();
+
+                if (!itemList.Any()) throw new Exception("找不到產品資料!");
+                if (itemList.Sum(i => i.Qty.Value) != serials.Count()) throw new Exception("產品總數量不相同!");
+                foreach (var group in itemList.GroupBy(i => i.ProductID))
+                {
+                    if (group.Sum(i => i.Qty.Value) != serials.Count(s => s.Sku.Equals(group.Key)))
+                        throw new Exception(string.Format("產品-{0}數量不相同!", group.Key));
+                }
+            }
+            catch (Exception e)
+            {
+                checkResult = false;
+                string msg = e.InnerException != null && string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+                MyHelp.Log("Skus", order.OrderID, string.Format("訂單【{0}】產品核對失敗 - {1}", order.OrderID, msg), Session);
+            }
+
+            return checkResult;
         }
 
         public void SendMailToCarrier(Box box, ShippingMethod method, DirectLine directLine)

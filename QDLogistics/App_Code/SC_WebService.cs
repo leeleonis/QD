@@ -313,6 +313,11 @@ namespace SellerCloud_WebService
             return OCS_SellerCloud.RMA_GetRMAByOrderID(OCS_AuthHeader, OrderID);
         }
 
+        public QDLogistics.OrderCreationService.RMAItem[] Get_RMA_Item(int OrderID)
+        {
+            return OCS_SellerCloud.RMA_GetRMAItems(OCS_AuthHeader, OrderID);
+        }
+
         public int Create_RMA(int OrderID)
         {
             return OCS_SellerCloud.RMA_CreateNew(OCS_AuthHeader, OrderID);

@@ -258,7 +258,7 @@ namespace QDLogistics.Commons
                         Items.SaveChanges();
                         SCWS.Update_OrderStatus(orderData.OrderID, (int)OrderStatusCode.Canceled);
 
-                        MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0} 完成更新退貨倉", orderData.OrderID), session);
+                        MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】 完成更新退貨倉", orderData.OrderID), session);
                     }
                     catch (Exception e)
                     {
