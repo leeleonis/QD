@@ -135,7 +135,7 @@
                         field: "HasCaseAction", title: "Case Action", width: 80, align: "center", sortable: false,
                         formatter: function (value, row, index) {
                             if (!isEmpty(row.OrderID)) {
-                                return "<button type='button' class='btn btn-default btn-sm' onclick='createCase(" + row.PackageID + ")' " + (row.HasCaseAction ? '' : 'disabled') + ">CASE</button>"
+                                return "<button type='button' class='btn btn-default btn-sm' onclick='createCase(" + row.PackageID + ")' " + (row.HasCaseAction ? '' : 'disabled') + ">CASE</button>";
                             }
                         }
                     }

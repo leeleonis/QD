@@ -152,7 +152,7 @@ namespace QDLogistics.Controllers
 
             var results = OrderFilter.ToList()
                 .Join(PackageFilter, o => o.OrderID, p => p.OrderID, (o, p) => new OrderJoinData() { order = o, package = p })
-                .Join(ItemFilter.GroupBy(i => i.PackageID.Value), oData => oData.package.ID, i => i.Key, (oData, i) => new OrderJoinData(oData) { item = i.First(), items = i.ToList(), itemCount = i.Sum(ii => 1 + ii.KitItemCount).Value })
+                .Join(ItemFilter.ToList().GroupBy(i => i.PackageID.Value), oData => oData.package.ID, i => i.Key, (oData, i) => new OrderJoinData(oData) { item = i.First(), items = i.ToList(), itemCount = i.Sum(ii => 1 + ii.KitItemCount).Value })
                 .Join(AddressFilter, oData => oData.order.ShippingAddress, a => a.Id, (oData, a) => new OrderJoinData(oData) { address = a })
                 .Join(MethodFilter, oData => oData.package.ShippingMethod, m => m.ID, (oData, m) => new OrderJoinData(oData) { method = m }).ToList();
 
@@ -513,14 +513,15 @@ namespace QDLogistics.Controllers
                     data.label.IsUsed,
                     LabelID = data.label.oldLabelID,
                     OrderID = data.label.oldOrderID,
-                    data.label.newLabelID,
-                    data.label.newOrderID,
+                    NewLabelID = data.label.newLabelID,
+                    NewOrderID = data.label.newOrderID,
                     data.label.RMAID,
-                    data.qty,
+                    Qty = data.qty,
                     Sku = data.qty == 1 ? data.label.Sku : "Multi",
                     ProductName = data.qty == 1 ? ProductName[data.label.Sku] : "Multi",
                     SerialNumber = data.qty == 1 ? data.label.SerialNumber : "Multi",
-                    WarehouseID = WarehouseName[data.label.WarehouseID],
+                    WarehouseID = data.label.WarehouseID,
+                    WarehouseName = WarehouseName[data.label.WarehouseID],
                     CreateDate = timeZoneConvert.InitDateTime(data.label.Create_at, EnumData.TimeZone.UTC).ConvertDateTime(TimeZone).ToString("MM/dd/yyyy tt hh:mm")
                 }));
             }
@@ -784,59 +785,42 @@ namespace QDLogistics.Controllers
             int warehouseID;
             if (int.TryParse(Session["warehouseId"].ToString(), out warehouseID))
             {
-                Box = new GenericRepository<Box>(db);
+                Box box;
+                List<object> pickList = new List<object>();
 
-                var BoxFilter = Box.GetAll(true).Where(b => b.IsEnable && b.DirectLine.Equals(type) && b.WarehouseFrom.Equals(warehouseID));
-
-                Box box = BoxFilter.FirstOrDefault(b => b.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.未發貨));
-                if (box == null)
+                using (BoxManage BoxManage = new BoxManage(Session))
                 {
+                    DirectLine directLine = db.DirectLine.AsNoTracking().First(d => d.IsEnable && d.ID.Equals(type));
+
                     Warehouses warehouse = db.Warehouses.AsNoTracking().First(w => w.ID.Equals(warehouseID));
                     Dictionary<int, bool> methodData = JsonConvert.DeserializeObject<Dictionary<int, bool>>(warehouse.CarrierData);
 
-                    TimeZoneConvert timeZoneConvert = new TimeZoneConvert();
-                    string boxID = string.Format("{0}-{1}", db.DirectLine.AsNoTracking().First(d => d.ID.Equals(type)).Abbreviation, timeZoneConvert.Utc.ToString("yyyyMMdd"));
-                    int count = Box.GetAll(true).Count(b => b.IsEnable && b.DirectLine.Equals(type) && b.BoxID.Contains(boxID)) + 1;
-                    byte[] Byte = BitConverter.GetBytes(count);
-                    Byte[0] += 64;
-                    box = new Box()
+                    box = BoxManage.GetCurrentBox(directLine, warehouseID, methodData.First(m => m.Value).Key);
+
+                    List<Packages> packageList = box.Packages.Where(p => p.IsEnable.Value).ToList();
+
+                    if (packageList.Any())
                     {
-                        IsEnable = true,
-                        BoxID = string.Format("{0}-{1}", boxID, System.Text.Encoding.ASCII.GetString(Byte.Take(1).ToArray())),
-                        DirectLine = type,
-                        FirstMileMethod = methodData.First(m => m.Value).Key,
-                        WarehouseFrom = warehouseID,
-                        BoxType = (byte)EnumData.DirectLineBoxType.DirectLine,
-                        Create_at = timeZoneConvert.Utc
-                    };
-                    Box.Create(box);
-                    Box.SaveChanges();
+                        List<OrderJoinData> dataList = packageList
+                            .Join(db.Items.AsNoTracking().Where(i => i.IsEnable.Value), p => p.ID, i => i.PackageID, (p, i) => new OrderJoinData() { package = p, item = i })
+                            .Join(db.PickProduct.AsNoTracking().Where(pick => pick.IsEnable), data => data.item.ID, pick => pick.ItemID, (data, pick) => new OrderJoinData(data) { pick = pick }).ToList();
 
-                    MyHelp.Log("Box", box.BoxID, string.Format("Box【{0}】建立完成", box.BoxID), Session);
-                }
-
-                var pickList = new List<object>();
-                if (box.Packages.Where(p => p.IsEnable.Value).Any())
-                {
-                    List<OrderJoinData> dataList = box.Packages.Where(p => p.IsEnable.Value).ToList()
-                        .Join(db.Items.AsNoTracking().Where(i => i.IsEnable.Value), p => p.ID, i => i.PackageID, (p, i) => new OrderJoinData() { package = p, item = i })
-                        .Join(db.PickProduct.AsNoTracking().Where(pick => pick.IsEnable), data => data.item.ID, pick => pick.ItemID, (data, pick) => new OrderJoinData(data) { pick = pick }).ToList();
-
-                    foreach (OrderJoinData data in dataList)
-                    {
-                        for (int i = 0; i < data.item.Qty; i++)
+                        foreach (OrderJoinData data in dataList)
                         {
-                            pickList.Add(new
+                            for (int i = 0; i < data.item.Qty; i++)
                             {
-                                data.pick.OrderID,
-                                data.pick.PackageID,
-                                data.pick.ProductID,
-                                data.pick.ProductName,
-                                SerialNumber = data.item.SerialNumbers.Skip(i).Any() ? data.item.SerialNumbers.Skip(i).FirstOrDefault().SerialNumber : "",
-                                data.package.TagNo,
-                                data.package.Label.Note,
-                                data.package.Method.InBox
-                            });
+                                pickList.Add(new
+                                {
+                                    data.pick.OrderID,
+                                    data.pick.PackageID,
+                                    data.pick.ProductID,
+                                    data.pick.ProductName,
+                                    SerialNumber = data.item.SerialNumbers.Skip(i).Any() ? data.item.SerialNumbers.Skip(i).FirstOrDefault().SerialNumber : "",
+                                    data.package.TagNo,
+                                    data.package.Label.Note,
+                                    data.package.Method.InBox
+                                });
+                            }
                         }
                     }
                 }
@@ -1132,36 +1116,51 @@ namespace QDLogistics.Controllers
             return OrderCompare && PaymentCompare;
         }
 
-        public ActionResult ProductList(int PackageID, string Type)
+        public ActionResult ProductList(int TargetID, string Type)
         {
+            Packages package = null;
             List<string[]> productList = new List<string[]>();
 
-            Packages = new GenericRepository<Packages>(db);
+            switch (Type)
+            {
+                case "WaitingOrder":
+                case "BoxOrder":
+                    package = db.Packages.AsNoTracking().FirstOrDefault(p => p.IsEnable.Value && p.ID.Equals(TargetID));
+                    break;
 
-            Packages package = Packages.Get(PackageID);
+                case "CancelLabel":
+                    package = db.Packages.AsNoTracking().FirstOrDefault(p => p.IsEnable.Value && p.Label.Equals(TargetID));
+                    break;
+            }
+
             if (package != null)
             {
-                switch (Type)
+                foreach (Items item in package.Items.Where(i => i.IsEnable.Value))
                 {
-                    case "BoxOrder":
-                        foreach (Items item in package.Items.Where(i => i.IsEnable.Value))
-                        {
-                            for (int i = 0; i < item.Qty; i++)
+                    switch (Type)
+                    {
+                        case "WaitingOrder":
+                        case "CancelLabel":
+                            productList.Add(new string[] { item.ProductID, item.Skus.ProductName, item.Qty.ToString() });
+
+                            if (item.BundleItems.Any())
                             {
-                                SerialNumbers serial = item.SerialNumbers.Skip(i).Take(1).FirstOrDefault();
-
-                                productList.Add(new string[] { item.ProductID, item.Skus.ProductName, (serial != null ? serial.SerialNumber : "") });
-
-                                if (item.BundleItems.Any())
+                                foreach (BundleItems bundleItem in item.BundleItems)
                                 {
-                                    foreach (BundleItems bundleItem in item.BundleItems)
-                                    {
-                                        productList.Add(new string[] { bundleItem.ProductID, bundleItem.Skus.ProductName, "" });
-                                    }
+                                    productList.Add(new string[] { bundleItem.ProductID, bundleItem.Skus.ProductName, bundleItem.Qty.ToString(), "" });
                                 }
                             }
-                        }
-                        break;
+                            break;
+
+                        case "BoxOrder":
+                            for (int i = 0; i < item.Qty; i++)
+                            {
+                                SerialNumbers serial = item.SerialNumbers.Skip(i).FirstOrDefault();
+
+                                productList.Add(new string[] { item.ProductID, item.Skus.ProductName, (serial != null ? serial.SerialNumber : "") });
+                            }
+                            break;
+                    }
                 }
             }
 
@@ -1169,7 +1168,43 @@ namespace QDLogistics.Controllers
             return PartialView(string.Format("List_{0}", Type));
         }
 
-        public ActionResult ReDispatch(int labelID, int methodID, int? newOrderID)
+        public ActionResult GetShippingMethodByWarehouse(int warehouseID)
+        {
+            AjaxResult result = new AjaxResult();
+
+            try
+            {
+                Warehouses warehouse = db.Warehouses.AsNoTracking().First(w => w.IsEnable.Value && w.ID.Equals(warehouseID));
+                if (warehouse == null) throw new Exception("找不到出貨倉!");
+
+                int[] methodIDs = new int[] { };
+                if (!string.IsNullOrEmpty(warehouse.CarrierData))
+                {
+                    Dictionary<string, bool> carrierData = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, bool>>(warehouse.CarrierData);
+                    methodIDs = carrierData.Where(c => c.Value).Select(c => int.Parse(c.Key)).ToArray();
+                }
+
+                var methodFilter = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable);
+                if (methodIDs.Any()) methodFilter = methodFilter.Where(m => methodIDs.Contains(m.ID));
+
+                string option = "";
+                foreach (var method in methodFilter.ToList())
+                {
+                    option += string.Format("<option value='{0}'>{1}</option>", method.ID, method.Name);
+                }
+
+                result.data = option;
+            }
+            catch (Exception e)
+            {
+                result.status = false;
+                result.message = e.InnerException != null && string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+            }
+
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
+        public ActionResult ReDispatch(string labelID, int methodID, int? newOrderID)
         {
             AjaxResult result = new AjaxResult();
 
@@ -1181,128 +1216,160 @@ namespace QDLogistics.Controllers
                 if (oldPackage == null) throw new Exception("沒有找到此訂單!");
                 if (!serials.Any()) throw new Exception("沒有找到任何序號!");
 
-                Orders = new GenericRepository<Orders>(db);
-                Addresses = new GenericRepository<Addresses>(db);
-                Packages = new GenericRepository<Packages>(db);
-                Items = new GenericRepository<Items>(db);
-                SerialNumbers = new GenericRepository<SerialNumbers>(db);
+                TaskFactory factory = System.Web.HttpContext.Current.Application.Get("TaskFactory") as TaskFactory;
 
-                if (!newOrderID.HasValue)
+                lock (factory)
                 {
-                    MyHelp.Log("Orders", oldPackage.OrderID.Value, string.Format("訂單【{0}】Set Resolution to Replace", oldPackage.OrderID.Value), Session);
-
-                    using (SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString()))
+                    ThreadTask threadTask = new ThreadTask(string.Format("標籤【{0}】再次寄送", labelID));
+                    threadTask.AddWork(factory.StartNew(HttpContext =>
                     {
-                        if (!SCWS.Is_login) throw new Exception("SC is not login");
+                        threadTask.Start();
+                        string message = "";
 
-                        PurchaseOrderService.RMAData SC_RMA = SCWS.Get_RMA_Data(oldPackage.RMAId.Value);
-                        foreach (var SC_RMAItem in SC_RMA.Items)
+                        HttpContextBase currentHttpContext = (HttpContextBase)HttpContext;
+                        HttpSessionStateBase Session = currentHttpContext.Session;
+
+                        try
                         {
-                            SC_RMAItem.ReturnResolution = PurchaseOrderService.ReturnResolutionCodeType.Replace;
-                            SCWS.Update_RAM_Item(SC_RMAItem);
+                            Orders = new GenericRepository<Orders>(db);
+                            Addresses = new GenericRepository<Addresses>(db);
+                            Packages = new GenericRepository<Packages>(db);
+                            Items = new GenericRepository<Items>(db);
+                            SerialNumbers = new GenericRepository<SerialNumbers>(db);
+
+                            if (!newOrderID.HasValue)
+                            {
+                                MyHelp.Log("Orders", oldPackage.OrderID.Value, string.Format("訂單【{0}】Set Resolution to Replace", oldPackage.OrderID.Value), Session);
+
+                                using (SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString()))
+                                {
+                                    if (!SCWS.Is_login) throw new Exception("SC is not login");
+
+                                    PurchaseOrderService.RMAData SC_RMA = SCWS.Get_RMA_Data(oldPackage.RMAId.Value);
+                                    foreach (var SC_RMAItem in SC_RMA.Items)
+                                    {
+                                        SC_RMAItem.ReturnResolution = PurchaseOrderService.ReturnResolutionCodeType.Replace;
+                                        SCWS.Update_RAM_Item(SC_RMAItem);
+                                    }
+
+                                    OrderCreationService.RMAItem SC_Item = SCWS.Get_RMA_Item(oldPackage.OrderID.Value).FirstOrDefault(i => !i.NewOrderID.Equals(0));
+                                    if (SC_Item == null) throw new Exception("沒有新訂單號碼!");
+
+                                    newOrderID = SC_Item.NewOrderID;
+                                    SyncNewOrder(oldPackage, newOrderID.Value);
+                                }
+                            }
+
+                            Orders newOrder = Orders.Get(newOrderID.Value);
+                            if (!CheckLabelSku(newOrder, serials)) throw new Exception(string.Format("新訂單【{0}】產品、數量不符合!", newOrder.OrderID));
+
+                            MyHelp.Log("Orders", newOrder.OrderID, string.Format("訂單【{0}】更新出貨倉、運輸方式、產品序號", newOrder.OrderID), Session);
+
+                            Packages newPackage = newOrder.Packages.First(p => p.IsEnable.Value);
+                            newPackage.ShippingMethod = methodID;
+                            Packages.Update(newPackage, newPackage.ID);
+
+                            int shipWarehouseID = oldPackage.Items.First(i => i.IsEnable.Value).ReturnedToWarehouseID.Value;
+                            foreach (Items newItem in newPackage.Items.Where(i => i.IsEnable.Value).ToList())
+                            {
+                                newItem.ShipFromWarehouseID = shipWarehouseID;
+                                Items.Update(newItem, newItem.ID);
+
+                                foreach (string serial in serials.Where(s => s.Sku.Equals(newItem.ProductID)).Select(s => s.Sku).ToArray())
+                                {
+                                    SerialNumbers.Create(new SerialNumbers()
+                                    {
+                                        OrderID = newItem.OrderID,
+                                        OrderItemID = newItem.ID,
+                                        ProductID = newItem.ProductID,
+                                        SerialNumber = serial,
+                                        KitItemID = 0
+                                    });
+                                }
+                            }
+                            Packages.SaveChanges();
+
+                            MyHelp.Log("Orders", newOrder.OrderID, string.Format("檢查新訂單【{0}】寄送國家", newOrder.OrderID), Session);
+
+                            if (!string.IsNullOrEmpty(newPackage.Method.CountryData))
+                            {
+                                var countryData = JsonConvert.DeserializeObject<Dictionary<string, bool>>(newPackage.Method.CountryData);
+                                if (!countryData.ContainsKey(newOrder.Addresses.CountryCode.ToUpper()))
+                                {
+                                    throw new Exception(string.Format("新訂單【{0}】國家名稱不合，請重新確認", newOrder.OrderID));
+                                }
+
+                                if (!countryData[newOrder.Addresses.CountryCode.ToUpper()])
+                                {
+                                    throw new Exception(string.Format("新訂單【{0}】不可寄送至國家{1}", newOrder.OrderID, newOrder.Addresses.CountryName));
+                                }
+                            }
+
+                            MyHelp.Log("Orders", newOrder.OrderID, string.Format("提交新訂單【{0}】", newOrder.OrderID), Session);
+
+                            ShipProcess Process = new ShipProcess(SCWS);
+                            Process.Init(newPackage);
+                            ShipResult ShipResult = Process.Dispatch();
+                            if (ShipResult.Status)
+                            {
+                                MyHelp.Log("Orders", newOrder.OrderID, string.Format("新訂單【{0}】提交成功", newOrder.OrderID), Session);
+
+                                IRepository<DirectLineLabel> DirectLineLabel = new GenericRepository<DirectLineLabel>(db);
+
+                                newOrder = Orders.Get(newOrder.OrderID);
+                                newPackage = newOrder.Packages.First(p => p.IsEnable.Value);
+
+                                MyHelp.Log("Orders", newOrder.OrderID, string.Format("新訂單【{0}】置入Box", newOrder.OrderID), Session);
+
+                                DirectLine directLine = db.DirectLine.AsNoTracking().FirstOrDefault(d => d.ID.Equals(newPackage.Method.DirectLine));
+                                using (BoxManage BoxManage = new BoxManage(Session))
+                                {
+                                    DirectLineLabel newLabel = newPackage.Label;
+                                    Box box = BoxManage.GetCurrentBox(directLine, newPackage.Items.First(i => i.IsEnable.Value).ShipFromWarehouseID.Value);
+                                    newPackage.BoxID = newLabel.BoxID = box.BoxID;
+                                    Packages.Update(newPackage, newPackage.ID);
+                                    DirectLineLabel.Update(newLabel, newLabel.LabelID);
+                                    Packages.SaveChanges();
+                                }
+
+                                MyHelp.Log("Orders", newOrder.OrderID, string.Format("新訂單【{0}】寄送 {1} 出貨通知", newOrder.OrderID, directLine.Abbreviation), Session);
+
+                                switch (directLine.Abbreviation)
+                                {
+                                    case "IDS":
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                string msg = string.Format("新訂單【{0}】提交失敗", newOrder.OrderID);
+                                MyHelp.Log("Orders", newOrder.OrderID, msg + " - " + ShipResult.Message, Session);
+                                throw new Exception(msg + "!");
+                            }
+
+                            MyHelp.Log("DirectLineLabel", labelID, string.Format("完成標籤【{0}】再次寄送", labelID), Session);
+
+                            IRepository<SerialNumberForRefundLabel> RefundSerial = new GenericRepository<SerialNumberForRefundLabel>(db);
+                            foreach(var serial in db.SerialNumberForRefundLabel.AsNoTracking().Where(s => !s.IsUsed && s.oldLabelID.Equals(labelID)).ToList())
+                            {
+                                serial.IsUsed = true;
+                                serial.newLabelID = newPackage.TagNo;
+                                serial.newOrderID = newPackage.OrderID;
+                                RefundSerial.Update(serial, serial.ID);
+                            }
+                            RefundSerial.SaveChanges();
+                        }
+                        catch (Exception e)
+                        {
+                            message = e.InnerException != null && string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+                            MyHelp.Log("DirectLineLabel", labelID, string.Format("標籤【{0}】再次寄送失敗 - {1}", labelID, message), Session);
                         }
 
-                        OrderCreationService.RMAItem SC_Item = SCWS.Get_RMA_Item(oldPackage.OrderID.Value).FirstOrDefault(i => !i.NewOrderID.Equals(0));
-                        if (SC_Item == null) throw new Exception("沒有新訂單號碼!");
-
-                        newOrderID = SC_Item.NewOrderID;
-                        SyncNewOrder(oldPackage, newOrderID.Value);
-                    }
+                        return message;
+                    }, HttpContext));
                 }
 
-                Orders newOrder = Orders.Get(newOrderID.Value);
-                if (!CheckLabelSku(newOrder, serials)) throw new Exception(string.Format("新訂單【{0}】產品、數量不符合!", newOrder.OrderID));
-
-                MyHelp.Log("Orders", newOrder.OrderID, string.Format("開始訂單【{0}】更新出貨倉、運輸方式、產品序號", newOrder.OrderID), Session);
-                Packages newPackage = newOrder.Packages.First(p => p.IsEnable.Value);
-                newPackage.ShippingMethod = methodID;
-                Packages.Update(newPackage, newPackage.ID);
-
-                int shipWarehouseID = oldPackage.Items.First(i => i.IsEnable.Value).ReturnedToWarehouseID.Value;
-                foreach (Items newItem in newPackage.Items.Where(i => i.IsEnable.Value).ToList())
-                {
-                    newItem.ShipFromWarehouseID = shipWarehouseID;
-                    Items.Update(newItem, newItem.ID);
-
-                    foreach (string serial in serials.Where(s => s.Sku.Equals(newItem.ProductID)).Select(s => s.Sku).ToArray())
-                    {
-                        SerialNumbers.Create(new SerialNumbers()
-                        {
-                            OrderID = newItem.OrderID,
-                            OrderItemID = newItem.ID,
-                            ProductID = newItem.ProductID,
-                            SerialNumber = serial,
-                            KitItemID = 0
-                        });
-                    }
-                }
-                Packages.SaveChanges();
-                MyHelp.Log("Orders", newOrder.OrderID, string.Format("新訂單【{0}】更新出貨倉、運輸方式、產品序號完成", newOrder.OrderID), Session);
-
-                ShipProcess Process = new ShipProcess(SCWS);
-                Process.Init(newPackage);
-                ShipResult ShipResult = Process.Dispatch();
-                if (ShipResult.Status)
-                {
-                    MyHelp.Log("Orders", newOrder.OrderID, string.Format("新訂單【{0}】提交成功", newOrder.OrderID), Session);
-
-                    IRepository<DirectLineLabel> DirectLineLabel = new GenericRepository<DirectLineLabel>(db);
-
-                    newOrder = Orders.Get(newOrder.OrderID);
-                    newPackage = newOrder.Packages.First(p => p.IsEnable.Value);
-
-                    MyHelp.Log("Orders", newOrder.OrderID, string.Format("新訂單【{0}】置入Box", newOrder.OrderID), Session);
-
-                    DirectLine directLine = db.DirectLine.AsNoTracking().FirstOrDefault(d => d.ID.Equals(newPackage.Method.DirectLine));
-                    Box box = db.Box.AsNoTracking().Where(b => b.IsEnable && b.DirectLine.Equals(directLine.ID) && b.WarehouseFrom.Equals(shipWarehouseID))
-                        .FirstOrDefault(b => b.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.未發貨));
-                    if(box == null)
-                    {
-                        MyHelp.Log("Box", null, string.Format("開始建立【{0}】新Box", directLine.Abbreviation), Session);
-
-                        IRepository<Box> Box = new GenericRepository<Box>(db);
-
-                        TimeZoneConvert timeZoneConvert = new TimeZoneConvert();
-                        string boxID = string.Format("{0}-{1}", directLine.Abbreviation, timeZoneConvert.Utc.ToString("yyyyMMdd"));
-                        int count = db.Box.AsNoTracking().Count(b => b.IsEnable && b.DirectLine.Equals(directLine.ID) && b.BoxID.Contains(boxID)) + 1;
-                        byte[] Byte = BitConverter.GetBytes(count);
-                        Byte[0] += 64;
-                        box = new Box()
-                        {
-                            IsEnable = true,
-                            BoxID = string.Format("{0}-{1}", boxID, System.Text.Encoding.ASCII.GetString(Byte.Take(1).ToArray())),
-                            DirectLine = directLine.ID,
-                            FirstMileMethod = 0,
-                            WarehouseFrom = shipWarehouseID,
-                            BoxType = (byte)EnumData.DirectLineBoxType.DirectLine,
-                            Create_at = timeZoneConvert.Utc
-                        };
-                        Box.Create(box);
-                        Box.SaveChanges();
-
-                        MyHelp.Log("Box", box.BoxID, string.Format("Box【{0}】建立完成", box.BoxID), Session);
-                    }
-
-                    DirectLineLabel newLabel = newPackage.Label;
-                    newPackage.BoxID = newLabel.BoxID = box.BoxID;
-                    Packages.Update(newPackage, newPackage.ID);
-                    DirectLineLabel.Update(newLabel, newLabel.LabelID);
-                    Packages.SaveChanges();
-
-                    MyHelp.Log("Orders", newOrder.OrderID, string.Format("新訂單【{0}】置入完成", newOrder.OrderID), Session);
-
-                    switch (directLine.Abbreviation)
-                    {
-                        case "IDS":
-                            break;
-                    }
-                }
-                else
-                {
-                    string msg = string.Format("新訂單【{0}】提交失敗", newOrder.OrderID);
-                    MyHelp.Log("Orders", newOrder.OrderID, msg + " - " + ShipResult.Message, Session);
-                    throw new Exception(msg + "!");
-                }
+                
             }
             catch (Exception e)
             {

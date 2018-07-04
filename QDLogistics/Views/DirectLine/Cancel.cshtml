@@ -4,6 +4,10 @@
     <link href="~/Content/themes/default/easyui.css" rel="stylesheet" />
     <link href="~/Content/themes/icon.css" rel="stylesheet" />
     <style>
+        table tbody tr td {
+            vertical-align: middle !important;
+        }
+
         .datagrid-body .filterColumn:first-child td div {
             padding: 0
         }
@@ -11,6 +15,35 @@
 }
 <div id="content">
     <section id="widget-grid" class="">
+        <div class="hidden">
+            <div id="dialog-dispatch" class="easyui-dialog" title="請選擇方式" data-options="iconCls:'icon-edit',closed:true,resizable:false" style="width:500px;">
+                <div class="col-sm-12" style="text-align:center; padding:0px;">
+                    <form id="form-data">
+                        <input type="hidden" id="labelID" name="labelID" />
+                        <table class="table table-bordered text-left" style="margin:0;">
+                            <tr>
+                                <td width="50"><input class="form-control" type="radio" name="dispatchType" value="new" style="height:20px;" checked /></td>
+                                <td width="40%">New Order</td>
+                                <td style="padding: 0px;"><input type="text" class="form-control" name="newOrderID" placeholder="NewOrderID" /></td>
+                            </tr>
+                            <tr>
+                                <td width="50"><input class="form-control" type="radio" name="dispatchType" value="dispatch" style="height:20px;" /></td>
+                                <td colspan="2">Resend Order</td>
+                            </tr>
+                            <tr>
+                                <td class="text-right" colspan="2">Shipping Method</td>
+                                <td class="input-group" style="padding: 0px;">
+                                    <select class="form-control" id="select-method" name="methodID"></select>
+                                    <div class="input-group-btn">
+                                        <button type="button" class="btn btn-default btn-sm" id="btn-submit">送出</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </form>
+                </div>
+            </div>
+        </div>
         <div class="row">
             <article class="col-xs-12">
                 <table id="DataGrid"></table>
@@ -26,10 +59,10 @@
         var pager, pageSize = 100, selectOption, filterValue = {};
         var selected = false;
         var $dataGrid;
+        var $dispatchDialog = $('#dialog-dispatch'), $dataForm = $('#form-data'), $methodSelect = $('#select-method'), $submitBtn = $('#btn-submit');
 
         $(function () {
             var data = { optionType: ['Warehouse'] };
-
             ajaxUrl("@Url.Action("getSelectOption", "directLine")", 'post', data).done(function (response) {
                 if (response['status']) {
                     selectOption = response['data'];
@@ -37,6 +70,21 @@
                     dataInit();
                 } else {
                     alert(response['message']);
+                }
+            });
+            
+            $submitBtn.click(function () {
+                if (confirm("是否確定送出?")) {
+                    var data = $dataForm.serializeArray();
+                    if (data['dispatchType'] != 'new') data['newOrderID'] = null;
+                    ajaxUrl('@Url.Action("reDispatch", "directLine")', 'post', data).done(function (response) {
+                        if (response.status) {
+                            alert("Success!");
+                            $caseDialog.dialog("close");
+                        } else {
+                            alert(response.message);
+                        }
+                    });
                 }
             });
         });
@@ -54,17 +102,30 @@
                 singleSelect: false,
                 frozenColumns: [[
                     { field: "LabelID", title: "Label ID<br />原標籤號碼", width: 200, align: "center", sortable: false },
-                    { field: "OrderID", title: "Order ID<br />原訂單號碼", width: 120, align: "center", sortable: false }
+                    { field: "OrderID", title: "Order ID<br />原訂單號碼", width: 100, align: "center", sortable: false }
                 ]],
                 columns: [[
                     { field: "NewLabelID", title: "New Label ID<br />新標籤號碼", width: 200, align: "center", sortable: false },
-                    { field: "NewOrderID", title: "New Order ID<br />新訂單號碼", width: 120, align: "center", sortable: false },
+                    { field: "NewOrderID", title: "New Order ID<br />新訂單號碼", width: 100, align: "center", sortable: false },
                     { field: "RMAID", title: "RMA ID", width: 80, align: "center", sortable: false },
                     { field: "Sku", title: "Sku<br />品號", width: 120, align: "center", sortable: false },
                     { field: "ProductName", title: "Product Name<br />產品名稱", width: 500, align: "center", sortable: true },
                     { field: "SerialNumber", title: "Serial Number<br />序號", width: 150, align: "center", sortable: false },
-                    { field: "WarehouseID", title: "Warehouse<br />入庫倉庫", width: 150, align: "center", sortable: false },
-                    { field: "CreateDate", title: "入庫日期", width: 150, align: "center", sortable: false }
+                    {
+                        field: "WarehouseID", title: "Warehouse<br />入庫倉庫", width: 150, align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            return !isEmpty(row.WarehouseName) ? row.WarehouseName : value;
+                        }
+                    },
+                    { field: "CreateDate", title: "入庫日期", width: 150, align: "center", sortable: false },
+                    {
+                        field: "Action", title: "Action<br />動作", width: 80, align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            if (!isEmpty(row.WarehouseName)) {
+                                return "<button type='button' class='btn btn-default btn-sm' onclick='dispatchLabel(\"" + row.LabelID + "\")' " + (row.IsUsed ? 'disabled' : '') + ">Dispatch</button>";
+                            }
+                        }
+                    }
                 ]],
                 rowStyler: function (index) {
                     if (index == 0) return { class: 'filterColumn' }
@@ -96,6 +157,28 @@
                 },
                 onBeforeSelect: selectAction,
                 onBeforeUnselect: selectAction,
+                view: detailview,
+                detailFormatter: function (index, row) {
+                    return '<div id="itemList"></div>';
+                },
+                onExpandRow: function (index, row) {
+                    if (row.Qty == 1) {
+                        $dataGrid.datagrid("collapseRow", index);
+                    } else {
+                        var $itemList = $("div#itemList:eq(" + index + ")");
+
+                        $itemList.panel({
+                            border: false,
+                            cache: false,
+                            href: "@Html.Raw(Url.Action("productList", "directLine", new { TargetID = "_id_", Type = "CancelLabel" }))".replace("_id_", row.LabelID),
+                            onLoad: function (response) {
+                                $("#datagrid-row-r1-1-" + index).next("tr").find(".datagrid-row-detail").html($itemList.find("table:hidden").remove().removeClass("hidden"));
+                            }
+                        });
+
+                        $dataGrid.datagrid("fixDetailRowHeight", index);
+                    }
+                },
                 pagination: true,
                 pagePosition: "bottom",
                 pageSize: pageSize
@@ -109,6 +192,22 @@
                 beforePageTest: "第",
                 afterPageTest: "頁，共 {pages} 頁",
                 displayMsg: "顯示 {from} 到 {to} 筆資料，共 {total} 筆資料"
+            });
+        }
+
+        function dispatchLabel(labelID) {
+            $('#labelID').val(labelID);
+
+            var index = $dataGrid.datagrid("getRowIndex", labelID);
+            var label = $dataGrid.datagrid("getRows")[index];
+
+            ajaxUrl('@Url.Action("getShippingMethodByWarehouse", "directLine")', 'get', { warehouseID: label.WarehouseID }).done(function (response) {
+                if (response.status) {
+                    $methodSelect.html(response.data);
+                    $dispatchDialog.dialog('open');
+                } else {
+                    alert(response.message);
+                }
             });
         }
 
@@ -137,6 +236,7 @@
 
         function setFilterColumn(filterValue) {
             return {
+                Qty: 1,
                 LabelID: "<input type='text' class='form-control s-labelID' value='" + (!isEmpty(filterValue['LabelID']) ? filterValue['LabelID'] : '') + "'>",
                 OrderID: "<input type='text' class='form-control s-orderID' value='" + (!isEmpty(filterValue['OrderID']) ? filterValue['OrderID'] : '') + "'>",
                 NewLabelID: "<input type='text' class='form-control s-newLabelID' value='" + (!isEmpty(filterValue['NewLabelID']) ? filterValue['NewLabelID'] : '') + "'>",

@@ -129,7 +129,7 @@ namespace QDLogistics.Controllers
             return string.Format(link, url, EnumData.ProcessStatusList()[(EnumData.ProcessStatus)data.package.ProcessStatus]);
         }
 
-        public ActionResult getSelectOption()
+        public ActionResult GetSelectOption()
         {
             AjaxResult result = new AjaxResult();
 
@@ -164,11 +164,11 @@ namespace QDLogistics.Controllers
 
             try
             {
-                Packages package = db.Packages.AsNoTracking().First(p => p.IsEnable.Value && p.ID.Equals(packageID));
+                Packages package = db.Packages.AsNoTracking().FirstOrDefault(p => p.IsEnable.Value && p.ID.Equals(packageID));
                 if (package == null) throw new Exception("找不到訂單!");
 
                 int warehouseID = package.Items.First(i => i.IsEnable.Value).ShipFromWarehouseID.Value;
-                Warehouses warehouse = db.Warehouses.AsNoTracking().First(w => w.IsEnable.Value);
+                Warehouses warehouse = db.Warehouses.AsNoTracking().FirstOrDefault(w => w.IsEnable.Value && w.ID.Equals(warehouseID));
                 if (warehouse == null) throw new Exception("找不到出貨倉!");
 
                 int[] methodIDs = new int[] { };

@@ -6740,6 +6740,7 @@
     <Compile Include="App_Code\CarrierApi\Winit\Token.cs" />
     <Compile Include="App_Code\Postmen_SDK.cs" />
     <Compile Include="App_Code\SC_WebService.cs" />
+    <Compile Include="Commons\BoxManage.cs" />
     <Compile Include="Commons\CaseLog.cs" />
     <Compile Include="Commons\DataProcess.cs" />
     <Compile Include="Commons\EnumData.cs" />
@@ -7035,6 +7036,7 @@
     <Content Include="Views\DropShip\List_DirectLine.cshtml" />
     <Content Include="Views\CaseEvent\Index.cshtml" />
     <Content Include="Views\DirectLine\Cancel.cshtml" />
+    <Content Include="Views\DirectLine\List_WaitingOrder.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

@@ -154,7 +154,7 @@
                         $itemList.panel({
                             border: false,
                             cache: false,
-                            href: "@Html.Raw(Url.Action("ProductList", "directLine", new { PackageID = "_id_", Type = "BoxOrder" }))".replace("_id_", row.PackageID),
+                            href: "@Html.Raw(Url.Action("productList", "directLine", new { TargetID = "_id_", Type = "BoxOrder" }))".replace("_id_", row.PackageID),
                             onLoad: function (response) {
                                 $("#datagrid-row-r1-1-" + index).next("tr").find(".datagrid-row-detail").html($itemList.find("table:hidden").remove().removeClass("hidden"));
                             }
