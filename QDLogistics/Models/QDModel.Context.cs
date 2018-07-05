@@ -55,5 +55,6 @@ namespace QDLogistics.Models
         public virtual DbSet<DirectLine> DirectLine { get; set; }
         public virtual DbSet<CaseEvent> CaseEvent { get; set; }
         public virtual DbSet<SerialNumberForRefundLabel> SerialNumberForRefundLabel { get; set; }
+        public virtual DbSet<CountryType> CountryType { get; set; }
     }
 }

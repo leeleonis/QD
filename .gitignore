@@ -38,3 +38,4 @@ node_modules
 *.orig
 QDLogistics/Properties/PublishProfiles/本機發佈.pubxml
 QDLogistics/Properties/PublishProfiles/QD - FTP.pubxml
+/QDLogistics/FileUploads/pickup

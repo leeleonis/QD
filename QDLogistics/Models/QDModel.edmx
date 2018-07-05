@@ -159,6 +159,14 @@
           <Property Name="CompanyName" Type="nvarchar" MaxLength="100" />
           <Property Name="TimeZone" Type="int" />
         </EntityType>
+        <EntityType Name="CountryType">
+          <Key>
+            <PropertyRef Name="No" />
+          </Key>
+          <Property Name="No" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="TypeImg" Type="nvarchar" MaxLength="10" Nullable="false" />
+          <Property Name="Country" Type="nvarchar(max)" />
+        </EntityType>
         <EntityType Name="DirectLine">
           <Key>
             <PropertyRef Name="ID" />
@@ -892,6 +900,7 @@
           <EntitySet Name="Carriers" EntityType="Self.Carriers" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="CaseEvent" EntityType="Self.CaseEvent" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Companies" EntityType="Self.Companies" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="CountryType" EntityType="Self.CountryType" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="DirectLine" EntityType="Self.DirectLine" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="DirectLineLabel" EntityType="Self.DirectLineLabel" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Items" EntityType="Self.Items" Schema="dbo" store:Type="Tables" />
@@ -1164,6 +1173,7 @@
             <End Role="CaseEvent" EntitySet="CaseEvent" />
           </AssociationSet>
           <EntitySet Name="SerialNumberForRefundLabel" EntityType="QDLogisticsModel.SerialNumberForRefundLabel" />
+          <EntitySet Name="CountryType" EntityType="QDLogisticsModel.CountryType" />
           </EntityContainer>
         <EntityType Name="Addresses">
           <Key>
@@ -2095,6 +2105,14 @@
           <Property Name="WarehouseID" Type="Int32" Nullable="false" />
           <Property Name="Create_at" Type="DateTime" Nullable="false" Precision="3" />
         </EntityType>
+        <EntityType Name="CountryType">
+          <Key>
+            <PropertyRef Name="No" />
+          </Key>
+          <Property Name="No" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="TypeImg" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="true" />
+          <Property Name="Country" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+        </EntityType>
         </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -2678,6 +2696,15 @@
                 <ScalarProperty Name="newLabelID" ColumnName="newLabelID" />
                 <ScalarProperty Name="oldLabelID" ColumnName="oldLabelID" />
                 <ScalarProperty Name="ID" ColumnName="ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="CountryType">
+            <EntityTypeMapping TypeName="QDLogisticsModel.CountryType">
+              <MappingFragment StoreEntitySet="CountryType">
+                <ScalarProperty Name="Country" ColumnName="Country" />
+                <ScalarProperty Name="TypeImg" ColumnName="TypeImg" />
+                <ScalarProperty Name="No" ColumnName="No" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
