@@ -683,7 +683,11 @@ namespace QDLogistics.Controllers
         {
             public string Country { get; set; }
         }
-
+        public ActionResult GetCountryToType()
+        {
+            var result = db.CountryType.ToList();
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
         public class ReceiveData
         {
             public string UserName { get; set; }
