@@ -6814,6 +6814,9 @@
     <Compile Include="Models\Companies.cs">
       <DependentUpon>QDModel.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\CountryType.cs">
+      <DependentUpon>QDModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="Models\DirectLine.cs">
       <DependentUpon>QDModel.tt</DependentUpon>
     </Compile>

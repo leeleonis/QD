@@ -63,6 +63,7 @@
         <EntityTypeShape EntityType="QDLogisticsModel.CaseEvent" Width="1.5" PointX="11" PointY="10.25" />
         <AssociationConnector Association="QDLogisticsModel.FK_CaseEvent_Packages" />
         <EntityTypeShape EntityType="QDLogisticsModel.SerialNumberForRefundLabel" Width="1.5" PointX="15.5" PointY="14.875" />
+        <EntityTypeShape EntityType="QDLogisticsModel.CountryType" Width="1.5" PointX="16.375" PointY="0.75" />
         </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>
