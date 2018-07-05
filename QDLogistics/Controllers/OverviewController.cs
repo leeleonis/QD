@@ -182,7 +182,7 @@ namespace QDLogistics.Controllers
                 if (methodIDs.Any()) methodFilter = methodFilter.Where(m => methodIDs.Contains(m.ID));
 
                 string option = "";
-                foreach(var method in methodFilter.ToList())
+                foreach (var method in methodFilter.ToList())
                 {
                     option += string.Format("<option value='{0}' {1}>{2}</option>", method.ID, (method.ID.Equals(package.ShippingMethod.Value) ? "selected" : ""), method.Name);
                 }
@@ -196,6 +196,31 @@ namespace QDLogistics.Controllers
             }
 
             return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
+        public ActionResult ProductList(int TargetID, string Type)
+        {
+            List<string[]> productList = new List<string[]>();
+
+            Packages package = db.Packages.AsNoTracking().FirstOrDefault(p => p.IsEnable.Value && p.ID.Equals(TargetID));
+            if (package != null)
+            {
+                foreach (Items item in package.Items.Where(i => i.IsEnable.Value))
+                {
+                    productList.Add(new string[] { item.ProductID, item.Skus.ProductName, item.Qty.ToString() });
+
+                    if (item.BundleItems.Any())
+                    {
+                        foreach (BundleItems bundleItem in item.BundleItems)
+                        {
+                            productList.Add(new string[] { bundleItem.ProductID, bundleItem.Skus.ProductName, bundleItem.Qty.ToString(), "" });
+                        }
+                    }
+                }
+            }
+
+            ViewBag.productList = productList;
+            return PartialView(string.Format("List_{0}", Type));
         }
 
         public class AjaxResult

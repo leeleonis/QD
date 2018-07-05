@@ -1,0 +1,41 @@
+﻿@using QDLogistics.Models
+
+@{
+    List<string[]> productList = (List<string[]>)ViewBag.productList;
+}
+<table class="text-center hidden">
+    <tbody>
+        @if (productList.Any())
+        {
+            foreach (string[] data in productList)
+            {
+                <tr class="datagrid-row">
+                    <td width="24"><div class="datagrid-cell"></div></td>
+                    <td><div class="datagrid-cell datagrid-cell-c1-OrderID"></div></td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+<table class="text-center">
+    <tbody class="datagrid-body">
+        @if (productList.Any())
+        {
+            foreach (string[] data in productList)
+            {
+                <tr class="datagrid-row">
+                    <td><div class="datagrid-cell datagrid-cell-c1-eBayUserID"></div></td>
+                    <td><div class="datagrid-cell datagrid-cell-c1-PaymentDate"></div></td>
+                    <td><div class="datagrid-cell datagrid-cell-c1-Sku">@data[0]</div></td>
+                    <td><div class="datagrid-cell datagrid-cell-c1-DisplayName">@data[1]</div></td>
+                    <td><div class="datagrid-cell datagrid-cell-c1-ShippingCountry"></div></td>
+                    <td><div class="datagrid-cell datagrid-cell-c1-DeclaredTotal"></div></td>
+                    <td><div class="datagrid-cell datagrid-cell-c1-OrderCurrencyCode"></div></td>
+                    <td><div class="datagrid-cell datagrid-cell-c1-StatusCode"></div></td>
+                    <td><div class="datagrid-cell datagrid-cell-c1-ProccessStatus"></div></td>
+                    <td><div class="datagrid-cell datagrid-cell-c1-HasCaseAction"></div></td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>

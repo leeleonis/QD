@@ -7037,6 +7037,7 @@
     <Content Include="Views\CaseEvent\Index.cshtml" />
     <Content Include="Views\DirectLine\Cancel.cshtml" />
     <Content Include="Views\DirectLine\List_WaitingOrder.cshtml" />
+    <Content Include="Views\Overview\List_Order.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
