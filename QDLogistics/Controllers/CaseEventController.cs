@@ -193,15 +193,13 @@ namespace QDLogistics.Controllers
                 int start = (page - 1) * length;
                 total = results.Count();
 
-                if(!string.IsNullOrEmpty(filter.Sort) && filter.Sort.Equals("RequestDate"))
-                {
-                    results = filter.Order.Equals("asc") ? results.OrderBy(c => c.Request_at).Skip(start).Take(length).ToList() : results.OrderByDescending(c => c.Request_at).Skip(start).Take(length).ToList();
-                }
+                if (!string.IsNullOrEmpty(filter.Sort) && filter.Sort.Equals("RequestDate"))
+                    results = filter.Order.Equals("asc") ? results.OrderBy(c => c.Request_at).ToList() : results.OrderByDescending(c => c.Request_at).ToList();
 
                 Dictionary<int, string> AdminName = db.AdminUsers.AsNoTracking().Where(u => u.IsEnable).ToDictionary(u => u.Id, u => u.Name);
                 AdminName.Add(0, "無");
 
-                dataList.AddRange(results.Select(c => new
+                dataList.AddRange(results.Skip(start).Take(length).Select(c => new
                 {
                     CaseID = c.ID,
                     c.OrderID,
