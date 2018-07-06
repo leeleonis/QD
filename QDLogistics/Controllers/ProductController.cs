@@ -35,7 +35,12 @@ namespace QDLogistics.Controllers
         {
             return View();
         }
-        
+        [CheckSession]
+        public ActionResult plug()
+        {
+            ViewBag.countries = MyHelp.GetCountries();
+            return View();
+        }
         public void CheckSku()
         {
             SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());

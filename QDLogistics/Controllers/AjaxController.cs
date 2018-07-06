@@ -1611,7 +1611,43 @@ namespace QDLogistics.Controllers
 
             return Content(JsonConvert.SerializeObject(new { total = total, rows = dataList }), "appllication/json");
         }
-
+        [CheckSession]
+        public ActionResult plugData()
+        {
+            var CountryType = db.CountryType.AsQueryable();
+            int total = 0;
+            List<object> dataList = new List<object>();
+            IEnumerable<Country> countries = MyHelp.GetCountries();
+            if (CountryType.Any())
+            {
+                total = CountryType.Count();
+                dataList.AddRange(CountryType.OrderBy(c => c.TypeImg).Select(method => new
+                {
+                    No = method.No,
+                    TypeImg = method.TypeImg,
+                    Country = method.Country
+                }));
+            }
+            return Content(JsonConvert.SerializeObject(new { total = total, rows = dataList }), "appllication/json");
+        }
+        [CheckSession]
+        public ActionResult plugUpdate(List<CountryType> data)
+        {
+            if (data.Any())
+            {
+                foreach (var item in data)
+                {
+                    var oCountryType = db.CountryType.Find(item.No);
+                    oCountryType.Country = item.Country;
+                }
+                db.SaveChanges();
+                return Content(JsonConvert.SerializeObject(new { status = true }), "appllication/json");
+            }
+            else
+            {
+                return Content(JsonConvert.SerializeObject(new { status = false }), "appllication/json");
+            }
+        }
         [CheckSession]
         [HttpPost]
         public ActionResult CountryUpdate(List<ShippingMethod> data)

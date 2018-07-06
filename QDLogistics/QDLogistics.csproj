@@ -410,6 +410,10 @@
     <Content Include="Content\img\pattern\tileable_wood_texture-xs.png" />
     <Content Include="Content\img\pattern\tileable_wood_texture.png" />
     <Content Include="Content\img\peili-logo.png" />
+    <Content Include="Content\img\Plug\TypeA.png" />
+    <Content Include="Content\img\Plug\TypeF.png" />
+    <Content Include="Content\img\Plug\TypeG.png" />
+    <Content Include="Content\img\Plug\TypeI.png" />
     <Content Include="Content\img\plus.png" />
     <Content Include="Content\img\QD.jpg" />
     <Content Include="Content\img\ribbon.png" />
@@ -7042,6 +7046,7 @@
     <Content Include="Views\DirectLine\Cancel.cshtml" />
     <Content Include="Views\DirectLine\List_WaitingOrder.cshtml" />
     <Content Include="Views\Overview\List_Order.cshtml" />
+    <Content Include="Views\Product\plug.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
