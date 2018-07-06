@@ -6852,6 +6852,7 @@
     <Compile Include="Models\Partial\PickProduct.cs" />
     <Compile Include="Models\Partial\PurchaseItemReceive.cs" />
     <Compile Include="Models\Partial\SerialNumbers.cs" />
+    <Compile Include="Models\Partial\Warehouses.cs" />
     <Compile Include="Models\Payments.cs">
       <DependentUpon>QDModel.tt</DependentUpon>
     </Compile>

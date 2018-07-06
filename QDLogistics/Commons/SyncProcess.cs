@@ -23,6 +23,7 @@ namespace QDLogistics.Commons
         private IRepository<BundleItems> BundleItems;
         private IRepository<SerialNumbers> SerialNumbers;
         private IRepository<PurchaseItemReceive> PurchaseItems;
+        private IRepository<Warehouses> Warehouses;
 
         private DateTime SyncOn;
         private DateTime Today;
@@ -617,6 +618,50 @@ namespace QDLogistics.Commons
             {
                 PurchaseItems.Delete(purchaseItem);
             }
+        }
+
+        public string Sync_Warehouse()
+        {
+            string Message = "";
+
+            try
+            {
+                MyHelp.Log("Warehouses", null, "開始出貨倉資料同步");
+
+                if (!SCWS.Is_login) throw new Exception("SC is not logged in!");
+
+                List<Warehouses> warehouseData = db.Warehouses.AsNoTracking().ToList();
+                List<Warehouses> WarehouseList = SCWS.Get_Warehouses().Select(w => DataProcess.SetWarehouseData(new Warehouses() { IsEnable = true, ID = w.ID }, w)).ToList();
+
+                IEnumerable<Warehouses> newWarehouse = WarehouseList.Except(warehouseData).ToList();
+                foreach (Warehouses warehouse in newWarehouse)
+                {
+                    Warehouses.Create(warehouse);
+                }
+
+                IEnumerable<Warehouses> oldWarehouse = warehouseData.Except(WarehouseList);
+                foreach (Warehouses warehouse in oldWarehouse)
+                {
+                    warehouse.IsEnable = false;
+                    Warehouses.Update(warehouse, warehouse.ID);
+                }
+                
+                IEnumerable<Warehouses> updateWarehouse = warehouseData.Except(oldWarehouse).Except(WarehouseList, new WarehouseComparer());
+                foreach (Warehouses warehouse in updateWarehouse)
+                {
+                    Warehouses.Update(WarehouseList.First(w => w.ID.Equals(warehouse.ID)), warehouse.ID);
+                }
+
+                Warehouses.SaveChanges();
+
+                MyHelp.Log("Warehouses", null, "完成出貨倉資料同步");
+            }
+            catch (Exception e)
+            {
+                Message = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+            }
+
+            return Message;
         }
     }
 }

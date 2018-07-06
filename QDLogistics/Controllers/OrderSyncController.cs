@@ -266,7 +266,25 @@ namespace QDLogistics.Controllers
 
                 lock (factory)
                 {
-                    threadTask.AddWork(factory.StartNew(() => SyncData(threadTask, "Warehouses")));
+                    threadTask.AddWork(factory.StartNew(Session =>
+                    {
+                        threadTask.Start();
+
+                        string message = "";
+                        HttpSessionStateBase session = (HttpSessionStateBase)Session;
+
+                        try
+                        {
+                            SyncProcess Sync = new SyncProcess(session);
+                            message = Sync.Sync_Warehouse();
+                        }
+                        catch (Exception e)
+                        {
+                            message = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+                        }
+
+                        return message;
+                    }, HttpContext.Session));
                 }
             }
             finally { }

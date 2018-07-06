@@ -257,7 +257,8 @@ namespace QDLogistics.Controllers
                 if (ProductList.Any())
                 {
                     string[] productIDs = ProductList.Select(p => p.pick.ProductID).Distinct().ToArray();
-                    var productList = ProductList.Select(p => p.pick).GroupBy(p => p.ProductID).ToDictionary(group => group.Key.ToString(), group => group.ToDictionary(p => p.ItemID.ToString()));
+                    Dictionary<string, bool> skuList = db.Skus.AsNoTracking().Where(s => s.IsEnable.Value && productIDs.Contains(s.Sku)).ToDictionary(s => s.Sku, s => s.Battery.HasValue ? s.Battery.Value : false);
+                    var productList = ProductList.Select(p => p.pick.SetBattery(skuList[p.pick.ProductID])).GroupBy(p => p.ProductID).ToDictionary(group => group.Key.ToString(), group => group.ToDictionary(p => p.ItemID.ToString()));
 
                     List<SerialNumbers> itemSerials = db.SerialNumbers.AsNoTracking().Where(s => productIDs.Contains(s.ProductID)).ToList();
                     List<PurchaseItemReceive> purchaseItemSerial = db.PurchaseItemReceive.AsNoTracking().Where(s => productIDs.Contains(s.ProductID)).ToList();

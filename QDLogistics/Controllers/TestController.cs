@@ -268,7 +268,7 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public void Check_Winit(int OrderID)
+        private void Check_Winit(int OrderID)
         {
             using (Winit_API winitAPI = new Winit_API())
             {
@@ -467,7 +467,7 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public void RMA_Test(int OrderID)
+        private void RMA_Test(int OrderID)
         {
             Packages package = db.Packages.AsNoTracking().First(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID));
 
@@ -482,6 +482,15 @@ namespace QDLogistics.Controllers
                 //bool result = SCWS.Receive_RMA_Item(SC_Item.RMAID, SC_Item.ID, item.ProductID, item.Qty.Value, item.ReturnedToWarehouseID.Value, serialsList);
                 //bool result = SCWS.Update_RAM_Item(SC_Item);
             }
+        }
+
+        public void Get_Warehouse()
+        {
+            SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
+
+            var SC_Warehouse = SCWS.Get_Warehouses();
+            var SC_Warehouse2 = SCWS.Get_Warehouses2();
+            var SC_Warehouse3 = SCWS.Get_Warehouses3();
         }
     }
 }

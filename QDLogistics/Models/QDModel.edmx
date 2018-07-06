@@ -555,7 +555,7 @@
           <Property Name="AllowUseQtyForFBAShipments" Type="bit" />
           <Property Name="EnforceBins" Type="bit" />
           <Property Name="ID" Type="int" Nullable="false" />
-          <Property Name="CompanyID" Type="int" />
+          <Property Name="ClientID" Type="int" />
           <Property Name="Name" Type="nvarchar" MaxLength="50" />
           <Property Name="QBWarehouseName" Type="nvarchar" MaxLength="50" />
           <Property Name="WarehouseType" Type="int" />
@@ -1446,8 +1446,8 @@
           <Property Name="AllowUseQtyForFBAShipments" Type="Boolean" />
           <Property Name="EnforceBins" Type="Boolean" />
           <Property Name="ID" Type="Int32" Nullable="false" />
-          <Property Name="CompanyID" Type="Int32" />
           <Property Name="Name" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="ClientID" Type="Int32" />
           <Property Name="QBWarehouseName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="WarehouseType" Type="Int32" DefaultValue="0" />
           <Property Name="WinitWarehouseID" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
@@ -2361,6 +2361,7 @@
           <EntitySetMapping Name="Warehouses">
             <EntityTypeMapping TypeName="QDLogisticsModel.Warehouses">
               <MappingFragment StoreEntitySet="Warehouses">
+                <ScalarProperty Name="ClientID" ColumnName="ClientID" />
                 <ScalarProperty Name="WinitWarehouseID" ColumnName="WinitWarehouseID" />
                 <ScalarProperty Name="CreatedOn" ColumnName="CreatedOn" />
                 <ScalarProperty Name="CreatedBy" ColumnName="CreatedBy" />
@@ -2369,7 +2370,6 @@
                 <ScalarProperty Name="WarehouseType" ColumnName="WarehouseType" />
                 <ScalarProperty Name="QBWarehouseName" ColumnName="QBWarehouseName" />
                 <ScalarProperty Name="Name" ColumnName="Name" />
-                <ScalarProperty Name="CompanyID" ColumnName="CompanyID" />
                 <ScalarProperty Name="ID" ColumnName="ID" />
                 <ScalarProperty Name="EnforceBins" ColumnName="EnforceBins" />
                 <ScalarProperty Name="AllowUseQtyForFBAShipments" ColumnName="AllowUseQtyForFBAShipments" />

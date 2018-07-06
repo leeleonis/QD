@@ -202,6 +202,22 @@ namespace SellerCloud_WebService
         {
             return OS_SellerCloud.Vendors_GetVendor(OS_AuthHeader, OS_Options, VendorID);
         }
+
+        public QDLogistics.OrderService.Warehouse[] Get_Warehouses()
+        {
+            return OS_SellerCloud.GetWarehouses(OS_AuthHeader, OS_Options);
+        }
+
+        public QDLogistics.OrderCreationService.Warehouse[] Get_Warehouses2()
+        {
+            return OCS_SellerCloud.Warehouse_ListAll(OCS_AuthHeader);
+        }
+
+        public QDLogistics.PurchaseOrderService.Warehouse[] Get_Warehouses3()
+        {
+            return PO_SellerCloud.ListWarehouses(PO_AuthHeader);
+        }
+
         /***** 取得資料 *****/
 
         /***** 更新資料 *****/

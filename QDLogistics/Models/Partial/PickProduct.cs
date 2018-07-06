@@ -44,5 +44,14 @@ namespace QDLogistics.Models
 
             return this;
         }
+
+        public bool IsBattery { get; set; }
+
+        public PickProduct SetBattery(bool isBattery)
+        {
+            this.IsBattery = isBattery;
+
+            return this;
+        }
     }
 }

@@ -267,7 +267,7 @@ namespace QDLogistics.Commons
 
             if (!package.ProcessStatus.Equals((int)EnumData.ProcessStatus.待出貨))
             {
-                if(string.IsNullOrEmpty(package.BoxID) || package.Box.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.已到貨))
+                if (string.IsNullOrEmpty(package.BoxID) || package.Box.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.已到貨))
                 {
                     if (package.ProcessStatus.Equals((int)EnumData.ProcessStatus.訂單管理))
                     {
@@ -425,6 +425,21 @@ namespace QDLogistics.Commons
             purchaseItem.BinName = purchaseItemDetail.BinName.Trim();
 
             return purchaseItem;
+        }
+
+        public static Warehouses SetWarehouseData(Warehouses warehouse, Warehouse warehouseDetail)
+        {
+            warehouse.AllowUseQtyForFBAShipments = warehouseDetail.AllowUseQtyForFBAShipments;
+            warehouse.ClientID = warehouseDetail.ClientID;
+            warehouse.DropShipCentralWarehouseCode = warehouseDetail.DropShipCentralWarehouseCode;
+            warehouse.EnforceBins = warehouseDetail.EnforceBins;
+            warehouse.IsDefault = warehouseDetail.IsDefault;
+            warehouse.IsSellable = warehouseDetail.IsSellAble;
+            warehouse.Name = warehouseDetail.Name;
+            warehouse.QBWarehouseName = warehouseDetail.QBWarehouseName;
+            warehouse.WarehouseType = (int)warehouseDetail.WarehouseType;
+
+            return warehouse;
         }
 
         public static void setPickProductData(PickProduct pick, Items item)

@@ -28,8 +28,8 @@ namespace QDLogistics.Models
         public Nullable<bool> AllowUseQtyForFBAShipments { get; set; }
         public Nullable<bool> EnforceBins { get; set; }
         public int ID { get; set; }
-        public Nullable<int> CompanyID { get; set; }
         public string Name { get; set; }
+        public Nullable<int> ClientID { get; set; }
         public string QBWarehouseName { get; set; }
         public Nullable<int> WarehouseType { get; set; }
         public string WinitWarehouseID { get; set; }
