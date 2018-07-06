@@ -90,15 +90,16 @@ namespace QDLogistics.Commons
 
         public enum LabelStatus { 正常, 鎖定中, 完成, 作廢, 回收 }
 
-        public enum CaseEventType { CancelShipment, UpdateTracking, UpdateShipment, ChangeShippingMethod }
+        public enum CaseEventType { CancelShipment, UpdateTracking, UpdateShipment, ChangeShippingMethod, ResendShipment }
         public static Dictionary<CaseEventType, string> CaseEventTypeList()
         {
             return new Dictionary<CaseEventType, string>()
             {
-                {CaseEventType.CancelShipment, "Cancel Shipment" },
-                {CaseEventType.UpdateTracking, "Update Tracking" },
-                {CaseEventType.UpdateShipment, "Update Shipment" },
-                {CaseEventType.ChangeShippingMethod, "Change Shipping Method" }
+                { CaseEventType.CancelShipment, "Cancel Shipment" },
+                { CaseEventType.UpdateTracking, "Update Tracking" },
+                { CaseEventType.UpdateShipment, "Update Shipment" },
+                { CaseEventType.ChangeShippingMethod, "Change Shipping Method" },
+                { CaseEventType.ResendShipment, "Resend Shipment" }
             };
         }
         public enum CaseEventRequest { None, Successful, Investigating, InTransit, Lost, Failed }

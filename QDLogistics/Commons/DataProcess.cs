@@ -438,6 +438,9 @@ namespace QDLogistics.Commons
             warehouse.Name = warehouseDetail.Name;
             warehouse.QBWarehouseName = warehouseDetail.QBWarehouseName;
             warehouse.WarehouseType = (int)warehouseDetail.WarehouseType;
+            warehouse.CreatedBy = warehouseDetail.CreatedBy;
+            warehouse.CreatedOn = warehouseDetail.CreatedOn;
+            if (string.IsNullOrEmpty(warehouse.WinitWarehouseID)) warehouse.WinitWarehouseID = "0";
 
             return warehouse;
         }

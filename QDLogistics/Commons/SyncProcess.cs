@@ -630,8 +630,11 @@ namespace QDLogistics.Commons
 
                 if (!SCWS.Is_login) throw new Exception("SC is not logged in!");
 
+                Warehouses = new GenericRepository<Warehouses>(db);
+
+                Warehouse[] SC_Warehouse = SCWS.Get_Warehouses();
                 List<Warehouses> warehouseData = db.Warehouses.AsNoTracking().ToList();
-                List<Warehouses> WarehouseList = SCWS.Get_Warehouses().Select(w => DataProcess.SetWarehouseData(new Warehouses() { IsEnable = true, ID = w.ID }, w)).ToList();
+                List<Warehouses> WarehouseList = SC_Warehouse.Select(w => DataProcess.SetWarehouseData(new Warehouses() { IsEnable = true, ID = w.ID }, w)).ToList();
 
                 IEnumerable<Warehouses> newWarehouse = WarehouseList.Except(warehouseData).ToList();
                 foreach (Warehouses warehouse in newWarehouse)
@@ -649,7 +652,7 @@ namespace QDLogistics.Commons
                 IEnumerable<Warehouses> updateWarehouse = warehouseData.Except(oldWarehouse).Except(WarehouseList, new WarehouseComparer());
                 foreach (Warehouses warehouse in updateWarehouse)
                 {
-                    Warehouses.Update(WarehouseList.First(w => w.ID.Equals(warehouse.ID)), warehouse.ID);
+                    Warehouses.Update(DataProcess.SetWarehouseData(warehouse, SC_Warehouse.First(w => w.ID.Equals(warehouse.ID))), warehouse.ID);
                 }
 
                 Warehouses.SaveChanges();
