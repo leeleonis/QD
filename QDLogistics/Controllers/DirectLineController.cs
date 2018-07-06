@@ -1314,6 +1314,7 @@ namespace QDLogistics.Controllers
                             {
                                 MyHelp.Log("Orders", newOrder.OrderID, string.Format("新訂單【{0}】提交成功", newOrder.OrderID), Session);
 
+                                IRepository<Box> Box = new GenericRepository<Box>(db);
                                 IRepository<DirectLineLabel> DirectLineLabel = new GenericRepository<DirectLineLabel>(db);
 
                                 newOrder = Orders.Get(newOrder.OrderID);
@@ -1326,7 +1327,9 @@ namespace QDLogistics.Controllers
                                 {
                                     DirectLineLabel newLabel = newPackage.Label;
                                     Box box = BoxManage.GetCurrentBox(directLine, newPackage.Items.First(i => i.IsEnable.Value).ShipFromWarehouseID.Value);
+                                    box.ShippingStatus = (byte)EnumData.DirectLineStatus.已到貨;
                                     newPackage.BoxID = newLabel.BoxID = box.BoxID;
+                                    Box.Update(box, box.BoxID);
                                     Packages.Update(newPackage, newPackage.ID);
                                     DirectLineLabel.Update(newLabel, newLabel.LabelID);
                                     Packages.SaveChanges();
@@ -1334,10 +1337,9 @@ namespace QDLogistics.Controllers
 
                                 MyHelp.Log("Orders", newOrder.OrderID, string.Format("新訂單【{0}】寄送 {1} 出貨通知", newOrder.OrderID, directLine.Abbreviation), Session);
 
-                                switch (directLine.Abbreviation)
+                                using (CaseLog CaseLog = new CaseLog(oldPackage, currentHttpContext))
                                 {
-                                    case "IDS":
-                                        break;
+                                    CaseLog.SendResendShipmentMail(newPackage.TagNo, serials.First().Create_at);
                                 }
                             }
                             else

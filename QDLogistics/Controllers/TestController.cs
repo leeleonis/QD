@@ -385,73 +385,13 @@ namespace QDLogistics.Controllers
             }
         }
 
-        private void Case_Test()
+        public void Case_Test(int OrderID)
         {
-            TaskFactory factory = System.Web.HttpContext.Current.Application.Get("TaskFactory") as TaskFactory;
-
-            lock (factory)
+            Packages package = db.Packages.AsNoTracking().First(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID));
+            var serials = db.SerialNumberForRefundLabel.AsNoTracking().Where(s => !s.IsUsed && s.oldOrderID.Equals(OrderID)).ToList();
+            using (CaseLog CaseLog = new CaseLog(package, HttpContext))
             {
-                ThreadTask threadTask = new ThreadTask("檢查 Case Event 進度");
-                threadTask.AddWork(factory.StartNew(Session =>
-                {
-                    threadTask.Start();
-
-                    db = new QDLogisticsEntities();
-                    IRepository<CaseEvent> CaseEvent = new GenericRepository<CaseEvent>(db);
-
-                    string message = "";
-
-                    try
-                    {
-                        HttpSessionStateBase session = (HttpSessionStateBase)Session;
-                        MyHelp.Log("CaseEvent", null, "開始檢查 Case Event 進度", session);
-
-                        List<byte> CaseType = new List<byte>() { (byte)EnumData.CaseEventType.CancelShipment, (byte)EnumData.CaseEventType.ChangeShippingMethod };
-                        List<CaseEvent> CaseEventList = db.CaseEvent.AsNoTracking().Where(c => CaseType.Contains(c.Type) && c.Request.Equals((byte)EnumData.CaseEventRequest.None) && c.Status.Equals((byte)EnumData.CaseEventStatus.Open)).ToList();
-                        if (CaseEventList.Any())
-                        {
-                            using (CaseLog CaseLog = new CaseLog(session))
-                            {
-                                DateTime today = DateTime.UtcNow;
-                                foreach (CaseEvent eventData in CaseEventList)
-                                {
-                                    DateTime RequestDate = MyHelp.SkipWeekend(eventData.Request_at.Value.AddDays(1));
-                                    DateTime CreateDate = MyHelp.SkipWeekend(eventData.Create_at.AddDays(2));
-                                    if (RequestDate.CompareTo(today) <= 0)
-                                    {
-                                        if (CreateDate.CompareTo(today) <= 0)
-                                        {
-                                            eventData.Request = (byte)EnumData.CaseEventRequest.Failed;
-                                            CaseEvent.Update(eventData, eventData.ID);
-                                        }
-                                        else
-                                        {
-                                            CaseLog.OrderInit(eventData.Packages);
-                                            switch (eventData.Type)
-                                            {
-                                                case (byte)EnumData.CaseEventType.CancelShipment:
-                                                    //CaseLog.SendCancelMail();
-                                                    break;
-
-                                                case (byte)EnumData.CaseEventType.ChangeShippingMethod:
-                                                    //CaseLog.SendChangeShippingMethodMail(eventData.MethodID, eventData.NewLabelID);
-                                                    break;
-                                            }
-                                        }
-                                    }
-                                }
-                                CaseEvent.SaveChanges();
-                            }
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        message = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
-                    }
-
-                    return message;
-                }, HttpContext.Session));
-
+                CaseLog.SendResendShipmentMail("123", serials.First().Create_at);
             }
         }
 

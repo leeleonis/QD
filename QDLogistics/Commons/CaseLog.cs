@@ -587,6 +587,118 @@ namespace QDLogistics.Commons
 
             return eventData;
         }
+        
+        public void SendResendShipmentMail(string newLabelID, DateTime confirmDate)
+        {
+            if (packageData == null) throw new Exception("未設定訂單!");
+
+            if (CaseEvent == null) CaseEvent = new GenericRepository<CaseEvent>(db);
+
+            try
+            {
+                CaseEvent eventData = GetCaseEvent(EnumData.CaseEventType.ResendShipment);
+                eventData.NewLabelID = newLabelID;
+                eventData.Request_at = DateTime.UtcNow;
+
+                CaseEvent.Update(eventData, eventData.ID);
+                CaseEvent.SaveChanges();
+
+                DirectLine directLine = db.DirectLine.AsNoTracking().FirstOrDefault(d => d.ID.Equals(packageData.Method.DirectLine));
+                if (directLine == null) throw new Exception("找不到Direct Line運輸廠商!");
+
+                switch (directLine.Abbreviation)
+                {
+                    case "IDS":
+                        receiveMails = MailList["IDS"];
+                        //receiveMails = new string[] { "qd.tuko@hotmail.com" };
+
+                        IDS_Api = new IDS_API(packageData.Method.Carriers.CarrierAPI);
+                        string methodType = IDS_Api.GetServiceType(packageData.Method.MethodType.Value);
+                        mailTitle = string.Format("TW018 - Reship inventory {0} to {1}", eventData.LabelID, eventData.NewLabelID);
+                        mailBody = CreateResendShipmentMailBody(directLine.Abbreviation, confirmDate, eventData);
+
+                        if (!MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, null, null, false))
+                        {
+                            eventData.Status = (byte)EnumData.CaseEventStatus.Error;
+                            CaseEvent.Update(eventData, eventData.ID);
+                            CaseEvent.SaveChanges();
+
+                            throw new Exception("寄送IDS Direct Line Resend Shipment通知失敗");
+                        }
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                string errorMsg = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+
+                MyHelp.Log("CaseEvent", orderData.OrderID, errorMsg, session);
+
+                throw new Exception(errorMsg);
+            }
+        }
+
+        public CaseEvent ResendShipmentResponse(byte request)
+        {
+            if (packageData == null) throw new Exception("未設定訂單!");
+
+            if (CaseEvent == null) CaseEvent = new GenericRepository<CaseEvent>(db);
+
+            CaseEvent eventData = GetCaseEvent(EnumData.CaseEventType.ResendShipment);
+            try
+            {
+                eventData.Request = request;
+                eventData.Response_at = DateTime.UtcNow;
+
+                if (eventData.Request.Equals((byte)EnumData.CaseEventRequest.Successful))
+                {
+                    Packages newPackage = db.Packages.AsNoTracking().FirstOrDefault(p => p.IsEnable.Value && p.TagNo.Equals(eventData.NewLabelID));
+                    OrderInit(newPackage);
+                    newPackage.TrackingNumber = GetTrackingNumber();
+                    Packages.Update(newPackage, newPackage.ID);
+                    eventData.Status = (byte)EnumData.CaseEventStatus.Close;
+                }
+
+                CaseEvent.Update(eventData, eventData.ID);
+                CaseEvent.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                eventData.Status = (byte)EnumData.CaseEventStatus.Error;
+                CaseEvent.Update(eventData, eventData.ID);
+                CaseEvent.SaveChanges();
+
+                MyHelp.Log("CaseEvent", orderData.OrderID, e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message, session);
+            }
+
+            return eventData;
+        }
+
+        private CaseEvent CreateEvent(int orderID, int packageID, string labelID, EnumData.CaseEventType caseType)
+        {
+            if (CaseEvent == null) CaseEvent = new GenericRepository<CaseEvent>(db);
+
+            try
+            {
+                CaseEvent eventData = new CaseEvent()
+                {
+                    OrderID = orderID,
+                    PackageID = packageID,
+                    LabelID = labelID,
+                    Type = (byte)caseType,
+                    Create_at = DateTime.UtcNow
+                };
+
+                CaseEvent.Create(eventData);
+                CaseEvent.SaveChanges();
+
+                return eventData;
+            }
+            catch (Exception e)
+            {
+                throw new Exception("建立Case失敗!");
+            }
+        }
 
         private string GetTrackingNumber()
         {
@@ -621,32 +733,6 @@ namespace QDLogistics.Commons
             }
 
             return tracking;
-        }
-
-        private CaseEvent CreateEvent(int orderID, int packageID, string labelID, EnumData.CaseEventType caseType)
-        {
-            if (CaseEvent == null) CaseEvent = new GenericRepository<CaseEvent>(db);
-
-            try
-            {
-                CaseEvent eventData = new CaseEvent()
-                {
-                    OrderID = orderID,
-                    PackageID = packageID,
-                    LabelID = labelID,
-                    Type = (byte)caseType,
-                    Create_at = DateTime.UtcNow
-                };
-
-                CaseEvent.Create(eventData);
-                CaseEvent.SaveChanges();
-
-                return eventData;
-            }
-            catch (Exception e)
-            {
-                throw new Exception("建立Case失敗!");
-            }
         }
 
         private string CreateCancelMailBody(string directLine, CaseEvent eventData)
@@ -711,6 +797,25 @@ namespace QDLogistics.Commons
                     mailBody += "If you could not change, click <a href='{4}' target='_bland'>here</a>.<br /><br />";
                     mailBody += "You can only click on either of the links above ONCE. Please make sure to choose correctly.<br /><br />Please email us if the above sitaution doesn't apply.<br /><br />Regards<br /><br />QD Shipping";
                     mailBody = string.Format(mailBody, eventData.LabelID, methodTypeChange, eventData.NewLabelID, confirm_link, faild_link);
+                    break;
+            }
+
+            return mailBody;
+        }
+
+        private string CreateResendShipmentMailBody(string directLine, DateTime confirmDate, CaseEvent eventData)
+        {
+            string mailBody = "";
+            string receiveUrl = AddQueryString(string.Format("{0}/CaseEvent/Receive?", BaseUrl), new Dictionary<string, object> { { "caseID", eventData.ID }, { "type", (byte)EnumData.CaseEventType.ResendShipment } });
+
+            switch (directLine)
+            {
+                case "IDS":
+                    string successful_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Successful } });
+                    mailBody = "Hello<br /><br />Order ({0}) confirmed cancelled on {1} requires reship with new # {2}.<br /><br />";
+                    mailBody += "Please click <a href='{3}' target='_bland'>here</a> to confirm the change.<br /><br />";
+                    mailBody += "Regards<br /><br />QD Shipping";
+                    mailBody = string.Format(mailBody, eventData.LabelID, confirmDate.ToString(), eventData.NewLabelID, successful_link);
                     break;
             }
 
