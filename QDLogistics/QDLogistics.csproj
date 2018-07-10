@@ -52,6 +52,9 @@
       <HintPath>..\packages\AutoMapper.5.2.0\lib\net45\AutoMapper.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="BingMapsRESTToolkit, Version=1.1.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\BingMapsRESTToolkit.1.1.4\lib\net45\BingMapsRESTToolkit.dll</HintPath>
+    </Reference>
     <Reference Include="ClosedXML, Version=0.80.0.0, Culture=neutral, PublicKeyToken=fd1eb21b62ae805b, processorArchitecture=MSIL">
       <HintPath>..\packages\ClosedXML.0.80.1\lib\net40-client\ClosedXML.dll</HintPath>
       <Private>True</Private>
@@ -870,9 +873,6 @@
     <None Include="Properties\PublishProfiles\dmlogistic - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\dmlogistic - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\QD - Deploy.pubxml" />
-    <None Include="Properties\PublishProfiles\QD - FTP.pubxml" />
-    <None Include="Properties\PublishProfiles\本機發佈.pubxml" />
-    <None Include="Properties\PublishProfiles\本機發布.pubxml" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

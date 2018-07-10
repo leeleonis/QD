@@ -610,8 +610,6 @@ namespace QDLogistics.Commons
                         receiveMails = MailList["IDS"];
                         //receiveMails = new string[] { "qd.tuko@hotmail.com" };
 
-                        IDS_Api = new IDS_API(packageData.Method.Carriers.CarrierAPI);
-                        string methodType = IDS_Api.GetServiceType(packageData.Method.MethodType.Value);
                         mailTitle = string.Format("TW018 - Reship inventory {0} to {1}", eventData.LabelID, eventData.NewLabelID);
                         mailBody = CreateResendShipmentMailBody(directLine.Abbreviation, confirmDate, eventData);
 

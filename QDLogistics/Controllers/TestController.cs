@@ -385,7 +385,7 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public void Case_Test(int OrderID)
+        private void Case_Test(int OrderID)
         {
             Packages package = db.Packages.AsNoTracking().First(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID));
             var serials = db.SerialNumberForRefundLabel.AsNoTracking().Where(s => !s.IsUsed && s.oldOrderID.Equals(OrderID)).ToList();
@@ -424,13 +424,35 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public void Get_Warehouse()
+        private void Get_Warehouse()
         {
             SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
 
             var SC_Warehouse = SCWS.Get_Warehouses();
             var SC_Warehouse2 = SCWS.Get_Warehouses2();
             var SC_Warehouse3 = SCWS.Get_Warehouses3();
+        }
+
+        public void BingMap_Test()
+        {
+            using (SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString()))
+            {
+                var SC_order = SCWS.Get_OrderData(5481021);
+                var address = DataProcess.SetAddressData(new Addresses() { }, SC_order.Order.ShippingAddressOriginal, SC_order.Order.BillingAddress);
+
+                BingMapsRESTToolkit.GeocodeRequest request = new BingMapsRESTToolkit.GeocodeRequest();
+                request.BingMapsKey = "AlN5NYeihAOh4srrmzv0D3NI8uPonD4yOw-_5ssdHnaxuCE11asVp6M2o4j5PtuI";
+                request.Address = new BingMapsRESTToolkit.SimpleAddress()
+                {
+                    CountryRegion = address.CountryCode,
+                    PostalCode = address.PostalCode,
+                    AdminDistrict = !string.IsNullOrEmpty(address.City) ? address.City : address.StateName,
+                    Locality = address.StreetLine1,
+                    AddressLine = address.StreetLine2
+                };
+
+                BingMapsRESTToolkit.Response response =  request.Execute().Result;
+            }
         }
     }
 }

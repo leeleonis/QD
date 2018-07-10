@@ -881,7 +881,7 @@ namespace QDLogistics.Controllers
                         }
 
                         return message;
-                    }, HttpContext));
+                    }, Session));
                 }
             }
             catch (DbEntityValidationException ex)
@@ -1060,8 +1060,8 @@ namespace QDLogistics.Controllers
                                 }, Session));
                             }
                             break;
-                        case "FedEx":
 
+                        case "FedEx":
                             lock (factory)
                             {
                                 ThreadTask FedEx_MailTask = new ThreadTask("寄送FedEx出口報關資料");
@@ -1159,6 +1159,7 @@ namespace QDLogistics.Controllers
                                 }, Session));
                             }
                             break;
+
                         default:
                             foreach (PickProduct pick in pickList.Where(pick => groupList[serviceCode].Select(p => p.ID).ToArray().Contains(pick.PackageID.Value)).ToList())
                             {

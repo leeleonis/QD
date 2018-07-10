@@ -1326,6 +1326,7 @@ namespace QDLogistics.Controllers
 
                                 newOrder = Orders.Get(newOrder.OrderID);
                                 newPackage = newOrder.Packages.First(p => p.IsEnable.Value);
+                                newPackage.ProcessStatus = (int)EnumData.ProcessStatus.已出貨;
 
                                 MyHelp.Log("Orders", newOrder.OrderID, string.Format("新訂單【{0}】置入Box", newOrder.OrderID), Session);
 
