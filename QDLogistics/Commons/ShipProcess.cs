@@ -58,9 +58,9 @@ namespace QDLogistics.Commons
 
             if (isDirectLine)
             {
-                ShipResult DL_result = DirectLine();
+                result = DirectLine();
 
-                if (!DL_result.Status) return DL_result;
+                if (!result.Status) return result;
             }
 
             if (isDropShip) return DropShip();

@@ -77,7 +77,7 @@ namespace QDLogistics.Controllers
                     if (eventData == null) throw new Exception("找不到Case Event!");
                     if (!eventData.Status.Equals((byte)EnumData.CaseEventStatus.Open)) throw new Exception("執行動作無效!");
 
-                    Packages package = db.Packages.AsNoTracking().FirstOrDefault(p => p.ID.Equals(eventData.PackageID));
+                    Packages package = db.Packages.AsNoTracking().FirstOrDefault(p => p.IsEnable.Value && p.ID.Equals(eventData.PackageID));
                     if (package == null) throw new Exception("找不到訂單!");
 
                     using (CaseLog CaseLog = new CaseLog(package, Session))

@@ -634,10 +634,11 @@ namespace QDLogistics.Controllers
                     }, HttpContext.Session));
                 }
 
+                HttpContextBase currentHttpContext = HttpContext;
                 lock (factory)
                 {
                     ThreadTask threadTask = new ThreadTask("追蹤Direct Line訂單");
-                    threadTask.AddWork(factory.StartNew(HttpContext =>
+                    threadTask.AddWork(factory.StartNew(Session =>
                     {
                         threadTask.Start();
 
@@ -655,8 +656,7 @@ namespace QDLogistics.Controllers
 
                         try
                         {
-                            HttpContextBase currentHttpContext = (HttpContextBase)HttpContext;
-                            HttpSessionStateBase session = currentHttpContext.Session;
+                            HttpSessionStateBase session = (HttpSessionStateBase)Session;
                             MyHelp.Log("Box", null, "追蹤Direct Line訂單開始", session);
 
                             List<Box> boxList = Box.GetAll(true).Where(b => b.IsEnable && b.BoxType.Equals((byte)EnumData.DirectLineBoxType.DirectLine) && b.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.運輸中)).ToList();
@@ -759,7 +759,7 @@ namespace QDLogistics.Controllers
                                                     return sync.Update_Tracking(package);
                                                 }));
 
-                                                using (CaseLog CaseLog = new CaseLog(package, currentHttpContext))
+                                                using (CaseLog CaseLog = new CaseLog(package, session, currentHttpContext))
                                                 {
                                                     if (CaseLog.CaseExit(EnumData.CaseEventType.UpdateTracking))
                                                     {
@@ -783,7 +783,7 @@ namespace QDLogistics.Controllers
 
                                         if (orderData.StatusCode.Equals((int)OrderStatusCode.Canceled))
                                         {
-                                            using (CaseLog CaseLog = new CaseLog(package, currentHttpContext))
+                                            using (CaseLog CaseLog = new CaseLog(package, session, currentHttpContext))
                                             {
                                                 CaseLog.SendCancelMail();
                                             }
@@ -801,7 +801,7 @@ namespace QDLogistics.Controllers
                                 {
                                     MyHelp.Log("Box", null, "開始寄送Direct Line Tracking通知", session);
 
-                                    using (CaseLog CaseLog = new CaseLog(currentHttpContext))
+                                    using (CaseLog CaseLog = new CaseLog(session, currentHttpContext))
                                     {
                                         foreach (var group in remindList.GroupBy(l => l.BoxID))
                                         {
@@ -824,7 +824,7 @@ namespace QDLogistics.Controllers
                         }
 
                         return message;
-                    }, HttpContext));
+                    }, Session));
                 }
 
                 lock (factory)
@@ -841,14 +841,14 @@ namespace QDLogistics.Controllers
 
                         try
                         {
-                            HttpContextBase currentHttpContext = (HttpContextBase)HttpContext;
-                            MyHelp.Log("CaseEvent", null, "開始檢查 Case Event 進度", currentHttpContext.Session);
+                            HttpSessionStateBase session = (HttpSessionStateBase)Session;
+                            MyHelp.Log("CaseEvent", null, "開始檢查 Case Event 進度", session);
 
                             List<byte> CaseType = new List<byte>() { (byte)EnumData.CaseEventType.CancelShipment, (byte)EnumData.CaseEventType.ChangeShippingMethod };
                             List<CaseEvent> CaseEventList = db.CaseEvent.Where(c => CaseType.Contains(c.Type) && c.Request.Equals((byte)EnumData.CaseEventRequest.None) && c.Status.Equals((byte)EnumData.CaseEventStatus.Open)).ToList();
                             if (CaseEventList.Any())
                             {
-                                using (CaseLog CaseLog = new CaseLog(currentHttpContext))
+                                using (CaseLog CaseLog = new CaseLog(session, currentHttpContext))
                                 {
                                     DateTime today = DateTime.UtcNow;
                                     foreach (CaseEvent eventData in CaseEventList)

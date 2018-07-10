@@ -38,7 +38,7 @@ namespace QDLogistics.Controllers
             IRepository<Orders> Orders = new GenericRepository<Orders>(db);
             SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
 
-            int OrderID = 5480023;
+            int OrderID = 5479916;
             var order = Orders.Get(OrderID);
             if (SCWS.Is_login)
             {
@@ -389,7 +389,7 @@ namespace QDLogistics.Controllers
         {
             Packages package = db.Packages.AsNoTracking().First(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID));
             var serials = db.SerialNumberForRefundLabel.AsNoTracking().Where(s => !s.IsUsed && s.oldOrderID.Equals(OrderID)).ToList();
-            using (CaseLog CaseLog = new CaseLog(package, HttpContext))
+            using (CaseLog CaseLog = new CaseLog(package, Session))
             {
                 CaseLog.SendResendShipmentMail("123", serials.First().Create_at);
             }

@@ -1221,13 +1221,14 @@ namespace QDLogistics.Controllers
                 lock (factory)
                 {
                     ThreadTask threadTask = new ThreadTask(string.Format("標籤【{0}】再次寄送", labelID));
-                    threadTask.AddWork(factory.StartNew(HttpContext =>
+
+                    HttpContextBase CurrentHttpContext = HttpContext;
+                    threadTask.AddWork(factory.StartNew(session =>
                     {
                         threadTask.Start();
                         string message = "";
 
-                        HttpContextBase currentHttpContext = (HttpContextBase)HttpContext;
-                        HttpSessionStateBase Session = currentHttpContext.Session;
+                        HttpSessionStateBase Session = (HttpSessionStateBase)session;
 
                         try
                         {
@@ -1275,7 +1276,7 @@ namespace QDLogistics.Controllers
                                 newItem.ShipFromWarehouseID = shipWarehouseID;
                                 Items.Update(newItem, newItem.ID);
 
-                                foreach (string serial in serials.Where(s => s.Sku.Equals(newItem.ProductID)).Select(s => s.Sku).ToArray())
+                                foreach (string serial in serials.Where(s => s.Sku.Equals(newItem.ProductID)).Select(s => s.SerialNumber).ToArray())
                                 {
                                     SerialNumbers.Create(new SerialNumbers()
                                     {
@@ -1307,9 +1308,15 @@ namespace QDLogistics.Controllers
 
                             MyHelp.Log("Orders", newOrder.OrderID, string.Format("提交新訂單【{0}】", newOrder.OrderID), Session);
 
-                            ShipProcess Process = new ShipProcess(SCWS);
-                            Process.Init(newPackage);
-                            ShipResult ShipResult = Process.Dispatch();
+                            ShipResult ShipResult;
+                            using (SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString()))
+                            {
+                                if (!SCWS.Is_login) throw new Exception("SC is not login");
+
+                                ShipProcess Process = new ShipProcess(SCWS);
+                                Process.Init(newPackage);
+                                ShipResult = Process.Dispatch();
+                            }                                
                             if (ShipResult.Status)
                             {
                                 MyHelp.Log("Orders", newOrder.OrderID, string.Format("新訂單【{0}】提交成功", newOrder.OrderID), Session);
@@ -1337,7 +1344,7 @@ namespace QDLogistics.Controllers
 
                                 MyHelp.Log("Orders", newOrder.OrderID, string.Format("新訂單【{0}】寄送 {1} 出貨通知", newOrder.OrderID, directLine.Abbreviation), Session);
 
-                                using (CaseLog CaseLog = new CaseLog(oldPackage, currentHttpContext))
+                                using (CaseLog CaseLog = new CaseLog(oldPackage, Session, CurrentHttpContext))
                                 {
                                     CaseLog.SendResendShipmentMail(newPackage.TagNo, serials.First().Create_at);
                                 }
@@ -1368,7 +1375,7 @@ namespace QDLogistics.Controllers
                         }
 
                         return message;
-                    }, HttpContext));
+                    }, Session));
                 }
 
                 

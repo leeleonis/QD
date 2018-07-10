@@ -27,7 +27,7 @@ namespace QDLogistics.Commons
         private SC_WebService SCWS;
 
         private bool disposed = false;
-        private HttpSessionStateBase session;
+        private HttpSessionStateBase Session;
 
         private string sendMail = "dispatch-qd@hotmail.com";
         private string mailTitle;
@@ -58,16 +58,13 @@ namespace QDLogistics.Commons
 
         private string BaseUrl { get { return string.Format("{0}://{1}", CurrentHttpContext.Request.Url.Scheme, CurrentHttpContext.Request.Url.Host); } }
 
-        public CaseLog(HttpSessionStateBase session) : this(null, session) { }
+        public CaseLog(HttpSessionStateBase session) : this(session, null) { }
 
-        public CaseLog(HttpContextBase httpContext) : this(null, httpContext) { }
+        public CaseLog(HttpSessionStateBase session, HttpContextBase httpContext) : this(null, session, httpContext) { }
 
-        public CaseLog(Packages package, HttpContextBase httpContext) : this(package, httpContext.Session)
-        {
-            CurrentHttpContext = httpContext;
-        }
+        public CaseLog(Packages package, HttpSessionStateBase session) : this(package, session, null) { }
 
-        public CaseLog(Packages package, HttpSessionStateBase session)
+        public CaseLog(Packages package, HttpSessionStateBase session, HttpContextBase httpContext)
         {
             db = new QDLogisticsEntities();
 
@@ -76,7 +73,8 @@ namespace QDLogistics.Commons
                 OrderInit(package);
             }
 
-            this.session = session;
+            this.Session = session;
+            this.CurrentHttpContext = httpContext;
         }
 
         public void OrderInit(Packages package)
@@ -108,7 +106,7 @@ namespace QDLogistics.Commons
 
             try
             {
-                MyHelp.Log("CaseEvent", null, string.Format("開始寄送 {0} - Direct Line Tracking通知", directLine), session);
+                MyHelp.Log("CaseEvent", null, string.Format("開始寄送 {0} - Direct Line Tracking通知", directLine), Session);
 
                 CaseEvent eventData;
                 int[] packageIDs = labelList.Select(l => l.PackageID).ToArray();
@@ -139,13 +137,13 @@ namespace QDLogistics.Commons
                         break;
                 }
 
-                MyHelp.Log("CaseEvent", null, string.Format("完成寄送 {0} - Direct Line Tracking通知", directLine), session);
+                MyHelp.Log("CaseEvent", null, string.Format("完成寄送 {0} - Direct Line Tracking通知", directLine), Session);
             }
             catch (Exception e)
             {
                 string errorMsg = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
 
-                MyHelp.Log("CaseEvent", null, errorMsg, session);
+                MyHelp.Log("CaseEvent", null, errorMsg, Session);
 
                 throw new Exception(errorMsg);
             }
@@ -174,7 +172,7 @@ namespace QDLogistics.Commons
 
             try
             {
-                MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】開始寄送退貨通知", orderData.OrderID), session);
+                MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】開始寄送退貨通知", orderData.OrderID), Session);
 
                 CaseEvent eventData = GetCaseEvent(EnumData.CaseEventType.CancelShipment);
                 eventData.Request_at = DateTime.UtcNow;
@@ -204,13 +202,13 @@ namespace QDLogistics.Commons
                         break;
                 }
 
-                MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】完成寄送退貨通知", orderData.OrderID), session);
+                MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】完成寄送退貨通知", orderData.OrderID), Session);
             }
             catch (Exception e)
             {
                 string errorMsg = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
 
-                MyHelp.Log("CaseEvent", orderData.OrderID, errorMsg, session);
+                MyHelp.Log("CaseEvent", orderData.OrderID, errorMsg, Session);
 
                 throw new Exception(errorMsg);
             }
@@ -225,7 +223,7 @@ namespace QDLogistics.Commons
             CaseEvent eventData = GetCaseEvent(EnumData.CaseEventType.CancelShipment);
             try
             {
-                MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】開始退貨動作", orderData.OrderID), session);
+                MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】開始退貨動作", orderData.OrderID), Session);
 
                 eventData.Request = request;
                 eventData.Status = (byte)EnumData.CaseEventStatus.Locked;
@@ -239,7 +237,7 @@ namespace QDLogistics.Commons
 
                     try
                     {
-                        MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】開始更新退貨倉", orderData.OrderID), session);
+                        MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】開始更新退貨倉", orderData.OrderID), Session);
 
                         if (SCWS == null) SCWS = new SC_WebService("tim@weypro.com", "timfromweypro");
 
@@ -258,7 +256,7 @@ namespace QDLogistics.Commons
                         Items.SaveChanges();
                         SCWS.Update_OrderStatus(orderData.OrderID, (int)OrderStatusCode.Canceled);
 
-                        MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】 完成更新退貨倉", orderData.OrderID), session);
+                        MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】 完成更新退貨倉", orderData.OrderID), Session);
                     }
                     catch (Exception e)
                     {
@@ -271,7 +269,7 @@ namespace QDLogistics.Commons
                     MoveSku();
                 }
 
-                MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0} 完成退貨動作", orderData.OrderID), session);
+                MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0} 完成退貨動作", orderData.OrderID), Session);
             }
             catch (Exception e)
             {
@@ -279,7 +277,7 @@ namespace QDLogistics.Commons
                 CaseEvent.Update(eventData, eventData.ID);
                 CaseEvent.SaveChanges();
 
-                MyHelp.Log("CaseEvent", orderData.OrderID, e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message, session);
+                MyHelp.Log("CaseEvent", orderData.OrderID, e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message, Session);
             }
         }
 
@@ -292,7 +290,7 @@ namespace QDLogistics.Commons
 
             try
             {
-                MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】開始建立RMA", orderData.OrderID), session);
+                MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】開始建立RMA", orderData.OrderID), Session);
 
                 Order order = SCWS.Get_OrderData(orderData.OrderID).Order;
                 order.OrderCreationSourceApplication = OrderCreationSourceApplicationType.PointOfSale;
@@ -300,7 +298,7 @@ namespace QDLogistics.Commons
                 {
                     int RMAId = SCWS.Create_RMA(order.ID);
 
-                    MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】開始Receive RMA", orderData.OrderID), session);
+                    MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】開始Receive RMA", orderData.OrderID), Session);
                     foreach (Items item in itemList)
                     {
                         int RMAItemID = SCWS.Create_RMA_Item(item.OrderID.Value, item.ID, RMAId, item.Qty.Value, 16, "");
@@ -308,7 +306,7 @@ namespace QDLogistics.Commons
                         SCWS.Receive_RMA_Item(RMAId, RMAItemID, item.ProductID, item.Qty.Value, item.ReturnedToWarehouseID.Value, serialsList);
                         SCWS.Delete_ItemSerials(item.OrderID.Value, item.ID);
                     }
-                    MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】完成Receive RMA", orderData.OrderID), session);
+                    MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】完成Receive RMA", orderData.OrderID), Session);
 
                     packageData.RMAId = RMAId;
                     Packages.Update(packageData, packageData.ID);
@@ -318,7 +316,7 @@ namespace QDLogistics.Commons
                     SCWS.Update_Order(order);
                 }
 
-                MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0} 完成建立RMA", orderData.OrderID), session);
+                MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0} 完成建立RMA", orderData.OrderID), Session);
             }
             catch (Exception e)
             {
@@ -338,7 +336,7 @@ namespace QDLogistics.Commons
 
             try
             {
-                MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("記錄訂單【{0}】取消出貨產品", orderData.OrderID), session);
+                MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("記錄訂單【{0}】取消出貨產品", orderData.OrderID), Session);
 
                 foreach (Items item in packageData.Items.Where(i => i.IsEnable.Value).ToList())
                 {
@@ -365,7 +363,7 @@ namespace QDLogistics.Commons
 
                 RefundLabelSerial.SaveChanges();
 
-                MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("記錄訂單【{0}】取消出貨產品成功", orderData.OrderID), session);
+                MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("記錄訂單【{0}】取消出貨產品成功", orderData.OrderID), Session);
             }
             catch (Exception e)
             {
@@ -418,7 +416,7 @@ namespace QDLogistics.Commons
             {
                 string errorMsg = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
 
-                MyHelp.Log("CaseEvent", orderData.OrderID, errorMsg, session);
+                MyHelp.Log("CaseEvent", orderData.OrderID, errorMsg, Session);
 
                 throw new Exception(errorMsg);
             }
@@ -433,7 +431,7 @@ namespace QDLogistics.Commons
             CaseEvent eventData = GetCaseEvent(EnumData.CaseEventType.UpdateShipment);
             try
             {
-                MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】更新運輸進度", orderData.OrderID), session);
+                MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】更新運輸進度", orderData.OrderID), Session);
 
                 eventData.Request = request;
                 eventData.Response_at = DateTime.UtcNow;
@@ -447,7 +445,7 @@ namespace QDLogistics.Commons
                 CaseEvent.Update(eventData, eventData.ID);
                 CaseEvent.SaveChanges();
 
-                MyHelp.Log("CaseEvent", orderData.OrderID, e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message, session);
+                MyHelp.Log("CaseEvent", orderData.OrderID, e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message, Session);
             }
         }
 
@@ -500,7 +498,7 @@ namespace QDLogistics.Commons
             {
                 string errorMsg = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
 
-                MyHelp.Log("CaseEvent", orderData.OrderID, errorMsg, session);
+                MyHelp.Log("CaseEvent", orderData.OrderID, errorMsg, Session);
 
                 throw new Exception(errorMsg);
             }
@@ -510,7 +508,7 @@ namespace QDLogistics.Commons
         {
             if (packageData == null) throw new Exception("未設定訂單!");
 
-            MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("開始建立訂單【{0}】新標籤號碼", orderData.OrderID), session);
+            MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("開始建立訂單【{0}】新標籤號碼", orderData.OrderID), Session);
 
             string labelID = "";
 
@@ -539,7 +537,7 @@ namespace QDLogistics.Commons
                 throw new Exception(string.Format("建立【{0}】標籤號碼失敗", directLine));
             }
 
-            MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("成功建立訂單【{0}】新標籤號碼", orderData.OrderID), session);
+            MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("成功建立訂單【{0}】新標籤號碼", orderData.OrderID), Session);
 
             return labelID;
         }
@@ -554,7 +552,7 @@ namespace QDLogistics.Commons
             CaseEvent eventData = GetCaseEvent(EnumData.CaseEventType.ChangeShippingMethod);
             try
             {
-                MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】開始更新運輸方式", orderData.OrderID), session);
+                MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】開始更新運輸方式", orderData.OrderID), Session);
 
                 eventData.Request = request;
                 eventData.Status = (byte)EnumData.CaseEventStatus.Locked;
@@ -574,7 +572,7 @@ namespace QDLogistics.Commons
                     CaseEvent.SaveChanges();
                 }
 
-                MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】完成更新運輸方式", orderData.OrderID), session);
+                MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】完成更新運輸方式", orderData.OrderID), Session);
             }
             catch (Exception e)
             {
@@ -582,7 +580,7 @@ namespace QDLogistics.Commons
                 CaseEvent.Update(eventData, eventData.ID);
                 CaseEvent.SaveChanges();
 
-                MyHelp.Log("CaseEvent", orderData.OrderID, e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message, session);
+                MyHelp.Log("CaseEvent", orderData.OrderID, e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message, Session);
             }
 
             return eventData;
@@ -632,7 +630,7 @@ namespace QDLogistics.Commons
             {
                 string errorMsg = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
 
-                MyHelp.Log("CaseEvent", orderData.OrderID, errorMsg, session);
+                MyHelp.Log("CaseEvent", orderData.OrderID, errorMsg, Session);
 
                 throw new Exception(errorMsg);
             }
@@ -668,7 +666,7 @@ namespace QDLogistics.Commons
                 CaseEvent.Update(eventData, eventData.ID);
                 CaseEvent.SaveChanges();
 
-                MyHelp.Log("CaseEvent", orderData.OrderID, e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message, session);
+                MyHelp.Log("CaseEvent", orderData.OrderID, e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message, Session);
             }
 
             return eventData;
@@ -708,7 +706,7 @@ namespace QDLogistics.Commons
 
             try
             {
-                MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("取得訂單【{0}】Tracking Number", orderData.OrderID), session);
+                MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("取得訂單【{0}】Tracking Number", orderData.OrderID), Session);
 
                 DirectLine directLine = db.DirectLine.AsNoTracking().FirstOrDefault(d => d.ID.Equals(packageData.Method.DirectLine));
                 if (directLine == null) throw new Exception("找不到Direct Line運輸廠商!");
@@ -863,7 +861,7 @@ namespace QDLogistics.Commons
             itemList = null;
             IDS_Api = null;
             MailList = null;
-            session = null;
+            Session = null;
             disposed = true;
         }
     }
