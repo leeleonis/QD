@@ -444,8 +444,8 @@ namespace QDLogistics.Commons
 
                 if (db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.OrderID.Value.Equals(package.OrderID.Value)).All(p => p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.已出貨)))
                 {
-                    MyHelp.Log("Orders", package.ID, string.Format("訂單【{0}】SC完成出貨", package.OrderID), Session);
                     SCWS.Update_OrderShippingStatus(SC_order, carrier);
+                    MyHelp.Log("Orders", package.ID, string.Format("訂單【{0}】SC完成出貨", package.OrderID), Session);
                 }
 
                 foreach (Items item in package.Items.Where(i => i.IsEnable.Equals(true)).ToList())

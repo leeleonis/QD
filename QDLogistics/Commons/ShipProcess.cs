@@ -784,6 +784,7 @@ namespace QDLogistics.Commons
                 createOutboundOrderData outboundOrderData = result.data.ToObject<createOutboundOrderData>();
                 package.WinitNo = outboundOrderData.outboundOrderNum;
                 package.ShippingServiceCode = carrier.Name;
+                package.ShipDate = SCWS.SyncOn;
             }
             catch (Exception e)
             {

@@ -56,7 +56,8 @@ namespace QDLogistics.Commons
             set { _currentHttpContext = value; }
         }
 
-        private string BaseUrl { get { return string.Format("{0}://{1}", CurrentHttpContext.Request.Url.Scheme, CurrentHttpContext.Request.Url.Host); } }
+        //private string BaseUrl { get { return string.Format("{0}://{1}", CurrentHttpContext.Request.Url.Scheme, CurrentHttpContext.Request.Url.Host); } }
+        private string BaseUrl = "http://internal.qd.com.tw";
 
         public CaseLog(HttpSessionStateBase session) : this(session, null) { }
 
@@ -594,6 +595,8 @@ namespace QDLogistics.Commons
 
             try
             {
+                MyHelp.Log("CaseEvent", orderData.OrderID, "開始寄送Direct Line Resend Shipment通知", Session);
+
                 CaseEvent eventData = GetCaseEvent(EnumData.CaseEventType.ResendShipment);
                 eventData.NewLabelID = newLabelID;
                 eventData.Request_at = DateTime.UtcNow;
@@ -811,7 +814,7 @@ namespace QDLogistics.Commons
                     mailBody = "Hello<br /><br />Order ({0}) confirmed cancelled on {1} requires reship with new # {2}.<br /><br />";
                     mailBody += "Please click <a href='{3}' target='_bland'>here</a> to confirm the change.<br /><br />";
                     mailBody += "Regards<br /><br />QD Shipping";
-                    mailBody = string.Format(mailBody, eventData.LabelID, confirmDate.ToString(), eventData.NewLabelID, successful_link);
+                    mailBody = string.Format(mailBody, eventData.LabelID, confirmDate.ToString("MM/dd/yyyy hh:mm tt"), eventData.NewLabelID, successful_link);
                     break;
             }
 

@@ -1270,22 +1270,30 @@ namespace QDLogistics.Controllers
                             newPackage.ShippingMethod = methodID;
                             Packages.Update(newPackage, newPackage.ID);
 
-                            int shipWarehouseID = oldPackage.Items.First(i => i.IsEnable.Value).ReturnedToWarehouseID.Value;
-                            foreach (Items newItem in newPackage.Items.Where(i => i.IsEnable.Value).ToList())
+                            using (SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString()))
                             {
-                                newItem.ShipFromWarehouseID = shipWarehouseID;
-                                Items.Update(newItem, newItem.ID);
+                                if (!SCWS.Is_login) throw new Exception("SC is not login");
 
-                                foreach (string serial in serials.Where(s => s.Sku.Equals(newItem.ProductID)).Select(s => s.SerialNumber).ToArray())
+                                int shipWarehouseID = oldPackage.Items.First(i => i.IsEnable.Value).ReturnedToWarehouseID.Value;
+                                foreach (Items newItem in newPackage.Items.Where(i => i.IsEnable.Value).ToList())
                                 {
-                                    SerialNumbers.Create(new SerialNumbers()
+                                    newItem.ShipFromWarehouseID = shipWarehouseID;
+                                    Items.Update(newItem, newItem.ID);
+
+                                    string[] serialArray = serials.Where(s => s.Sku.Equals(newItem.ProductID)).Select(s => s.SerialNumber).ToArray();
+                                    SCWS.Update_ItemSerialNumber(newItem.ID, serialArray);
+
+                                    foreach (string serial in serialArray)
                                     {
-                                        OrderID = newItem.OrderID,
-                                        OrderItemID = newItem.ID,
-                                        ProductID = newItem.ProductID,
-                                        SerialNumber = serial,
-                                        KitItemID = 0
-                                    });
+                                        SerialNumbers.Create(new SerialNumbers()
+                                        {
+                                            OrderID = newItem.OrderID,
+                                            OrderItemID = newItem.ID,
+                                            ProductID = newItem.ProductID,
+                                            SerialNumber = serial,
+                                            KitItemID = 0
+                                        });
+                                    }
                                 }
                             }
                             Packages.SaveChanges();
@@ -1316,7 +1324,7 @@ namespace QDLogistics.Controllers
                                 ShipProcess Process = new ShipProcess(SCWS);
                                 Process.Init(newPackage);
                                 ShipResult = Process.Dispatch();
-                            }                                
+                            }
                             if (ShipResult.Status)
                             {
                                 MyHelp.Log("Orders", newOrder.OrderID, string.Format("新訂單【{0}】提交成功", newOrder.OrderID), Session);
@@ -1360,7 +1368,7 @@ namespace QDLogistics.Controllers
                             MyHelp.Log("DirectLineLabel", labelID, string.Format("完成標籤【{0}】再次寄送", labelID), Session);
 
                             IRepository<SerialNumberForRefundLabel> RefundSerial = new GenericRepository<SerialNumberForRefundLabel>(db);
-                            foreach(var serial in db.SerialNumberForRefundLabel.AsNoTracking().Where(s => !s.IsUsed && s.oldLabelID.Equals(labelID)).ToList())
+                            foreach (var serial in db.SerialNumberForRefundLabel.AsNoTracking().Where(s => !s.IsUsed && s.oldLabelID.Equals(labelID)).ToList())
                             {
                                 serial.IsUsed = true;
                                 serial.newLabelID = newPackage.TagNo;
@@ -1379,7 +1387,7 @@ namespace QDLogistics.Controllers
                     }, Session));
                 }
 
-                
+
             }
             catch (Exception e)
             {
