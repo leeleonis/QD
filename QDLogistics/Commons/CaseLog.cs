@@ -33,7 +33,7 @@ namespace QDLogistics.Commons
         private string mailTitle;
         private string mailBody;
         private string[] receiveMails;
-        private string[] ccMails = new string[] { "peter@qd.com.tw", "kelly@qd.com.tw", "demi@qd.com.tw" };
+        private string[] ccMails = new string[] { "kelly@qd.com.tw", "demi@qd.com.tw" };
         //private string[] ccMails = new string[] { };
 
         private Dictionary<string, string[]> MailList = new Dictionary<string, string[]>()

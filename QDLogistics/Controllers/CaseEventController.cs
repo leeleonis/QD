@@ -220,8 +220,8 @@ namespace QDLogistics.Controllers
                 if (!string.IsNullOrEmpty(filter.Sort) && filter.Sort.Equals("RequestDate"))
                     results = filter.Order.Equals("asc") ? results.OrderBy(c => c.Request_at).ToList() : results.OrderByDescending(c => c.Request_at).ToList();
 
+                Dictionary<int, string> DirectLine = db.DirectLine.ToDictionary(d => d.ID, d => d.Abbreviation);
                 Dictionary<int, string> AdminName = db.AdminUsers.AsNoTracking().Where(u => u.IsEnable).ToDictionary(u => u.Id, u => u.Name);
-                AdminName.Add(0, "無");
 
                 dataList.AddRange(results.Skip(start).Take(length).Select(c => new
                 {
@@ -234,7 +234,7 @@ namespace QDLogistics.Controllers
                     CaseType = EnumData.CaseEventTypeList()[(EnumData.CaseEventType)c.Type],
                     CaseRequest = Enum.GetName(typeof(EnumData.CaseEventRequest), c.Request),
                     CaseStatus = c.Status,
-                    UpdateBy = AdminName[c.Update_by]
+                    UpdateBy = AdminName.ContainsKey(c.Update_by) ? string.Format("{0}﹙{1}﹚", AdminName[c.Update_by], DirectLine[c.Packages.Method.DirectLine]) : DirectLine[c.Packages.Method.DirectLine]
                 }));
             }
 

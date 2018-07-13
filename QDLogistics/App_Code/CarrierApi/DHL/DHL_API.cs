@@ -87,6 +87,8 @@ namespace CarrierApi.DHL
             ShipmentResponse result;
             ShipmentRequest shipmentRequest = SetShipment(package);
 
+            MyHelp.Log("Packages", package.ID, "執行DHL Create Api");
+
             XmlSerializer serializer = new XmlSerializer(typeof(ShipmentResponse));
             string request = SendRequest(shipmentRequest);
             using (TextReader reader = new StringReader(request))
@@ -112,6 +114,8 @@ namespace CarrierApi.DHL
                         errorMsg = string.Join("; ", error.Response.Status.Condition.Select(c => c.ConditionData));
                     }
                     errorReader.Dispose();
+
+                    MyHelp.Log("Packages", package.ID, string.Format("執行DHL Create Api失敗 - {0}", errorMsg));
                     throw new Exception(errorMsg);
                 }
             }
@@ -121,6 +125,8 @@ namespace CarrierApi.DHL
 
         private ShipmentRequest SetShipment(Packages package)
         {
+            MyHelp.Log("Packages", package.ID, "設定Create Data");
+
             var shipment = new ShipmentRequest();
 
             shipment.Request = RequsetInit("6.1");
@@ -250,6 +256,8 @@ namespace CarrierApi.DHL
                     ManufactureCountryCode = i.Skus.Origin
                 }).ToArray()
             };
+
+            MyHelp.Log("Packages", package.ID, "設定Create Data完成");
 
             return shipment;
         }
@@ -505,62 +513,72 @@ namespace CarrierApi.DHL
 
         private static string SendRequest<T>(T requestType) where T : class
         {
-            // Create a request for the URL. 
-            WebRequest request = WebRequest.Create("https://xmlpi-ea.dhl.com/XMLShippingServlet");
-
-            // If required by the server, set the credentials.
-            // request.Credentials = CredentialCache.DefaultCredentials;
-
-            // Wrap the request stream with a text-based writer
-            request.Method = "POST";        // Post method
-            request.ContentType = "text/xml";
-
-            var stream = request.GetRequestStream();
-            StreamWriter writer = new StreamWriter(stream);
-
-            // Write the XML text into the stream
-            var soapWriter = new XmlSerializer(typeof(T));
-
-            using (var sww = new StringWriter())
+            try
             {
-                using (System.Xml.XmlWriter xmlWriter = System.Xml.XmlWriter.Create(sww))
-                {
-                    soapWriter.Serialize(xmlWriter, requestType);
-                    var xml = sww.ToString(); // your xml
-                }
+                // Create a request for the URL. 
+                WebRequest request = WebRequest.Create("https://xmlpi-ea.dhl.com/XMLShippingServlet");
+                //request.Timeout = 60000;
+
+                // If required by the server, set the credentials.
+                // request.Credentials = CredentialCache.DefaultCredentials;
+
+                // Wrap the request stream with a text-based writer
+                request.Method = "POST";        // Post method
+                request.ContentType = "text/xml";
+
+                var stream = request.GetRequestStream();
+                StreamWriter writer = new StreamWriter(stream);
+
+                // Write the XML text into the stream
+                //var soapWriter = new XmlSerializer(typeof(T));
+
+                //using (var sww = new StringWriter())
+                //{
+                //    using (System.Xml.XmlWriter xmlWriter = System.Xml.XmlWriter.Create(sww))
+                //    {
+                //        soapWriter.Serialize(xmlWriter, requestType);
+                //        var xml = sww.ToString(); // your xml
+                //    }
+                //}
+
+                var soapWriter = new XmlSerializer(typeof(T));
+
+                //add namespaces and/or prefixes ( e.g " <req:BookPickupRequestEA xmlns:req="http://www.dhl.com"> ... </req:BookPickupRequestEA>"
+                var ns = new XmlSerializerNamespaces();
+                ns.Add("req", "http://www.dhl.com");
+                soapWriter.Serialize(writer, requestType, ns);
+                writer.Close();
+
+                // Get the response.
+                WebResponse response = request.GetResponse();
+
+                // Display the status.
+                Trace.WriteLine(((HttpWebResponse)response).StatusDescription);
+
+                // Get the stream containing content returned by the server.
+                Stream dataStream = response.GetResponseStream();
+
+                // Open the stream using a StreamReader for easy access.
+                StreamReader reader = new StreamReader(dataStream);
+
+                // Read the content.
+                string responseFromServer = reader.ReadToEnd();
+
+                // Display the content.
+                Trace.WriteLine(responseFromServer);
+
+                // Clean up the streams and the response.
+                reader.Close();
+                response.Close();
+
+                return responseFromServer;
             }
-
-            soapWriter = new XmlSerializer(typeof(T));
-
-            //add namespaces and/or prefixes ( e.g " <req:BookPickupRequestEA xmlns:req="http://www.dhl.com"> ... </req:BookPickupRequestEA>"
-            var ns = new XmlSerializerNamespaces();
-            ns.Add("req", "http://www.dhl.com");
-            soapWriter.Serialize(writer, requestType, ns);
-            writer.Close();
-
-            // Get the response.
-            WebResponse response = request.GetResponse();
-
-            // Display the status.
-            Trace.WriteLine(((HttpWebResponse)response).StatusDescription);
-
-            // Get the stream containing content returned by the server.
-            Stream dataStream = response.GetResponseStream();
-
-            // Open the stream using a StreamReader for easy access.
-            StreamReader reader = new StreamReader(dataStream);
-
-            // Read the content.
-            string responseFromServer = reader.ReadToEnd();
-
-            // Display the content.
-            Trace.WriteLine(responseFromServer);
-
-            // Clean up the streams and the response.
-            reader.Close();
-            response.Close();
-
-            return responseFromServer;
+            catch (Exception e)
+            {
+                string errorMsg = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+                MyHelp.Log("", null, string.Format("SendRequest Error - {0}", errorMsg));
+                throw new Exception(errorMsg);
+            }
         }
     }
 }
