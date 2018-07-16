@@ -329,12 +329,16 @@ namespace QDLogistics.Commons
                 case (int)EnumData.CarrierType.DHL:
                     try
                     {
+                        MyHelp.Log("Packages", package.ID, "開始建立DHL提單");
+
                         DHL_API DHL = new DHL_API(api);
                         ShipmentResponse result = DHL.Create(package);
 
                         package.TrackingNumber = result.AirwayBillNumber;
                         package.ShipDate = SCWS.SyncOn;
                         package.ShippingServiceCode = carrier.Name;
+
+                        MyHelp.Log("Packages", package.ID, "完成建立DHL提單");
 
                         if (package.Export == (byte)EnumData.Export.正式)
                         {
@@ -343,7 +347,9 @@ namespace QDLogistics.Commons
                     }
                     catch (Exception e)
                     {
-                        return new ShipResult(false, e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message);
+                        string DHL_error = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+                        MyHelp.Log("Packages", package.ID, string.Format("建立DHL提單失敗 - {0}", DHL_error));
+                        return new ShipResult(false, DHL_error);
                     }
                     break;
                 case (int)EnumData.CarrierType.FedEx:
@@ -379,6 +385,8 @@ namespace QDLogistics.Commons
 
         private void DHL_SaveFile(ShipmentResponse result)
         {
+            MyHelp.Log("Packages", package.ID, "開始建立AWB、Invoice");
+
             DateTime date = package.ShipDate.Value;
             string basePath = HostingEnvironment.MapPath("~/FileUploads");
             package.FilePath = Path.Combine("export", date.ToString("yyyy/MM/dd"), package.ID.ToString());
@@ -391,6 +399,8 @@ namespace QDLogistics.Commons
             /***** Commercial Invoice *****/
             File.WriteAllBytes(Path.Combine(filePath, "Invoice.pdf"), result.LabelImage.First().MultiLabels.First().DocImageVal);
             //TWN_CreateInvoice(basePath, filePath, date);
+
+            MyHelp.Log("Packages", package.ID, "完成建立AWB、Invoice");
         }
 
         private void FedEx_SaveFile(CompletedPackageDetail data)

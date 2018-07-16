@@ -157,6 +157,8 @@ namespace QDLogistics.Controllers
                                             }
                                         }
 
+                                        MyHelp.Log("Orders", packageData.OrderID, "訂單開始提交", session);
+
                                         shipProcess.Init(packageData);
                                         var result = shipProcess.Dispatch();
 
