@@ -475,9 +475,9 @@ namespace QDLogistics.Controllers
 
             var LabelFilter = db.SerialNumberForRefundLabel.AsNoTracking().AsQueryable();
             if (filter.IsUsed.HasValue) LabelFilter = LabelFilter.Where(l => l.IsUsed.Equals(filter.IsUsed.Value));
-            if (!string.IsNullOrEmpty(filter.OrderID)) LabelFilter = LabelFilter.Where(l => l.oldOrderID.Equals(filter.OrderID));
+            if (!string.IsNullOrEmpty(filter.OrderID)) LabelFilter = LabelFilter.Where(l => l.oldOrderID.ToString().Equals(filter.OrderID));
             if (!string.IsNullOrEmpty(filter.LabelID)) LabelFilter = LabelFilter.Where(l => l.oldLabelID.Equals(filter.LabelID));
-            if (!string.IsNullOrEmpty(filter.NewOrderID)) LabelFilter = LabelFilter.Where(l => l.newOrderID.Equals(filter.NewOrderID));
+            if (!string.IsNullOrEmpty(filter.NewOrderID)) LabelFilter = LabelFilter.Where(l => l.newOrderID.ToString().Equals(filter.NewOrderID));
             if (!string.IsNullOrEmpty(filter.NewLabelID)) LabelFilter = LabelFilter.Where(l => l.newLabelID.Equals(filter.NewLabelID));
             if (filter.RMAID.HasValue) LabelFilter = LabelFilter.Where(l => l.RMAID.Equals(filter.RMAID.Value));
             if (!string.IsNullOrEmpty(filter.Sku)) LabelFilter = LabelFilter.Where(l => l.Sku.Contains(filter.Sku));
@@ -1320,6 +1320,17 @@ namespace QDLogistics.Controllers
                             using (SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString()))
                             {
                                 if (!SCWS.Is_login) throw new Exception("SC is not login");
+
+                                var SC_order = SCWS.Get_OrderData(newPackage.OrderID.Value).Order;
+                                var SC_items = SC_order.Items.Where(i => i.PackageID.Equals(newPackage.ID)).ToArray();
+                                foreach (var item in SC_items)
+                                {
+                                    if (!db.Skus.AsNoTracking().Any(s => s.Sku.Equals(item.ProductID))) throw new Exception(string.Format("系統尚未有品號 {0} 資料!", item.ProductID));
+
+                                    item.ShipFromWareHouseID = newPackage.Items.First(i => i.IsEnable == true && i.ID == item.ID).ShipFromWarehouseID.Value;
+                                    SCWS.Update_OrderItem(item);
+                                }
+                                MyHelp.Log("Orders", newPackage.OrderID, "更新訂單包裏的出貨倉", Session);
 
                                 ShipProcess Process = new ShipProcess(SCWS);
                                 Process.Init(newPackage);
