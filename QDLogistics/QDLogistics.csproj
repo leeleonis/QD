@@ -414,6 +414,7 @@
     <Content Include="Content\img\pattern\tileable_wood_texture.png" />
     <Content Include="Content\img\peili-logo.png" />
     <Content Include="Content\img\Plug\TypeA.png" />
+    <Content Include="Content\img\Plug\TypeC.png" />
     <Content Include="Content\img\Plug\TypeF.png" />
     <Content Include="Content\img\Plug\TypeG.png" />
     <Content Include="Content\img\Plug\TypeI.png" />
