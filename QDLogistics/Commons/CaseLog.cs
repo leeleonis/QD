@@ -642,6 +642,7 @@ namespace QDLogistics.Commons
             if (packageData == null) throw new Exception("未設定訂單!");
 
             if (CaseEvent == null) CaseEvent = new GenericRepository<CaseEvent>(db);
+            if (Packages == null) Packages = new GenericRepository<Packages>(db);
 
             CaseEvent eventData = GetCaseEvent(EnumData.CaseEventType.ResendShipment);
             try

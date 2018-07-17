@@ -319,7 +319,7 @@ namespace QDLogistics.Commons
             return item;
         }
 
-        public static BundleItems SetBundleItemData(BundleItems bundleItem, OrderBundleItem bundleItemDetail)
+        public static BundleItems SetBundleItemData(BundleItems bundleItem, OrderBundleItem1 bundleItemDetail)
         {
             bundleItem.OrderID = bundleItemDetail.OrderID;
             bundleItem.OrderItemId = bundleItemDetail.OrderItemId;

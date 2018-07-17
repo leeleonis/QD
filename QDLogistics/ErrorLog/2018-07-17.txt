@@ -1,0 +1,26 @@
+ActionName : 同步1天訂單資料失敗
+Message : 並未將物件參考設定為物件的執行個體。
+StackTrace : 於 QDLogistics.Commons.DataProcess.SetOrderData(Orders order, Order orderDetail) 於 C:\QD Project\Order Shipping System\QDLogistics\Commons\DataProcess.cs: 行 170
+   於 QDLogistics.Commons.SyncProcess.<>c.<Check_Order>b__20_0(Order o) 於 C:\QD Project\Order Shipping System\QDLogistics\Commons\SyncProcess.cs: 行 242
+   於 System.Linq.Enumerable.WhereSelectListIterator`2.MoveNext()
+   於 System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   於 System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   於 QDLogistics.Commons.SyncProcess.Check_Order(List`1 orderDatas, List`1 SC_Orders) 於 C:\QD Project\Order Shipping System\QDLogistics\Commons\SyncProcess.cs: 行 242
+   於 QDLogistics.Commons.SyncProcess.Sync_Orders(Int32 day) 於 C:\QD Project\Order Shipping System\QDLogistics\Commons\SyncProcess.cs: 行 125
+Date : 2018/7/17 上午 09:46:43
+
+-----------------------------------------------------------------------------
+
+ActionName : 同步1天訂單資料失敗
+Message : 並未將物件參考設定為物件的執行個體。
+StackTrace : 於 QDLogistics.Commons.DataProcess.SetOrderData(Orders order, Order orderDetail) 於 C:\QD Project\Order Shipping System\QDLogistics\Commons\DataProcess.cs: 行 170
+   於 QDLogistics.Commons.SyncProcess.<>c.<Check_Order>b__20_0(Order o) 於 C:\QD Project\Order Shipping System\QDLogistics\Commons\SyncProcess.cs: 行 242
+   於 System.Linq.Enumerable.WhereSelectListIterator`2.MoveNext()
+   於 System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   於 System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   於 QDLogistics.Commons.SyncProcess.Check_Order(List`1 orderDatas, List`1 SC_Orders) 於 C:\QD Project\Order Shipping System\QDLogistics\Commons\SyncProcess.cs: 行 242
+   於 QDLogistics.Commons.SyncProcess.Sync_Orders(Int32 day) 於 C:\QD Project\Order Shipping System\QDLogistics\Commons\SyncProcess.cs: 行 125
+Date : 2018/7/17 上午 09:57:45
+
+-----------------------------------------------------------------------------
+

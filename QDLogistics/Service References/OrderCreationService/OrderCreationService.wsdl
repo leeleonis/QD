@@ -539,6 +539,14 @@
           <s:element minOccurs="1" maxOccurs="1" name="AutoCreateFBARemovalTransfers" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="AmazonMWSAuthTokenExpiresOn" type="s:dateTime" />
           <s:element minOccurs="1" maxOccurs="1" name="SearsLeadTime" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="CMFeedUseSecureFTP" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="CMFeedSecureFTPType" type="tns:FTPConnectionType" />
+          <s:element minOccurs="1" maxOccurs="1" name="CMFeedUseSSHFTPwithKeyauthentication" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="CMFeedOverrideSSLAllowedCiphers" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="CMFeedSSLAllowedCiphers" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="AmazonUseMWSToGetInfoFromAmazon" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="AmazonDefaultAppEagleEnabled" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="Invoice_PrintShippedOnDate" type="s:boolean" />
         </s:sequence>
       </s:complexType>
       <s:simpleType name="WebsiteProductViewURLValueTypeType">
@@ -578,6 +586,7 @@
           <s:enumeration value="Default" />
           <s:enumeration value="Html2PDF" />
           <s:enumeration value="Custom_Plugin" />
+          <s:enumeration value="Word2PDF" />
         </s:restriction>
       </s:simpleType>
       <s:simpleType name="AmazonLabelFormatType">
@@ -1109,6 +1118,14 @@
           <s:enumeration value="ZMK" />
           <s:enumeration value="ZWD" />
           <s:enumeration value="ATS" />
+        </s:restriction>
+      </s:simpleType>
+      <s:simpleType name="FTPConnectionType">
+        <s:restriction base="s:string">
+          <s:enumeration value="Regular" />
+          <s:enumeration value="Implicit_FTP_Over_TLS" />
+          <s:enumeration value="Explicit_FTP_Over_TLS" />
+          <s:enumeration value="SSH" />
         </s:restriction>
       </s:simpleType>
       <s:element name="Companies_GetDefaultCompany">
@@ -1715,6 +1732,7 @@
           <s:enumeration value="Return_Get_Files" />
           <s:enumeration value="Return_Issue_Refund" />
           <s:enumeration value="Return_Mark_Received" />
+          <s:enumeration value="ASN_Tracking_Upload" />
         </s:restriction>
       </s:simpleType>
       <s:element name="Orders_AddTransactionFileRecordResponse">
@@ -3098,6 +3116,7 @@
           <s:element minOccurs="1" maxOccurs="1" name="WayfairPriceUseDefault" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="WayfairPrice" type="s:decimal" />
           <s:element minOccurs="0" maxOccurs="1" name="WayfairProductID" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="WayfairCost" type="s:decimal" />
           <s:element minOccurs="0" maxOccurs="1" name="DSWMerchantSKU" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="DSWEnabled" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="DSWDiscontinuedOn" type="s:dateTime" />
@@ -3698,6 +3717,8 @@
           <s:element minOccurs="1" maxOccurs="1" name="WalmartDefaultQty" type="s:int" />
           <s:element minOccurs="1" maxOccurs="1" name="WalmartDefaultQtyEnabled" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="WalmartDefaultQtyUseDefault" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="WalmartDSVMaxQty" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="WalmartDSVMaxQtyUseDefault" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="TargetDiscontinuedOn" type="s:dateTime" />
           <s:element minOccurs="1" maxOccurs="1" name="TargetDiscontinued" type="s:boolean" />
           <s:element minOccurs="0" maxOccurs="1" name="TargetMerchantSKU" type="s:string" />
@@ -3722,6 +3743,17 @@
           <s:element minOccurs="1" maxOccurs="1" name="JETEnableCustomAttributes" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="WishShippingTemplateID" type="s:int" />
           <s:element minOccurs="1" maxOccurs="1" name="EtsyActiveListingVariationID" type="s:long" />
+          <s:element minOccurs="1" maxOccurs="1" name="ReverbPublish" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="ReverbAcceptOffers" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="GrouponMarketplaceMaxQtyEnabled" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="GrouponMarketplaceMaxQty" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="GrouponMarketplaceMaxQtyUseDefault" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="GrouponMarketplaceSafetyQuantity" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="GrouponMarketplaceSafetyQuantityUseDefault" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="NewEggBizEnableVolumeDiscount" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="JETUseParentCategoryID" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="LotSize" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="DisconnectFromInventoryJet" type="s:boolean" />
         </s:sequence>
       </s:complexType>
       <s:simpleType name="MagentoProductVisibilityType">
@@ -6134,6 +6166,8 @@
           <s:element minOccurs="1" maxOccurs="1" name="DoNotAllowToSplitOrder" type="s:boolean" />
           <s:element minOccurs="0" maxOccurs="1" name="SrcUpdatedForShippingErrorMsg" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="DestinationWarehouseCode" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="OrderLevelDiscountAmount" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="OrderLevelDiscountType" type="s7:DiscountAmountType" />
           <s:element minOccurs="1" maxOccurs="1" name="EnableCaseQty" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="EstimatedDeliveryDate" type="s:dateTime" />
           <s:element minOccurs="1" maxOccurs="1" name="ShippedVerifiedBy" type="s:int" />
@@ -6396,6 +6430,12 @@
           <s:enumeration value="None" />
           <s:enumeration value="Partial_BackOrder" />
           <s:enumeration value="Full_BackOrder" />
+        </s:restriction>
+      </s:simpleType>
+      <s:simpleType name="DiscountAmountType">
+        <s:restriction base="s:string">
+          <s:enumeration value="FixedAmount" />
+          <s:enumeration value="Percentage" />
         </s:restriction>
       </s:simpleType>
       <s:simpleType name="OrderSubTypeType">
