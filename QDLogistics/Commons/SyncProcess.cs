@@ -363,7 +363,7 @@ namespace QDLogistics.Commons
             Check_BundleItem(itemDatas.SelectMany(i => i.BundleItems).ToList(), SC_Items.SelectMany(i => i.BundleItems).ToList());
         }
 
-        private void Check_BundleItem(List<BundleItems> bundleItemDatas, List<OrderBundleItem> SC_BundleItems)
+        private void Check_BundleItem(List<BundleItems> bundleItemDatas, List<OrderBundleItem1> SC_BundleItems)
         {
             List<BundleItems> bundleItemList = SC_BundleItems.Select(bundleItem => DataProcess.SetBundleItemData(new BundleItems() { IsEnable = true, ID = bundleItem.ID }, bundleItem)).ToList();
 
