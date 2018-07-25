@@ -57,6 +57,7 @@ namespace QDLogistics.Commons
             foreach (Packages package in Order.Packages.Where(p => p.IsEnable.Value).ToList())
             {
                 bool needDispatch = false;
+                decimal subTotal = 0;
 
                 List<Items> itemList = package.Items.Where(i => i.IsEnable.Value).ToList();
                 string[] ProductIDs = itemList.Select(i => i.ProductID).ToArray();
@@ -81,27 +82,36 @@ namespace QDLogistics.Commons
                     {
                         switch (preset.Type)
                         {
-                            case 1:
+                            case 1: //Upload Tracking
                                 package.UploadTracking = preset.Value.Equals(1);
                                 break;
-                            case 2:
+                            case 2: //Rush order
                                 Order.RushOrder = preset.Value.Equals(1);
                                 Orders.Update(Order, package.OrderID.Value);
                                 break;
-                            case 3:
-                                var subTotal = package.Items.Sum(i => i.UnitPrice.Value * i.Qty.Value);
-                                package.DeclaredTotal = package.DLDeclaredTotal = preset.ValueType.Equals(0) ? subTotal * preset.Value / 100 : preset.Value;
+                            case 3: //Declare Value
+                                subTotal = package.Items.Sum(i => i.UnitPrice.Value * i.Qty.Value);
+                                package.DeclaredTotal = preset.ValueType.Equals(0) ? subTotal * preset.Value / 100 : preset.Value;
                                 foreach (Items item in itemList)
                                 {
-                                    item.DeclaredValue = item.DLDeclaredValue = item.UnitPrice.Value * (package.DeclaredTotal / subTotal);
+                                    item.DeclaredValue = item.UnitPrice.Value * (package.DeclaredTotal / subTotal);
                                     Items.Update(item, item.ID);
                                 }
                                 break;
-                            case 4:
+                            case 4: //warehouse & shipping method
                                 package.ShippingMethod = preset.MethodID;
                                 foreach (Items item in itemList)
                                 {
                                     item.ShipFromWarehouseID = preset.WarehouseID;
+                                    Items.Update(item, item.ID);
+                                }
+                                break;
+                            case 5: //DL Declare Value
+                                subTotal = package.Items.Sum(i => i.UnitPrice.Value * i.Qty.Value);
+                                package.DLDeclaredTotal = preset.ValueType.Equals(0) ? subTotal * preset.Value / 100 : preset.Value;
+                                foreach (Items item in itemList)
+                                {
+                                    item.DLDeclaredValue = item.UnitPrice.Value * (package.DLDeclaredTotal / subTotal);
                                     Items.Update(item, item.ID);
                                 }
                                 break;

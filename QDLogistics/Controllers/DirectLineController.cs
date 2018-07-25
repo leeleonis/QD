@@ -403,6 +403,8 @@ namespace QDLogistics.Controllers
                     .GroupJoin(db.Items.AsNoTracking().Where(i => i.IsEnable.Value), p => p.ID, i => i.PackageID, (p, i) => new { package = p, items = i.ToList() })
                     .GroupBy(data => data.package.BoxID).ToDictionary(group => group.Key, group => group.SelectMany(data => data.items).ToList());
 
+                List<DirectLineLabel> lockLabel = db.DirectLineLabel.AsNoTracking().Where(l => l.IsEnable && l.Status.Equals((byte)EnumData.LabelStatus.鎖定中)).ToList();
+
                 string baseUrl = Request.Url.Scheme + "://" + Request.Url.Authority + Request.ApplicationPath.TrimEnd('/') + "/fileUploads";
 
                 dataList.AddRange(results.Select(data => new
@@ -418,7 +420,8 @@ namespace QDLogistics.Controllers
                     Status = Enum.GetName(typeof(EnumData.DirectLineStatus), data.ShippingStatus),
                     Type = EnumData.BoxTypeList()[(EnumData.DirectLineBoxType)data.BoxType],
                     data.Note,
-                    Download = !data.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.未發貨) ? string.Format("{0}/export/box/{1}/{2}", baseUrl, data.Create_at.ToString("yyyy/MM/dd"), data.BoxID) : ""
+                    Download = !data.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.未發貨) ? string.Format("{0}/export/box/{1}/{2}", baseUrl, data.Create_at.ToString("yyyy/MM/dd"), data.BoxID) : "",
+                    OrderLock = lockLabel.Count(l => l.BoxID.Equals(data.BoxID))
                 }));
             }
 

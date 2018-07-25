@@ -138,6 +138,9 @@
                 <div class="table-cell col-xs-2">
                     <div class="action-button col-xs-12">
                         <button type="button" class="btn btn-default btn-sm btn-block" id="btn-sync" data-href="@Url.Action("getOrder", "orderSync")"><span>資料同步 Sync</span></button>
+                        <div id="dialog-order" class="easyui-dialog" title="輸入要同步的訂單" data-options="iconCls:'icon-edit',closed:true,draggable:false,resizable:false,onClose:function(){$orderInput.val('');}" style="width:300px;">
+                            <input type="text" class="form-control" id="input-order" />
+                        </div>
                         <button type="button" class="btn btn-default btn-sm btn-block" id="btn-syncDays" data-href="@Url.Action("checkOrder", "orderSync", new { day = 14 })"><span>14天資料同步 Sync Days</span></button>
                         <button type="button" class="btn btn-default btn-sm btn-block" id="btn-disptch">Save & 提交出貨 Dispatch</button>
                         <button type="button" class="btn btn-default btn-sm btn-block" id="btn-split">分批寄送 Split Dispatch</button>
@@ -176,8 +179,8 @@
         var $warehouseSelect = $("#warehouseSelect"), $carrierSelect = $("#carrierSelect"), $exportSelect = $("#exportSelect"), $exportMethodSelect = $("#exportMethodSelect"), $statusCodeSelect = $("#statusCodeSelect");
         var $orderIDSearch = $("#search-orderID"), $itemSearch = $("#search-item"), $userIDSearch = $("#search-userID"), $sourceIDSearch = $("#search-sourceID"), $dateFromSearch = $("#search-dateFrom"), $dateToSearch = $("#search-dateTo"),
             $paymentSearch = $("#search-payment"), $statusSearch = $("#search-status"), $warehouseSearch = $("#search-warehouse"), $methodSearch = $("#search-method"), $channelSearch = $("#search-channel"), $countrySearch = $("#search-country");
-        var $syncBtn = $("#btn-sync"), $syncDaysBtn = $("#btn-syncDays"), $disptchBtn = $("#btn-disptch"), $splitBtn = $("#btn-split"), $amountDialog = $("#dialog-amount"), $amountInput = $("#input-amount"), $splitWin = $("#win-split"),
-            $recoveryBtn = $("#btn-recovery"), $exportBtn = $("#btn-export");
+        var $syncBtn = $("#btn-sync"), $orderDialog = $("#dialog-order"), $orderInput = $("#input-order"), $syncDaysBtn = $("#btn-syncDays"), $disptchBtn = $("#btn-disptch"), $splitBtn = $("#btn-split"), $amountDialog = $("#dialog-amount"),
+            $amountInput = $("#input-amount"), $splitWin = $("#win-split"), $recoveryBtn = $("#btn-recovery"), $exportBtn = $("#btn-export");
 
         $(function () {
             getOption("@Url.Action("orderColumOption", "ajax")").done(function (response) {
@@ -234,6 +237,25 @@
                             $dataGrid.datagrid('reload');
                         }
                     });
+                } else {
+                    $orderDialog.dialog('open');
+                }
+            });
+
+            $orderInput.keypress(function (event) {
+                if (event.keyCode == 13) {
+                    if (!isEmpty($orderInput.val())) {
+                        $.ajax({
+                            url: $syncBtn.data("href"),
+                            data: { orderIDs: [$orderInput.val()] },
+                            type: 'POST',
+                            dataType: "json",
+                            success: function (response) {
+                                alert(response['message']);
+                                $orderDialog.dialog('close');
+                            }
+                        });
+                    }
                 }
             });
 

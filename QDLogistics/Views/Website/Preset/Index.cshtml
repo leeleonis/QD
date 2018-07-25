@@ -138,7 +138,7 @@
                     }, {
                         data: "type", render: function (data, type, row, meta) {
                             var id = 'type-' + row.id;
-                            var option = ['尚未選擇', 'Upload Tracking', 'Rush order', 'Declare Value', 'warehouse & shipping method'];
+                            var option = ['尚未選擇', 'Upload Tracking', 'Rush order', 'Declare Value', 'warehouse & shipping method', 'DL Declare Value'];
                             return "<select class='form-control' id='" + id + "' onchange='changeBox(" + row.id + ");'>" + setSelectOption(option, data) + "</select>";
                         }
                     }, {
@@ -242,13 +242,14 @@
             var html = '';
 
             switch (type) {
-                case '1':
-                case '2':
+                case '1': //Upload Tracking
+                case '2': //Rush order
                     html += "<select class='form-control' id='value-" + id + "'>";
                     html += setSelectOption(['FALSE', 'TRUE'], row.value);
                     html += '</select>';
                     break;
-                case '3':
+                case '3': //Declare Value
+                case '5': //DL Declare Value
                     var value = !isEmpty(row.value) ? row.value : '';
                     var valueType = !isEmpty(row.valueType) ? row.valueType : 0;
                     var typeArray = ['%', '$'];
@@ -261,7 +262,7 @@
                     dropdown += '</ul>';
                     html += "<div class='input-group'><div class='input-group-btn'>" + button + dropdown + "</div><input class='form-control' id='value-" + id + "' type='text' value='" + value + "'>" + dataType + "</div>";
                     break;
-                case '4':
+                case '4': //warehouse & shipping method
                     var warehouseID = !isEmpty(row.warehouse) && row.warehouse != 0 ? row.warehouse.toString() : Object.keys(warehouseList)[0].toString();
                     html += "<select class='form-control' id='warehouse-" + id + "'>" + setSelectOption(warehouseList, warehouseID) + "</select>";
                     html += "<select class='form-control' id='methodID-" + id + "'></select>"

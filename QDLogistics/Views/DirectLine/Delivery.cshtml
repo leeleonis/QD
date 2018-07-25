@@ -34,7 +34,8 @@
     <script src="~/scripts/datagrid-detailview.js"></script>
     <script src="~/scripts/jquery.number.min.js"></script>
     <script type="text/javascript">
-        var pager, pageSize = 100, selectOption, filterValue = {}
+        var pager, pageSize = 100, selectOption, filterValue = {};
+        var selected = false;
         var $dataGrid;
 
         $(function () {
@@ -57,7 +58,7 @@
                 url: "@Url.Action("getBoxData", "directLine")",
                 queryParams: {},
                 width: "100%",
-                height: window.screen.availHeight-280,
+                height: window.screen.availHeight - 280,
                 checkOnSelect: false,
                 selectOnCheck: false,
                 singleSelect: false,
@@ -113,6 +114,15 @@
 
                             $dataGrid.datagrid('reload');
                         });
+
+                        var rows = $dataGrid.datagrid("getRows");
+                        for (var i in rows) {
+                            var Box = rows[i];
+                            if (Box.OrderLock != 0) {
+                                selected = true;
+                                $dataGrid.datagrid('selectRow', i);
+                            }
+                        }
                     } else {
                         $dataGrid.datagrid('deleteRow', 0);
                     }
@@ -123,7 +133,14 @@
                     });
                 },
                 onBeforeSelect: function () {
-                    return false
+                    if (selected) {
+                        selected = false;
+                        return true;
+                    }
+                    return false;
+                },
+                onBeforeUnselect: function () {
+                    return false;
                 },
                 @*view: detailview,
                 detailFormatter: function (index, row) {
@@ -189,7 +206,8 @@
                 Tracking: "<input type='text' class='form-control s-tracking' value='" + (!isEmpty(filterValue['Tracking']) ? filterValue['Tracking'] : '') + "'>",
                 Status: "<select class='form-control s-status'><option value=''>全部</option>" + setSelectOption(selectOption['DirectLineStatus'], filterValue['Status']) + "</select>",
                 Type: "<select class='form-control s-type'><option value=''>全部</option>" + setSelectOption(selectOption['DirectLineBoxType'], filterValue['Type']) + "</select>",
-                Note: "<input type='text' class='form-control s-notes' value='" + (!isEmpty(filterValue['Notes']) ? filterValue['Notes'] : '') + "'>"
+                Note: "<input type='text' class='form-control s-notes' value='" + (!isEmpty(filterValue['Notes']) ? filterValue['Notes'] : '') + "'>",
+                OrderLock: 0
             };
         }
 

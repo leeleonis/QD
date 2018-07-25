@@ -1754,14 +1754,14 @@ namespace QDLogistics.Controllers
             int total = 0;
             List<object> dataList = new List<object>();
 
-            IEnumerable<Skus> results = Skus.GetAll(true);
+            IEnumerable<Skus> results = db.Skus.AsNoTracking().Where(s => s.IsEnable.Value).AsQueryable();
             if (!filter.Battery.Equals(null)) results = results.Where(s => s.Battery == filter.Battery);
             if (!filter.Export.Equals(null)) results = results.Where(s => s.Export == filter.Export);
             if (!filter.ExportMethod.Equals(null)) results = results.Where(s => s.ExportMethod == filter.ExportMethod);
             if (!string.IsNullOrEmpty(filter.Sku)) results = results.Where(s => s.Sku.Contains(filter.Sku));
-            if (!string.IsNullOrEmpty(filter.ProductName)) results = results.Where(s => s.ProductName.ToLower().Contains(filter.ProductName));
+            if (!string.IsNullOrEmpty(filter.ProductName)) results = results.Where(s => s.ProductName.ToLower().Contains(filter.ProductName.ToLower()));
             if (!string.IsNullOrEmpty(filter.PurchaseInvoice)) results = results.Where(p => p.PurchaseInvoice.Contains(filter.PurchaseInvoice));
-            results = results.Where(s => s.IsEnable == true).ToList();
+            //results = results.Where(s => s.IsEnable == true).ToList();
             if (results.Any())
             {
                 int length = rows;

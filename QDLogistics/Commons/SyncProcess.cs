@@ -185,17 +185,32 @@ namespace QDLogistics.Commons
             try
             {
                 MyHelp.Log("Orders", OrderID, "訂單資料同步開始", Session);
-
-                orderData = Orders.Get(OrderID);
-
-                if (orderData == null) throw new Exception("Not found order!");
-
+                                
                 if (!SCWS.Is_login) throw new Exception("SC is not logged in!");
 
                 OrderStateInfo orderStateInfo = SCWS.Get_OrderStatus(OrderID);
-                if (orderStateInfo == null || orderStateInfo.DropShipStatus == DropShipStatusType1.None)
+
+                if (orderStateInfo == null) throw new Exception("Not found order!");
+
+                orderData = Orders.Get(OrderID);
+
+                if(orderData == null)
                 {
-                    Order orderDetail = SCWS.Get_OrderData(OrderID).Order;
+                    Addresses address = new Addresses() { IsEnable = true };
+                    Addresses.Create(address);
+                    Addresses.SaveChanges();
+
+                    orderData = new Orders() { OrderID = orderStateInfo.ID, ShippingAddress = address.Id };
+                    Orders.Create(orderData);
+                    Orders.SaveChanges();
+                }
+
+                if (orderStateInfo.DropShipStatus == DropShipStatusType1.None)
+                {
+                    OrderData order = SCWS.Get_OrderData(OrderID);
+                    orderData.eBayUserID = order.User.eBayUserID;
+
+                    Order orderDetail = order.Order;
                     DataProcess.SetOrderData(orderData, orderDetail);
 
                     DataProcess.SetAddressData(orderData.Addresses, orderDetail.ShippingAddress, orderDetail.BillingAddress);
