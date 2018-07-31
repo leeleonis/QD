@@ -877,6 +877,7 @@ namespace QDLogistics.Controllers
                 }
 
                 package.BoxID = package.Label.BoxID = boxID;
+                package.DispatchDate = PickUpDate;
                 Packages.Update(package, package.ID);
 
                 int itemID;

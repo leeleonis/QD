@@ -840,6 +840,7 @@ namespace QDLogistics.Controllers
                 }
 
                 package.ProcessStatus = (int)EnumData.ProcessStatus.已出貨;
+                package.DispatchDate = PickUpDate;
                 Packages.Update(package, package.ID);
 
                 int itemID;
@@ -1611,6 +1612,7 @@ namespace QDLogistics.Controllers
 
             return Content(JsonConvert.SerializeObject(new { total = total, rows = dataList }), "appllication/json");
         }
+
         [CheckSession]
         public ActionResult plugData()
         {
@@ -1630,6 +1632,7 @@ namespace QDLogistics.Controllers
             }
             return Content(JsonConvert.SerializeObject(new { total = total, rows = dataList }), "appllication/json");
         }
+
         [CheckSession]
         public ActionResult plugUpdate(List<CountryType> data)
         {
@@ -1648,6 +1651,7 @@ namespace QDLogistics.Controllers
                 return Content(JsonConvert.SerializeObject(new { status = false }), "appllication/json");
             }
         }
+
         [CheckSession]
         [HttpPost]
         public ActionResult CountryUpdate(List<ShippingMethod> data)

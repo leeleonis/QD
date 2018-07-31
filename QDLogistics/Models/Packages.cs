@@ -40,6 +40,7 @@ namespace QDLogistics.Models
         public Nullable<byte> Export { get; set; }
         public Nullable<byte> ExportMethod { get; set; }
         public Nullable<System.DateTime> EstimatedDeliveryDate { get; set; }
+        public Nullable<System.DateTime> DispatchDate { get; set; }
         public Nullable<System.DateTime> PickUpDate { get; set; }
         public Nullable<System.DateTime> DeliveryDate { get; set; }
         public Nullable<int> DeliveryStatus { get; set; }

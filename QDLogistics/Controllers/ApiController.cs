@@ -274,7 +274,7 @@ namespace QDLogistics.Controllers
                         pp => new { data = pp, serial = itemSerials.Where(sn => sn.OrderItemID == pp.ItemID).Select(sn => sn.SerialNumber.Trim()).ToArray() })))
                         .GroupBy(o => o.Value.Sum(p => p.Value.Sum(pp => pp.Value.data.Qty)) > 1).ToDictionary(g => g.Key ? "Multiple" : "Single", g => g.ToDictionary(o => o.Key.ToString(), o => o.Value));
 
-                    var fileList = ProductList.Select(p => p.package).Distinct().ToDictionary(p => p.ID.ToString(), p => getFileData(p));
+                    var fileList = ProductList.Select(p => p.package).Distinct().ToDictionary(p => p.ID.ToString(), p => GetFileData(p));
 
                     result.data = new { productList, groupList, serialList, fileList };
                 }
@@ -287,7 +287,7 @@ namespace QDLogistics.Controllers
             return Json(result, JsonRequestBehavior.AllowGet);
         }
 
-        private object getFileData(Packages package)
+        private object GetFileData(Packages package)
         {
             string[] fileName = new string[2];
             string[] filePath = new string[2];
@@ -505,6 +505,7 @@ namespace QDLogistics.Controllers
                 }
 
                 package.ProcessStatus = (int)EnumData.ProcessStatus.已出貨;
+                package.DispatchDate = PickUpDate;
                 Packages.Update(package, package.ID);
 
                 if (receiveData.itemData.Any(i => i.Item2.Any()))

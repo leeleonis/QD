@@ -91,13 +91,14 @@ namespace QDLogistics.Commons
                     obj.Add("Status", Enum.GetName(typeof(OrderStatusCode), data.order.StatusCode));
                     obj.Add("Comment", data.package.Comment);
                     obj.Add("SerialNumber", data.item.SerialNumber);
-                    obj.Add("PickUpDate", "");
+                    obj.Add("DispatchDate", data.package.DispatchDate.HasValue ? data.package.DispatchDate.Value.ToString("MM/dd/yyyy hh:mm:ss tt") : "");
+                    obj.Add("PickUpDate", data.package.PickUpDate.HasValue ? data.package.PickUpDate.Value.ToString("MM/dd/yyyy hh:mm:ss tt") : "");
                     obj.Add("Tracking", data.package.TrackingNumber);
-                    obj.Add("DeliveryStatus", "");
+                    obj.Add("DeliveryStatus", data.package.DeliveryStatus);
                     obj.Add("DispatchTime", "");
                     obj.Add("TransitTime", "");
                     obj.Add("RedirectWarehouse", data.item.ReturnWarehouses.Name);
-                    obj.Add("RMA", "");
+                    obj.Add("RMA", data.package.RMAId.HasValue ? data.package.RMAId.ToString() : "");
                     break;
             }
 

@@ -38,15 +38,13 @@ namespace QDLogistics.Controllers
             IRepository<Orders> Orders = new GenericRepository<Orders>(db);
             SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
 
-            int OrderID = 5479916;
+            int OrderID = 5484750;
             var order = Orders.Get(OrderID);
             if (SCWS.Is_login)
             {
                 var SC_order = SCWS.Get_OrderStatus(OrderID);
                 var SC_order2 = SCWS.Get_OrderData(OrderID);
-                //SyncProcess Sync = new SyncProcess(Session);
-                //string message = Sync.Sync_Order(OrderID);
-                //var address = DataProcess.SetAddressData(order.Addresses, SC_order.ShippingAddress, SC_order.BillingAddress);
+                var SC_PO = SCWS.Get_PurchaseOrder(order.Packages.First(p => p.IsEnable.Value).POId.Value);
             }
         }
 
@@ -58,7 +56,7 @@ namespace QDLogistics.Controllers
             TrackResult result = track.track();
         }
 
-        public void DHL_Test(int OrderID)
+        private void DHL_Test(int OrderID)
         {
             SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
 
@@ -433,7 +431,7 @@ namespace QDLogistics.Controllers
             var SC_Warehouse3 = SCWS.Get_Warehouses3();
         }
 
-        public void BingMap_Test()
+        private void BingMap_Test()
         {
             using (SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString()))
             {
