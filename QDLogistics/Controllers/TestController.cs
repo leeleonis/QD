@@ -452,5 +452,16 @@ namespace QDLogistics.Controllers
                 BingMapsRESTToolkit.Response response =  request.Execute().Result;
             }
         }
+
+        public void Vendor_Test()
+        {
+            SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
+            int CompanyID = SCWS.Get_CurrentCompanyID();
+            foreach(var vendor in SCWS.Get_Vendor_All(CompanyID))
+            {
+                Response.Write(string.Format("{0} - {1}<br />", vendor.ID, vendor.DisplayName));
+            }
+
+        }
     }
 }

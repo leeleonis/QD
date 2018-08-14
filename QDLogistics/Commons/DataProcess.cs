@@ -211,40 +211,17 @@ namespace QDLogistics.Commons
 
             if (!order.Packages.Any(p => p.ProcessStatus == (int)EnumData.ProcessStatus.待出貨))
             {
-                if (order.Packages.Any())
+                if (order.Packages.Any() && orderDetail.StatusCode.Equals(OrderStatusCode.Completed))
                 {
                     foreach (Packages package in order.Packages)
                     {
-                        switch (orderDetail.StatusCode)
-                        {
-                            case OrderStatusCode.Completed:
-                                package.ProcessStatus = (int)EnumData.ProcessStatus.已出貨;
-                                break;
-                            case OrderStatusCode.Canceled:
-                            case OrderStatusCode.OnHold:
-                            case OrderStatusCode.Void:
-                                package.ProcessStatus = (int)EnumData.ProcessStatus.訂單管理;
-                                break;
-                        }
+                        package.ProcessStatus = (int)EnumData.ProcessStatus.已出貨;
                     }
                 }
 
                 order.StatusCode = (int)orderDetail.StatusCode;
                 order.OrderCurrencyCode = (int)orderDetail.OrderCurrencyCode;
                 order.RushOrder = orderDetail.RushOrder;
-            }
-
-            if (orderDetail.StatusCode.Equals(OrderStatusCode.Canceled) && !order.StatusCode.Equals((int)orderDetail.StatusCode))
-            {
-                if (order.Packages.Any())
-                {
-                    foreach (Packages package in order.Packages)
-                    {
-                        package.ProcessStatus = (int)EnumData.ProcessStatus.訂單管理;
-                    }
-                }
-
-                order.StatusCode = (int)orderDetail.StatusCode;
             }
 
             return order;

@@ -929,7 +929,7 @@ namespace QDLogistics.Controllers
                 List<Packages> packageList = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.已出貨) && packageIDs.Contains(p.ID)).ToList();
 
                 int[] methodIDs = packageList.Where(p => p.ShippingMethod != null).Select(p => p.ShippingMethod.Value).Distinct().ToArray();
-                var carrierList = ShippingMethod.GetAll(true).Where(m => methodIDs.Contains(m.ID)).Distinct().ToDictionary(m => m.ID, m => m.Carriers.Name);
+                var carrierList = db.ShippingMethod.AsNoTracking().Where(m => methodIDs.Contains(m.ID) && m.IsExport.Value).Distinct().ToDictionary(m => m.ID, m => m.Carriers.Name);
                 var groupList = packageList.GroupBy(p => p.ShippingMethod != null && carrierList.ContainsKey(p.ShippingMethod.Value) ? carrierList[p.ShippingMethod.Value] : "", p => p)
                     .ToDictionary(g => g.Key, g => g.ToList());
 
