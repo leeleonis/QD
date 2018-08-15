@@ -15,6 +15,7 @@ namespace QDLogistics.Models.Object
         public Nullable<int> OrderCurrencyCode { get; set; }
         public Nullable<int> ShipWarehouse { get; set; }
         public Nullable<int> MethodID { get; set; }
+        public Nullable<int> FirstMile { get; set; }
         public Nullable<byte> Export { get; set; }
         public Nullable<byte> ExportMethod { get; set; }
         public Nullable<int> StatusCode { get; set; }

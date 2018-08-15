@@ -1,26 +1,21 @@
-﻿using CarrierApi.DHL;
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Text;
+using System.Web.Hosting;
+using System.Web.Mvc;
+using CarrierApi.DHL;
 using CarrierApi.FedEx;
+using CarrierApi.Sendle;
 using CarrierApi.Winit;
 using DirectLineApi.IDS;
-using GemBox.Spreadsheet;
-using Ionic.Zip;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
 using QDLogistics.Commons;
 using QDLogistics.Models;
 using QDLogistics.Models.Repositiry;
-using QDLogistics.OrderService;
 using SellerCloud_WebService;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web;
-using System.Web.Hosting;
-using System.Web.Mvc;
 
 namespace QDLogistics.Controllers
 {
@@ -453,7 +448,7 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public void Vendor_Test()
+        private void Vendor_Test()
         {
             SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
             int CompanyID = SCWS.Get_CurrentCompanyID();
@@ -462,6 +457,20 @@ namespace QDLogistics.Controllers
                 Response.Write(string.Format("{0} - {1}<br />", vendor.ID, vendor.DisplayName));
             }
 
+        }
+
+        public void Sendle_Test()
+        {
+            CarrierAPI api = new CarrierAPI()
+            {
+                IsEnable = true,
+                IsTest = false,
+                ApiKey = "48BgtBpRNFKW4QJsFY6XQ2mz",
+                ApiAccount = "peter_qd_com_tw"
+            };
+
+            Sendle_API Sendle = new Sendle_API(api);
+            var result = Sendle.Ping();
         }
     }
 }

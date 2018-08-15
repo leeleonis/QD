@@ -138,7 +138,7 @@
                     }, {
                         data: "type", render: function (data, type, row, meta) {
                             var id = 'type-' + row.id;
-                            var option = ['尚未選擇', 'Upload Tracking', 'Rush order', 'Declare Value', 'warehouse & shipping method', 'DL Declare Value'];
+                            var option = ['尚未選擇', 'Upload Tracking', 'Rush order', 'Declare Value', 'Warehouse & Shipping Method', 'DL Declare Value', 'Warehouse & First Mile'];
                             return "<select class='form-control' id='" + id + "' onchange='changeBox(" + row.id + ");'>" + setSelectOption(option, data) + "</select>";
                         }
                     }, {
@@ -262,7 +262,8 @@
                     dropdown += '</ul>';
                     html += "<div class='input-group'><div class='input-group-btn'>" + button + dropdown + "</div><input class='form-control' id='value-" + id + "' type='text' value='" + value + "'>" + dataType + "</div>";
                     break;
-                case '4': //warehouse & shipping method
+                case '4': //Warehouse & Shipping Method
+                case '6': //Warehouse & First Mile
                     var warehouseID = !isEmpty(row.warehouse) && row.warehouse != 0 ? row.warehouse.toString() : Object.keys(warehouseList)[0].toString();
                     html += "<select class='form-control' id='warehouse-" + id + "'>" + setSelectOption(warehouseList, warehouseID) + "</select>";
                     html += "<select class='form-control' id='methodID-" + id + "'></select>"

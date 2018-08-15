@@ -194,15 +194,13 @@ namespace QDLogistics.Controllers.Website
 
     public class JsonResult
     {
-        private string _message = null;
-
-        public bool status { get { return string.IsNullOrEmpty(_message); } }
-        public string message { get { return _message; } }
+        public bool status { get { return string.IsNullOrEmpty(message); } }
+        public string message { get; private set; } = null;
         public object data { get; set; }
 
         public void Error(string msg)
         {
-            _message = msg;
+            message = msg;
         }
     }
 }

@@ -168,6 +168,7 @@ namespace QDLogistics.Controllers
                     AvailableQty = 1,
                     ShippingServiceSelected = data.order.ShippingServiceSelected,
                     MethodID = !data.package.ShippingMethod.HasValue ? (carrierOfService.ContainsKey(data.order.ShippingServiceSelected) ? carrierOfService[data.order.ShippingServiceSelected] : 9) : data.package.ShippingMethod,
+                    FirstMile = data.package.FirstMile,
                     Export = !data.package.Export.HasValue ? data.items.Min(i => methodOfSku.ContainsKey(i.ProductID) ? methodOfSku[i.ProductID]["export"] : 0) : data.package.Export,
                     ExportMethod = !data.package.ExportMethod.HasValue ? data.items.Min(i => methodOfSku.ContainsKey(i.ProductID) ? methodOfSku[i.ProductID]["exportMethod"] : 0) : data.package.ExportMethod,
                     StatusCode = data.order.StatusCode,
@@ -216,6 +217,7 @@ namespace QDLogistics.Controllers
                     package.DeclaredTotal = oData.DeclaredTotal.Value;
                     package.DLDeclaredTotal = oData.DLDeclaredTotal.Value;
                     package.ShippingMethod = oData.MethodID.Value;
+                    package.FirstMile = oData.FirstMile.Value;
                     package.Export = oData.Export.Value;
                     package.ExportMethod = oData.ExportMethod.Value;
                     package.UploadTracking = oData.UploadTracking.Value;

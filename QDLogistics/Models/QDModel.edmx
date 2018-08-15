@@ -326,6 +326,7 @@
           <Property Name="ShippingMethodName" Type="nvarchar" MaxLength="150" />
           <Property Name="ShippingServiceCode" Type="nvarchar" MaxLength="50" />
           <Property Name="ShippingMethod" Type="int" />
+          <Property Name="FirstMile" Type="int" />
           <Property Name="Export" Type="tinyint" />
           <Property Name="ExportMethod" Type="tinyint" />
           <Property Name="EstimatedDeliveryDate" Type="datetime2" Precision="7" />
@@ -782,6 +783,18 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_Packages_FirstMile">
+          <End Role="ShippingMethod" Type="Self.ShippingMethod" Multiplicity="0..1" />
+          <End Role="Packages" Type="Self.Packages" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ShippingMethod">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="Packages">
+              <PropertyRef Name="FirstMile" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_Packages_Orders">
           <End Role="Orders" Type="Self.Orders" Multiplicity="0..1" />
           <End Role="Packages" Type="Self.Packages" Multiplicity="*" />
@@ -994,6 +1007,10 @@
             <End Role="DirectLineLabel" EntitySet="DirectLineLabel" />
             <End Role="Packages" EntitySet="Packages" />
           </AssociationSet>
+          <AssociationSet Name="FK_Packages_FirstMile" Association="Self.FK_Packages_FirstMile">
+            <End Role="ShippingMethod" EntitySet="ShippingMethod" />
+            <End Role="Packages" EntitySet="Packages" />
+          </AssociationSet>
           <AssociationSet Name="FK_Packages_Orders" Association="Self.FK_Packages_Orders">
             <End Role="Orders" EntitySet="Orders" />
             <End Role="Packages" EntitySet="Packages" />
@@ -1175,6 +1192,10 @@
           </AssociationSet>
           <EntitySet Name="SerialNumberForRefundLabel" EntityType="QDLogisticsModel.SerialNumberForRefundLabel" />
           <EntitySet Name="CountryType" EntityType="QDLogisticsModel.CountryType" />
+          <AssociationSet Name="FK_Packages_FirstMile" Association="QDLogisticsModel.FK_Packages_FirstMile">
+            <End Role="ShippingMethod" EntitySet="ShippingMethod" />
+            <End Role="Packages" EntitySet="Packages" />
+          </AssociationSet>
           </EntityContainer>
         <EntityType Name="Addresses">
           <Key>
@@ -1365,6 +1386,7 @@
           <Property Name="ShippingMethodName" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
           <Property Name="ShippingServiceCode" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="ShippingMethod" Type="Int32" />
+          <Property Name="FirstMile" Type="Int32" />
           <Property Name="Export" Type="Byte" />
           <Property Name="ExportMethod" Type="Byte" />
           <Property Name="EstimatedDeliveryDate" Type="DateTime" Precision="7" />
@@ -1395,6 +1417,7 @@
           <NavigationProperty Name="Box" Relationship="QDLogisticsModel.FK_Packages_Box" FromRole="Packages" ToRole="Box" />
           <NavigationProperty Name="Label" Relationship="QDLogisticsModel.FK_Packages_DirectLineLabel" FromRole="Packages" ToRole="DirectLineLabel" />
           <NavigationProperty Name="CaseEvent" Relationship="QDLogisticsModel.FK_CaseEvent_Packages" FromRole="Packages" ToRole="CaseEvent" />
+          <NavigationProperty Name="FirstMethod" Relationship="QDLogisticsModel.FK_Packages_FirstMile" FromRole="Packages" ToRole="ShippingMethod" />
         </EntityType>
         <EntityType Name="Payments">
           <Key>
@@ -1932,6 +1955,7 @@
           <Property Name="StreetLine2" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="StateName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="PostalCode" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="FirstMilePackages" Relationship="QDLogisticsModel.FK_Packages_FirstMile" FromRole="ShippingMethod" ToRole="Packages" />
         </EntityType>
         <Association Name="FK_ShippingMethod_Carriers">
           <End Type="QDLogisticsModel.Carriers" Role="Carriers" Multiplicity="0..1" />
@@ -2115,6 +2139,18 @@
           <Property Name="TypeImg" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="true" />
           <Property Name="Country" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
         </EntityType>
+        <Association Name="FK_Packages_FirstMile">
+          <End Type="QDLogisticsModel.ShippingMethod" Role="ShippingMethod" Multiplicity="0..1" />
+          <End Type="QDLogisticsModel.Packages" Role="Packages" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ShippingMethod">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="Packages">
+              <PropertyRef Name="FirstMile" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -2283,6 +2319,7 @@
           <EntitySetMapping Name="Packages">
             <EntityTypeMapping TypeName="QDLogisticsModel.Packages">
               <MappingFragment StoreEntitySet="Packages">
+                <ScalarProperty Name="FirstMile" ColumnName="FirstMile" />
                 <ScalarProperty Name="DispatchDate" ColumnName="DispatchDate" />
                 <ScalarProperty Name="DLDeclaredTotal" ColumnName="DLDeclaredTotal" />
                 <ScalarProperty Name="TagNo" ColumnName="TagNo" />

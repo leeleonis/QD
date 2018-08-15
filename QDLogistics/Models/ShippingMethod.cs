@@ -19,6 +19,7 @@ namespace QDLogistics.Models
         {
             this.Packages = new HashSet<Packages>();
             this.Services = new HashSet<Services>();
+            this.FirstMilePackages = new HashSet<Packages>();
         }
     
         public bool IsEnable { get; set; }
@@ -51,5 +52,7 @@ namespace QDLogistics.Models
         public virtual ICollection<Packages> Packages { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Services> Services { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<Packages> FirstMilePackages { get; set; }
     }
 }

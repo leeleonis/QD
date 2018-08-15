@@ -37,6 +37,7 @@ namespace QDLogistics.Models
         public string ShippingMethodName { get; set; }
         public string ShippingServiceCode { get; set; }
         public Nullable<int> ShippingMethod { get; set; }
+        public Nullable<int> FirstMile { get; set; }
         public Nullable<byte> Export { get; set; }
         public Nullable<byte> ExportMethod { get; set; }
         public Nullable<System.DateTime> EstimatedDeliveryDate { get; set; }
@@ -70,5 +71,6 @@ namespace QDLogistics.Models
         public virtual DirectLineLabel Label { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<CaseEvent> CaseEvent { get; set; }
+        public virtual ShippingMethod FirstMethod { get; set; }
     }
 }

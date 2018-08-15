@@ -481,6 +481,11 @@
                             return "<select class='form-control input-sm' id='MethodID' onchange='onDataChange(" + row.PackageID + ")'>" + getSelectOption(filterCarrierOption(row.ShipWarehouse), value) + "</select>";
                         }
                     }, {
+                        field: "FirstMile", title: "First Mile", width: 150, align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            return "<select class='form-control input-sm' id='FirstMile' onchange='onDataChange(" + row.PackageID + ")'><option value='0'>無</option>" + getSelectOption(filterCarrierOption(row.ShipWarehouse), value) + "</select>";
+                        }
+                    }, {
                         field: "Export", title: "Export<br />出口報關", width: 100, align: "center", sortable: false,
                         formatter: function (value, row, index) {
                             return "<select class='form-control input-sm' id='Export' onchange='onDataChange(" + row.PackageID + ")'>" + getSelectOption(orderColumOption.export, value) + "</select>";
@@ -722,6 +727,7 @@
                 OrderCurrencyCode: $("select#OrderCurrencyCode:eq(" + index + ")").val(),
                 ShipWarehouse: $("select#ShipWarehouse:eq(" + index + ")").val(),
                 MethodID: $("select#MethodID:eq(" + index + ")").val(),
+                FirstMile: $("select#FirstMile:eq(" + index + ")").val(),
                 Export: $("select#Export:eq(" + index + ")").val(),
                 ExportMethod: $("select#ExportMethod:eq(" + index + ")").val(),
                 StatusCode: $("select#StatusCode:eq(" + index + ")").val(),

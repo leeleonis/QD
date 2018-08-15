@@ -64,6 +64,20 @@
         <AssociationConnector Association="QDLogisticsModel.FK_CaseEvent_Packages" />
         <EntityTypeShape EntityType="QDLogisticsModel.SerialNumberForRefundLabel" Width="1.5" PointX="15.5" PointY="14.875" />
         <EntityTypeShape EntityType="QDLogisticsModel.CountryType" Width="1.5" PointX="16.375" PointY="0.75" />
+        <AssociationConnector Association="QDLogisticsModel.FK_Packages_FirstMile" ManuallyRouted="true" >
+          <ConnectorPoint PointX="8.75" PointY="18.312248593749995" />
+          <ConnectorPoint PointX="7.63625" PointY="18.312248593749995" />
+          <ConnectorPoint PointX="7.63625" PointY="18.048283920450356" />
+          <ConnectorPoint PointX="7.208333333333333" PointY="18.048283920450356" />
+          <ConnectorPoint PointX="7.041666666666667" PointY="18.048283920450356" />
+          <ConnectorPoint PointX="6.48875" PointY="18.048283920450356" />
+          <ConnectorPoint PointX="6.48875" PointY="18.312248593749995" />
+          <ConnectorPoint PointX="6.2717347732371742" PointY="18.312248593749995" />
+          <ConnectorPoint PointX="6.1050681065705081" PointY="18.312248593749995" />
+          <ConnectorPoint PointX="5.833333333333333" PointY="18.312248593749995" />
+          <ConnectorPoint PointX="5.666666666666667" PointY="18.312248593749995" />
+          <ConnectorPoint PointX="5.375" PointY="18.312248593749995" />
+        </AssociationConnector>
         </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

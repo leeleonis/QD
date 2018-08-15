@@ -625,9 +625,12 @@ namespace QDLogistics.Controllers
                                                         SyncProcess Sync = new SyncProcess(session, factory);
                                                         error = Sync.Update_PurchaseOrder(package.ID, false);
 
-                                                        foreach (Items item in package.Items.Where(i => i.IsEnable.Value).ToList())
+                                                        if (string.IsNullOrEmpty(error))
                                                         {
-                                                            if (item.SerialNumbers.Any()) SCWS.Update_ItemSerialNumber(item.ID, item.SerialNumbers.Select(s => s.SerialNumber).ToArray());
+                                                            foreach (Items item in package.Items.Where(i => i.IsEnable.Value).ToList())
+                                                            {
+                                                                if (item.SerialNumbers.Any()) SCWS.Update_ItemSerialNumber(item.ID, item.SerialNumbers.Select(s => s.SerialNumber).ToArray());
+                                                            }
                                                         }
                                                     }
                                                     catch (Exception e)
