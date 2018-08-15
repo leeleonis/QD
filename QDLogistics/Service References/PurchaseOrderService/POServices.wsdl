@@ -14,38 +14,18 @@
       <s:import namespace="http://www.bvsoftware.com/bvc2004/schemas/2004/05/17/Catalog/ProductInventoryKey" />
       <s:import namespace="http://www.bvsoftware.com/bvc2004/schemas/2004/05/17/Orders/Order" />
       <s:import schemaLocation="http://dm.ws.sellercloud.com/POServices.asmx?schema=OrderItemExtraInformation" namespace="http://www.bvsoftware.com/schemas/2003/bvc3/OrderItemExtraInformation.xsd" />
-      <s:element name="PurchaseItem_SerialNumbersNew_Delete">
+      <s:element name="PurchaseItem_SerialNumbersNew_Get">
         <s:complexType>
           <s:sequence>
             <s:element minOccurs="1" maxOccurs="1" name="PurchaseReceiveID" type="s:int" />
             <s:element minOccurs="0" maxOccurs="1" name="ProductID" type="s:string" />
-            <s:element minOccurs="1" maxOccurs="1" name="SerialNumber" type="s:boolean" />
           </s:sequence>
         </s:complexType>
       </s:element>
-      <s:element name="PurchaseItem_SerialNumbersNew_DeleteResponse">
+      <s:element name="PurchaseItem_SerialNumbersNew_GetResponse">
         <s:complexType>
           <s:sequence>
-            <s:element minOccurs="1" maxOccurs="1" name="PurchaseItem_SerialNumbersNew_DeleteResult" type="s:boolean" />
-          </s:sequence>
-        </s:complexType>
-      </s:element>
-      <s:element name="AuthHeader" type="tns:AuthHeader" />
-      <s:complexType name="AuthHeader">
-        <s:sequence>
-          <s:element minOccurs="0" maxOccurs="1" name="ApplicationName" type="s:string" />
-          <s:element minOccurs="0" maxOccurs="1" name="ApplicationVersion" type="s:string" />
-          <s:element minOccurs="0" maxOccurs="1" name="DeviceID" type="s:string" />
-          <s:element minOccurs="1" maxOccurs="1" name="ValidateDeviceID" type="s:boolean" />
-          <s:element minOccurs="0" maxOccurs="1" name="UserName" type="s:string" />
-          <s:element minOccurs="0" maxOccurs="1" name="Password" type="s:string" />
-        </s:sequence>
-        <s:anyAttribute />
-      </s:complexType>
-      <s:element name="PurchaseItem_SerialNumbersNew_DeleteMultiple">
-        <s:complexType>
-          <s:sequence>
-            <s:element minOccurs="0" maxOccurs="1" name="list" type="tns:ArrayOfPurchaseItemReceiveSerial" />
+            <s:element minOccurs="0" maxOccurs="1" name="PurchaseItem_SerialNumbersNew_GetResult" type="tns:ArrayOfPurchaseItemReceiveSerial" />
           </s:sequence>
         </s:complexType>
       </s:element>
@@ -78,6 +58,56 @@
           <s:element minOccurs="0" maxOccurs="1" name="LotNumber" type="s:string" />
         </s:sequence>
       </s:complexType>
+      <s:element name="AuthHeader" type="tns:AuthHeader" />
+      <s:complexType name="AuthHeader">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="ApplicationName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ApplicationVersion" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="DeviceID" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="ValidateDeviceID" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="UserName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Password" type="s:string" />
+        </s:sequence>
+        <s:anyAttribute />
+      </s:complexType>
+      <s:element name="PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceive">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="PurchaseReceiveID" type="s:int" />
+            <s:element minOccurs="0" maxOccurs="1" name="ProductID" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceiveResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceiveResult" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="PurchaseItem_SerialNumbersNew_Delete">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="PurchaseReceiveID" type="s:int" />
+            <s:element minOccurs="0" maxOccurs="1" name="ProductID" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="SerialNumber" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="PurchaseItem_SerialNumbersNew_DeleteResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="PurchaseItem_SerialNumbersNew_DeleteResult" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="PurchaseItem_SerialNumbersNew_DeleteMultiple">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="list" type="tns:ArrayOfPurchaseItemReceiveSerial" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
       <s:element name="PurchaseItem_SerialNumbersNew_DeleteMultipleResponse">
         <s:complexType>
           <s:sequence>
@@ -224,6 +254,7 @@
           <s:element minOccurs="1" maxOccurs="1" name="QtyPaid" type="s:int" />
           <s:element minOccurs="0" maxOccurs="1" name="POItemNotesLocal" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="LogoURL" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="LogoFileName" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="ImageID" type="s:int" />
           <s:element minOccurs="0" maxOccurs="1" name="Bins" type="tns:ArrayOfProductWarehouseBin" />
           <s:element minOccurs="0" maxOccurs="1" name="Aliases" type="tns:ArrayOfString" />
@@ -1912,6 +1943,8 @@
           <s:element minOccurs="1" maxOccurs="1" name="AmazonUseMWSToGetInfoFromAmazon" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="AmazonDefaultAppEagleEnabled" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="Invoice_PrintShippedOnDate" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="NewEggDotComEnableIntlListings" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="BuyDotComIncludeLeadTimeInventoryFeed" type="s:boolean" />
         </s:sequence>
       </s:complexType>
       <s:simpleType name="WebsiteProductViewURLValueTypeType">
@@ -3429,6 +3462,22 @@
           </s:sequence>
         </s:complexType>
       </s:element>
+      <s:element name="GetPurchaseOrderInfosSummary_ByVendorInvoiceNumber">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="PageNumber" type="s:int" />
+            <s:element minOccurs="0" maxOccurs="1" name="VendorInvoiceNumber" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="WarehouseID" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetPurchaseOrderInfosSummary_ByVendorInvoiceNumberResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetPurchaseOrderInfosSummary_ByVendorInvoiceNumberResult" type="tns:PurchaseOrderInfoSummaryResponse" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
       <s:element name="GetProduct">
         <s:complexType>
           <s:sequence>
@@ -4538,6 +4587,7 @@
           <s:element minOccurs="1" maxOccurs="1" name="FulfillmentLatencyForAmazonUseDefault" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="ShippingRuleID" type="s:int" />
           <s:element minOccurs="1" maxOccurs="1" name="RequireSerialNumberScanWhileShipping" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="RequireTransparencySticker" type="s:boolean" />
           <s:element minOccurs="0" maxOccurs="1" name="OverStockShortName" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="OverStockMSRPSalesLocation" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="OverStockStreetPrice" type="s:decimal" />
@@ -5018,6 +5068,8 @@
           <s:element minOccurs="1" maxOccurs="1" name="JETUseParentCategoryID" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="LotSize" type="s:int" />
           <s:element minOccurs="1" maxOccurs="1" name="DisconnectFromInventoryJet" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="DisconnectFromInventoryGroupOnGoods" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="TaxJarProductTaxCode" type="s:string" />
         </s:sequence>
       </s:complexType>
       <s:simpleType name="MagentoProductVisibilityType">
@@ -5464,6 +5516,7 @@
           <s:element minOccurs="1" maxOccurs="1" name="ReceivedDate" type="s:dateTime" />
           <s:element minOccurs="1" maxOccurs="1" name="ReceivingWarehouseID" type="s:int" />
           <s:element minOccurs="1" maxOccurs="1" name="ReceivingWarehouseBinID" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="ETAPort" type="s:dateTime" />
         </s:sequence>
       </s:complexType>
       <s:element name="POContainer_GetAll">
@@ -6065,6 +6118,20 @@
         <s:complexType>
           <s:sequence>
             <s:element minOccurs="0" maxOccurs="1" name="PurchaseOrderItems_CreateNewResult" type="tns:PurchaseItem" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="PurchaseOrderItems_Delete">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="PurchaseItemID" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="PurchaseOrderItems_DeleteResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="PurchaseOrderItems_DeleteResult" type="s:boolean" />
           </s:sequence>
         </s:complexType>
       </s:element>
@@ -7065,36 +7132,6 @@
           <s:element minOccurs="1" maxOccurs="1" name="PurchaseReceiveID" type="s:int" />
         </s:sequence>
       </s:complexType>
-      <s:element name="PurchaseItem_SerialNumbersNew_Get">
-        <s:complexType>
-          <s:sequence>
-            <s:element minOccurs="1" maxOccurs="1" name="PurchaseReceiveID" type="s:int" />
-            <s:element minOccurs="0" maxOccurs="1" name="ProductID" type="s:string" />
-          </s:sequence>
-        </s:complexType>
-      </s:element>
-      <s:element name="PurchaseItem_SerialNumbersNew_GetResponse">
-        <s:complexType>
-          <s:sequence>
-            <s:element minOccurs="0" maxOccurs="1" name="PurchaseItem_SerialNumbersNew_GetResult" type="tns:ArrayOfPurchaseItemReceiveSerial" />
-          </s:sequence>
-        </s:complexType>
-      </s:element>
-      <s:element name="PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceive">
-        <s:complexType>
-          <s:sequence>
-            <s:element minOccurs="1" maxOccurs="1" name="PurchaseReceiveID" type="s:int" />
-            <s:element minOccurs="0" maxOccurs="1" name="ProductID" type="s:string" />
-          </s:sequence>
-        </s:complexType>
-      </s:element>
-      <s:element name="PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceiveResponse">
-        <s:complexType>
-          <s:sequence>
-            <s:element minOccurs="1" maxOccurs="1" name="PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceiveResult" type="s:boolean" />
-          </s:sequence>
-        </s:complexType>
-      </s:element>
     </s:schema>
     <s:schema elementFormDefault="qualified" targetNamespace="http://www.bvsoftware.com/bvc2004/schemas/2004/05/17/Orders/OrderItem">
       <s:import namespace="http://www.bvsoftware.com/bvc2004/schemas/2004/05/17/Orders/OrderStatusCode" />
@@ -9343,6 +9380,24 @@
       </s:simpleType>
     </s:schema>
   </wsdl:types>
+  <wsdl:message name="PurchaseItem_SerialNumbersNew_GetSoapIn">
+    <wsdl:part name="parameters" element="tns:PurchaseItem_SerialNumbersNew_Get" />
+  </wsdl:message>
+  <wsdl:message name="PurchaseItem_SerialNumbersNew_GetSoapOut">
+    <wsdl:part name="parameters" element="tns:PurchaseItem_SerialNumbersNew_GetResponse" />
+  </wsdl:message>
+  <wsdl:message name="PurchaseItem_SerialNumbersNew_GetAuthHeader">
+    <wsdl:part name="AuthHeader" element="tns:AuthHeader" />
+  </wsdl:message>
+  <wsdl:message name="PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceiveSoapIn">
+    <wsdl:part name="parameters" element="tns:PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceive" />
+  </wsdl:message>
+  <wsdl:message name="PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceiveSoapOut">
+    <wsdl:part name="parameters" element="tns:PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceiveResponse" />
+  </wsdl:message>
+  <wsdl:message name="PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceiveAuthHeader">
+    <wsdl:part name="AuthHeader" element="tns:AuthHeader" />
+  </wsdl:message>
   <wsdl:message name="PurchaseItem_SerialNumbersNew_DeleteSoapIn">
     <wsdl:part name="parameters" element="tns:PurchaseItem_SerialNumbersNew_Delete" />
   </wsdl:message>
@@ -10195,6 +10250,15 @@
   <wsdl:message name="GetPurchaseOrderInfosSummary_NewAuthHeader">
     <wsdl:part name="AuthHeader" element="tns:AuthHeader" />
   </wsdl:message>
+  <wsdl:message name="GetPurchaseOrderInfosSummary_ByVendorInvoiceNumberSoapIn">
+    <wsdl:part name="parameters" element="tns:GetPurchaseOrderInfosSummary_ByVendorInvoiceNumber" />
+  </wsdl:message>
+  <wsdl:message name="GetPurchaseOrderInfosSummary_ByVendorInvoiceNumberSoapOut">
+    <wsdl:part name="parameters" element="tns:GetPurchaseOrderInfosSummary_ByVendorInvoiceNumberResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetPurchaseOrderInfosSummary_ByVendorInvoiceNumberAuthHeader">
+    <wsdl:part name="AuthHeader" element="tns:AuthHeader" />
+  </wsdl:message>
   <wsdl:message name="GetProductSoapIn">
     <wsdl:part name="parameters" element="tns:GetProduct" />
   </wsdl:message>
@@ -10529,6 +10593,15 @@
     <wsdl:part name="parameters" element="tns:PurchaseOrderItems_CreateNewResponse" />
   </wsdl:message>
   <wsdl:message name="PurchaseOrderItems_CreateNewAuthHeader">
+    <wsdl:part name="AuthHeader" element="tns:AuthHeader" />
+  </wsdl:message>
+  <wsdl:message name="PurchaseOrderItems_DeleteSoapIn">
+    <wsdl:part name="parameters" element="tns:PurchaseOrderItems_Delete" />
+  </wsdl:message>
+  <wsdl:message name="PurchaseOrderItems_DeleteSoapOut">
+    <wsdl:part name="parameters" element="tns:PurchaseOrderItems_DeleteResponse" />
+  </wsdl:message>
+  <wsdl:message name="PurchaseOrderItems_DeleteAuthHeader">
     <wsdl:part name="AuthHeader" element="tns:AuthHeader" />
   </wsdl:message>
   <wsdl:message name="PurchaseOrderItemKit_AddNewSoapIn">
@@ -11014,25 +11087,15 @@
   <wsdl:message name="PurchaseItem_SerialNumbersNew_LookUpAuthHeader">
     <wsdl:part name="AuthHeader" element="tns:AuthHeader" />
   </wsdl:message>
-  <wsdl:message name="PurchaseItem_SerialNumbersNew_GetSoapIn">
-    <wsdl:part name="parameters" element="tns:PurchaseItem_SerialNumbersNew_Get" />
-  </wsdl:message>
-  <wsdl:message name="PurchaseItem_SerialNumbersNew_GetSoapOut">
-    <wsdl:part name="parameters" element="tns:PurchaseItem_SerialNumbersNew_GetResponse" />
-  </wsdl:message>
-  <wsdl:message name="PurchaseItem_SerialNumbersNew_GetAuthHeader">
-    <wsdl:part name="AuthHeader" element="tns:AuthHeader" />
-  </wsdl:message>
-  <wsdl:message name="PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceiveSoapIn">
-    <wsdl:part name="parameters" element="tns:PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceive" />
-  </wsdl:message>
-  <wsdl:message name="PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceiveSoapOut">
-    <wsdl:part name="parameters" element="tns:PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceiveResponse" />
-  </wsdl:message>
-  <wsdl:message name="PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceiveAuthHeader">
-    <wsdl:part name="AuthHeader" element="tns:AuthHeader" />
-  </wsdl:message>
   <wsdl:portType name="POServicesSoap">
+    <wsdl:operation name="PurchaseItem_SerialNumbersNew_Get">
+      <wsdl:input message="tns:PurchaseItem_SerialNumbersNew_GetSoapIn" />
+      <wsdl:output message="tns:PurchaseItem_SerialNumbersNew_GetSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceive">
+      <wsdl:input message="tns:PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceiveSoapIn" />
+      <wsdl:output message="tns:PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceiveSoapOut" />
+    </wsdl:operation>
     <wsdl:operation name="PurchaseItem_SerialNumbersNew_Delete">
       <wsdl:input message="tns:PurchaseItem_SerialNumbersNew_DeleteSoapIn" />
       <wsdl:output message="tns:PurchaseItem_SerialNumbersNew_DeleteSoapOut" />
@@ -11381,6 +11444,10 @@
       <wsdl:input message="tns:GetPurchaseOrderInfosSummary_NewSoapIn" />
       <wsdl:output message="tns:GetPurchaseOrderInfosSummary_NewSoapOut" />
     </wsdl:operation>
+    <wsdl:operation name="GetPurchaseOrderInfosSummary_ByVendorInvoiceNumber">
+      <wsdl:input message="tns:GetPurchaseOrderInfosSummary_ByVendorInvoiceNumberSoapIn" />
+      <wsdl:output message="tns:GetPurchaseOrderInfosSummary_ByVendorInvoiceNumberSoapOut" />
+    </wsdl:operation>
     <wsdl:operation name="GetProduct">
       <wsdl:input message="tns:GetProductSoapIn" />
       <wsdl:output message="tns:GetProductSoapOut" />
@@ -11508,6 +11575,10 @@
     <wsdl:operation name="PurchaseOrderItems_CreateNew">
       <wsdl:input message="tns:PurchaseOrderItems_CreateNewSoapIn" />
       <wsdl:output message="tns:PurchaseOrderItems_CreateNewSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="PurchaseOrderItems_Delete">
+      <wsdl:input message="tns:PurchaseOrderItems_DeleteSoapIn" />
+      <wsdl:output message="tns:PurchaseOrderItems_DeleteSoapOut" />
     </wsdl:operation>
     <wsdl:operation name="PurchaseOrderItemKit_AddNew">
       <wsdl:input message="tns:PurchaseOrderItemKit_AddNewSoapIn" />
@@ -11721,17 +11792,29 @@
       <wsdl:input message="tns:PurchaseItem_SerialNumbersNew_LookUpSoapIn" />
       <wsdl:output message="tns:PurchaseItem_SerialNumbersNew_LookUpSoapOut" />
     </wsdl:operation>
-    <wsdl:operation name="PurchaseItem_SerialNumbersNew_Get">
-      <wsdl:input message="tns:PurchaseItem_SerialNumbersNew_GetSoapIn" />
-      <wsdl:output message="tns:PurchaseItem_SerialNumbersNew_GetSoapOut" />
-    </wsdl:operation>
-    <wsdl:operation name="PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceive">
-      <wsdl:input message="tns:PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceiveSoapIn" />
-      <wsdl:output message="tns:PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceiveSoapOut" />
-    </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="POServicesSoap" type="tns:POServicesSoap">
     <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="PurchaseItem_SerialNumbersNew_Get">
+      <soap:operation soapAction="http://api.sellercloud.com/PurchaseItem_SerialNumbersNew_Get" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+        <soap:header message="tns:PurchaseItem_SerialNumbersNew_GetAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceive">
+      <soap:operation soapAction="http://api.sellercloud.com/PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceive" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+        <soap:header message="tns:PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceiveAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
     <wsdl:operation name="PurchaseItem_SerialNumbersNew_Delete">
       <soap:operation soapAction="http://api.sellercloud.com/PurchaseItem_SerialNumbersNew_Delete" style="document" />
       <wsdl:input>
@@ -12625,6 +12708,16 @@
         <soap:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
+    <wsdl:operation name="GetPurchaseOrderInfosSummary_ByVendorInvoiceNumber">
+      <soap:operation soapAction="http://api.sellercloud.com/GetPurchaseOrderInfosSummary_ByVendorInvoiceNumber" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+        <soap:header message="tns:GetPurchaseOrderInfosSummary_ByVendorInvoiceNumberAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
     <wsdl:operation name="GetProduct">
       <soap:operation soapAction="http://api.sellercloud.com/GetProduct" style="document" />
       <wsdl:input>
@@ -12956,6 +13049,16 @@
       <wsdl:input>
         <soap:body use="literal" />
         <soap:header message="tns:PurchaseOrderItems_CreateNewAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="PurchaseOrderItems_Delete">
+      <soap:operation soapAction="http://api.sellercloud.com/PurchaseOrderItems_Delete" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+        <soap:header message="tns:PurchaseOrderItems_DeleteAuthHeader" part="AuthHeader" use="literal" />
       </wsdl:input>
       <wsdl:output>
         <soap:body use="literal" />
@@ -13493,29 +13596,29 @@
         <soap:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
-    <wsdl:operation name="PurchaseItem_SerialNumbersNew_Get">
-      <soap:operation soapAction="http://api.sellercloud.com/PurchaseItem_SerialNumbersNew_Get" style="document" />
-      <wsdl:input>
-        <soap:body use="literal" />
-        <soap:header message="tns:PurchaseItem_SerialNumbersNew_GetAuthHeader" part="AuthHeader" use="literal" />
-      </wsdl:input>
-      <wsdl:output>
-        <soap:body use="literal" />
-      </wsdl:output>
-    </wsdl:operation>
-    <wsdl:operation name="PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceive">
-      <soap:operation soapAction="http://api.sellercloud.com/PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceive" style="document" />
-      <wsdl:input>
-        <soap:body use="literal" />
-        <soap:header message="tns:PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceiveAuthHeader" part="AuthHeader" use="literal" />
-      </wsdl:input>
-      <wsdl:output>
-        <soap:body use="literal" />
-      </wsdl:output>
-    </wsdl:operation>
   </wsdl:binding>
   <wsdl:binding name="POServicesSoap12" type="tns:POServicesSoap">
     <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="PurchaseItem_SerialNumbersNew_Get">
+      <soap12:operation soapAction="http://api.sellercloud.com/PurchaseItem_SerialNumbersNew_Get" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:PurchaseItem_SerialNumbersNew_GetAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceive">
+      <soap12:operation soapAction="http://api.sellercloud.com/PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceive" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceiveAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
     <wsdl:operation name="PurchaseItem_SerialNumbersNew_Delete">
       <soap12:operation soapAction="http://api.sellercloud.com/PurchaseItem_SerialNumbersNew_Delete" style="document" />
       <wsdl:input>
@@ -14409,6 +14512,16 @@
         <soap12:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
+    <wsdl:operation name="GetPurchaseOrderInfosSummary_ByVendorInvoiceNumber">
+      <soap12:operation soapAction="http://api.sellercloud.com/GetPurchaseOrderInfosSummary_ByVendorInvoiceNumber" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:GetPurchaseOrderInfosSummary_ByVendorInvoiceNumberAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
     <wsdl:operation name="GetProduct">
       <soap12:operation soapAction="http://api.sellercloud.com/GetProduct" style="document" />
       <wsdl:input>
@@ -14740,6 +14853,16 @@
       <wsdl:input>
         <soap12:body use="literal" />
         <soap12:header message="tns:PurchaseOrderItems_CreateNewAuthHeader" part="AuthHeader" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="PurchaseOrderItems_Delete">
+      <soap12:operation soapAction="http://api.sellercloud.com/PurchaseOrderItems_Delete" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:PurchaseOrderItems_DeleteAuthHeader" part="AuthHeader" use="literal" />
       </wsdl:input>
       <wsdl:output>
         <soap12:body use="literal" />
@@ -15272,26 +15395,6 @@
       <wsdl:input>
         <soap12:body use="literal" />
         <soap12:header message="tns:PurchaseItem_SerialNumbersNew_LookUpAuthHeader" part="AuthHeader" use="literal" />
-      </wsdl:input>
-      <wsdl:output>
-        <soap12:body use="literal" />
-      </wsdl:output>
-    </wsdl:operation>
-    <wsdl:operation name="PurchaseItem_SerialNumbersNew_Get">
-      <soap12:operation soapAction="http://api.sellercloud.com/PurchaseItem_SerialNumbersNew_Get" style="document" />
-      <wsdl:input>
-        <soap12:body use="literal" />
-        <soap12:header message="tns:PurchaseItem_SerialNumbersNew_GetAuthHeader" part="AuthHeader" use="literal" />
-      </wsdl:input>
-      <wsdl:output>
-        <soap12:body use="literal" />
-      </wsdl:output>
-    </wsdl:operation>
-    <wsdl:operation name="PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceive">
-      <soap12:operation soapAction="http://api.sellercloud.com/PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceive" style="document" />
-      <wsdl:input>
-        <soap12:body use="literal" />
-        <soap12:header message="tns:PurchaseItem_SerialNumbersNew_DeleteAllInPurchaseReceiveAuthHeader" part="AuthHeader" use="literal" />
       </wsdl:input>
       <wsdl:output>
         <soap12:body use="literal" />

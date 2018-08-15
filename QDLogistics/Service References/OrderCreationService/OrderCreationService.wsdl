@@ -547,6 +547,8 @@
           <s:element minOccurs="1" maxOccurs="1" name="AmazonUseMWSToGetInfoFromAmazon" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="AmazonDefaultAppEagleEnabled" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="Invoice_PrintShippedOnDate" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="NewEggDotComEnableIntlListings" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="BuyDotComIncludeLeadTimeInventoryFeed" type="s:boolean" />
         </s:sequence>
       </s:complexType>
       <s:simpleType name="WebsiteProductViewURLValueTypeType">
@@ -1733,6 +1735,8 @@
           <s:enumeration value="Return_Issue_Refund" />
           <s:enumeration value="Return_Mark_Received" />
           <s:enumeration value="ASN_Tracking_Upload" />
+          <s:enumeration value="TaxJar_Create_Customer" />
+          <s:enumeration value="TaxJar_Update_Customer" />
         </s:restriction>
       </s:simpleType>
       <s:element name="Orders_AddTransactionFileRecordResponse">
@@ -3274,6 +3278,7 @@
           <s:element minOccurs="1" maxOccurs="1" name="FulfillmentLatencyForAmazonUseDefault" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="ShippingRuleID" type="s:int" />
           <s:element minOccurs="1" maxOccurs="1" name="RequireSerialNumberScanWhileShipping" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="RequireTransparencySticker" type="s:boolean" />
           <s:element minOccurs="0" maxOccurs="1" name="OverStockShortName" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="OverStockMSRPSalesLocation" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="OverStockStreetPrice" type="s:decimal" />
@@ -3754,6 +3759,8 @@
           <s:element minOccurs="1" maxOccurs="1" name="JETUseParentCategoryID" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="LotSize" type="s:int" />
           <s:element minOccurs="1" maxOccurs="1" name="DisconnectFromInventoryJet" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="DisconnectFromInventoryGroupOnGoods" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="TaxJarProductTaxCode" type="s:string" />
         </s:sequence>
       </s:complexType>
       <s:simpleType name="MagentoProductVisibilityType">
@@ -4435,6 +4442,7 @@
           <s:element minOccurs="1" maxOccurs="1" name="TwoFactorAuthLastExecutedOn" type="s:dateTime" />
           <s:element minOccurs="1" maxOccurs="1" name="CustomerShippingAccountBillReceiver" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="EnableIPBasedLoginFilter" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="TaxExemptType" type="s:string" />
         </s:sequence>
       </s:complexType>
       <s:simpleType name="OrderSearchDateRange">

@@ -1,0 +1,20 @@
+ActionName : 訂單包裹【5488434】更新失敗: #serials 356810094327469
+Message : System.Web.Services.Protocols.SoapException: Server was unable to process request. ---> SellerCloud.Common.Utilities.Exceptions.SellerCloudException: Serial# 356810094327469 was not found for Product 106005386
+   at BVSoftware.BVC.Core.OrderServices.OrderSerials.SaveSerial(OrderSerialNumber s) in C:\DATA\Core\Framework\BVSoftware.BVC.Core\OrderServices.vb:line 12083
+   at BRSWebServices.SCService.Orders_UpdateItemSerialNum(Int32 OrderItemID, List`1 SerialNumbers) in C:\DATA\Core\Framework\BRSWebServices\SCService\OrdersWindowsService.vb:line 125
+   --- End of inner exception stack trace ---
+StackTrace : Server stack trace: 
+   at System.ServiceModel.Channels.ServiceChannel.HandleReply(ProxyOperationRuntime operation, ProxyRpc& rpc)
+   at System.ServiceModel.Channels.ServiceChannel.Call(String action, Boolean oneway, ProxyOperationRuntime operation, Object[] ins, Object[] outs, TimeSpan timeout)
+   at System.ServiceModel.Channels.ServiceChannelProxy.InvokeService(IMethodCallMessage methodCall, ProxyOperationRuntime operation)
+   at System.ServiceModel.Channels.ServiceChannelProxy.Invoke(IMessage message)
+
+Exception rethrown at [0]: 
+   at System.Runtime.Remoting.Proxies.RealProxy.HandleReturnMessage(IMessage reqMsg, IMessage retMsg)
+   at System.Runtime.Remoting.Proxies.RealProxy.PrivateInvoke(MessageData& msgData, Int32 type)
+   at QDLogistics.OrderService.SCServiceSoap.Orders_UpdateItemSerialNum(Orders_UpdateItemSerialNumRequest request)
+   at QDLogistics.Commons.SyncProcess.Update_Tracking(Packages package) in C:\QD Project\Order Shipping System\QDLogistics\Commons\SyncProcess.cs:line 468
+Date : 8/14/2018 9:46:32 AM
+
+-----------------------------------------------------------------------------
+
