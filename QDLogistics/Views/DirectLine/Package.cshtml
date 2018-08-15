@@ -22,22 +22,12 @@
             margin-left: 0px;
         }
 
-        table tbody tr td {
-            vertical-align: middle !important;
-        }
-
-        table tbody tr.title-row td {
-            vertical-align: top !important;
-        }
-
         #table-box tr td {
             border-width: 1px !important;
         }
     </style>
 }
 @{
-    List<DirectLine> directLineList = ViewBag.directLineList;
-    List<ShippingMethod> methodList = ViewBag.methodList;
     var route = new { warehouseId = ViewData["warehouseId"], adminId = ViewData["adminId"] };
 }
 <div id="content">
@@ -45,12 +35,10 @@
         <div class="row">
             <div class="action-button col-xs-2">
                 <div>
-                    <select class="form-control" id="select-type">
-                        @foreach (DirectLine directLine in directLineList)
-                        {
-                            <option value="@directLine.ID">@directLine.Name</option>
-                        }
-                    </select>
+                    @Html.DropDownList("FirstMile", (List<SelectListItem>)ViewBag.DirectLineList, htmlAttributes: new { @class = "form-control", @id = "select-type" })
+                </div>
+                <div>
+                    @Html.DropDownList("FirstMile", (List<SelectListItem>)ViewBag.FirstMileList, htmlAttributes:new { @class = "form-control", @id = "select-method" })
                 </div>
                 <div>
                     <select class="form-control" id="select-typeMethod">
@@ -77,20 +65,13 @@
                             <div class="col-sm-10" style="text-align:center; padding:0 5px 0 0;">
                                 <table class="table table-bordered text-center" id="info-box" style="margin:0;">
                                     <tr>
-                                        <td width="40%" id="directLineName" rowspan="3"></td>
+                                        <td width="40%" id="DirectLineName" rowspan="3"></td>
                                         <td width="30%">Box ID:</td>
-                                        <td width="30%" id="boxID"></td>
+                                        <td width="30%" id="BoxID"></td>
                                     </tr>
                                     <tr>
                                         <td>Carrier:</td>
-                                        <td class="no-padding">
-                                            <select class="form-control" id="select-method">
-                                                @{ foreach (ShippingMethod method in methodList)
-                                    {
-                                        <option value="@method.ID">@method.Name</option>
-                    }}
-                                            </select>
-                                        </td>
+                                        <td></td>
                                     </tr>
                                     <tr>
                                         <td>Box No.</td>
@@ -99,7 +80,8 @@
                                 </table>
                             </div>
                             <div class="col-sm-2 no-padding">
-                                <button class="btn btn-default btn-sm btn-block" id="btn-boxSave">下一步</button>
+                                <button class="btn btn-default btn-sm btn-block" id="btn-next">儲存/下一步</button>
+                                <button class="btn btn-default btn-sm btn-block" id="btn-prev">取消/上一步</button>
                                 <button class="btn btn-default btn-sm btn-block">打印Box</button>
                             </div>
                         </div>
@@ -165,7 +147,7 @@
         var $typeSelect = $('#select-type'), $typeMethodSelect = $('#select-typeMethod'), $methodSelect = $('#select-method'), $syncBtn = $('#btn-sync'), $pickBtn = $("#btn-pick"),
             $shipBtn = $("#btn-ship"), $enterBtn = $("#btn-enter"), $pickWin = $('#win-pick'), $serialDialog = $('#dialog-serial'), $serialInput = $('#input-serial'),
             $orderDialog = $('#dialog-order'), $orderInput = $('#input-order'), $recycleDialog = $('#dialog-recycle'), $labelErrorMsg = $('#msg-labelError'), $labelInput = $('#input-label'),
-            $boxInfo = $('#info-box'), $pickupTable = $('#table-pickup'), $boxTable = $('#table-box'), $boxSaveBtn = $("#btn-boxSave");
+            $boxInfo = $('#info-box'), $pickupTable = $('#table-pickup'), $boxTable = $('#table-box'), $nextBtn = $("#btn-next");
 
         var isSync = false, taskID = null, now = undefined;
 
@@ -245,7 +227,7 @@
                 $serialInput.textbox('textbox').focus();
             });
 
-            $boxSaveBtn.click(function () {
+            $nextBtn.click(function () {
                 if (confirm("是否確定進行下一步?")) {
                     ProductSerialData.Save_box();
                 }
@@ -404,8 +386,8 @@
                     if (response.status) {
                         boxInfo = response.data.info;
 
-                        $('#directLineName').html($typeSelect.find('option:selected').html());
-                        $('#boxID').html(boxInfo.BoxID);
+                        $('#DirectLineName').html($typeSelect.find('option:selected').html());
+                        $('#BoxID').html(boxInfo.BoxID);
                         $('#select-method').find('option[value=' + boxInfo.FirstMileMethod + ']').prop('selected', true);
                         $('#boxNo').html(boxInfo.BoxNo);
 

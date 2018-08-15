@@ -55,24 +55,21 @@ namespace QDLogistics.Controllers
         public ActionResult Package()
         {
             int warehouseID;
-            List<ShippingMethod> MethodList = new List<ShippingMethod>();
+            List<SelectListItem> MethodList = new List<SelectListItem>();
 
             if (int.TryParse(Session["warehouseId"].ToString(), out warehouseID))
             {
-                Warehouses = new GenericRepository<Warehouses>(db);
-
-                Warehouses warehouse = Warehouses.Get(warehouseID);
+                Warehouses warehouse = db.Warehouses.Find(warehouseID);
                 if (warehouse != null && !string.IsNullOrEmpty(warehouse.CarrierData))
                 {
-                    Method = new GenericRepository<ShippingMethod>(db);
-
                     Dictionary<int, bool> methodData = JsonConvert.DeserializeObject<Dictionary<int, bool>>(warehouse.CarrierData);
-                    MethodList = Method.GetAll(true).Where(m => m.IsEnable && methodData.Keys.Contains(m.ID) && methodData[m.ID]).ToList();
+                    int[] methodIDs = methodData.Where(m => m.Value).Select(m => m.Key).ToArray();
+                    MethodList = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && methodIDs.Contains(m.ID)).Select(m => new SelectListItem() { Text = m.Name, Value = m.ID.ToString() }).ToList();
                 }
             }
 
-            ViewBag.directLineList = db.DirectLine.AsNoTracking().Where(d => d.IsEnable).ToList();
-            ViewBag.methodList = MethodList;
+            ViewBag.directLineList = db.DirectLine.AsNoTracking().Where(d => d.IsEnable).Select(d => new SelectListItem() { Text = d.Name, Value = d.ID.ToString() }).ToList();
+            ViewBag.FirstMileList = MethodList;
             ViewBag.WCPScript = WebClientPrint.CreateScript(Url.Action("ProcessRequest", "WebClientPrintAPI", null, HttpContext.Request.Url.Scheme), Url.Action("PrintFile", "File", null, HttpContext.Request.Url.Scheme), HttpContext.Session.SessionID);
             ViewData["warehouseId"] = (int)Session["WarehouseID"];
             ViewData["adminId"] = (int)Session["AdminId"];

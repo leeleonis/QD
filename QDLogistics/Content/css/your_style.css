@@ -79,6 +79,14 @@
     margin-top: 0px !important;
 }
 
+table tbody tr td {
+    vertical-align: middle !important;
+}
+
+table tbody tr.title-row td {
+    vertical-align: top !important;
+}
+
 table tbody .datagrid-row {
     height: 37px;
 }

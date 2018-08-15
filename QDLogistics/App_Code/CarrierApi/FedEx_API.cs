@@ -319,7 +319,7 @@ namespace CarrierApi.FedEx
 
             request.RequestedShipment.CustomsClearanceDetail = new CustomsClearanceDetail()
             {
-                DutiesPayment = new Payment() { PaymentType = PaymentType.SENDER },
+                DutiesPayment = new Payment() { PaymentType = PaymentType.SENDER, Payor = new Payor() { ResponsibleParty = _shipperInit() } },
                 DocumentContent = InternationalDocumentContentType.DOCUMENTS_ONLY,
                 CustomsValue = customsValue,
                 Commodities = new QDLogistics.FedExShipService.Commodity[] { commodity },
