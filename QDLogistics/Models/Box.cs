@@ -18,8 +18,8 @@ namespace QDLogistics.Models
         public Box()
         {
             this.BoxNo = 1;
-            this.Packages = new HashSet<Packages>();
             this.DirectLineLabel = new HashSet<DirectLineLabel>();
+            this.Packages = new HashSet<Packages>();
         }
     
         public bool IsEnable { get; set; }
@@ -38,8 +38,8 @@ namespace QDLogistics.Models
         public System.DateTime Create_at { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Packages> Packages { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<DirectLineLabel> DirectLineLabel { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<Packages> Packages { get; set; }
     }
 }

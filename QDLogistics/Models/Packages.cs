@@ -17,10 +17,8 @@ namespace QDLogistics.Models
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public Packages()
         {
-            this.DeclaredTotal = 0m;
-            this.UploadTracking = true;
-            this.Items = new HashSet<Items>();
             this.CaseEvent = new HashSet<CaseEvent>();
+            this.Items = new HashSet<Items>();
         }
     
         public Nullable<bool> IsEnable { get; set; }
@@ -63,14 +61,14 @@ namespace QDLogistics.Models
         public Nullable<double> Width { get; set; }
         public Nullable<double> Height { get; set; }
     
+        public virtual Box Box { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<CaseEvent> CaseEvent { get; set; }
+        public virtual DirectLineLabel Label { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Items> Items { get; set; }
         public virtual Orders Orders { get; set; }
         public virtual ShippingMethod Method { get; set; }
-        public virtual Box Box { get; set; }
-        public virtual DirectLineLabel Label { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<CaseEvent> CaseEvent { get; set; }
         public virtual ShippingMethod FirstMethod { get; set; }
     }
 }

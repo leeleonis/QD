@@ -10,7 +10,6 @@
         <EntityTypeShape EntityType="QDLogisticsModel.Items" Width="1.5" PointX="3" PointY="0.75" IsExpanded="true" />
         <EntityTypeShape EntityType="QDLogisticsModel.Manufacturers" Width="1.5" PointX="0.625" PointY="13.375" />
         <EntityTypeShape EntityType="QDLogisticsModel.Orders" Width="1.5" PointX="3.875" PointY="18.875" IsExpanded="true" />
-        <EntityTypeShape EntityType="QDLogisticsModel.Packages" Width="1.5" PointX="3.875" PointY="9" />
         <EntityTypeShape EntityType="QDLogisticsModel.Payments" Width="1.5" PointX="6.25" PointY="21.875" />
         <EntityTypeShape EntityType="QDLogisticsModel.Skus" Width="1.5" PointX="0.625" PointY="8.25" />
         <EntityTypeShape EntityType="QDLogisticsModel.Warehouses" Width="1.5" PointX="0.75" PointY="1.25" />
@@ -18,12 +17,10 @@
         <AssociationConnector Association="QDLogisticsModel.FK_BundleItems_Items" />
         <AssociationConnector Association="QDLogisticsModel.FK_BundleItems_Skus" />
         <AssociationConnector Association="QDLogisticsModel.FK_Items_Orders" />
-        <AssociationConnector Association="QDLogisticsModel.FK_Items_Packages" />
         <AssociationConnector Association="QDLogisticsModel.FK_Items_ReturnWarehouses" />
         <AssociationConnector Association="QDLogisticsModel.FK_Items_ShipWarehouses" />
         <AssociationConnector Association="QDLogisticsModel.FK_Items_Skus" />
         <AssociationConnector Association="QDLogisticsModel.FK_Skus_Manufacturers" />
-        <AssociationConnector Association="QDLogisticsModel.FK_Packages_Orders" />
         <AssociationConnector Association="QDLogisticsModel.FK_Payments_Orders" />
         <EntityTypeShape EntityType="QDLogisticsModel.AdminGroups" Width="1.5" PointX="7.5" PointY="5.75" />
         <EntityTypeShape EntityType="QDLogisticsModel.AdminUsers" Width="1.5" PointX="9.625" PointY="5.75" />
@@ -50,34 +47,24 @@
         <EntityTypeShape EntityType="QDLogisticsModel.CarrierAPI" Width="1.5" PointX="6.125" PointY="9.125" />
         <EntityTypeShape EntityType="QDLogisticsModel.Carriers" Width="1.5" PointX="8.75" PointY="10" />
         <AssociationConnector Association="QDLogisticsModel.FK_Carriers_CarrierAPI" />
-        <EntityTypeShape EntityType="QDLogisticsModel.ShippingMethod" Width="1.5" PointX="8.75" PointY="13.5" />
+        <EntityTypeShape EntityType="QDLogisticsModel.ShippingMethod" Width="1.5" PointX="8.5" PointY="13.125" />
         <AssociationConnector Association="QDLogisticsModel.FK_ShippingMethod_Carriers" />
-        <AssociationConnector Association="QDLogisticsModel.FK_Packages_Carriers" />
         <AssociationConnector Association="QDLogisticsModel.FK_Services_Carriers" />
         <EntityTypeShape EntityType="QDLogisticsModel.Box" Width="1.5" PointX="6.375" PointY="13.625" />
-        <AssociationConnector Association="QDLogisticsModel.FK_Packages_Box" />
         <EntityTypeShape EntityType="QDLogisticsModel.DirectLineLabel" Width="1.5" PointX="6.375" PointY="18.5" />
         <AssociationConnector Association="QDLogisticsModel.FK_DirectLineLabel_Box" />
-        <AssociationConnector Association="QDLogisticsModel.FK_Packages_DirectLineLabel" />
         <EntityTypeShape EntityType="QDLogisticsModel.DirectLine" Width="1.5" PointX="15.375" PointY="10.75" />
         <EntityTypeShape EntityType="QDLogisticsModel.CaseEvent" Width="1.5" PointX="11" PointY="10.25" />
-        <AssociationConnector Association="QDLogisticsModel.FK_CaseEvent_Packages" />
         <EntityTypeShape EntityType="QDLogisticsModel.SerialNumberForRefundLabel" Width="1.5" PointX="15.5" PointY="14.875" />
         <EntityTypeShape EntityType="QDLogisticsModel.CountryType" Width="1.5" PointX="16.375" PointY="0.75" />
-        <AssociationConnector Association="QDLogisticsModel.FK_Packages_FirstMile" ManuallyRouted="true" >
-          <ConnectorPoint PointX="8.75" PointY="18.312248593749995" />
-          <ConnectorPoint PointX="7.63625" PointY="18.312248593749995" />
-          <ConnectorPoint PointX="7.63625" PointY="18.048283920450356" />
-          <ConnectorPoint PointX="7.208333333333333" PointY="18.048283920450356" />
-          <ConnectorPoint PointX="7.041666666666667" PointY="18.048283920450356" />
-          <ConnectorPoint PointX="6.48875" PointY="18.048283920450356" />
-          <ConnectorPoint PointX="6.48875" PointY="18.312248593749995" />
-          <ConnectorPoint PointX="6.2717347732371742" PointY="18.312248593749995" />
-          <ConnectorPoint PointX="6.1050681065705081" PointY="18.312248593749995" />
-          <ConnectorPoint PointX="5.833333333333333" PointY="18.312248593749995" />
-          <ConnectorPoint PointX="5.666666666666667" PointY="18.312248593749995" />
-          <ConnectorPoint PointX="5.375" PointY="18.312248593749995" />
-        </AssociationConnector>
+        <EntityTypeShape EntityType="QDLogisticsModel.Packages" Width="1.5" PointX="3.375" PointY="8.75" />
+        <AssociationConnector Association="QDLogisticsModel.FK_Packages_Box" />
+        <AssociationConnector Association="QDLogisticsModel.FK_CaseEvent_Packages" />
+        <AssociationConnector Association="QDLogisticsModel.FK_Packages_DirectLineLabel" />
+        <AssociationConnector Association="QDLogisticsModel.FK_Items_Packages" />
+        <AssociationConnector Association="QDLogisticsModel.FK_Packages_Orders" />
+        <AssociationConnector Association="QDLogisticsModel.FK_Packages_Carriers" />
+        <AssociationConnector Association="QDLogisticsModel.FK_Packages_FirstMile" />
         </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

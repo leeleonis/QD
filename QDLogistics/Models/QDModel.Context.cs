@@ -31,7 +31,6 @@ namespace QDLogistics.Models
         public virtual DbSet<Items> Items { get; set; }
         public virtual DbSet<Manufacturers> Manufacturers { get; set; }
         public virtual DbSet<Orders> Orders { get; set; }
-        public virtual DbSet<Packages> Packages { get; set; }
         public virtual DbSet<Payments> Payments { get; set; }
         public virtual DbSet<Skus> Skus { get; set; }
         public virtual DbSet<Warehouses> Warehouses { get; set; }
@@ -56,5 +55,6 @@ namespace QDLogistics.Models
         public virtual DbSet<CaseEvent> CaseEvent { get; set; }
         public virtual DbSet<SerialNumberForRefundLabel> SerialNumberForRefundLabel { get; set; }
         public virtual DbSet<CountryType> CountryType { get; set; }
+        public virtual DbSet<Packages> Packages { get; set; }
     }
 }

@@ -17,8 +17,8 @@ namespace QDLogistics.Models
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public ShippingMethod()
         {
-            this.Packages = new HashSet<Packages>();
             this.Services = new HashSet<Services>();
+            this.Packages = new HashSet<Packages>();
             this.FirstMilePackages = new HashSet<Packages>();
         }
     
@@ -49,9 +49,9 @@ namespace QDLogistics.Models
     
         public virtual Carriers Carriers { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Packages> Packages { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Services> Services { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<Packages> Packages { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Packages> FirstMilePackages { get; set; }
     }

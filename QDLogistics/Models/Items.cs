@@ -52,11 +52,11 @@ namespace QDLogistics.Models
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<BundleItems> BundleItems { get; set; }
         public virtual Orders Orders { get; set; }
-        public virtual Packages Packages { get; set; }
         public virtual Warehouses ReturnWarehouses { get; set; }
         public virtual Warehouses ShipWarehouses { get; set; }
         public virtual Skus Skus { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<SerialNumbers> SerialNumbers { get; set; }
+        public virtual Packages Packages { get; set; }
     }
 }

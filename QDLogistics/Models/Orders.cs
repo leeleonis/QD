@@ -18,8 +18,8 @@ namespace QDLogistics.Models
         public Orders()
         {
             this.Items = new HashSet<Items>();
-            this.Packages = new HashSet<Packages>();
             this.Payments = new HashSet<Payments>();
+            this.Packages = new HashSet<Packages>();
         }
     
         public int OrderID { get; set; }
@@ -78,10 +78,10 @@ namespace QDLogistics.Models
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Items> Items { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Packages> Packages { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Payments> Payments { get; set; }
         public virtual Companies Companies { get; set; }
         public virtual Services Services { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<Packages> Packages { get; set; }
     }
 }

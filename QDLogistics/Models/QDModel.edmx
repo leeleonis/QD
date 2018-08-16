@@ -1059,7 +1059,6 @@
           <EntitySet Name="Items" EntityType="QDLogisticsModel.Items" />
           <EntitySet Name="Manufacturers" EntityType="QDLogisticsModel.Manufacturers" />
           <EntitySet Name="Orders" EntityType="QDLogisticsModel.Orders" />
-          <EntitySet Name="Packages" EntityType="QDLogisticsModel.Packages" />
           <EntitySet Name="Payments" EntityType="QDLogisticsModel.Payments" />
           <EntitySet Name="Skus" EntityType="QDLogisticsModel.Skus" />
           <EntitySet Name="Warehouses" EntityType="QDLogisticsModel.Warehouses" />
@@ -1079,10 +1078,6 @@
             <End Role="Orders" EntitySet="Orders" />
             <End Role="Items" EntitySet="Items" />
           </AssociationSet>
-          <AssociationSet Name="FK_Items_Packages" Association="QDLogisticsModel.FK_Items_Packages">
-            <End Role="Packages" EntitySet="Packages" />
-            <End Role="Items" EntitySet="Items" />
-          </AssociationSet>
           <AssociationSet Name="FK_Items_ReturnWarehouses" Association="QDLogisticsModel.FK_Items_ReturnWarehouses">
             <End Role="Warehouses" EntitySet="Warehouses" />
             <End Role="Items" EntitySet="Items" />
@@ -1098,10 +1093,6 @@
           <AssociationSet Name="FK_Skus_Manufacturers" Association="QDLogisticsModel.FK_Skus_Manufacturers">
             <End Role="Manufacturers" EntitySet="Manufacturers" />
             <End Role="Skus" EntitySet="Skus" />
-          </AssociationSet>
-          <AssociationSet Name="FK_Packages_Orders" Association="QDLogisticsModel.FK_Packages_Orders">
-            <End Role="Orders" EntitySet="Orders" />
-            <End Role="Packages" EntitySet="Packages" />
           </AssociationSet>
           <AssociationSet Name="FK_Payments_Orders" Association="QDLogisticsModel.FK_Payments_Orders">
             <End Role="Orders" EntitySet="Orders" />
@@ -1162,36 +1153,45 @@
             <End Role="Carriers" EntitySet="Carriers" />
             <End Role="ShippingMethod" EntitySet="ShippingMethod" />
           </AssociationSet>
-          <AssociationSet Name="FK_Packages_Carriers" Association="QDLogisticsModel.FK_Packages_Carriers">
-            <End Role="ShippingMethod" EntitySet="ShippingMethod" />
-            <End Role="Packages" EntitySet="Packages" />
-          </AssociationSet>
           <AssociationSet Name="FK_Services_Carriers" Association="QDLogisticsModel.FK_Services_Carriers">
             <End Role="ShippingMethod" EntitySet="ShippingMethod" />
             <End Role="Services" EntitySet="Services" />
           </AssociationSet>
           <EntitySet Name="Box" EntityType="QDLogisticsModel.Box" />
-          <AssociationSet Name="FK_Packages_Box" Association="QDLogisticsModel.FK_Packages_Box">
-            <End Role="Box" EntitySet="Box" />
-            <End Role="Packages" EntitySet="Packages" />
-          </AssociationSet>
           <EntitySet Name="DirectLineLabel" EntityType="QDLogisticsModel.DirectLineLabel" />
           <AssociationSet Name="FK_DirectLineLabel_Box" Association="QDLogisticsModel.FK_DirectLineLabel_Box">
             <End Role="Box" EntitySet="Box" />
             <End Role="DirectLineLabel" EntitySet="DirectLineLabel" />
           </AssociationSet>
-          <AssociationSet Name="FK_Packages_DirectLineLabel" Association="QDLogisticsModel.FK_Packages_DirectLineLabel">
-            <End Role="DirectLineLabel" EntitySet="DirectLineLabel" />
-            <End Role="Packages" EntitySet="Packages" />
-          </AssociationSet>
           <EntitySet Name="DirectLine" EntityType="QDLogisticsModel.DirectLine" />
           <EntitySet Name="CaseEvent" EntityType="QDLogisticsModel.CaseEvent" />
+          <EntitySet Name="SerialNumberForRefundLabel" EntityType="QDLogisticsModel.SerialNumberForRefundLabel" />
+          <EntitySet Name="CountryType" EntityType="QDLogisticsModel.CountryType" />
+          <EntitySet Name="Packages" EntityType="QDLogisticsModel.Packages" />
+          <AssociationSet Name="FK_Packages_Box" Association="QDLogisticsModel.FK_Packages_Box">
+            <End Role="Box" EntitySet="Box" />
+            <End Role="Packages" EntitySet="Packages" />
+          </AssociationSet>
           <AssociationSet Name="FK_CaseEvent_Packages" Association="QDLogisticsModel.FK_CaseEvent_Packages">
             <End Role="Packages" EntitySet="Packages" />
             <End Role="CaseEvent" EntitySet="CaseEvent" />
           </AssociationSet>
-          <EntitySet Name="SerialNumberForRefundLabel" EntityType="QDLogisticsModel.SerialNumberForRefundLabel" />
-          <EntitySet Name="CountryType" EntityType="QDLogisticsModel.CountryType" />
+          <AssociationSet Name="FK_Packages_DirectLineLabel" Association="QDLogisticsModel.FK_Packages_DirectLineLabel">
+            <End Role="DirectLineLabel" EntitySet="DirectLineLabel" />
+            <End Role="Packages" EntitySet="Packages" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Items_Packages" Association="QDLogisticsModel.FK_Items_Packages">
+            <End Role="Packages" EntitySet="Packages" />
+            <End Role="Items" EntitySet="Items" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Packages_Orders" Association="QDLogisticsModel.FK_Packages_Orders">
+            <End Role="Orders" EntitySet="Orders" />
+            <End Role="Packages" EntitySet="Packages" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Packages_Carriers" Association="QDLogisticsModel.FK_Packages_Carriers">
+            <End Role="ShippingMethod" EntitySet="ShippingMethod" />
+            <End Role="Packages" EntitySet="Packages" />
+          </AssociationSet>
           <AssociationSet Name="FK_Packages_FirstMile" Association="QDLogisticsModel.FK_Packages_FirstMile">
             <End Role="ShippingMethod" EntitySet="ShippingMethod" />
             <End Role="Packages" EntitySet="Packages" />
@@ -1289,12 +1289,12 @@
           <Property Name="ReturnedToWarehouseID" Type="Int32" />
           <NavigationProperty Name="BundleItems" Relationship="QDLogisticsModel.FK_BundleItems_Items" FromRole="Items" ToRole="BundleItems" />
           <NavigationProperty Name="Orders" Relationship="QDLogisticsModel.FK_Items_Orders" FromRole="Items" ToRole="Orders" />
-          <NavigationProperty Name="Packages" Relationship="QDLogisticsModel.FK_Items_Packages" FromRole="Items" ToRole="Packages" />
           <NavigationProperty Name="ReturnWarehouses" Relationship="QDLogisticsModel.FK_Items_ReturnWarehouses" FromRole="Items" ToRole="Warehouses" />
           <NavigationProperty Name="ShipWarehouses" Relationship="QDLogisticsModel.FK_Items_ShipWarehouses" FromRole="Items" ToRole="Warehouses" />
           <NavigationProperty Name="Skus" Relationship="QDLogisticsModel.FK_Items_Skus" FromRole="Items" ToRole="Skus" />
           <Property Name="Weight" Type="Double" />
           <NavigationProperty Name="SerialNumbers" Relationship="QDLogisticsModel.FK_SerialNumbers_Items1" FromRole="Items" ToRole="SerialNumbers" />
+          <NavigationProperty Name="Packages" Relationship="QDLogisticsModel.FK_Items_Packages" FromRole="Items" ToRole="Packages" />
           </EntityType>
         <EntityType Name="Manufacturers">
           <Key>
@@ -1363,61 +1363,10 @@
           <Property Name="SyncOn" Type="DateTime" Precision="3" />
           <NavigationProperty Name="Addresses" Relationship="QDLogisticsModel.FK_Orders_Addresses" FromRole="Orders" ToRole="Addresses" />
           <NavigationProperty Name="Items" Relationship="QDLogisticsModel.FK_Items_Orders" FromRole="Orders" ToRole="Items" />
-          <NavigationProperty Name="Packages" Relationship="QDLogisticsModel.FK_Packages_Orders" FromRole="Orders" ToRole="Packages" />
           <NavigationProperty Name="Payments" Relationship="QDLogisticsModel.FK_Payments_Orders" FromRole="Orders" ToRole="Payments" />
           <NavigationProperty Name="Companies" Relationship="QDLogisticsModel.FK_Orders_Companies" FromRole="Orders" ToRole="Companies" />
           <NavigationProperty Name="Services" Relationship="QDLogisticsModel.FK_Orders_Services" FromRole="Orders" ToRole="Services" />
-        </EntityType>
-        <EntityType Name="Packages">
-          <Key>
-            <PropertyRef Name="ID" />
-          </Key>
-          <Property Name="IsEnable" Type="Boolean" />
-          <Property Name="ID" Type="Int32" Nullable="false" />
-          <Property Name="OrderID" Type="Int32" />
-          <Property Name="OrderItemID" Type="Int32" />
-          <Property Name="BundleItemID" Type="Int32" />
-          <Property Name="ProcessStatus" Type="Byte" Nullable="false" />
-          <Property Name="ProcessBack" Type="Boolean" Nullable="false" />
-          <Property Name="DeclaredTotal" Type="Decimal" Nullable="false" Precision="18" Scale="2" DefaultValue="0" />
-          <Property Name="DLDeclaredTotal" Type="Decimal" Nullable="false" Precision="18" Scale="2" />
-          <Property Name="Qty" Type="Int32" />
-          <Property Name="ShipDate" Type="DateTime" Precision="7" />
-          <Property Name="ShippingMethodName" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
-          <Property Name="ShippingServiceCode" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Name="ShippingMethod" Type="Int32" />
-          <Property Name="FirstMile" Type="Int32" />
-          <Property Name="Export" Type="Byte" />
-          <Property Name="ExportMethod" Type="Byte" />
-          <Property Name="EstimatedDeliveryDate" Type="DateTime" Precision="7" />
-          <Property Name="DispatchDate" Type="DateTime" Precision="3" />
-          <Property Name="PickUpDate" Type="DateTime" Precision="7" />
-          <Property Name="DeliveryDate" Type="DateTime" Precision="7" />
-          <Property Name="DeliveryStatus" Type="Int32" />
-          <Property Name="DeliveryNote" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
-          <Property Name="WinitNo" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Name="BoxID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Name="TagNo" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Name="FinalShippingFee" Type="Decimal" Precision="18" Scale="2" />
-          <Property Name="UploadTracking" Type="Boolean" Nullable="false" DefaultValue="True" />
-          <Property Name="TrackingNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Name="POId" Type="Int32" />
-          <Property Name="POInvoice" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Name="RMAId" Type="Int32" />
-          <Property Name="FilePath" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
-          <Property Name="Comment" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="SupplierComment" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <NavigationProperty Name="Items" Relationship="QDLogisticsModel.FK_Items_Packages" FromRole="Packages" ToRole="Items" />
-          <NavigationProperty Name="Orders" Relationship="QDLogisticsModel.FK_Packages_Orders" FromRole="Packages" ToRole="Orders" />
-          <Property Name="Weight" Type="Double" />
-          <Property Name="Length" Type="Double" />
-          <Property Name="Width" Type="Double" />
-          <Property Name="Height" Type="Double" />
-          <NavigationProperty Name="Method" Relationship="QDLogisticsModel.FK_Packages_Carriers" FromRole="Packages" ToRole="ShippingMethod" />
-          <NavigationProperty Name="Box" Relationship="QDLogisticsModel.FK_Packages_Box" FromRole="Packages" ToRole="Box" />
-          <NavigationProperty Name="Label" Relationship="QDLogisticsModel.FK_Packages_DirectLineLabel" FromRole="Packages" ToRole="DirectLineLabel" />
-          <NavigationProperty Name="CaseEvent" Relationship="QDLogisticsModel.FK_CaseEvent_Packages" FromRole="Packages" ToRole="CaseEvent" />
-          <NavigationProperty Name="FirstMethod" Relationship="QDLogisticsModel.FK_Packages_FirstMile" FromRole="Packages" ToRole="ShippingMethod" />
+          <NavigationProperty Name="Packages" Relationship="QDLogisticsModel.FK_Packages_Orders" FromRole="Orders" ToRole="Packages" />
         </EntityType>
         <EntityType Name="Payments">
           <Key>
@@ -1531,18 +1480,6 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="FK_Items_Packages">
-          <End Type="QDLogisticsModel.Packages" Role="Packages" Multiplicity="0..1" />
-          <End Type="QDLogisticsModel.Items" Role="Items" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="Packages">
-              <PropertyRef Name="ID" />
-            </Principal>
-            <Dependent Role="Items">
-              <PropertyRef Name="PackageID" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
         <Association Name="FK_Items_ReturnWarehouses">
           <End Type="QDLogisticsModel.Warehouses" Role="Warehouses" Multiplicity="0..1" />
           <End Type="QDLogisticsModel.Items" Role="Items" Multiplicity="*" />
@@ -1588,18 +1525,6 @@
             </Principal>
             <Dependent Role="Skus">
               <PropertyRef Name="Brand" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_Packages_Orders">
-          <End Type="QDLogisticsModel.Orders" Role="Orders" Multiplicity="0..1" />
-          <End Type="QDLogisticsModel.Packages" Role="Packages" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="Orders">
-              <PropertyRef Name="OrderID" />
-            </Principal>
-            <Dependent Role="Packages">
-              <PropertyRef Name="OrderID" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -1943,7 +1868,6 @@
           <Property Name="CountryData" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="SyncOn" Type="DateTime" Precision="3" />
           <NavigationProperty Name="Carriers" Relationship="QDLogisticsModel.FK_ShippingMethod_Carriers" FromRole="ShippingMethod" ToRole="Carriers" />
-          <NavigationProperty Name="Packages" Relationship="QDLogisticsModel.FK_Packages_Carriers" FromRole="ShippingMethod" ToRole="Packages" />
           <NavigationProperty Name="Services" Relationship="QDLogisticsModel.FK_Services_Carriers" FromRole="ShippingMethod" ToRole="Services" />
           <Property Name="ContactName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="ConpanyName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
@@ -1955,6 +1879,7 @@
           <Property Name="StreetLine2" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="StateName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="PostalCode" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="Packages" Relationship="QDLogisticsModel.FK_Packages_Carriers" FromRole="ShippingMethod" ToRole="Packages" />
           <NavigationProperty Name="FirstMilePackages" Relationship="QDLogisticsModel.FK_Packages_FirstMile" FromRole="ShippingMethod" ToRole="Packages" />
         </EntityType>
         <Association Name="FK_ShippingMethod_Carriers">
@@ -1966,18 +1891,6 @@
             </Principal>
             <Dependent Role="ShippingMethod">
               <PropertyRef Name="CarrierID" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_Packages_Carriers">
-          <End Type="QDLogisticsModel.ShippingMethod" Role="ShippingMethod" Multiplicity="0..1" />
-          <End Type="QDLogisticsModel.Packages" Role="Packages" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="ShippingMethod">
-              <PropertyRef Name="ID" />
-            </Principal>
-            <Dependent Role="Packages">
-              <PropertyRef Name="ShippingMethod" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -2011,21 +1924,9 @@
           <Property Name="TrackingNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="Note" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="Create_at" Type="DateTime" Nullable="false" Precision="3" />
-          <NavigationProperty Name="Packages" Relationship="QDLogisticsModel.FK_Packages_Box" FromRole="Box" ToRole="Packages" />
           <NavigationProperty Name="DirectLineLabel" Relationship="QDLogisticsModel.FK_DirectLineLabel_Box" FromRole="Box" ToRole="DirectLineLabel" />
+          <NavigationProperty Name="Packages" Relationship="QDLogisticsModel.FK_Packages_Box" FromRole="Box" ToRole="Packages" />
         </EntityType>
-        <Association Name="FK_Packages_Box">
-          <End Type="QDLogisticsModel.Box" Role="Box" Multiplicity="0..1" />
-          <End Type="QDLogisticsModel.Packages" Role="Packages" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="Box">
-              <PropertyRef Name="BoxID" />
-            </Principal>
-            <Dependent Role="Packages">
-              <PropertyRef Name="BoxID" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
         <EntityType Name="DirectLineLabel">
           <Key>
             <PropertyRef Name="LabelID" />
@@ -2050,18 +1951,6 @@
             </Principal>
             <Dependent Role="DirectLineLabel">
               <PropertyRef Name="BoxID" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_Packages_DirectLineLabel">
-          <End Type="QDLogisticsModel.DirectLineLabel" Role="DirectLineLabel" Multiplicity="0..1" />
-          <End Type="QDLogisticsModel.Packages" Role="Packages" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="DirectLineLabel">
-              <PropertyRef Name="LabelID" />
-            </Principal>
-            <Dependent Role="Packages">
-              <PropertyRef Name="TagNo" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -2100,21 +1989,9 @@
           <Property Name="Create_at" Type="DateTime" Nullable="false" Precision="3" />
           <Property Name="Request_at" Type="DateTime" Precision="3" />
           <Property Name="Response_at" Type="DateTime" Precision="3" />
-          <NavigationProperty Name="Packages" Relationship="QDLogisticsModel.FK_CaseEvent_Packages" FromRole="CaseEvent" ToRole="Packages" />
           <Property Name="Update_by" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="Packages" Relationship="QDLogisticsModel.FK_CaseEvent_Packages" FromRole="CaseEvent" ToRole="Packages" />
         </EntityType>
-        <Association Name="FK_CaseEvent_Packages">
-          <End Type="QDLogisticsModel.Packages" Role="Packages" Multiplicity="1" />
-          <End Type="QDLogisticsModel.CaseEvent" Role="CaseEvent" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="Packages">
-              <PropertyRef Name="ID" />
-            </Principal>
-            <Dependent Role="CaseEvent">
-              <PropertyRef Name="PackageID" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
         <EntityType Name="SerialNumberForRefundLabel">
           <Key>
             <PropertyRef Name="ID" />
@@ -2139,6 +2016,129 @@
           <Property Name="TypeImg" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="true" />
           <Property Name="Country" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
         </EntityType>
+        <EntityType Name="Packages">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="IsEnable" Type="Boolean" />
+          <Property Name="ID" Type="Int32" Nullable="false" />
+          <Property Name="OrderID" Type="Int32" />
+          <Property Name="OrderItemID" Type="Int32" />
+          <Property Name="BundleItemID" Type="Int32" />
+          <Property Name="ProcessStatus" Type="Byte" Nullable="false" />
+          <Property Name="ProcessBack" Type="Boolean" Nullable="false" />
+          <Property Name="DeclaredTotal" Type="Decimal" Nullable="false" Precision="18" Scale="2" />
+          <Property Name="DLDeclaredTotal" Type="Decimal" Nullable="false" Precision="18" Scale="2" />
+          <Property Name="Qty" Type="Int32" />
+          <Property Name="ShipDate" Type="DateTime" Precision="7" />
+          <Property Name="ShippingMethodName" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
+          <Property Name="ShippingServiceCode" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="ShippingMethod" Type="Int32" />
+          <Property Name="FirstMile" Type="Int32" />
+          <Property Name="Export" Type="Byte" />
+          <Property Name="ExportMethod" Type="Byte" />
+          <Property Name="EstimatedDeliveryDate" Type="DateTime" Precision="7" />
+          <Property Name="DispatchDate" Type="DateTime" Precision="3" />
+          <Property Name="PickUpDate" Type="DateTime" Precision="7" />
+          <Property Name="DeliveryDate" Type="DateTime" Precision="7" />
+          <Property Name="DeliveryStatus" Type="Int32" />
+          <Property Name="DeliveryNote" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
+          <Property Name="WinitNo" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="BoxID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="TagNo" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="FinalShippingFee" Type="Decimal" Precision="18" Scale="2" />
+          <Property Name="UploadTracking" Type="Boolean" Nullable="false" />
+          <Property Name="TrackingNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="POId" Type="Int32" />
+          <Property Name="POInvoice" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="RMAId" Type="Int32" />
+          <Property Name="FilePath" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="Comment" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="SupplierComment" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="Weight" Type="Double" />
+          <Property Name="Length" Type="Double" />
+          <Property Name="Width" Type="Double" />
+          <Property Name="Height" Type="Double" />
+          <NavigationProperty Name="Box" Relationship="QDLogisticsModel.FK_Packages_Box" FromRole="Packages" ToRole="Box" />
+          <NavigationProperty Name="CaseEvent" Relationship="QDLogisticsModel.FK_CaseEvent_Packages" FromRole="Packages" ToRole="CaseEvent" />
+          <NavigationProperty Name="Label" Relationship="QDLogisticsModel.FK_Packages_DirectLineLabel" FromRole="Packages" ToRole="DirectLineLabel" />
+          <NavigationProperty Name="Items" Relationship="QDLogisticsModel.FK_Items_Packages" FromRole="Packages" ToRole="Items" />
+          <NavigationProperty Name="Orders" Relationship="QDLogisticsModel.FK_Packages_Orders" FromRole="Packages" ToRole="Orders" />
+          <NavigationProperty Name="Method" Relationship="QDLogisticsModel.FK_Packages_Carriers" FromRole="Packages" ToRole="ShippingMethod" />
+          <NavigationProperty Name="FirstMethod" Relationship="QDLogisticsModel.FK_Packages_FirstMile" FromRole="Packages" ToRole="ShippingMethod" />
+        </EntityType>
+        <Association Name="FK_Packages_Box">
+          <End Type="QDLogisticsModel.Box" Role="Box" Multiplicity="0..1" />
+          <End Type="QDLogisticsModel.Packages" Role="Packages" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Box">
+              <PropertyRef Name="BoxID" />
+            </Principal>
+            <Dependent Role="Packages">
+              <PropertyRef Name="BoxID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_CaseEvent_Packages">
+          <End Type="QDLogisticsModel.Packages" Role="Packages" Multiplicity="1" />
+          <End Type="QDLogisticsModel.CaseEvent" Role="CaseEvent" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Packages">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="CaseEvent">
+              <PropertyRef Name="PackageID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Packages_DirectLineLabel">
+          <End Type="QDLogisticsModel.DirectLineLabel" Role="DirectLineLabel" Multiplicity="0..1" />
+          <End Type="QDLogisticsModel.Packages" Role="Packages" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="DirectLineLabel">
+              <PropertyRef Name="LabelID" />
+            </Principal>
+            <Dependent Role="Packages">
+              <PropertyRef Name="TagNo" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Items_Packages">
+          <End Type="QDLogisticsModel.Packages" Role="Packages" Multiplicity="0..1" />
+          <End Type="QDLogisticsModel.Items" Role="Items" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Packages">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="Items">
+              <PropertyRef Name="PackageID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Packages_Orders">
+          <End Type="QDLogisticsModel.Orders" Role="Orders" Multiplicity="0..1" />
+          <End Type="QDLogisticsModel.Packages" Role="Packages" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Orders">
+              <PropertyRef Name="OrderID" />
+            </Principal>
+            <Dependent Role="Packages">
+              <PropertyRef Name="OrderID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Packages_Carriers">
+          <End Type="QDLogisticsModel.ShippingMethod" Role="ShippingMethod" Multiplicity="0..1" />
+          <End Type="QDLogisticsModel.Packages" Role="Packages" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ShippingMethod">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="Packages">
+              <PropertyRef Name="ShippingMethod" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_Packages_FirstMile">
           <End Type="QDLogisticsModel.ShippingMethod" Role="ShippingMethod" Multiplicity="0..1" />
           <End Type="QDLogisticsModel.Packages" Role="Packages" Multiplicity="*" />
@@ -2313,51 +2313,6 @@
                 <ScalarProperty Name="ClientID" ColumnName="ClientID" />
                 <ScalarProperty Name="ParentOrderID" ColumnName="ParentOrderID" />
                 <ScalarProperty Name="OrderID" ColumnName="OrderID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="Packages">
-            <EntityTypeMapping TypeName="QDLogisticsModel.Packages">
-              <MappingFragment StoreEntitySet="Packages">
-                <ScalarProperty Name="FirstMile" ColumnName="FirstMile" />
-                <ScalarProperty Name="DispatchDate" ColumnName="DispatchDate" />
-                <ScalarProperty Name="DLDeclaredTotal" ColumnName="DLDeclaredTotal" />
-                <ScalarProperty Name="TagNo" ColumnName="TagNo" />
-                <ScalarProperty Name="BoxID" ColumnName="BoxID" />
-                <ScalarProperty Name="ShippingMethod" ColumnName="ShippingMethod" />
-                <ScalarProperty Name="POInvoice" ColumnName="POInvoice" />
-                <ScalarProperty Name="POId" ColumnName="POId" />
-                <ScalarProperty Name="SupplierComment" ColumnName="SupplierComment" />
-                <ScalarProperty Name="RMAId" ColumnName="RMAId" />
-                <ScalarProperty Name="WinitNo" ColumnName="WinitNo" />
-                <ScalarProperty Name="DeliveryNote" ColumnName="DeliveryNote" />
-                <ScalarProperty Name="PickUpDate" ColumnName="PickUpDate" />
-                <ScalarProperty Name="DeclaredTotal" ColumnName="DeclaredTotal" />
-                <ScalarProperty Name="FilePath" ColumnName="FilePath" />
-                <ScalarProperty Name="UploadTracking" ColumnName="UploadTracking" />
-                <ScalarProperty Name="ProcessBack" ColumnName="ProcessBack" />
-                <ScalarProperty Name="ProcessStatus" ColumnName="ProcessStatus" />
-                <ScalarProperty Name="Height" ColumnName="Height" />
-                <ScalarProperty Name="Width" ColumnName="Width" />
-                <ScalarProperty Name="Length" ColumnName="Length" />
-                <ScalarProperty Name="Weight" ColumnName="Weight" />
-                <ScalarProperty Name="Comment" ColumnName="Comment" />
-                <ScalarProperty Name="TrackingNumber" ColumnName="TrackingNumber" />
-                <ScalarProperty Name="FinalShippingFee" ColumnName="FinalShippingFee" />
-                <ScalarProperty Name="DeliveryStatus" ColumnName="DeliveryStatus" />
-                <ScalarProperty Name="DeliveryDate" ColumnName="DeliveryDate" />
-                <ScalarProperty Name="EstimatedDeliveryDate" ColumnName="EstimatedDeliveryDate" />
-                <ScalarProperty Name="ExportMethod" ColumnName="ExportMethod" />
-                <ScalarProperty Name="Export" ColumnName="Export" />
-                <ScalarProperty Name="ShippingServiceCode" ColumnName="ShippingServiceCode" />
-                <ScalarProperty Name="ShippingMethodName" ColumnName="ShippingMethodName" />
-                <ScalarProperty Name="ShipDate" ColumnName="ShipDate" />
-                <ScalarProperty Name="Qty" ColumnName="Qty" />
-                <ScalarProperty Name="BundleItemID" ColumnName="BundleItemID" />
-                <ScalarProperty Name="OrderItemID" ColumnName="OrderItemID" />
-                <ScalarProperty Name="OrderID" ColumnName="OrderID" />
-                <ScalarProperty Name="ID" ColumnName="ID" />
-                <ScalarProperty Name="IsEnable" ColumnName="IsEnable" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -2745,6 +2700,51 @@
                 <ScalarProperty Name="Country" ColumnName="Country" />
                 <ScalarProperty Name="TypeImg" ColumnName="TypeImg" />
                 <ScalarProperty Name="No" ColumnName="No" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Packages">
+            <EntityTypeMapping TypeName="QDLogisticsModel.Packages">
+              <MappingFragment StoreEntitySet="Packages">
+                <ScalarProperty Name="Height" ColumnName="Height" />
+                <ScalarProperty Name="Width" ColumnName="Width" />
+                <ScalarProperty Name="Length" ColumnName="Length" />
+                <ScalarProperty Name="Weight" ColumnName="Weight" />
+                <ScalarProperty Name="SupplierComment" ColumnName="SupplierComment" />
+                <ScalarProperty Name="Comment" ColumnName="Comment" />
+                <ScalarProperty Name="FilePath" ColumnName="FilePath" />
+                <ScalarProperty Name="RMAId" ColumnName="RMAId" />
+                <ScalarProperty Name="POInvoice" ColumnName="POInvoice" />
+                <ScalarProperty Name="POId" ColumnName="POId" />
+                <ScalarProperty Name="TrackingNumber" ColumnName="TrackingNumber" />
+                <ScalarProperty Name="UploadTracking" ColumnName="UploadTracking" />
+                <ScalarProperty Name="FinalShippingFee" ColumnName="FinalShippingFee" />
+                <ScalarProperty Name="TagNo" ColumnName="TagNo" />
+                <ScalarProperty Name="BoxID" ColumnName="BoxID" />
+                <ScalarProperty Name="WinitNo" ColumnName="WinitNo" />
+                <ScalarProperty Name="DeliveryNote" ColumnName="DeliveryNote" />
+                <ScalarProperty Name="DeliveryStatus" ColumnName="DeliveryStatus" />
+                <ScalarProperty Name="DeliveryDate" ColumnName="DeliveryDate" />
+                <ScalarProperty Name="PickUpDate" ColumnName="PickUpDate" />
+                <ScalarProperty Name="DispatchDate" ColumnName="DispatchDate" />
+                <ScalarProperty Name="EstimatedDeliveryDate" ColumnName="EstimatedDeliveryDate" />
+                <ScalarProperty Name="ExportMethod" ColumnName="ExportMethod" />
+                <ScalarProperty Name="Export" ColumnName="Export" />
+                <ScalarProperty Name="FirstMile" ColumnName="FirstMile" />
+                <ScalarProperty Name="ShippingMethod" ColumnName="ShippingMethod" />
+                <ScalarProperty Name="ShippingServiceCode" ColumnName="ShippingServiceCode" />
+                <ScalarProperty Name="ShippingMethodName" ColumnName="ShippingMethodName" />
+                <ScalarProperty Name="ShipDate" ColumnName="ShipDate" />
+                <ScalarProperty Name="Qty" ColumnName="Qty" />
+                <ScalarProperty Name="DLDeclaredTotal" ColumnName="DLDeclaredTotal" />
+                <ScalarProperty Name="DeclaredTotal" ColumnName="DeclaredTotal" />
+                <ScalarProperty Name="ProcessBack" ColumnName="ProcessBack" />
+                <ScalarProperty Name="ProcessStatus" ColumnName="ProcessStatus" />
+                <ScalarProperty Name="BundleItemID" ColumnName="BundleItemID" />
+                <ScalarProperty Name="OrderItemID" ColumnName="OrderItemID" />
+                <ScalarProperty Name="OrderID" ColumnName="OrderID" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="IsEnable" ColumnName="IsEnable" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
