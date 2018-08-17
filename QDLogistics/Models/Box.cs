@@ -24,6 +24,7 @@ namespace QDLogistics.Models
     
         public bool IsEnable { get; set; }
         public string BoxID { get; set; }
+        public string MainBox { get; set; }
         public string SupplierBoxID { get; set; }
         public string WITID { get; set; }
         public int DirectLine { get; set; }
@@ -33,6 +34,7 @@ namespace QDLogistics.Models
         public byte BoxType { get; set; }
         public byte ShippingStatus { get; set; }
         public int BoxNo { get; set; }
+        public int CurrentNo { get; set; }
         public string TrackingNumber { get; set; }
         public string Note { get; set; }
         public System.DateTime Create_at { get; set; }

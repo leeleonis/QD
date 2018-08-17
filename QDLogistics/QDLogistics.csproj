@@ -7168,6 +7168,7 @@
     <Content Include="Views\DirectLine\List_WaitingOrder.cshtml" />
     <Content Include="Views\Overview\List_Order.cshtml" />
     <Content Include="Views\Product\plug.cshtml" />
+    <Content Include="Views\DirectLine\Info_Box.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

@@ -1,0 +1,32 @@
+﻿@using QDLogistics.Models
+@model Box
+@{
+    var directLine = (DirectLine)ViewData["directLine"];
+    var method = (ShippingMethod)ViewData["method"];
+    var itemList = Model.Packages.Where(p => p.IsEnable.Value).SelectMany(p => p.Items.Where(i => i.IsEnable.Value)).ToList();
+}
+
+<table class="table table-bordered text-center" style="margin:0;">
+    <tr>
+        <td width="40%" id="text-directLine" colspan="2">@directLine.Name</td>
+        <td width="15%">Battery No.</td>
+        <td width="15%"></td>
+        <td width="15%">Total Weight</td>
+        <td width="15%"><span id="text-weight">@(itemList.Sum(i => i.Qty * i.Skus.Weight) / 1000)</span> KG</td>
+    </tr>
+    <tr>
+        <td width="15%">Box ID:</td>
+        <td id="text-boxID">@Model.BoxID</td>
+        <td>Box No.</td>
+        <td class="no-padding">@Html.EditorFor(m => m.BoxNo, new { htmlAttributes = new { @class = "form-control", @id = "input-boxNo", @min = Model.BoxNo } })</td>
+        <td>Total Value</td>
+        <td><span id="text-total">@itemList.Sum(i => i.DeclaredValue * i.Qty)</span> of <span id="text-maxTotal">@directLine.MaxDeclared</span></td>
+    </tr>
+    <tr>
+        <td>Carrier:</td>
+        <td id="text-carrier">@method.Name</td>
+        <td>Complete Boxes</td>
+        <td><span id="text-currentNo">@Model.CurrentNo</span> of <span id="text-boxNo">@Model.BoxNo</span></td>
+        <td colspan="2"></td>
+    </tr>
+</table>

@@ -79,6 +79,7 @@
           </Key>
           <Property Name="IsEnable" Type="bit" Nullable="false" />
           <Property Name="BoxID" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="MainBox" Type="nvarchar" MaxLength="50" />
           <Property Name="SupplierBoxID" Type="nvarchar" MaxLength="50" />
           <Property Name="WITID" Type="nvarchar" MaxLength="50" />
           <Property Name="DirectLine" Type="int" Nullable="false" />
@@ -88,6 +89,7 @@
           <Property Name="BoxType" Type="tinyint" Nullable="false" />
           <Property Name="ShippingStatus" Type="tinyint" Nullable="false" />
           <Property Name="BoxNo" Type="int" Nullable="false" />
+          <Property Name="CurrentNo" Type="int" Nullable="false" />
           <Property Name="TrackingNumber" Type="nvarchar" MaxLength="50" />
           <Property Name="Note" Type="nvarchar(max)" />
           <Property Name="Create_at" Type="datetime" Nullable="false" />
@@ -175,6 +177,7 @@
           <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="Name" Type="nvarchar" MaxLength="50" />
           <Property Name="Abbreviation" Type="nvarchar" MaxLength="50" />
+          <Property Name="MaxDeclared" Type="decimal" Precision="18" Scale="2" Nullable="false" />
           <Property Name="ContactName" Type="nvarchar" MaxLength="100" />
           <Property Name="CompanyName" Type="nvarchar" MaxLength="100" />
           <Property Name="PhoneNumber" Type="nvarchar" MaxLength="50" />
@@ -1912,6 +1915,7 @@
           </Key>
           <Property Name="IsEnable" Type="Boolean" Nullable="false" />
           <Property Name="BoxID" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="MainBox" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="SupplierBoxID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="WITID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="DirectLine" Type="Int32" Nullable="false" />
@@ -1921,6 +1925,7 @@
           <Property Name="BoxType" Type="Byte" Nullable="false" />
           <Property Name="ShippingStatus" Type="Byte" Nullable="false" />
           <Property Name="BoxNo" Type="Int32" Nullable="false" DefaultValue="1" />
+          <Property Name="CurrentNo" Type="Int32" Nullable="false" />
           <Property Name="TrackingNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="Note" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="Create_at" Type="DateTime" Nullable="false" Precision="3" />
@@ -1962,6 +1967,7 @@
           <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" />
           <Property Name="Name" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="Abbreviation" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="MaxDeclared" Type="Decimal" Nullable="false" Precision="18" Scale="2" />
           <Property Name="ContactName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
           <Property Name="CompanyName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
           <Property Name="PhoneNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
@@ -2607,6 +2613,8 @@
           <EntitySetMapping Name="Box">
             <EntityTypeMapping TypeName="QDLogisticsModel.Box">
               <MappingFragment StoreEntitySet="Box">
+                <ScalarProperty Name="CurrentNo" ColumnName="CurrentNo" />
+                <ScalarProperty Name="MainBox" ColumnName="MainBox" />
                 <ScalarProperty Name="DirectLine" ColumnName="DirectLine" />
                 <ScalarProperty Name="Create_at" ColumnName="Create_at" />
                 <ScalarProperty Name="Note" ColumnName="Note" />
@@ -2641,6 +2649,7 @@
           <EntitySetMapping Name="DirectLine">
             <EntityTypeMapping TypeName="QDLogisticsModel.DirectLine">
               <MappingFragment StoreEntitySet="DirectLine">
+                <ScalarProperty Name="MaxDeclared" ColumnName="MaxDeclared" />
                 <ScalarProperty Name="ID" ColumnName="ID" />
                 <ScalarProperty Name="PostalCode" ColumnName="PostalCode" />
                 <ScalarProperty Name="StateName" ColumnName="StateName" />

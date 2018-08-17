@@ -62,20 +62,29 @@
                          data-options="iconCls:'icon-save',collapsible:false,minimizable:false,maximizable:false,closed:true,draggable:false,resizable:false,modal:true"></div>
                     <div id="dialog-serial" class="easyui-dialog" title="請輸入產品序號/品號" data-options="iconCls:'icon-edit',closed:true,resizable:false,onBeforeClose:ProductSerialData.Refresh_Page" style="width:1000px;top:200px;">
                         <div class="col-sm-12" data-options="region:'north',border:false" style="text-align:right;padding:5px;">
-                            <div class="col-sm-10" style="text-align:center; padding:0 5px 0 0;">
-                                <table class="table table-bordered text-center" id="info-box" style="margin:0;">
+                            <div class="col-sm-10" id="info-box" style="text-align:center; padding:0 5px 0 0;">
+                                <table class="table table-bordered text-center" style="margin:0;">
                                     <tr>
-                                        <td width="40%" id="DirectLineName" rowspan="3"></td>
-                                        <td width="30%">Box ID:</td>
-                                        <td width="30%" id="BoxID"></td>
+                                        <td width="40%" id="text-directLine" colspan="2"></td>
+                                        <td width="15%">Battery No.</td>
+                                        <td width="15%"></td>
+                                        <td width="15%">Total Weight</td>
+                                        <td width="15%"><span id="text-weight">X</span> KG</td>
+                                    </tr>
+                                    <tr>
+                                        <td width="15%">Box ID:</td>
+                                        <td id="text-boxID"></td>
+                                        <td>Box No.</td>
+                                        <td class="no-padding">@Html.Editor("BoxNo", new { htmlAttributes = new { @class = "form-control", @id = "input-boxNo" } })</td>
+                                        <td>Total Value</td>
+                                        <td><span id="text-total">X</span> of <span id="text-maxTotal">9900</span></td>
                                     </tr>
                                     <tr>
                                         <td>Carrier:</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Box No.</td>
-                                        <td id="boxNo"></td>
+                                        <td id="text-carrier"></td>
+                                        <td>Complete Boxes</td>
+                                        <td><span id="text-currentNo">X</span> of <span id="text-boxNo">Y</span></td>
+                                        <td colspan="2"></td>
                                     </tr>
                                 </table>
                             </div>
@@ -144,10 +153,10 @@
         var pager, pageSize = 100;
         var $dataGrid;
         var directLineMethodList;
-        var $typeSelect = $('#select-type'), $typeMethodSelect = $('#select-typeMethod'), $methodSelect = $('#select-method'), $syncBtn = $('#btn-sync'), $pickBtn = $("#btn-pick"),
-            $shipBtn = $("#btn-ship"), $enterBtn = $("#btn-enter"), $pickWin = $('#win-pick'), $serialDialog = $('#dialog-serial'), $serialInput = $('#input-serial'),
+        var $typeSelect = $('#select-type'), $typeMethodSelect = $('#select-typeMethod'), $methodSelect = $('#select-method'),
+            $shipBtn = $("#btn-ship"), $pickWin = $('#win-pick'), $serialDialog = $('#dialog-serial'), $serialInput = $('#input-serial'),
             $orderDialog = $('#dialog-order'), $orderInput = $('#input-order'), $recycleDialog = $('#dialog-recycle'), $labelErrorMsg = $('#msg-labelError'), $labelInput = $('#input-label'),
-            $boxInfo = $('#info-box'), $pickupTable = $('#table-pickup'), $boxTable = $('#table-box'), $nextBtn = $("#btn-next");
+            $boxInfo = $('#info-box'), $pickupTable = $('#table-pickup'), $boxTable = $('#table-box');
 
         var isSync = false, taskID = null, now = undefined;
 
@@ -183,7 +192,7 @@
                 ProductSerialData.Get_Data();
             });
 
-            $syncBtn.click(function () {
+            $('#btn-sync').click(function () {
                 if(isSync) return alert('目前尚有工作在執行中');
 
                 var url = "@Url.Action("checkPurchaseItem", "orderSync")";
@@ -214,7 +223,7 @@
                 });
             });
 
-            $pickBtn.click(function () {
+            $("#btn-pick").click(function () {
                 $pickWin.window("open").window("refresh", "@Url.Action("packagePickUpList", "directLine")");
             });
 
@@ -227,13 +236,13 @@
                 $serialInput.textbox('textbox').focus();
             });
 
-            $nextBtn.click(function () {
+            $("#btn-next").click(function () {
                 if (confirm("是否確定進行下一步?")) {
                     ProductSerialData.Save_box();
                 }
             });
 
-            $enterBtn.click(function () {
+            $("#btn-enter").click(function () {
                 if(!ProductSerialData.Is_Init()) return alert("尚未預載資料!");
 
                 $orderDialog.dialog('open');
@@ -366,7 +375,7 @@
 
             var init = function (){
                 var url = '@Url.Action("getOrderSerialData", "directLine")';
-                ajaxUrl(url, 'get', { type: $typeSelect.val(), methodID: $typeMethodSelect.val()}).done(function(response){
+                ajaxUrl(url, 'get', { type: $typeSelect.val(), firstMile: $methodSelect.val(), methodID: $typeMethodSelect.val() }).done(function (response) {
                     if(response['status']){
                         groupList = response['data']['groupList'];
                         productList = response['data']['productList'];
@@ -382,14 +391,9 @@
 
             var getBoxData = function () {
                 var url = '@Url.Action("getCurrentBox", "directLine")';
-                ajaxUrl(url, 'get', { type: $typeSelect.val() }).done(function (response) {
+                ajaxUrl(url, 'get', { firstMile: $methodSelect.val(), type: $typeSelect.val() }).done(function (response) {
                     if (response.status) {
-                        boxInfo = response.data.info;
-
-                        $('#DirectLineName').html($typeSelect.find('option:selected').html());
-                        $('#BoxID').html(boxInfo.BoxID);
-                        $('#select-method').find('option[value=' + boxInfo.FirstMileMethod + ']').prop('selected', true);
-                        $('#boxNo').html(boxInfo.BoxNo);
+                        $('#info-box').html(response.data.info);
 
                         if (response.data.list.length > 0) {
                             var list = response.data.list;

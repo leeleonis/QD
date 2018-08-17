@@ -59,7 +59,7 @@ namespace QDLogistics.Controllers
 
             if (int.TryParse(Session["warehouseId"].ToString(), out warehouseID))
             {
-                Warehouses warehouse = db.Warehouses.Find(warehouseID);
+                Warehouses warehouse = db.Warehouses.FirstOrDefault(w => w.IsEnable.Value && w.ID.Equals(warehouseID));
                 if (warehouse != null && !string.IsNullOrEmpty(warehouse.CarrierData))
                 {
                     Dictionary<int, bool> methodData = JsonConvert.DeserializeObject<Dictionary<int, bool>>(warehouse.CarrierData);
@@ -778,24 +778,22 @@ namespace QDLogistics.Controllers
             return Json(result, JsonRequestBehavior.AllowGet);
         }
 
-        public ActionResult GetCurrentBox(int type)
+        public ActionResult GetCurrentBox(int type, int firstMile)
         {
             AjaxResult result = new AjaxResult();
 
             int warehouseID;
             if (int.TryParse(Session["warehouseId"].ToString(), out warehouseID))
             {
+                DirectLine directLine = db.DirectLine.Find(type);
+                ShippingMethod method = db.ShippingMethod.Find(firstMile);
+
                 Box box;
                 List<object> pickList = new List<object>();
 
                 using (BoxManage BoxManage = new BoxManage(Session))
                 {
-                    DirectLine directLine = db.DirectLine.AsNoTracking().First(d => d.IsEnable && d.ID.Equals(type));
-
-                    Warehouses warehouse = db.Warehouses.AsNoTracking().First(w => w.ID.Equals(warehouseID));
-                    Dictionary<int, bool> methodData = JsonConvert.DeserializeObject<Dictionary<int, bool>>(warehouse.CarrierData);
-
-                    box = BoxManage.GetCurrentBox(directLine, warehouseID, methodData.First(m => m.Value).Key);
+                    box = BoxManage.GetCurrentBox(directLine, warehouseID, firstMile);
 
                     List<Packages> packageList = box.Packages.Where(p => p.IsEnable.Value).ToList();
 
@@ -827,7 +825,7 @@ namespace QDLogistics.Controllers
 
                 result.data = new
                 {
-                    info = new { box.BoxID, box.FirstMileMethod, box.BoxNo },
+                    info = MyHelp.RenderViewToString(ControllerContext, "Info_Box", box, new ViewDataDictionary() { { "directLine", directLine }, { "method", method } }),
                     list = pickList
                 };
             }

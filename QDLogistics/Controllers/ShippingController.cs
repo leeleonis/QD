@@ -185,7 +185,7 @@ namespace QDLogistics.Controllers
                 DirectLine.Create(newDirectLine);
                 DirectLine.SaveChanges();
 
-                MyHelp.Log("DirectLine", newDirectLine.ID, "新增運輸方式");
+                MyHelp.Log("DirectLine", newDirectLine.ID, "新增DL廠商");
                 return RedirectToAction("directLineEdit", new { id = newDirectLine.ID });
             }
         }

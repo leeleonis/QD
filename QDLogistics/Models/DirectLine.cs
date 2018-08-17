@@ -18,6 +18,7 @@ namespace QDLogistics.Models
         public int ID { get; set; }
         public string Name { get; set; }
         public string Abbreviation { get; set; }
+        public decimal MaxDeclared { get; set; }
         public string ContactName { get; set; }
         public string CompanyName { get; set; }
         public string PhoneNumber { get; set; }
