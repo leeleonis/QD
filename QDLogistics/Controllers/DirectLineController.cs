@@ -732,33 +732,31 @@ namespace QDLogistics.Controllers
             return Json(result, JsonRequestBehavior.AllowGet);
         }
 
-        public ActionResult GetOrderSerialData(int type, int methodID)
+        public ActionResult GetOrderSerialData(int type, int firstMile, int methodID)
         {
             AjaxResult result = new AjaxResult();
 
             int warehouseID = int.Parse(Session["warehouseId"].ToString());
 
-            string orderSelect = string.Format("SELECT * FROM Orders WHERE StatusCode <> {0}", (int)OrderStatusCode.Completed);
-            string itemSelect = string.Format("SELECT * FROM Items WHERE IsEnable = 1 AND ShipFromWarehouseID = {0}", warehouseID);
-            string pickSelect = string.Format("SELECT * FROM PickProduct WHERE IsEnable = 1 AND IsPicked = 0 AND WarehouseID = {0}", warehouseID);
+            var PackageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨) /*&& p.FirstMile.Value.Equals(firstMile)*/);
+            if (!methodID.Equals(0)) PackageFilter = PackageFilter.Where(p => p.ShippingMethod.Value.Equals(methodID));
 
-            var packageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨));
-            if (!methodID.Equals(0)) packageFilter = packageFilter.Where(p => p.ShippingMethod.Value.Equals(methodID));
+            var OrderFilter = db.Orders.AsNoTracking().Where(o => !o.StatusCode.Value.Equals((int)OrderStatusCode.Completed));
+            var ItemFilter = db.Items.AsNoTracking().Where(i => i.IsEnable.Value && i.ShipFromWarehouseID.Value.Equals(warehouseID));
+            var PickFilter = db.PickProduct.AsNoTracking().Where(pick => pick.IsEnable && !pick.IsPicked && pick.WarehouseID.Value.Equals(warehouseID));
+            var SkuFilter = db.Skus.AsNoTracking().Where(sku => sku.IsEnable.Value);
+            var MethodFilter = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && m.IsDirectLine && m.DirectLine.Equals(type));
+            var LabelFilter = db.DirectLineLabel.AsNoTracking().Where(l => l.IsEnable && l.Status.Equals((byte)EnumData.LabelStatus.正常));
 
-            var methodList = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && m.IsDirectLine && m.DirectLine.Equals(type)).ToList();
-            var labelList = db.DirectLineLabel.AsNoTracking().Where(l => l.IsEnable && l.Status.Equals((byte)EnumData.LabelStatus.正常)).ToList();
+            var productList = PackageFilter.Join(LabelFilter, p => p.TagNo, l => l.LabelID, (p, l) => p)
+                .Join(PickFilter, package => package.ID, pick => pick.PackageID.Value, (package, pick) => new { package, pick })
+                .Join(MethodFilter, data => data.package.ShippingMethod.Value, m => m.ID, (data, method) => new { data.package, data.pick, method })
+                .Join(OrderFilter, data => data.package.OrderID.Value, o => o.OrderID, (data, order) => new { order, data.package, data.pick, data.method }).Distinct()
+                .OrderBy(data => data.package.Qty).OrderBy(data => data.order.TimeOfOrder).OrderByDescending(data => data.order.RushOrder).ToList()
+                .Select(data => data.pick.SetTagNo(data.package.TagNo).SetNote(data.package.Comment).SetInBox(data.method.InBox))
+                .GroupBy(pick => pick.ProductID).ToDictionary(group => group.Key.ToString(), group => group.ToDictionary(p => p.ItemID.Value.ToString()));
 
-            ObjectContext context = new ObjectContext("name=QDLogisticsEntities");
-            var ProductList = packageFilter.ToList().Join(methodList, p => p.ShippingMethod, m => m.ID, (p, m) => p).Join(labelList, p => p.TagNo, l => l.LabelID, (p, l) => p)
-                .Join(context.ExecuteStoreQuery<Items>(itemSelect).ToList(), p => p.ID, i => i.PackageID, (p, i) => p)
-                .Join(context.ExecuteStoreQuery<Orders>(orderSelect).ToList(), p => p.OrderID, o => o.OrderID, (package, order) => new { order, package })
-                .Join(context.ExecuteStoreQuery<PickProduct>(pickSelect).ToList(), op => op.package.ID, pk => pk.PackageID, (op, pick) => new { op.order, op.package, pick }).Distinct()
-                .OrderBy(data => data.package.Qty).OrderBy(data => data.order.TimeOfOrder).OrderByDescending(data => data.order.RushOrder).ToList();
-
-            string[] productIDs = ProductList.Select(p => p.pick.ProductID).Distinct().ToArray();
-            var productList = ProductList.Select(p => p.pick.SetInBox(methodList.First(m => m.ID.Equals(p.package.ShippingMethod)).InBox).SetTagNo(p.package.TagNo).SetNote(p.package.Comment))
-                .GroupBy(p => p.ProductID).ToDictionary(group => group.Key.ToString(), group => group.ToDictionary(p => p.ItemID.ToString()));
-
+            string[] productIDs = productList.Select(p => p.Key).ToArray(); ;
             List<SerialNumbers> itemSerials = db.SerialNumbers.AsNoTracking().Where(s => productIDs.Contains(s.ProductID)).ToList();
             List<PurchaseItemReceive> purchaseItemSerial = db.PurchaseItemReceive.AsNoTracking().Where(s => productIDs.Contains(s.ProductID)).ToList();
             var serialList = productIDs.ToDictionary(p => p, p => new
@@ -768,7 +766,7 @@ namespace QDLogistics.Controllers
                 used = itemSerials.Where(i => i.ProductID.Equals(p)).Select(i => i.SerialNumber.Trim()).ToArray()
             });
 
-            var groupList = ProductList.Select(p => p.pick).GroupBy(p => p.PackageID).GroupBy(p => p.First().OrderID)
+            var groupList = productList.Values.SelectMany(p => p.Values).GroupBy(p => p.PackageID).GroupBy(p => p.First().OrderID)
                 .ToDictionary(o => o.Key.ToString(), o => o.ToDictionary(p => p.Key.ToString(), p => p.ToDictionary(pp => pp.ItemID.ToString(),
                 pp => new { data = pp, serial = itemSerials.Where(sn => sn.OrderItemID == pp.ItemID).Select(sn => sn.SerialNumber.Trim()).ToArray() })))
                 .GroupBy(o => o.Value.Sum(p => p.Value.Sum(pp => pp.Value.data.Qty)) > 1).ToDictionary(g => g.Key ? "Multiple" : "Single", g => g.ToDictionary(o => o.Key.ToString(), o => o.Value));

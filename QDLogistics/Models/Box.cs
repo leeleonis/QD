@@ -18,6 +18,7 @@ namespace QDLogistics.Models
         public Box()
         {
             this.BoxNo = 1;
+            this.CurrentNo = 1;
             this.DirectLineLabel = new HashSet<DirectLineLabel>();
             this.Packages = new HashSet<Packages>();
         }

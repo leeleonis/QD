@@ -1925,7 +1925,7 @@
           <Property Name="BoxType" Type="Byte" Nullable="false" />
           <Property Name="ShippingStatus" Type="Byte" Nullable="false" />
           <Property Name="BoxNo" Type="Int32" Nullable="false" DefaultValue="1" />
-          <Property Name="CurrentNo" Type="Int32" Nullable="false" />
+          <Property Name="CurrentNo" Type="Int32" Nullable="false" DefaultValue="1" />
           <Property Name="TrackingNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="Note" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="Create_at" Type="DateTime" Nullable="false" Precision="3" />

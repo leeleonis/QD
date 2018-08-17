@@ -30,19 +30,19 @@ namespace QDLogistics.Commons
         {
             MyHelp.Log("Box", null, string.Format("取得當前未出貨的{0} Box", directLine.Abbreviation), Session);
 
-            boxData = db.Box.AsNoTracking().Where(b => b.IsEnable && b.DirectLine.Equals(directLine.ID) && b.WarehouseFrom.Equals(warehouseID)).FirstOrDefault(b => b.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.未發貨));
+            boxData = db.Box.FirstOrDefault(b => b.IsEnable && b.DirectLine.Equals(directLine.ID) && b.WarehouseFrom.Equals(warehouseID) && b.FirstMileMethod.Equals(methodID) && b.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.未發貨));
             if (boxData == null)
             {
                 if (Box == null) Box = new GenericRepository<Box>(db);
 
                 MyHelp.Log("Box", null, string.Format("開始建立【{0}】新Box", directLine.Abbreviation), Session);
-                
+
                 string boxID = string.Format("{0}-{1}", directLine.Abbreviation, TimeZoneConvert.Utc.ToString("yyyyMMdd"));
                 int count = db.Box.AsNoTracking().Count(b => b.IsEnable && b.DirectLine.Equals(directLine.ID) && b.BoxID.Contains(boxID)) + 1;
                 byte[] Byte = BitConverter.GetBytes(count);
                 Byte[0] += 64;
                 boxData = new Box()
-                {   
+                {
                     IsEnable = true,
                     BoxID = string.Format("{0}-{1}", boxID, System.Text.Encoding.ASCII.GetString(Byte.Take(1).ToArray())),
                     DirectLine = directLine.ID,
@@ -51,6 +51,7 @@ namespace QDLogistics.Commons
                     BoxType = (byte)EnumData.DirectLineBoxType.DirectLine,
                     Create_at = TimeZoneConvert.Utc
                 };
+                boxData.MainBox = boxData.BoxID;
                 Box.Create(boxData);
                 Box.SaveChanges();
 
