@@ -645,7 +645,8 @@ namespace QDLogistics.Controllers
 
                     amount = new int[] { 1, 4 };
                     break;
-                case (byte)EnumData.CarrierType.UPS:
+                case (byte)EnumData.CarrierType.Sendle:
+                    amount = new int[] { 1, 0 };
                     break;
                 case (byte)EnumData.CarrierType.USPS:
                     break;

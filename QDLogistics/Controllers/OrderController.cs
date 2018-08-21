@@ -166,7 +166,7 @@ namespace QDLogistics.Controllers
                                         {
                                             MyHelp.Log("Orders", packageData.OrderID, "訂單提交完成", session);
 
-                                            byte[] carrierType = new byte[] { (byte)EnumData.CarrierType.DHL, (byte)EnumData.CarrierType.FedEx, (byte)EnumData.CarrierType.IDS };
+                                            byte[] carrierType = new byte[] { (byte)EnumData.CarrierType.DHL, (byte)EnumData.CarrierType.FedEx, (byte)EnumData.CarrierType.IDS, (byte)EnumData.CarrierType.Sendle };
                                             if (!shipProcess.isDropShip && carrierType.Contains(package.Method.Carriers.CarrierAPI.Type.Value))
                                             {
                                                 PickProduct = new GenericRepository<PickProduct>(db);

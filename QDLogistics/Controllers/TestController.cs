@@ -459,7 +459,7 @@ namespace QDLogistics.Controllers
 
         }
 
-        public void Sendle_Test()
+        public void Sendle_Test(int OrderID)
         {
             CarrierAPI api = new CarrierAPI()
             {
@@ -469,8 +469,12 @@ namespace QDLogistics.Controllers
                 ApiAccount = "peter_qd_com_tw"
             };
 
+            Packages package = db.Packages.First(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID));
             Sendle_API Sendle = new Sendle_API(api);
-            var result = Sendle.Ping();
+            var result = Sendle.Create(package);
+            //var order = Sendle.Order("b48878bf-e847-49d2-bb3e-312c4e7afeb2");
+            //Sendle.Label("b48878bf-e847-49d2-bb3e-312c4e7afeb2", string.Format("{0}-{1}-{2}", package.Items.First().ProductID, package.OrderID.Value, "SVCFGK"));
+            //var track = Sendle.Track("SVCFGK");
         }
     }
 }

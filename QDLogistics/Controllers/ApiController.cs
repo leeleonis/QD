@@ -300,7 +300,7 @@ namespace QDLogistics.Controllers
             fileName[0] = "AirWaybill.pdf";
             filePath[0] = string.Format("{0}/FileUploads/{1}/{2}", baseURL, path, fileName[0]);
             /***** 提貨單 *****/
-            
+
             switch (package.Method.Carriers.CarrierAPI.Type)
             {
                 case (byte)EnumData.CarrierType.DHL:
@@ -321,7 +321,8 @@ namespace QDLogistics.Controllers
 
                     amount = new int[] { 1, 4 };
                     break;
-                case (int)EnumData.CarrierType.UPS:
+                case (int)EnumData.CarrierType.Sendle:
+                    amount = new int[] { 1, 0 };
                     break;
                 case (int)EnumData.CarrierType.USPS:
                     break;

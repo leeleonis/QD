@@ -8,6 +8,7 @@ using System.Net;
 using System.Web.Hosting;
 using CarrierApi.DHL;
 using CarrierApi.FedEx;
+using CarrierApi.Sendle;
 using CarrierApi.Winit;
 using DirectLineApi.IDS;
 using GemBox.Spreadsheet;
@@ -372,6 +373,35 @@ namespace QDLogistics.Commons
                         {
                             FedEx_SaveFile(data);
                         }
+                    }
+                    catch (Exception e)
+                    {
+                        return new ShipResult(false, e.Message);
+                    }
+                    break;
+                case (int)EnumData.CarrierType.Sendle:
+                    try
+                    {
+                        Sendle_API Sendle = new Sendle_API(api);
+                        Sendle_API.OrderResponse result = Sendle.Create(package);
+
+                        package.TrackingNumber = result.sendle_reference;
+                        package.ShipDate = SCWS.SyncOn;
+                        package.ShippingServiceCode = carrier.Name;
+                        
+                        DateTime date = package.ShipDate.Value;
+                        string basePath = HostingEnvironment.MapPath("~/FileUploads");
+                        package.FilePath = Path.Combine("export", date.ToString("yyyy/MM/dd"), package.ID.ToString());
+                        string filePath = Path.Combine(basePath, package.FilePath);
+                        if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
+
+                        while (Sendle.Order(result.order_id).labels == null)
+                        {
+                            System.Threading.Thread.Sleep(1000);
+                        }
+
+                        string code = string.Format("{0}-{1}-{2}", package.Items.First().ProductID, package.OrderID.Value, result.sendle_reference);
+                        Sendle.Label(result.order_id, code, filePath);
                     }
                     catch (Exception e)
                     {

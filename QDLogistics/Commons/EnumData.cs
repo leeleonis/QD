@@ -39,7 +39,7 @@ namespace QDLogistics.Commons
             return name;
         }
 
-        public enum CarrierType { Other, DHL, FedEx, UPS, USPS, Winit, IDS };
+        public enum CarrierType { Other, DHL, FedEx, UPS, USPS, Winit, IDS, Sendle };
 
         public enum AuthType { View, Edit, Insert, Delete };
 
