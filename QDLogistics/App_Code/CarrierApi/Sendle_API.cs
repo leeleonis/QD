@@ -353,7 +353,10 @@ namespace CarrierApi.Sendle
             {
                 foreach (var oData in (Dictionary<string, List<object>>)data)
                 {
-                    msg += string.Format("{0} => {1}", oData.Key, GetErrorMsg(oData.Value.First()));
+                    if (oData.Value.Any())
+                    {
+                        msg += string.Format("{0} => {1}", oData.Key, GetErrorMsg(oData.Value.First()));
+                    }
                 }
             }
             else if(data is string)

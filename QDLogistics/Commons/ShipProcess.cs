@@ -67,12 +67,21 @@ namespace QDLogistics.Commons
                 if (!result.Status) return result;
             }
 
-            if (isDropShip) return DropShip();
+            if (isDropShip)
+            {
+                result = DropShip();
+
+                if (!result.Status) return result;
+            }
 
             switch (warehouse.Name)
             {
                 case "TWN":
                     result = TWN_Carrier();
+                    break;
+
+                case "CRD":
+                    result = CRD_Carrier();
                     break;
 
                 case "Winit US WC":
@@ -782,6 +791,57 @@ namespace QDLogistics.Commons
                     fsOut.Close();
                 }
             }
+        }
+
+        private ShipResult CRD_Carrier()
+        {
+            Carriers carrier = package.Method.Carriers;
+            CarrierAPI api = carrier.CarrierAPI;
+
+            switch (api.Type)
+            {
+                case (int)EnumData.CarrierType.Sendle:
+                    try
+                    {
+                        Sendle_API Sendle = new Sendle_API(api);
+                        Sendle_API.OrderResponse result = Sendle.Create(package);
+
+                        package.TagNo = result.order_id;
+                        package.TrackingNumber = result.sendle_reference;
+                        package.ShipDate = SCWS.SyncOn;
+                        package.ShippingServiceCode = carrier.Name;
+
+                        db.DirectLineLabel.Add(new DirectLineLabel()
+                        {
+                            IsEnable = true,
+                            LabelID = package.TagNo,
+                            OrderID = package.OrderID.Value,
+                            PackageID = package.ID
+                        });
+                        db.SaveChanges();
+
+                        string basePath = HostingEnvironment.MapPath("~/FileUploads");
+                        package.FilePath = Path.Combine("export", package.ShipDate.Value.ToString("yyyy/MM/dd"), package.ID.ToString());
+                        string filePath = Path.Combine(basePath, package.FilePath);
+                        if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
+
+                        while (Sendle.Order(result.order_id).labels == null)
+                        {
+                            System.Threading.Thread.Sleep(1000);
+                        }
+
+                        string code = string.Format("{0}-{1}-{2}", package.Items.First().ProductID, package.OrderID.Value, result.sendle_reference);
+                        Sendle.Label(result.order_id, code, filePath);
+                    }
+                    catch (Exception e)
+                    {
+                        MyHelp.Log("Packages", package.ID, string.Format("建立Sendle提單失敗 - {0}", e.Message));
+                        return new ShipResult(false, e.Message);
+                    }
+                    break;
+            }
+
+            return new ShipResult(true);
         }
 
         private ShipResult Winit_Carrier()

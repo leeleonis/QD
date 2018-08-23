@@ -1177,5 +1177,66 @@ namespace QDLogistics.Controllers
 
             return Content("");
         }
+
+        public ActionResult Download(int[] packageIDs)
+        {
+            AjaxResult result = new AjaxResult();
+
+            try
+            {
+                if (!packageIDs.Any()) throw new Exception("沒有給訂單!");
+
+                string basePath = HostingEnvironment.MapPath("~/FileUploads");
+                List<Packages> packageList = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && packageIDs.Contains(p.ID)).ToList();
+
+                if (!Directory.Exists(Path.Combine(basePath, "download"))) Directory.CreateDirectory(Path.Combine(basePath, "download"));
+                using (var file = new ZipFile())
+                {
+                    foreach (Packages package in packageList)
+                    {
+                        if(System.IO.File.Exists(Path.Combine(basePath, package.FilePath, "AirWaybill.pdf")))
+                        {
+                            string labelFile = Path.Combine(basePath, package.FilePath, package.OrderID.ToString() + ".pdf");
+                            if (!System.IO.File.Exists(labelFile))
+                            {
+                                System.IO.File.Copy(Path.Combine(basePath, package.FilePath, "AirWaybill.pdf"), labelFile);
+                            }
+
+                            file.AddFile(labelFile, "");
+                        }
+                        else
+                        {
+                            throw new Exception(string.Format("訂單【{0}】找不到提單!", package.OrderID));
+                        }
+                    }
+
+                    file.Save(Path.Combine(basePath, "download", "AirWaybill.zip"));
+                }
+
+                string baseUrl = Request.Url.Scheme + "://" + Request.Url.Authority + Request.ApplicationPath.TrimEnd('/') + "/fileUploads";
+                result.data = Path.Combine(baseUrl, "download", "AirWaybill.zip");
+            }
+            catch (Exception e)
+            {
+                result.status = false;
+                result.message = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+            }
+
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
+        public class AjaxResult
+        {
+            public bool status { get; set; }
+            public string message { get; set; }
+            public object data { get; set; }
+
+            public AjaxResult()
+            {
+                this.status = true;
+                this.message = null;
+                this.data = null;
+            }
+        }
     }
 }

@@ -105,6 +105,7 @@
                 </div>
                 <div class="table-cell col-xs-2">
                     <div class="action-button col-xs-12">
+                        <button type="button" class="btn btn-default btn-sm btn-block" id="btn-download">Download</button>
                         <button type="button" class="btn btn-default btn-sm btn-block" id="btn-export">Export</button>
                         <form id="form-data" method="post">
                             <input type="hidden" name="type" value="waiting" />
@@ -131,7 +132,7 @@
     <script type="text/javascript">
         var pager, pageSize = 100;
         var selected = false;
-        var $dataGrid, $searchBtn = $('#btn-search'), $cancelBtn = $('#btn-cancel'), $updateBtn = $('#btn-update'), $exportBtn = $('#btn-export');
+        var $dataGrid, $searchBtn = $('#btn-search'), $cancelBtn = $('#btn-cancel'), $updateBtn = $('#btn-update'), $downloadBtn = $('#btn-download'), $exportBtn = $('#btn-export');
         var $orderIDSearch = $("#search-orderID"), $itemSearch = $("#search-item"), $userIDSearch = $("#search-userID"), $sourceIDSearch = $("#search-sourceID"),
             $statusSearch = $("#search-status"), $warehouseSearch = $("#search-warehouse"), $countrySearch = $("#search-country"), $channelSearch = $("#search-channel"),
             $dateFromSearch = $("#search-dateFrom"), $dateToSearch = $("#search-dateTo");
@@ -168,6 +169,24 @@
                         $dataGrid.datagrid('reload')
                     });
                 }
+            });
+
+            $downloadBtn.click(function () {
+                var rows = $dataGrid.datagrid('getSelections');
+
+                if (rows.length == 0) return alert('請先選擇訂單!');
+
+                var packageIDs = $.map(rows, function (row) {
+                    return row.PackageID;
+                });
+
+                ajaxUrl("@Url.Action("download", "order")", 'post', { packageIDs }).done(function (response) {
+                    if (response.status) {
+                        window.open(response.data);
+                    } else {
+                        alert(response.message);
+                    }
+                });
             });
 
             $exportBtn.click(function () {
@@ -318,6 +337,18 @@
 
         function isEmpty(value) {
             return (value == undefined) || (value == null) || (value == "");
+        }
+
+        function ajaxUrl(url, type, data) {
+            type = !isEmpty(type) ? type : {};
+            data = !isEmpty(data) ? data : {};
+
+            return $.ajax({
+                url: url,
+                type: type,
+                data: data,
+                dataType: "json"
+            });
         }
 
         var urlParam = function (name) {
