@@ -28,7 +28,7 @@ namespace CarrierApi.Sendle
             Sendle_ID = Api.ApiAccount;
             Api_Key = Api.ApiKey;
         }
-        
+
         public OrderResponse Create(Packages package)
         {
             Addresses address = package.Orders.Addresses;
@@ -38,14 +38,14 @@ namespace CarrierApi.Sendle
 
             OrderRequest request = new OrderRequest()
             {
-                pickup_date = MyHelp.SkipWeekend(pickup_date.AddDays(2)).ToShortDateString(),
+                pickup_date = MyHelp.SkipWeekend(pickup_date.AddDays(2)).ToString("yyyy-MM-dd"),
                 description = "merchandise",
                 kilogram_weight = weight.ToString(),
                 customer_reference = package.OrderID.Value.ToString(),
                 sender = SetSender(),
                 receiver = new AddressDetail()
                 {
-                    instructions = weight > 0.5M ?  "Must have signature on delivery. Thank you!" : null,
+                    instructions = weight > 0.5M ? "Must have signature on delivery. Thank you!" : null,
                     contact = new Contact()
                     {
                         name = string.Join(" ", new string[] { address.FirstName, address.MiddleInitial, address.LastName }),
@@ -65,12 +65,12 @@ namespace CarrierApi.Sendle
                 }
             };
 
-            return Request<OrderResponse>("orders", "post", request);
+            return Request<OrderResponse>("orders", "POST", request);
         }
 
         public OrderResponse Order(string order_id)
         {
-            return Request<OrderResponse>("orders/" + order_id, "get");
+            return Request<OrderResponse>("orders/" + order_id, "GET");
         }
 
         public void Label(string order_id, string code, string filePath)
@@ -86,7 +86,7 @@ namespace CarrierApi.Sendle
             {
                 var response = (HttpWebResponse)request.GetResponse();
                 var responseStream = response.GetResponseStream();
-                var fileStream = File.Create(Path.Combine(filePath, "pdf_temp.pdf")); 
+                var fileStream = File.Create(Path.Combine(filePath, "pdf_temp.pdf"));
                 responseStream.CopyTo(fileStream);
                 responseStream.Close();
                 fileStream.Close();
@@ -129,9 +129,14 @@ namespace CarrierApi.Sendle
             File.Delete(Path.Combine(filePath, "pdf_temp.pdf"));
         }
 
-        public TrackReeponse Track(string reference)
+        public TrackResponse Track(string reference)
         {
-            return Request<TrackReeponse>("tracking/" + reference, "get");
+            return Request<TrackResponse>("tracking/" + reference, "GET");
+        }
+
+        public CancelResponse Cancel(string order_id)
+        {
+            return Request<CancelResponse>("orders/" + order_id, "DELETE");
         }
 
         public T Request<T>(string func, string method, object data = null)
@@ -172,13 +177,13 @@ namespace CarrierApi.Sendle
                 using (WebResponse response = e.Response)
                 {
                     httpResponse = (HttpWebResponse)response;
-                    Console.WriteLine("Error code: {0}", httpResponse.StatusCode);
                     using (Stream responseData = response.GetResponseStream())
                     using (var reader = new StreamReader(responseData))
                     {
                         string msg = reader.ReadToEnd();
+                        MyHelp.Log("Sendle", null, string.Format("建立Sendle提單失敗 - {0}", msg));
                         ErrorResponse error = JsonConvert.DeserializeObject<ErrorResponse>(msg);
-                        throw new Exception(string.Join(";", error.messages.Where(m => m.Value.Any()).SelectMany(m => m.Value).ToArray()));
+                        throw new Exception(GetErrorMsg(error.messages));
                     }
                 }
             }
@@ -254,7 +259,8 @@ namespace CarrierApi.Sendle
         public class OrderResponse : OrderDetail
         {
             public string order_id { get; set; }
-            public string status { get; set; }
+            public string state { get; set; }
+            public StatusData status { get; set; }
             public string order_url { get; set; }
             public string sendle_reference { get; set; }
             public string tracking_url { get; set; }
@@ -262,6 +268,12 @@ namespace CarrierApi.Sendle
             public SchedulingData scheduling { get; set; }
             public RouteData route { get; set; }
             public PriceDetail price { get; set; }
+        }
+
+        public class StatusData
+        {
+            public string description { get; set; }
+            public string last_changed_at { get; set; }
         }
 
         public class LabelData
@@ -297,7 +309,7 @@ namespace CarrierApi.Sendle
             public decimal amount { get; set; }
         }
 
-        public class TrackReeponse
+        public class TrackResponse
         {
             public string state { get; set; }
             public EventData[] tracking_events { get; set; }
@@ -313,11 +325,48 @@ namespace CarrierApi.Sendle
             public string reason { get; set; }
         }
 
+        public class CancelResponse
+        {
+            public string order_id { get; set; }
+            public string state { get; set; }
+            public string order_url { get; set; }
+            public string sendle_reference { get; set; }
+            public string tracking_url { get; set; }
+            public string customer_reference { get; set; }
+            public string cancelled_at { get; set; }
+            public string cancellation_message { get; set; }
+
+        }
+
         public class ErrorResponse
         {
-            public Dictionary<string, string[]> messages { get; set; }
+            public Dictionary<string, List<object>> messages { get; set; }
             public string error { get; set; }
             public string error_description { get; set; }
+        }
+        
+        private string GetErrorMsg(object data)
+        {
+            string msg = "";
+
+            if (data is Dictionary<string, List<object>>)
+            {
+                foreach (var oData in (Dictionary<string, List<object>>)data)
+                {
+                    msg += string.Format("{0} => {1}", oData.Key, GetErrorMsg(oData.Value.First()));
+                }
+            }
+            else if(data is string)
+            {
+                msg = data.ToString() + "; ";
+            }
+            else
+            {
+                var JData = (Newtonsoft.Json.Linq.JObject)data;
+                msg = GetErrorMsg(JData.ToObject<Dictionary<string, List<object>>>());
+            }
+            
+            return msg;
         }
     }
 }

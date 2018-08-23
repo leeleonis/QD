@@ -73,6 +73,7 @@ namespace QDLogistics.Commons
                 package.FirstMile = 0;
                 package.Export = itemList.Min(i => methodOfSku.ContainsKey(i.ProductID) ? methodOfSku[i.ProductID]["export"] : 0);
                 package.ExportMethod = itemList.Min(i => methodOfSku.ContainsKey(i.ProductID) ? methodOfSku[i.ProductID]["exportMethod"] : 0);
+                package.UploadTracking = true;
 
                 Packages.Update(package, package.ID);
                 Packages.SaveChanges();

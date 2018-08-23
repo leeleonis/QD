@@ -28,6 +28,8 @@ namespace QDLogistics.Commons
 {
     public class ShipProcess
     {
+        private QDLogisticsEntities db;
+
         private Orders order;
         private Packages package;
         private SC_WebService SCWS;
@@ -40,6 +42,7 @@ namespace QDLogistics.Commons
 
         public ShipProcess(SC_WebService SCWS)
         {
+            this.db = db = new QDLogisticsEntities();
             this.SCWS = SCWS;
         }
 
@@ -94,7 +97,6 @@ namespace QDLogistics.Commons
         {
             ShipResult result = new ShipResult(true);
 
-            QDLogisticsEntities db = new QDLogisticsEntities();
             IRepository<Box> Box = new GenericRepository<Box>(db);
             IRepository<ShippingMethod> Method = new GenericRepository<ShippingMethod>(db);
             IRepository<DirectLine> DirectLine = new GenericRepository<DirectLine>(db);
@@ -385,13 +387,22 @@ namespace QDLogistics.Commons
                         Sendle_API Sendle = new Sendle_API(api);
                         Sendle_API.OrderResponse result = Sendle.Create(package);
 
+                        package.TagNo = result.order_id;
                         package.TrackingNumber = result.sendle_reference;
                         package.ShipDate = SCWS.SyncOn;
                         package.ShippingServiceCode = carrier.Name;
-                        
-                        DateTime date = package.ShipDate.Value;
+
+                        db.DirectLineLabel.Add(new DirectLineLabel()
+                        {
+                            IsEnable = true,
+                            LabelID = package.TagNo,
+                            OrderID = package.OrderID.Value,
+                            PackageID = package.ID
+                        });
+                        db.SaveChanges();
+
                         string basePath = HostingEnvironment.MapPath("~/FileUploads");
-                        package.FilePath = Path.Combine("export", date.ToString("yyyy/MM/dd"), package.ID.ToString());
+                        package.FilePath = Path.Combine("export", package.ShipDate.Value.ToString("yyyy/MM/dd"), package.ID.ToString());
                         string filePath = Path.Combine(basePath, package.FilePath);
                         if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
 
@@ -405,6 +416,7 @@ namespace QDLogistics.Commons
                     }
                     catch (Exception e)
                     {
+                        MyHelp.Log("Packages", package.ID, string.Format("建立Sendle提單失敗 - {0}", e.Message));
                         return new ShipResult(false, e.Message);
                     }
                     break;

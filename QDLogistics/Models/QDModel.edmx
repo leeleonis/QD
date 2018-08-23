@@ -2053,7 +2053,7 @@
           <Property Name="BoxID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="TagNo" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="FinalShippingFee" Type="Decimal" Precision="18" Scale="2" />
-          <Property Name="UploadTracking" Type="Boolean" Nullable="false" />
+          <Property Name="UploadTracking" Type="Boolean" Nullable="false" DefaultValue="True" />
           <Property Name="TrackingNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="POId" Type="Int32" />
           <Property Name="POInvoice" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />

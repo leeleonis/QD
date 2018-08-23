@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -444,7 +445,7 @@ namespace QDLogistics.Controllers
                     AddressLine = address.StreetLine2
                 };
 
-                BingMapsRESTToolkit.Response response =  request.Execute().Result;
+                BingMapsRESTToolkit.Response response = request.Execute().Result;
             }
         }
 
@@ -452,7 +453,7 @@ namespace QDLogistics.Controllers
         {
             SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
             int CompanyID = SCWS.Get_CurrentCompanyID();
-            foreach(var vendor in SCWS.Get_Vendor_All(CompanyID))
+            foreach (var vendor in SCWS.Get_Vendor_All(CompanyID))
             {
                 Response.Write(string.Format("{0} - {1}<br />", vendor.ID, vendor.DisplayName));
             }
@@ -471,10 +472,12 @@ namespace QDLogistics.Controllers
 
             Packages package = db.Packages.First(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID));
             Sendle_API Sendle = new Sendle_API(api);
-            var result = Sendle.Create(package);
-            //var order = Sendle.Order("b48878bf-e847-49d2-bb3e-312c4e7afeb2");
+
+            //var result = Sendle.Create(package);
+            //var order = Sendle.Order(result.order_id);
             //Sendle.Label("b48878bf-e847-49d2-bb3e-312c4e7afeb2", string.Format("{0}-{1}-{2}", package.Items.First().ProductID, package.OrderID.Value, "SVCFGK"));
             //var track = Sendle.Track("SVCFGK");
+            var cancel = Sendle.Cancel("ed551843-4df3-476b-8371-3baa0489b72f");
         }
     }
 }

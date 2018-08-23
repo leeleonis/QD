@@ -17,6 +17,7 @@ namespace QDLogistics.Models
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public Packages()
         {
+            this.UploadTracking = true;
             this.CaseEvent = new HashSet<CaseEvent>();
             this.Items = new HashSet<Items>();
         }
