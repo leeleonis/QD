@@ -422,6 +422,14 @@ public static class MyHelp
 
         return checkDate;
     }
+
+    public static IQueryable<TSource> SetOrder<TSource, TKey>(this IQueryable<TSource> source, System.Linq.Expressions.Expression<Func<TSource, TKey>> keySelector, string dir)
+    {
+        if (dir == "asc")
+            return source.OrderBy(keySelector);
+        else
+            return source.OrderByDescending(keySelector);
+    }
 }
 
 public class Country

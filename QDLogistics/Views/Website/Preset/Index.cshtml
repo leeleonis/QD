@@ -96,7 +96,7 @@
 
             $Table = $('#dt_basic').DataTable({
                 "autoWidth": false,
-                "ordering": false,
+                "ordering": true,
                 "serverSide": true,
                 "sDom": "<'dt-toolbar'<'col-sm-8 hidden-xs'><'col-xs-12 col-sm-4'Tl>>" + "t" + "<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
                 "oTableTools": {
@@ -124,13 +124,13 @@
                 },
                 "columns": [
                     {
-                        data: "visible", render: function (data, type, row, meta) {
+                        data: "visible", orderable: false, render: function (data, type, row, meta) {
                             var id = 'visible-' + row.id;
                             var checked = data ? 'checked' : '';
                             return "<div class='checkbox-inline'><label><input type='checkbox' class='checkbox' id='" + id + "' " + checked + "><span></span></lebel></div>";
                         }
                     }, {
-                        data: "dispatch", render: function (data, type, row, meta) {
+                        data: "dispatch", orderable: false, render: function (data, type, row, meta) {
                             var id = 'dispatch-' + row.id;
                             var checked = data ? 'checked' : '';
                             return "<div class='checkbox-inline'><label><input type='checkbox' class='checkbox' id='" + id + "' " + checked + "><span></span></lebel></div>";
@@ -142,7 +142,7 @@
                             return "<select class='form-control' id='" + id + "' onchange='changeBox(" + row.id + ");'>" + setSelectOption(option, data) + "</select>";
                         }
                     }, {
-                        data: "value", render: function (data, type, row, meta) {
+                        data: "value", orderable: false, render: function (data, type, row, meta) {
                             return "<div id='box-" + row.id + "'>" + setBoxHtml(row.type.toString(), row.id, row) + "</div>";
                         }
                     }, {
@@ -182,7 +182,7 @@
                             return setNumberType('weight', row.id, data, row.weightType);
                         }
                     }, {
-                        data: "action", render: function (data, type, row, meta) {
+                        data: "action", orderable: false, render: function (data, type, row, meta) {
                             var saveBtn = "<button class='btn btn-default' onclick='saveData(" + row.id + ");'><i class='fa fa-save'></i><span class='hidden-mobile'> Save</span></button>";
                             var deleteBtn = "<button class='btn btn-danger' onclick='deleteData(" + row.id + ");'><i class='glyphicon glyphicon-trash'></i><span class='hidden-mobile'> Delete</span></button>";
                             return saveBtn + deleteBtn;

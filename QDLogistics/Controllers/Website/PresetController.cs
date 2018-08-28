@@ -150,18 +150,57 @@ namespace QDLogistics.Controllers.Website
             return Json(result, JsonRequestBehavior.AllowGet);
         }
 
-        public ActionResult AjaxData(int draw, int start, int length)
+        public ActionResult AjaxData(int draw, List<Dictionary<string, string>> order, int start, int length)
         {
             Preset = new GenericRepository<Preset>(db);
 
             var total = 0;
             List<object> dataList = new List<object>();
 
-            IEnumerable<Preset> results = Preset.GetAll(true).Where(p => p.IsEnable.Equals(true));
+            var results = db.Preset.AsNoTracking().Where(p => p.IsEnable);
+            if (order.Any())
+            {
+                string dir = order[0].First(o => o.Key.Equals("dir")).Value;
+
+                switch (int.Parse(order[0].First(o => o.Key.Equals("column")).Value))
+                {
+                    case 2:
+                        results = MyHelp.SetOrder(results, p => p.Type, dir);
+                        break;
+                    case 4:
+                        results = MyHelp.SetOrder(results, p => p.Total, dir);
+                        break;
+                    case 5:
+                        results = MyHelp.SetOrder(results, p => p.Country, dir);
+                        break;
+                    case 6:
+                        results = MyHelp.SetOrder(results, p => p.CompanyID, dir);
+                        break;
+                    case 7:
+                        results = MyHelp.SetOrder(results, p => p.SourceID, dir);
+                        break;
+                    case 8:
+                        results = MyHelp.SetOrder(results, p => p.Amount, dir);
+                        break;
+                    case 9:
+                        results = MyHelp.SetOrder(results, p => p.ShippingMethod, dir);
+                        break;
+                    case 10:
+                        results = MyHelp.SetOrder(results, p => p.Sku, dir);
+                        break;
+                    case 11:
+                        results = MyHelp.SetOrder(results, p => p.Weight, dir);
+                        break;
+                    default:
+                        results = MyHelp.SetOrder(results, p => p.Id, "asc");
+                        break;
+                }
+            }
+
             if (results.Any())
             {
                 total = results.Count();
-                foreach (Preset preset in results.OrderByDescending(p => p.Id).Skip(start).Take(length).ToList())
+                foreach (Preset preset in results.Skip(start).Take(length).ToList())
                 {
                     dataList.Add(new
                     {
@@ -188,7 +227,7 @@ namespace QDLogistics.Controllers.Website
                 }
             }
 
-            return Json(new { draw = draw, data = dataList, recordsFiltered = total, recordsTotal = total });
+            return Json(new { draw, data = dataList, recordsFiltered = total, recordsTotal = total });
         }
     }
 

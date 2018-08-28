@@ -139,7 +139,8 @@
                             </div>
                         </div>
                     </div>
-                    <button class="btn btn-default btn-sm btn-block" id="btn-syncDays" data-href="@Url.Action("checkOrder", "orderSync", new { day = 14 })"><span>14天資料同步</span></button>
+                    @*<button class="btn btn-default btn-sm btn-block" id="btn-syncDays" data-href="@Url.Action("checkOrder", "orderSync", new { day = 14 })"><span>14天資料同步</span></button>*@
+                    <button type="button" class="btn btn-default btn-sm btn-block" id="btn-download">Download</button>
                     <button type="button" class="btn btn-default btn-sm btn-block" id="btn-export">匯出 Export</button>
                     <form id="form-data" method="post">
                         <input type="hidden" name="type" value="shipped" />
@@ -164,7 +165,7 @@
         var pager, pageSize = 100;
         var selected = false;
         var $dataGrid;
-        var $searchBtn = $('#btn-search'), $returnBtn = $("#btn-return"), $rmaBtn = $("#btn-rma"), $syncDaysBtn = $("#btn-syncDays"), $exportBtn = $("#btn-export");
+        var $searchBtn = $('#btn-search'), $returnBtn = $("#btn-return"), $rmaBtn = $("#btn-rma"), $syncDaysBtn = $("#btn-syncDays"), $downloadBtn = $('#btn-download'), $exportBtn = $("#btn-export");
         var $reasonDialog = $('#dialog-reason'), $reasonSelect = $('#select-reason'), $reasonSubmit = $('#submit-reason');
         var $orderIDSearch = $("#search-orderID"), $userIDSearch = $("#search-userID"), $sourceIDSearch = $("#search-sourceID"), $itemSearch = $("#search-item"),
             $countrySearch = $("#search-country"), $warehouseSearch = $("#search-warehouse"), $channelSearch = $("#search-channel"), $trackingSearch = $("#search-tracking"),
@@ -254,12 +255,30 @@
                 }
             });
 
-            $syncDaysBtn.click(function () {
-                $.ajax({
-                    url: $(this).data("href"),
-                    dataType: "json",
-                    success: function (response) {
-                        alert(response['message']);
+            //$syncDaysBtn.click(function () {
+            //    $.ajax({
+            //        url: $(this).data("href"),
+            //        dataType: "json",
+            //        success: function (response) {
+            //            alert(response['message']);
+            //        }
+            //    });
+            //});
+
+            $downloadBtn.click(function () {
+                var rows = $dataGrid.datagrid('getSelections');
+
+                if (rows.length == 0) return alert('請先選擇訂單!');
+
+                var packageIDs = $.map(rows, function (row) {
+                    return row.PackageID;
+                });
+
+                ajaxUrl("@Url.Action("download", "order")", 'post', { packageIDs }).done(function (response) {
+                    if (response.status) {
+                        window.open(response.data);
+                    } else {
+                        alert(response.message);
                     }
                 });
             });
@@ -285,7 +304,7 @@
                 url: "@Url.Action("orderShippedData", "ajax")",
                 queryParams: {},
                 width: "100%",
-                height: window.screen.availHeight - 340,
+                height: window.screen.availHeight - 370,
                 checkOnSelect: false,
                 selectOnCheck: false,
                 singleSelect: false,
@@ -466,6 +485,18 @@
 
         function isEmpty(value) {
             return (value == undefined) || (value == null) || (value == "");
+        }
+
+        function ajaxUrl(url, type, data) {
+            type = !isEmpty(type) ? type : {};
+            data = !isEmpty(data) ? data : {};
+
+            return $.ajax({
+                url: url,
+                type: type,
+                data: data,
+                dataType: "json"
+            });
         }
 
         var urlParam = function (name) {
