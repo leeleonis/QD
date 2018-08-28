@@ -38,8 +38,8 @@ namespace CarrierApi.Sendle
 
             OrderRequest request = new OrderRequest()
             {
-                pickup_date = MyHelp.SkipWeekend(pickup_date.AddDays(2)).ToString("yyyy-MM-dd"),
-                description = "merchandise",
+                pickup_date = MyHelp.SkipWeekend(pickup_date.AddDays(2), 2, 2).ToString("yyyy-MM-dd"),
+                description = "Merchandise",
                 kilogram_weight = weight.ToString(),
                 customer_reference = package.OrderID.Value.ToString(),
                 sender = SetSender(),
@@ -95,6 +95,9 @@ namespace CarrierApi.Sendle
 
             using (PdfReader pdfReader = new PdfReader(Path.Combine(filePath, "pdf_temp.pdf")))
             {
+                if (File.Exists(Path.Combine(filePath, "AirWaybill.pdf")))
+                    File.Delete(Path.Combine(filePath, "AirWaybill.pdf"));
+
                 Document document = new Document();
                 PdfWriter writer = PdfWriter.GetInstance(document, new FileStream(Path.Combine(filePath, "AirWaybill.pdf"), FileMode.Create));
 
@@ -199,6 +202,7 @@ namespace CarrierApi.Sendle
         {
             return new AddressDetail()
             {
+                instructions = "Please pickup from ECOF Block T, unit 3 /391 Park Rd, Regents Park, NSW, 2143",
                 contact = new Contact()
                 {
                     name = "Nina Kuo",
@@ -344,7 +348,7 @@ namespace CarrierApi.Sendle
             public string error { get; set; }
             public string error_description { get; set; }
         }
-        
+
         private string GetErrorMsg(object data)
         {
             string msg = "";
@@ -359,7 +363,7 @@ namespace CarrierApi.Sendle
                     }
                 }
             }
-            else if(data is string)
+            else if (data is string)
             {
                 msg = data.ToString() + "; ";
             }
@@ -368,7 +372,7 @@ namespace CarrierApi.Sendle
                 var JData = (Newtonsoft.Json.Linq.JObject)data;
                 msg = GetErrorMsg(JData.ToObject<Dictionary<string, List<object>>>());
             }
-            
+
             return msg;
         }
     }

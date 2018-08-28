@@ -1,4 +1,5 @@
-﻿using CarrierApi.Winit;
+﻿using CarrierApi.Sendle;
+using CarrierApi.Winit;
 using ClosedXML.Excel;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -460,9 +461,11 @@ namespace QDLogistics.Controllers
 
                         try
                         {
+                            Carriers carrier = package.Method.Carriers;
+
                             if (!string.IsNullOrEmpty(package.WinitNo))
                             {
-                                Winit_API winit = new Winit_API(package.Method.Carriers.CarrierAPI);
+                                Winit_API winit = new Winit_API(carrier.CarrierAPI);
                                 Received received = winit.Void(package.WinitNo);
                                 if (received.code != "0") throw new Exception(received.code + "-" + received.msg);
                                 package.WinitNo = null;
@@ -470,6 +473,13 @@ namespace QDLogistics.Controllers
 
                             if (!string.IsNullOrEmpty(package.TagNo))
                             {
+                                if(carrier.Name == "Sendle")
+                                {
+                                    Sendle_API sendle = new Sendle_API(carrier.CarrierAPI);
+                                    Sendle_API.CancelResponse cancel = sendle.Cancel(package.TagNo);
+                                    if (string.IsNullOrEmpty(cancel.cancellation_message)) throw new Exception("取消訂單出貨失敗!");
+                                }
+
                                 package.Label.IsEnable = false;
                                 package.TagNo = package.BoxID = null;
                             }

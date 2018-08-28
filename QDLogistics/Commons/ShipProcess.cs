@@ -84,12 +84,19 @@ namespace QDLogistics.Commons
                     result = CRD_Carrier();
                     break;
 
+                case "MWS":
+                    result = MWS_Carrier();
+                    break;
+
+                case "4PX":
+                    result = _4PX_Carrier();
+                    break;
+
                 case "Winit US WC":
                 case "Winit AU":
                     result = Winit_Carrier();
                     break;
 
-                case "4PX":
                 case "USA":
                     break;
 
@@ -393,35 +400,10 @@ namespace QDLogistics.Commons
                 case (int)EnumData.CarrierType.Sendle:
                     try
                     {
-                        Sendle_API Sendle = new Sendle_API(api);
-                        Sendle_API.OrderResponse result = Sendle.Create(package);
+                        Sendle_Shipped(api);
 
-                        package.TagNo = result.order_id;
-                        package.TrackingNumber = result.sendle_reference;
                         package.ShipDate = SCWS.SyncOn;
                         package.ShippingServiceCode = carrier.Name;
-
-                        db.DirectLineLabel.Add(new DirectLineLabel()
-                        {
-                            IsEnable = true,
-                            LabelID = package.TagNo,
-                            OrderID = package.OrderID.Value,
-                            PackageID = package.ID
-                        });
-                        db.SaveChanges();
-
-                        string basePath = HostingEnvironment.MapPath("~/FileUploads");
-                        package.FilePath = Path.Combine("export", package.ShipDate.Value.ToString("yyyy/MM/dd"), package.ID.ToString());
-                        string filePath = Path.Combine(basePath, package.FilePath);
-                        if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
-
-                        while (Sendle.Order(result.order_id).labels == null)
-                        {
-                            System.Threading.Thread.Sleep(1000);
-                        }
-
-                        string code = string.Format("{0}-{1}-{2}", package.Items.First().ProductID, package.OrderID.Value, result.sendle_reference);
-                        Sendle.Label(result.order_id, code, filePath);
                     }
                     catch (Exception e)
                     {
@@ -803,35 +785,10 @@ namespace QDLogistics.Commons
                 case (int)EnumData.CarrierType.Sendle:
                     try
                     {
-                        Sendle_API Sendle = new Sendle_API(api);
-                        Sendle_API.OrderResponse result = Sendle.Create(package);
+                        Sendle_Shipped(api);
 
-                        package.TagNo = result.order_id;
-                        package.TrackingNumber = result.sendle_reference;
                         package.ShipDate = SCWS.SyncOn;
                         package.ShippingServiceCode = carrier.Name;
-
-                        db.DirectLineLabel.Add(new DirectLineLabel()
-                        {
-                            IsEnable = true,
-                            LabelID = package.TagNo,
-                            OrderID = package.OrderID.Value,
-                            PackageID = package.ID
-                        });
-                        db.SaveChanges();
-
-                        string basePath = HostingEnvironment.MapPath("~/FileUploads");
-                        package.FilePath = Path.Combine("export", package.ShipDate.Value.ToString("yyyy/MM/dd"), package.ID.ToString());
-                        string filePath = Path.Combine(basePath, package.FilePath);
-                        if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
-
-                        while (Sendle.Order(result.order_id).labels == null)
-                        {
-                            System.Threading.Thread.Sleep(1000);
-                        }
-
-                        string code = string.Format("{0}-{1}-{2}", package.Items.First().ProductID, package.OrderID.Value, result.sendle_reference);
-                        Sendle.Label(result.order_id, code, filePath);
                     }
                     catch (Exception e)
                     {
@@ -842,6 +799,89 @@ namespace QDLogistics.Commons
             }
 
             return new ShipResult(true);
+        }
+
+        private ShipResult MWS_Carrier()
+        {
+            Carriers carrier = package.Method.Carriers;
+            CarrierAPI api = carrier.CarrierAPI;
+
+            switch (api.Type)
+            {
+                case (int)EnumData.CarrierType.Sendle:
+                    try
+                    {
+                        Sendle_Shipped(api);
+
+                        package.ShipDate = SCWS.SyncOn;
+                        package.ShippingServiceCode = carrier.Name;
+                    }
+                    catch (Exception e)
+                    {
+                        MyHelp.Log("Packages", package.ID, string.Format("建立Sendle提單失敗 - {0}", e.Message));
+                        return new ShipResult(false, e.Message);
+                    }
+                    break;
+            }
+
+            return new ShipResult(true);
+        }
+
+        private ShipResult _4PX_Carrier()
+        {
+            Carriers carrier = package.Method.Carriers;
+            CarrierAPI api = carrier.CarrierAPI;
+
+            switch (api.Type)
+            {
+                case (int)EnumData.CarrierType.Sendle:
+                    try
+                    {
+                        Sendle_Shipped(api);
+
+                        package.ShipDate = SCWS.SyncOn;
+                        package.ShippingServiceCode = carrier.Name;
+                    }
+                    catch (Exception e)
+                    {
+                        MyHelp.Log("Packages", package.ID, string.Format("建立Sendle提單失敗 - {0}", e.Message));
+                        return new ShipResult(false, e.Message);
+                    }
+                    break;
+            }
+
+            return new ShipResult(true);
+        }
+
+        private void Sendle_Shipped(CarrierAPI api)
+        {
+            Sendle_API Sendle = new Sendle_API(api);
+            Sendle_API.OrderResponse result = Sendle.Create(package);
+
+            package.TagNo = result.order_id;
+            package.TrackingNumber = result.sendle_reference;
+
+            db.DirectLineLabel.Add(new DirectLineLabel()
+            {
+                IsEnable = true,
+                LabelID = package.TagNo,
+                OrderID = package.OrderID.Value,
+                PackageID = package.ID
+            });
+            db.SaveChanges();
+
+            string basePath = HostingEnvironment.MapPath("~/FileUploads");
+            package.FilePath = Path.Combine("export", package.ShipDate.Value.ToString("yyyy/MM/dd"), package.ID.ToString());
+            string filePath = Path.Combine(basePath, package.FilePath);
+            if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
+
+            while (Sendle.Order(result.order_id).labels == null)
+            {
+                System.Threading.Thread.Sleep(1000);
+            }
+
+            string code = string.Format("{0}-{1}-{2}", package.Items.First().ProductID, package.OrderID.Value, result.sendle_reference);
+            Sendle.Label(result.order_id, code, filePath);
         }
 
         private ShipResult Winit_Carrier()
