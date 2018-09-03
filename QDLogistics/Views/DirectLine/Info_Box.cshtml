@@ -12,13 +12,13 @@
         <td width="15%">Battery No.</td>
         <td width="15%"></td>
         <td width="15%">Total Weight</td>
-        <td width="15%"><span id="text-weight">@(itemList.Sum(i => i.Qty * i.Skus.Weight) / 1000)</span> KG</td>
+        <td width="15%"><span id="text-weight">@(itemList.Sum(i => i.Qty * (decimal)i.Skus.Weight) / 1000)</span> KG</td>
     </tr>
     <tr>
         <td width="15%">Box ID:</td>
         <td id="text-boxID">@Model.BoxID</td>
         <td>Box No.</td>
-        <td class="no-padding">@Html.EditorFor(m => m.BoxNo, new { htmlAttributes = new { @class = "form-control", @id = "input-boxNo", @min = Model.BoxNo } })</td>
+        <td class="no-padding">@Html.EditorFor(m => m.BoxNo, new { htmlAttributes = new { @class = "form-control", @id = "input-boxNo", @min = Model.BoxNo, @max = Model.BoxNo + 1 } })</td>
         <td>Total Value</td>
         <td><span id="text-total">@itemList.Sum(i => i.DeclaredValue * i.Qty)</span> of <span id="text-maxTotal">@directLine.MaxDeclared</span></td>
     </tr>

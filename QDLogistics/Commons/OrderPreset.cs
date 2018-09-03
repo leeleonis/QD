@@ -100,7 +100,7 @@ namespace QDLogistics.Commons
                                     Items.Update(item, item.ID);
                                 }
                                 break;
-                            case 4: //warehouse & shipping method
+                            case 4: //Warehouse & shipping method
                                 package.ShippingMethod = preset.MethodID;
                                 foreach (Items item in itemList)
                                 {
@@ -114,6 +114,14 @@ namespace QDLogistics.Commons
                                 foreach (Items item in itemList)
                                 {
                                     item.DLDeclaredValue = item.UnitPrice.Value * (package.DLDeclaredTotal / subTotal);
+                                    Items.Update(item, item.ID);
+                                }
+                                break;
+                            case 6: //Warehouse & First Mile
+                                package.FirstMile = preset.MethodID;
+                                foreach (Items item in itemList)
+                                {
+                                    item.ShipFromWarehouseID = preset.WarehouseID;
                                     Items.Update(item, item.ID);
                                 }
                                 break;

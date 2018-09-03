@@ -3,12 +3,14 @@ using QDLogistics.FedExTrackService;
 using QDLogistics.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Description;
 using System.ServiceModel.Dispatcher;
 using System.Web;
+using System.Web.Hosting;
 using System.Xml.Linq;
 
 namespace CarrierApi.FedEx
@@ -150,7 +152,7 @@ namespace CarrierApi.FedEx
                 ShippingChargesPayment = new Payment() { PaymentType = PaymentType.SENDER, Payor = new Payor() { ResponsibleParty = _shipperInit() } },
                 PackageCount = "1"
             };
-            
+
             Addresses address = package.Orders.Addresses;
             request.RequestedShipment.Recipient = new Party()
             {
@@ -259,7 +261,7 @@ namespace CarrierApi.FedEx
             return reply;
         }
 
-        public ProcessShipmentReply CreateBox(Box box, ShippingMethod method, DirectLine directLine)
+        public ProcessShipmentReply CreateBox(List<Box> boxList, ShippingMethod method, DirectLine directLine)
         {
             ProcessShipmentRequest request = _shipmentInit();
 
@@ -274,7 +276,7 @@ namespace CarrierApi.FedEx
                 PackagingType = (QDLogistics.FedExShipService.PackagingType)method.BoxType,
                 Shipper = _shipperInit(),
                 ShippingChargesPayment = new Payment() { PaymentType = PaymentType.SENDER, Payor = new Payor() { ResponsibleParty = _shipperInit() } },
-                PackageCount = "1"
+                PackageCount = boxList.Count().ToString()
             };
 
             request.RequestedShipment.Recipient = new Party()
@@ -296,40 +298,36 @@ namespace CarrierApi.FedEx
                 }
             };
 
-            List<Items> itemList = box.Packages.Where(p => p.IsEnable.Value).SelectMany(p => p.Items.Where(i => i.IsEnable.Value)).ToList();
-            //string currency = Enum.GetName(typeof(QDLogistics.OrderService.CurrencyCodeType2), box.Packages.First(p => p.IsEnable.Value).Orders.OrderCurrencyCode.Value);
+            int NumberOfPieces = 1;
             string currency = "USD";
-            QDLogistics.FedExShipService.Money customsValue = new QDLogistics.FedExShipService.Money() { Currency = currency, Amount = box.Packages.Where(p => p.IsEnable.Value).Sum(p => p.DeclaredTotal) };
-            QDLogistics.FedExShipService.Commodity commodity = new QDLogistics.FedExShipService.Commodity
+            //string currency = Enum.GetName(typeof(QDLogistics.OrderService.CurrencyCodeType2), box.Packages.First(p => p.IsEnable.Value).Orders.OrderCurrencyCode.Value);
+            var commodityList = new List<QDLogistics.FedExShipService.Commodity>();
+            var itemLineList = new List<RequestedPackageLineItem>();
+            foreach (Box box in boxList)
             {
-                NumberOfPieces = "1",
-                Description = string.Join(", ", itemList.Select(i => i.Skus.ProductType.ProductTypeName).Distinct().ToArray()),
-                CountryOfManufacture = "CN",
-                Weight = new QDLogistics.FedExShipService.Weight()
+                List<Items> itemList = box.Packages.Where(p => p.IsEnable.Value).SelectMany(p => p.Items.Where(i => i.IsEnable.Value)).ToList();
+                QDLogistics.FedExShipService.Money customsValue = new QDLogistics.FedExShipService.Money() { Currency = currency, Amount = box.Packages.Where(p => p.IsEnable.Value).Sum(p => p.DeclaredTotal) };
+                QDLogistics.FedExShipService.Commodity commodity = new QDLogistics.FedExShipService.Commodity
                 {
-                    Units = QDLogistics.FedExShipService.WeightUnits.KG,
-                    Value = itemList.Sum(i => i.Qty.Value * ((decimal)i.Skus.Weight / 1000))
-                },
-                Quantity = 1,
-                QuantityUnits = "EA",
-                UnitPrice = customsValue,
-                CustomsValue = customsValue,
-                QuantitySpecified = true
-            };
+                    NumberOfPieces = boxList.Count().ToString(),
+                    Description = string.Join(", ", itemList.Select(i => i.Skus.ProductType.ProductTypeName).Distinct().ToArray()),
+                    CountryOfManufacture = "CN",
+                    Weight = new QDLogistics.FedExShipService.Weight()
+                    {
+                        Units = QDLogistics.FedExShipService.WeightUnits.KG,
+                        Value = itemList.Sum(i => i.Qty.Value * ((decimal)i.Skus.Weight / 1000))
+                    },
+                    Quantity = 1,
+                    QuantityUnits = "EA",
+                    UnitPrice = customsValue,
+                    CustomsValue = customsValue,
+                    QuantitySpecified = true
+                };
 
-            request.RequestedShipment.CustomsClearanceDetail = new CustomsClearanceDetail()
-            {
-                DutiesPayment = new Payment() { PaymentType = PaymentType.SENDER, Payor = new Payor() { ResponsibleParty = _shipperInit() } },
-                DocumentContent = InternationalDocumentContentType.DOCUMENTS_ONLY,
-                CustomsValue = customsValue,
-                Commodities = new QDLogistics.FedExShipService.Commodity[] { commodity },
-                DocumentContentSpecified = true
-            };
-
-            request.RequestedShipment.RequestedPackageLineItems = new RequestedPackageLineItem[] {
-                new RequestedPackageLineItem()
+                commodityList.Add(commodity);
+                itemLineList.Add(new RequestedPackageLineItem()
                 {
-                    SequenceNumber = "1",
+                    SequenceNumber = NumberOfPieces++.ToString(),
                     InsuredValue = new QDLogistics.FedExShipService.Money() { Amount = 0, Currency = currency },
                     Weight = commodity.Weight,
                     CustomerReferences = new CustomerReference[]
@@ -340,21 +338,39 @@ namespace CarrierApi.FedEx
                             Value = box.BoxID
                         }
                     }
-                }
+                });
+            }
+
+            request.RequestedShipment.TotalWeight = new QDLogistics.FedExShipService.Weight()
+            {
+                Units = QDLogistics.FedExShipService.WeightUnits.KG,
+                Value = commodityList.Select(c => c.Weight).Sum(w => w.Value)
             };
 
-            request.RequestedShipment.LabelSpecification = new LabelSpecification()
+            request.RequestedShipment.CustomsClearanceDetail = new CustomsClearanceDetail()
             {
+                DutiesPayment = new Payment() { PaymentType = PaymentType.SENDER, Payor = new Payor() { ResponsibleParty = _shipperInit() } },
+                DocumentContent = InternationalDocumentContentType.DOCUMENTS_ONLY,
+                Commodities = new QDLogistics.FedExShipService.Commodity[1],
+                DocumentContentSpecified = true
+            };
+
+            request.RequestedShipment.RequestedPackageLineItems = new RequestedPackageLineItem[1];
+
+            request.RequestedShipment.LabelSpecification = new LabelSpecification()
+            {                
+                LabelOrder = LabelOrderType.SHIPPING_LABEL_FIRST,
                 LabelFormatType = LabelFormatType.COMMON2D,
                 ImageType = ShippingDocumentImageType.ZPLII,
                 LabelStockType = LabelStockType.STOCK_4X6,
                 LabelPrintingOrientation = LabelPrintingOrientationType.BOTTOM_EDGE_OF_TEXT_FIRST,
+                LabelOrderSpecified = true,
                 ImageTypeSpecified = true,
                 LabelStockTypeSpecified = true,
                 LabelPrintingOrientationSpecified = true
             };
 
-            ProcessShipmentReply reply;
+            ProcessShipmentReply reply = new ProcessShipmentReply();
             using (ShipPortTypeClient client = new ShipPortTypeClient())
             {
                 var endpoint = client.Endpoint;
@@ -363,7 +379,50 @@ namespace CarrierApi.FedEx
 
                 try
                 {
-                    reply = client.processShipment(request);
+                    var basePath = HostingEnvironment.MapPath("~/FileUploads");
+                    var filePath = Path.Combine(basePath, "export", "box", boxList[0].Create_at.ToString("yyyy/MM/dd"), boxList[0].MainBox);
+                    if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
+
+                    for (int i = 0; i < itemLineList.Count(); i++)
+                    {
+                        if (!i.Equals(0))
+                        {
+                            request.RequestedShipment.TotalWeight = null;
+                            request.RequestedShipment.MasterTrackingId = reply.CompletedShipmentDetail.MasterTrackingId;
+                        }
+                        request.RequestedShipment.CustomsClearanceDetail.CustomsValue = commodityList[i].CustomsValue;
+                        request.RequestedShipment.CustomsClearanceDetail.Commodities[0] = commodityList[i];
+                        request.RequestedShipment.RequestedPackageLineItems[0] = itemLineList[i];
+
+                        reply = client.processShipment(request);
+                        if (reply.HighestSeverity.Equals(QDLogistics.FedExShipService.NotificationSeverityType.ERROR) || reply.HighestSeverity.Equals(QDLogistics.FedExShipService.NotificationSeverityType.FAILURE))
+                        {
+                            throw new Exception(string.Join("\n", reply.Notifications.Select(n => n.Message).ToArray()));
+                        }
+
+                        boxList[i].TrackingNumber = reply.CompletedShipmentDetail.CompletedPackageDetails.First().TrackingIds.Select(t => t.TrackingNumber).First();
+
+                        var content = reply.CompletedShipmentDetail.CompletedPackageDetails.First().Label.Parts.First().Image;
+                        System.Net.HttpWebRequest webRequest = (System.Net.HttpWebRequest)System.Net.WebRequest.Create("http://api.labelary.com/v1/printers/8dpmm/labels/4x6/");
+                        webRequest.Method = "POST";
+                        webRequest.Accept = "application/pdf";
+                        webRequest.ContentType = "application/x-www-form-urlencoded";
+                        webRequest.ContentLength = content.Length;
+
+                        using (Stream requestStream = webRequest.GetRequestStream())
+                        {
+                            requestStream.Write(content, 0, content.Length);
+
+                            System.Net.HttpWebResponse response = (System.Net.HttpWebResponse)webRequest.GetResponse();
+                            using (Stream responseStream = response.GetResponseStream())
+                            {
+                                using (FileStream fileStream = File.Create(Path.Combine(filePath, boxList[i].BoxID + ".pdf")))
+                                {
+                                    responseStream.CopyTo(fileStream);
+                                }
+                            }
+                        }
+                    }
                 }
                 catch (Exception e)
                 {

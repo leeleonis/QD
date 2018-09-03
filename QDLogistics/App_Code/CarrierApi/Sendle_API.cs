@@ -38,7 +38,7 @@ namespace CarrierApi.Sendle
 
             OrderRequest request = new OrderRequest()
             {
-                pickup_date = MyHelp.SkipWeekend(pickup_date.AddDays(2), 2, 2).ToString("yyyy-MM-dd"),
+                pickup_date = MyHelp.SkipWeekend(pickup_date.AddDays(2)).ToString("yyyy-MM-dd"),
                 description = "Merchandise",
                 kilogram_weight = weight.ToString(),
                 customer_reference = package.OrderID.Value.ToString(),
@@ -82,54 +82,36 @@ namespace CarrierApi.Sendle
             request.PreAuthenticate = true;
             request.Headers.Add("Idempotency-Key", Guid.NewGuid().ToString());
 
+            if (File.Exists(Path.Combine(filePath, "AirWaybill.pdf"))) File.Delete(Path.Combine(filePath, "AirWaybill.pdf"));
             using (HttpWebResponse httpResponse = (HttpWebResponse)request.GetResponse())
             {
                 var response = (HttpWebResponse)request.GetResponse();
                 var responseStream = response.GetResponseStream();
-                var fileStream = File.Create(Path.Combine(filePath, "pdf_temp.pdf"));
+                var fileStream = File.Create(Path.Combine(filePath, "AirWaybill.pdf"));
                 responseStream.CopyTo(fileStream);
                 responseStream.Close();
                 fileStream.Close();
                 response.Close();
             }
 
-            using (PdfReader pdfReader = new PdfReader(Path.Combine(filePath, "pdf_temp.pdf")))
-            {
-                if (File.Exists(Path.Combine(filePath, "AirWaybill.pdf")))
-                    File.Delete(Path.Combine(filePath, "AirWaybill.pdf"));
+            if (File.Exists(Path.Combine(filePath, "Label.pdf"))) File.Delete(Path.Combine(filePath, "Label.pdf"));
+            Document document = new Document();
+            PdfWriter writer = PdfWriter.GetInstance(document, new FileStream(Path.Combine(filePath, "Label.pdf"), FileMode.Create));
+            document.Open();
+            PdfContentByte cb = writer.DirectContent;
+            PdfReader reader = new PdfReader(Path.Combine(filePath, "AirWaybill.pdf"));
+            document.SetPageSize(reader.GetPageSizeWithRotation(1));
+            document.NewPage();
 
-                Document document = new Document();
-                PdfWriter writer = PdfWriter.GetInstance(document, new FileStream(Path.Combine(filePath, "AirWaybill.pdf"), FileMode.Create));
+            Paragraph pp = new Paragraph();
+            Barcode128 barcode = new Barcode128 { CodeType = Barcode.CODE128_UCC, Code = code };
+            Image barcodeImage = barcode.CreateImageWithBarcode(cb, null, null);
+            barcodeImage.Alignment = Element.ALIGN_CENTER;
+            pp.Add(barcodeImage);
+            document.Add(pp);
 
-                document.Open();
-                PdfContentByte cb = writer.DirectContent;
-
-                document.SetPageSize(pdfReader.GetPageSizeWithRotation(1));
-                document.NewPage();
-
-                PdfImportedPage page = writer.GetImportedPage(pdfReader, 1);
-                int rotation = pdfReader.GetPageRotation(1);
-                if (rotation == 90 || rotation == 270)
-                {
-                    cb.AddTemplate(page, 0, -1f, 1f, 0, 0, pdfReader.GetPageSizeWithRotation(1).Height);
-                }
-                else
-                {
-                    cb.AddTemplate(page, 1f, 0, 0, 1f, 0, 0);
-                }
-
-                document.NewPage();
-
-                Paragraph p = new Paragraph();
-                Barcode128 barcode = new Barcode128 { CodeType = Barcode.CODE128_UCC, Code = code };
-                Image barcodeImage = barcode.CreateImageWithBarcode(cb, null, null);
-                barcodeImage.Alignment = Element.ALIGN_CENTER;
-                p.Add(barcodeImage);
-                document.Add(p);
-                document.Close();
-            }
-
-            File.Delete(Path.Combine(filePath, "pdf_temp.pdf"));
+            document.Close();
+            writer.Close();
         }
 
         public TrackResponse Track(string reference)

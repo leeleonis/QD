@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using CarrierApi.Sendle;
 using CarrierApi.Winit;
 using ClosedXML.Excel;
 using DirectLineApi.IDS;
@@ -694,6 +695,16 @@ namespace QDLogistics.Controllers
                                                 bool IDS_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, null, null, false);
                                                 if (!IDS_Status) MyHelp.Log("Box", box.BoxID, "寄送Box到貨通知失敗", session);
                                                 break;
+                                            case "Sendle":
+                                                receiveMails = new string[] { "customerservice@ecof.com.au" };
+                                                ccMails[ccMails.Length] = "sophia.wang@ecof.com.au";
+                                                var packageList = box.Packages.Where(p => p.IsEnable.Value).ToList();
+                                                mailTitle = string.Format("ARRIVED: [0} {1}, {2}pcs", method.Carriers.Name, box.TrackingNumber, packageList.Count());
+                                                mailBody = string.Format("Tracking {0}({1}pcs, {2}</ br>", box.TrackingNumber, packageList.Count(), box.BoxID);
+                                                mailBody += string.Join("</ br>", box.Packages.Where(p => p.IsEnable.Value).Select(p => string.Format("{0}-{1}-{2}", p.Items.First().ProductID, p.OrderID.Value, p.TrackingNumber)).ToArray());
+                                                bool Sendle_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, null, null, false);
+                                                if (!Sendle_Status) MyHelp.Log("Box", box.BoxID, "寄送Box到貨通知失敗", session);
+                                                break;
                                         }
                                     }
                                 }
@@ -1196,13 +1207,22 @@ namespace QDLogistics.Controllers
                     {
                         if(System.IO.File.Exists(Path.Combine(basePath, package.FilePath, "AirWaybill.pdf")))
                         {
-                            string labelFile = Path.Combine(basePath, package.FilePath, package.OrderID.ToString() + ".pdf");
-                            if (!System.IO.File.Exists(labelFile))
+                            string AWB_File = Path.Combine(basePath, package.FilePath, string.Format("AWB-{0}.pdf", package.OrderID));
+                            if (!System.IO.File.Exists(AWB_File))
                             {
-                                System.IO.File.Copy(Path.Combine(basePath, package.FilePath, "AirWaybill.pdf"), labelFile);
+                                System.IO.File.Copy(Path.Combine(basePath, package.FilePath, "AirWaybill.pdf"), AWB_File);
                             }
+                            file.AddFile(AWB_File, "");
 
-                            file.AddFile(labelFile, "");
+                            if (System.IO.File.Exists(Path.Combine(basePath, package.FilePath, "Label.pdf")))
+                            {
+                                string Label_File = Path.Combine(basePath, package.FilePath, string.Format("Label-{0}.pdf", package.OrderID));
+                                if (!System.IO.File.Exists(Label_File))
+                                {
+                                    System.IO.File.Copy(Path.Combine(basePath, package.FilePath, "Label.pdf"), Label_File);
+                                }
+                                file.AddFile(Label_File, "");
+                            }
                         }
                         else
                         {

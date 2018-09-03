@@ -598,6 +598,8 @@ namespace QDLogistics.Controllers
 
         private void ResetShippedData(Packages package, List<PickProduct> picked, string[] serialArray)
         {
+            MyHelp.Log("", null, string.Format("訂單【{0}】出貨狀態重置", package.OrderID));
+
             foreach (PickProduct data in picked)
             {
                 data.IsPicked = false;
@@ -605,7 +607,7 @@ namespace QDLogistics.Controllers
                 PickProduct.Update(data, data.ID);
             }
 
-            foreach (var ss in db.SerialNumbers.Where(s => s.OrderID.Equals(package.OrderID) && serialArray.Contains(s.SerialNumber)))
+            foreach (var ss in db.SerialNumbers.Where(s => s.OrderID.Equals(package.OrderID) && serialArray.Contains(s.SerialNumber)).ToList())
             {
                 SerialNumbers.Delete(ss);
             };

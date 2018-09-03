@@ -12,7 +12,14 @@
         <div class="row table-parent">
             <div class="tool-content table-row col-xs-12">
                 <div class="table-cell col-xs-10">
-                    <div class="cancel-button col-xs-1">
+                    <div class="cancel-button col-xs-2">
+                        <div>
+                            @Html.DropDownList("FirstMile", (List<SelectListItem>)ViewBag.DirectLineList, htmlAttributes: new { @class = "form-control", @id = "select-type" })
+                        </div>
+                    </div>
+                </div>
+                <div class="table-cell col-xs-1">
+                    <div class="action-button col-xs-12">
                         <button type="button" class="btn btn-default btn-sm btn-block" id="btn-download">標籤下載</button>
                         <button type="button" class="btn btn-default btn-sm btn-block" id="btn-dispatch">Dispatch</button>
                     </div>
@@ -47,7 +54,7 @@
         var pager, pageSize = 100;
         var selected = false, selectOption, filterValue = {}
         var $dataGrid;
-        var $downloadBtn = $('#btn-download'), $dispatchBtn = $('#btn-dispatch'), $importBtn = $('#btn-import'), $importFile = $("#file-import"), $exportBtn = $('#btn-export');
+        var $typeSelect = $('#select-type'), $downloadBtn = $('#btn-download'), $dispatchBtn = $('#btn-dispatch'), $importBtn = $('#btn-import'), $importFile = $("#file-import"), $exportBtn = $('#btn-export');
 
         $(function () {
             var data = { optionType: ['CountryCode', 'Method', 'StatusCode'] };
@@ -60,6 +67,10 @@
                 } else {
                     alert(response['message']);
                 }
+            });
+
+            $typeSelect.change(function () {
+                $dataGrid.datagrid('reload');
             });
 
             $downloadBtn.click(function () {
@@ -82,6 +93,7 @@
 
             $dispatchBtn.click(function () {
                 var rows = $dataGrid.datagrid('getSelections');
+                var tracking, isDispatch = true;
 
                 if (rows.length == 0) return alert('請先選擇訂單!');
 
@@ -89,7 +101,12 @@
                     return row.PackageID;
                 });
 
-                ajaxUrl("@Url.Action("dispatch", "dropShip")", 'post', { packageIDs }).done(function (response) {
+                if ($typeSelect.find('option:selected').text() == 'Sendle') {
+                    tracking = prompt("請輸入Tracking Number");
+                    if (isEmpty(tracking)) alert('未輸入Tracking Number!')
+                }
+
+                ajaxUrl("@Url.Action("dispatch", "dropShip")", 'post', { packageIDs, tracking }).done(function (response) {
                     if (response.status) {
                         alert("Success!");
                     } else {
@@ -97,7 +114,7 @@
                     }
                 });
             });
-        
+
             $importBtn.click(function () {
                 document.getElementById("form-data").reset();
                 $importFile.trigger("click");
@@ -107,7 +124,7 @@
                 $("#input-action").val("import");
                 var form = document.querySelector("#form-data");
                 var data = new FormData(form);
-                                
+
                 $.ajax({
                     url: "@Url.Action("upload", "file")",
                     type: "POST",
@@ -234,6 +251,8 @@
                     }
                 },
                 onBeforeLoad: function (param) {
+                    param.directLine = $('#select-type').val();
+
                     Object.keys(filterValue).forEach(function (key) {
                         if (!isEmpty(filterValue[key])) param[key] = filterValue[key];
                     });

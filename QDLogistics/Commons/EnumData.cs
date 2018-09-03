@@ -76,7 +76,7 @@ namespace QDLogistics.Commons
             };
         }
 
-        public enum DirectLineStatus { 未發貨, 運輸中, 已到貨 }
+        public enum DirectLineStatus { 未發貨, 運輸中, 已到貨, 延誤中, 延誤後抵達 }
         public enum DirectLineBoxType { DirectLine, InventoryTransfer, FBA }
         public static Dictionary<DirectLineBoxType, string> BoxTypeList()
         {

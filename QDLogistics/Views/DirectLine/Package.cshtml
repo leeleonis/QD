@@ -38,7 +38,7 @@
                     @Html.DropDownList("FirstMile", (List<SelectListItem>)ViewBag.DirectLineList, htmlAttributes: new { @class = "form-control", @id = "select-type" })
                 </div>
                 <div>
-                    @Html.DropDownList("FirstMile", (List<SelectListItem>)ViewBag.FirstMileList, htmlAttributes:new { @class = "form-control", @id = "select-method" })
+                    @Html.DropDownList("FirstMile", (List<SelectListItem>)ViewBag.FirstMileList, htmlAttributes: new { @class = "form-control", @id = "select-method" })
                 </div>
                 <div>
                     <select class="form-control" id="select-typeMethod">
@@ -60,33 +60,9 @@
                 <div class="hidden">
                     <div id="win-pick" class="easyui-window" title="撿貨單" style="width:1400px;height:500px;padding:5px;"
                          data-options="iconCls:'icon-save',collapsible:false,minimizable:false,maximizable:false,closed:true,draggable:false,resizable:false,modal:true"></div>
-                    <div id="dialog-serial" class="easyui-dialog" title="請輸入產品序號/品號" data-options="iconCls:'icon-edit',closed:true,resizable:false,onBeforeClose:ProductSerialData.Refresh_Page" style="width:1000px;top:200px;">
+                    <div id="dialog-serial" class="easyui-dialog" title="請輸入產品序號/品號" data-options="iconCls:'icon-edit',closed:true,resizable:false,onBeforeClose:ProductSerialData.Refresh_Page" style="width:1400px;top:200px;">
                         <div class="col-sm-12" data-options="region:'north',border:false" style="text-align:right;padding:5px;">
                             <div class="col-sm-10" id="info-box" style="text-align:center; padding:0 5px 0 0;">
-                                <table class="table table-bordered text-center" style="margin:0;">
-                                    <tr>
-                                        <td width="40%" id="text-directLine" colspan="2"></td>
-                                        <td width="15%">Battery No.</td>
-                                        <td width="15%"></td>
-                                        <td width="15%">Total Weight</td>
-                                        <td width="15%"><span id="text-weight">X</span> KG</td>
-                                    </tr>
-                                    <tr>
-                                        <td width="15%">Box ID:</td>
-                                        <td id="text-boxID"></td>
-                                        <td>Box No.</td>
-                                        <td class="no-padding">@Html.Editor("BoxNo", new { htmlAttributes = new { @class = "form-control", @id = "input-boxNo" } })</td>
-                                        <td>Total Value</td>
-                                        <td><span id="text-total">X</span> of <span id="text-maxTotal">9900</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Carrier:</td>
-                                        <td id="text-carrier"></td>
-                                        <td>Complete Boxes</td>
-                                        <td><span id="text-currentNo">X</span> of <span id="text-boxNo">Y</span></td>
-                                        <td colspan="2"></td>
-                                    </tr>
-                                </table>
                             </div>
                             <div class="col-sm-2 no-padding">
                                 <button class="btn btn-default btn-sm btn-block" id="btn-next">儲存/下一步</button>
@@ -98,13 +74,16 @@
                             <table id="table-box" class="easyui-datagrid" style="width:100%;height:400px" data-options="onBeforeSelect:function(){return false;}">
                                 <thead>
                                     <tr>
-                                        <th data-options="field:'OrderID',width:'10%',align:'center'">訂單</th>
-                                        <th data-options="field:'ProductID',width:'10%',align:'center'">SKU</th>
+                                        <th data-options="field:'OrderID',width:'7%',align:'center'">訂單</th>
+                                        <th data-options="field:'ProductID',width:'7%',align:'center'">SKU</th>
                                         <th data-options="field:'ProductName',width:'35%',align:'center'">品名</th>
-                                        <th data-options="field:'SerialNumber',width:'13%',align:'center'">Serial</th>
-                                        <th data-options="field:'TagNo',width:'13%',align:'center'">標籤號碼</th>
-                                        <th data-options="field:'Note',width:'13%',align:'center'">備註</th>
+                                        <th data-options="field:'SerialNumber',width:'11%',align:'center'">Serial</th>
+                                        <th data-options="field:'TagNo',width:'18%',align:'center'">標籤號碼</th>
+                                        <th data-options="field:'Declared',width:'5%',align:'center'">Value</th>
+                                        <th data-options="field:'Weight',width:'5%',align:'center'">Weight</th>
+                                        <th data-options="field:'Battery',width:'5%',align:'center'">Battery</th>
                                         <th data-options="field:'InBox',width:'5%',align:'center'">裝箱</th>
+                                        <th data-options="field:'Note',width:'13%',align:'center'">備註</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
@@ -112,13 +91,16 @@
                             <table id="table-pickup" class="easyui-datagrid" style="width:100%;" data-options="onBeforeSelect:function(){return false;}">
                                 <thead>
                                     <tr>
-                                        <th data-options="field:'OrderID',width:'10%',align:'center'">訂單</th>
-                                        <th data-options="field:'ProductID',width:'10%',align:'center'">SKU</th>
-                                        <th data-options="field:'ProductName',width:'35%',align:'center'">品名</th>
-                                        <th data-options="field:'SerialNumber',width:'13%',align:'center'">Serial</th>
-                                        <th data-options="field:'TagNo',width:'13%',align:'center'">標籤號碼</th>
-                                        <th data-options="field:'Note',width:'13%',align:'center'">備註</th>
                                         <th data-options="field:'Picked',width:'5%',align:'center'"></th>
+                                        <th data-options="field:'OrderID',width:'7%',align:'center'">訂單</th>
+                                        <th data-options="field:'ProductID',width:'7%',align:'center'">SKU</th>
+                                        <th data-options="field:'ProductName',width:'35%',align:'center'">品名</th>
+                                        <th data-options="field:'SerialNumber',width:'11%',align:'center'">Serial</th>
+                                        <th data-options="field:'TagNo',width:'18%',align:'center'">標籤號碼</th>
+                                        <th data-options="field:'Declared',width:'5%',align:'center'">Value</th>
+                                        <th data-options="field:'Weight',width:'5%',align:'center'">Weight</th>
+                                        <th data-options="field:'Battery',width:'5%',align:'center'">Battery</th>
+                                        <th data-options="field:'Note',width:'13%',align:'center'">備註</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
@@ -239,6 +221,16 @@
             $("#btn-next").click(function () {
                 if (confirm("是否確定進行下一步?")) {
                     ProductSerialData.Save_box();
+                }
+            });
+
+            $("#btn-prev").click(function () {
+                var boxNo = parseInt($('#input-boxNo').val());
+                if (boxNo != 1 && confirm("是否確定回上一步?")) {
+                    $('#input-boxNo').val(boxNo - 1);
+                    ProductSerialData.Save_box();
+                } else {
+                    ProductSerialData.Refresh_Page();
                 }
             });
 
@@ -389,23 +381,24 @@
                 orderChangeList = [];
             };
 
-            var getBoxData = function () {
+            var getBoxData = function (boxID) {
                 var url = '@Url.Action("getCurrentBox", "directLine")';
-                ajaxUrl(url, 'get', { firstMile: $methodSelect.val(), type: $typeSelect.val() }).done(function (response) {
+                ajaxUrl(url, 'get', { firstMile: $methodSelect.val(), type: $typeSelect.val(), boxID:boxID }).done(function (response) {
                     if (response.status) {
-                        $('#info-box').html(response.data.info);
+                        $boxInfo.html(response.data.info);
 
+                        boxOrderList.rows = [];
                         if (response.data.list.length > 0) {
                             var list = response.data.list;
 
-                            boxOrderList.rows = [];
                             list.forEach(function (value, i) {
+                                value.Weight = value.Weight / 1000,
+                                value.Battery = "<img src='../content/img/" + (value.IsBattery ? "checked" : "error") + ".png' runat='server' style='width: auto; height: 15px;'>";
                                 value.InBox = "<img src='../content/img/" + (value.InBox ? "checked" : "error") + ".png' runat='server' style='width: auto; height: 15px;'>";
                                 boxOrderList.rows.push(value);
                             });
-
-                            $boxTable.datagrid('loadData', boxOrderList);
                         }
+                        $boxTable.datagrid('loadData', boxOrderList);
                     }
                 });
             }
@@ -413,13 +406,12 @@
             var checkSerial = function(serial){
                 var productId, order, serialNumber;
 
+                error('');
                 if(!ProductSerialData.Is_Init()) return alert("尚未預載資料!");
 
                 if (isEmpty(serial)) return error('不可為空!');
 
                 for (var pId in serialList) {
-                    needSerial = false;
-
                     //if($.inArray(serial, serialList[pId].used) != -1) return error("序號已被使用!");
                     if($.inArray(serial, serialList[pId].serials) != -1){
                         productId = pId;
@@ -427,6 +419,7 @@
                     }
                 }
 
+                needSerial = false;
                 if (isEmpty(productId)) {
                     var UPCPicked;
                     Object.keys(productList).forEach(function (pId) {
@@ -439,8 +432,8 @@
                         productId = serial;
                     }
 
-                    if (!isEmpty(serialList[pId])) {
-                        needSerial = serialList[pId].isRequire;
+                    if (!isEmpty(serialList[productId])) {
+                        needSerial = serialList[productId].isRequire;
                     }
                 }
 
@@ -472,41 +465,55 @@
             };
 
             function checkPicked(pData, order, serialNumber) {
-                var product = order[pData.PackageID][pData.ItemID];
+                if (!isEmpty(order)) {
+                    if (!checkDeclaredValue(order[pData.PackageID])) {
+                        return error("此訂單已超過總價值!");
+                    }
 
-                if (needSerial) {
-                    error("產品需要輸入序號!");
-                } else {
-                    pData.QtyPicked = product.data.QtyPicked += 1;
-                    pData.IsPicked = product.data.IsPicked = (product.data.QtyPicked == product.data.Qty);
+                    var product = order[pData.PackageID][pData.ItemID];
 
-                    if (!isEmpty(serialNumber)) {
-                        product.serial.push(serialNumber);
-                        if ($.inArray(serialNumber, serialList[product.data.ProductID].used) == -1) {
-                            serialList[product.data.ProductID].used.push(serialNumber);
+                    if (needSerial) {
+                        error("產品需要輸入序號!");
+                    } else {
+                        pData.QtyPicked = product.data.QtyPicked += 1;
+                        pData.IsPicked = product.data.IsPicked = (product.data.QtyPicked == product.data.Qty);
+
+                        if (!isEmpty(serialNumber)) {
+                            product.serial.push(serialNumber);
+                            if ($.inArray(serialNumber, serialList[product.data.ProductID].used) == -1) {
+                                serialList[product.data.ProductID].used.push(serialNumber);
+                            }
                         }
                     }
-                }
 
-                if (isEmpty(gb_OrderID) || isEmpty(gb_PackageID)) orderLocked(pData.OrderID, pData.PackageID);
+                    if (isEmpty(gb_OrderID) || isEmpty(gb_PackageID)) orderLocked(pData.OrderID, pData.PackageID);
 
-                if (product.data.IsPicked) {
-                    var needPick = Object.keys(order[pData.PackageID]).map(itemID => order[pData.PackageID][itemID]).filter(product => !product.data.IsPicked);
+                    if (product.data.IsPicked) {
+                        var needPick = Object.keys(order[pData.PackageID]).map(itemID => order[pData.PackageID][itemID]).filter(product => !product.data.IsPicked);
 
-                    if (needPick.length == 0) {
-                        if (!findOrderChange(pData.OrderID)) {
-                            updatePicked(pData, order, false);
-                            joinBoxList(order[pData.PackageID]);
+                        if (needPick.length == 0) {
+                            if (!findOrderChange(pData.OrderID)) {
+                                updatePicked(pData, order, false);
+                                joinBoxList(order[pData.PackageID]);
+                            }
+
+                            if (orderChangeList.length != 0) init();
+
+                            return true;
                         }
-
-                        if (orderChangeList.length != 0) init();
                     }
-                    return true;
-                } else {
                     showList(order[pData.PackageID]);
-
-                    return false;
                 }
+                return false;
+            }
+
+            function checkDeclaredValue(itemList) {
+                var value = 0;
+                Object.keys(itemList).forEach(function (itemID) {
+                    value += itemList[itemID].data.Weight / 1000;
+                });
+                console.log(value);
+                return parseFloat($('#text-maxTotal').text()) <= parseFloat($('#text-total').text()) + value;
             }
 
             function findOrderChange(orderID){
@@ -535,9 +542,15 @@
 
                 var url = '@Url.Action("orderPicked", "directLine")';
                 ajaxUrl(url, 'post', { boxID: boxInfo.BoxID, picked: picked, serials: serials }).done(function(response){
-                    if(response['status']) {
+                    if (response['status']) {
                         if (retry) error('訂單【' + gb_OrderID + '】更新失敗，資料已重新寄送!');
                         print($.param(response.data, true));
+
+                        var total = parseFloat($('#text-maxTotal').text());
+                        Object.keys(itemList).forEach(function (itemID) {
+                            total += itemList[itemID].data.Weight / 1000;
+                        });
+                        $('#text-maxTotal').text(total);
                         orderLocked();
                     } else {
                         alert(response['message']);
@@ -605,6 +618,7 @@
                 return order;
             }
 
+            // 顯示當前出貨訂單
             function showList(items) {
                 var data = { total: 0, rows: [] };
                 var product, serialNumber;
@@ -616,7 +630,8 @@
                     for(var i=1; i <= product.Qty; i++){
                         data.rows.push({
                             IsPicked: product.IsPicked, OrderID: product.OrderID, PackageID: product.PackageID, ProductID: product.ProductID, ProductName: product.ProductName, SerialNumber: (i <= product.QtyPicked ? serialNumber[i - 1] : ""),
-                            TagNo: product.TagNo, Note: product.Note,
+                            TagNo: product.TagNo, Note: product.Note, Declared: product.DeclaredValue, Weight: product.Weight/1000,
+                            Battery: "<img src='../content/img/" + (product.IsBattery ? "checked" : "error") + ".png' runat='server' style='width: auto; height: 15px;'>",
                             Picked: "<img src='../content/img/" + (i <= product.QtyPicked ? "checked" : "error") + ".png' runat='server' style='width: auto; height: 15px;'>"});
                         data.total++;
                     }
@@ -625,6 +640,7 @@
                 $pickupTable.datagrid('loadData', data);
             }
 
+            // 加入至已出貨訂單清單
             function joinBoxList(items) {
                 var product, serialNumber;
 
@@ -634,18 +650,22 @@
 
                     for (var i = 1; i <= product.Qty; i++) {
                         boxOrderList.rows.push({
-                            OrderID: product.OrderID, PackageID: product.PackageID, ProductID: product.ProductID, ProductName: product.ProductName, SerialNumber: (i <= product.QtyPicked ? serialNumber[i - 1] : ""), TagNo: product.TagNo, Note: product.Note,
+                            OrderID: product.OrderID, PackageID: product.PackageID, ProductID: product.ProductID, ProductName: product.ProductName, SerialNumber: (i <= product.QtyPicked ? serialNumber[i - 1] : ""),
+                            TagNo: product.TagNo, Note: product.Note, Declared: product.DeclaredValue, Weight: product.Weight/1000,
+                            Battery: "<img src='../content/img/" + (product.IsBattery ? "checked" : "error") + ".png' runat='server' style='width: auto; height: 15px;'>",
                             InBox: "<img src='../content/img/" + (product.InBox ? "checked" : "error") + ".png' runat='server' style='width: auto; height: 15px;'>"
                         });
                     }
                 }
             }
 
+            // 訂單鎖定
             function orderLocked(orderID, packageID){
                 gb_OrderID = orderID;
                 gb_PackageID = packageID;
             }
 
+            // 顯示錯誤訊息
             function error(message){
                 $("#message-error").html(message);
                 $serialInput.textbox('clear');
@@ -704,10 +724,12 @@
                     orderChangeList.push(order);
                 },
                 Save_box: function () {
-                    if (!isEmpty(boxInfo)) {
-                        var url = '@Url.Action("saveBox", "directLine")';
-                        ajaxUrl(url, 'post', { boxID: boxInfo.BoxID, methodID: $methodSelect.val() }).done(function (response) {
-                            if (response.status) {
+                    var url = '@Url.Action("saveBox", "directLine")';
+                    ajaxUrl(url, 'post', { boxID: $('#text-boxID').text(), boxNo: parseInt($('#input-boxNo').val()) }).done(function (response) {
+                        if (response.status) {
+                            if (!isEmpty(response.data.boxID)) {
+                                ProductSerialData.Get_Box(response.data.boxID);
+                            } else {                                
                                 if (response.data.fileList.length > 0) {
                                     var file = response.data.fileList[0];
                                     print($.param({ fileName: file['fileName'], filePath: file['filePath'], amount: file['amount'], printerName: file['printerName'] }, true));
@@ -747,11 +769,11 @@
                                         $serialDialog.dialog('close');
                                     }
                                 }
-                            } else {
-                                alert(response.message);
                             }
-                        });
-                    }
+                        } else {
+                            alert(response.message);
+                        }
+                    });
                 }
             };
         }();

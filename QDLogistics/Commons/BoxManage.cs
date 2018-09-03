@@ -10,7 +10,6 @@ namespace QDLogistics.Commons
     public class BoxManage : IDisposable
     {
         private QDLogisticsEntities db;
-        private IRepository<Box> Box;
 
         private Box boxData;
 
@@ -30,11 +29,10 @@ namespace QDLogistics.Commons
         {
             MyHelp.Log("Box", null, string.Format("取得當前未出貨的{0} Box", directLine.Abbreviation), Session);
 
-            boxData = db.Box.FirstOrDefault(b => b.IsEnable && b.DirectLine.Equals(directLine.ID) && b.WarehouseFrom.Equals(warehouseID) && b.FirstMileMethod.Equals(methodID) && b.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.未發貨));
+            boxData = db.Box.Where(b => b.IsEnable && b.DirectLine.Equals(directLine.ID) && b.WarehouseFrom.Equals(warehouseID) && b.FirstMileMethod.Equals(methodID) && b.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.未發貨))
+                .OrderByDescending(b => b.Create_at).FirstOrDefault();
             if (boxData == null)
             {
-                if (Box == null) Box = new GenericRepository<Box>(db);
-
                 MyHelp.Log("Box", null, string.Format("開始建立【{0}】新Box", directLine.Abbreviation), Session);
 
                 string boxID = string.Format("{0}-{1}", directLine.Abbreviation, TimeZoneConvert.Utc.ToString("yyyyMMdd"));
@@ -52,8 +50,8 @@ namespace QDLogistics.Commons
                     Create_at = TimeZoneConvert.Utc
                 };
                 boxData.MainBox = boxData.BoxID;
-                Box.Create(boxData);
-                Box.SaveChanges();
+                db.Entry(boxData).State = System.Data.Entity.EntityState.Added;
+                db.SaveChanges();
 
                 MyHelp.Log("Box", boxData.BoxID, string.Format("Box【{0}】建立完成", boxData.BoxID), Session);
             }
@@ -73,7 +71,6 @@ namespace QDLogistics.Commons
 
             if (disposing)
             {
-                if (Box != null) Box.Dispose();
             }
 
             db.Dispose();

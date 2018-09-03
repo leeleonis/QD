@@ -12,6 +12,8 @@ using CarrierApi.Sendle;
 using CarrierApi.Winit;
 using DirectLineApi.IDS;
 using GemBox.Spreadsheet;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NPOI.HSSF.UserModel;
@@ -109,16 +111,12 @@ namespace QDLogistics.Commons
             return result;
         }
 
-        public ShipResult Dispatch(Box box)
+        public ShipResult Dispatch(List<Box> boxList)
         {
             ShipResult result = new ShipResult(true);
-
-            IRepository<Box> Box = new GenericRepository<Box>(db);
-            IRepository<ShippingMethod> Method = new GenericRepository<ShippingMethod>(db);
-            IRepository<DirectLine> DirectLine = new GenericRepository<DirectLine>(db);
-
-            ShippingMethod method = Method.Get(box.FirstMileMethod);
-            DirectLine directLine = DirectLine.Get(box.DirectLine);
+            
+            ShippingMethod method = db.ShippingMethod.Find(boxList.First().FirstMileMethod);
+            DirectLine directLine = db.DirectLine.Find(boxList.First().DirectLine);
             CarrierAPI api = method.Carriers.CarrierAPI;
 
             DateTime date;
@@ -127,43 +125,40 @@ namespace QDLogistics.Commons
             {
                 switch (api.Type)
                 {
-                    case (int)EnumData.CarrierType.DHL:
-                        DHL_API DHL = new DHL_API(api);
-                        ShipmentResponse boxResult = DHL.CreateBox(box, directLine);
-                        box.TrackingNumber = boxResult.AirwayBillNumber;
+                    //case (int)EnumData.CarrierType.DHL:
+                    //    DHL_API DHL = new DHL_API(api);
+                    //    ShipmentResponse boxResult = DHL.CreateBox(box, directLine);
+                    //    box.TrackingNumber = boxResult.AirwayBillNumber;
 
-                        basePath = HostingEnvironment.MapPath("~/FileUploads");
-                        filePath = Path.Combine(basePath, "export", "box", box.Create_at.ToString("yyyy/MM/dd"), box.BoxID);
-                        if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
+                    //    basePath = HostingEnvironment.MapPath("~/FileUploads");
+                    //    filePath = Path.Combine(basePath, "export", "box", box.Create_at.ToString("yyyy/MM/dd"), box.BoxID);
+                    //    if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
 
-                        /***** Air Waybill *****/
-                        File.WriteAllBytes(Path.Combine(filePath, "AirWaybill.pdf"), Crop(boxResult.LabelImage.First().OutputImage, 97f, 30f, 356f, 553f));
+                    //    /***** Air Waybill *****/
+                    //    File.WriteAllBytes(Path.Combine(filePath, "AirWaybill.pdf"), Crop(boxResult.LabelImage.First().OutputImage, 97f, 30f, 356f, 553f));
 
-                        /***** Commercial Invoice *****/
-                        File.WriteAllBytes(Path.Combine(filePath, "Invoice.pdf"), boxResult.LabelImage.First().MultiLabels.First().DocImageVal);
-                        //Box_CreateInvoice(box, directLine, basePath, filePath);
-                        break;
+                    //    /***** Commercial Invoice *****/
+                    //    File.WriteAllBytes(Path.Combine(filePath, "Invoice.pdf"), boxResult.LabelImage.First().MultiLabels.First().DocImageVal);
+                    //    //Box_CreateInvoice(box, directLine, basePath, filePath);
+                    //    break;
                     case (int)EnumData.CarrierType.FedEx:
                         FedEx_API FedEx = new FedEx_API(api);
-                        ProcessShipmentReply fedexResult = FedEx.CreateBox(box, method, directLine);
+                        ProcessShipmentReply fedexResult = FedEx.CreateBox(boxList, method, directLine);
 
-                        if (!fedexResult.HighestSeverity.Equals(NotificationSeverityType.SUCCESS))
+                        if (!fedexResult.HighestSeverity.Equals(NotificationSeverityType.SUCCESS) && !fedexResult.HighestSeverity.Equals(NotificationSeverityType.NOTE))
                         {
                             throw new Exception(string.Join("\n", fedexResult.Notifications.Select(n => n.Message).ToArray()));
                         }
 
-                        CompletedPackageDetail data = fedexResult.CompletedShipmentDetail.CompletedPackageDetails.First();
-                        box.TrackingNumber = data.TrackingIds.Select(t => t.TrackingNumber).First();
-
                         basePath = HostingEnvironment.MapPath("~/FileUploads");
-                        filePath = Path.Combine(basePath, "export", "box", box.Create_at.ToString("yyyy/MM/dd"), box.BoxID);
+                        filePath = Path.Combine(basePath, "export", "box", boxList[0].Create_at.ToString("yyyy/MM/dd"), boxList[0].MainBox);
                         if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
 
                         /***** Air Waybill *****/
-                        Download_FedEx_PDF(data.Label.Parts.First().Image, filePath, "AirWaybill.pdf");
+                        Download_FedEx_PDF(boxList, filePath, "AirWaybill.pdf");
 
                         /***** Commercial Invoice *****/
-                        Box_CreateInvoice(box, directLine, basePath, filePath);
+                        Box_CreateInvoice(boxList, directLine, basePath, filePath);
 
                         /***** Recognizance Book *****/
                         var CheckList = new { fileName = "CheckList-{0}.xlsx", samplePath = Path.Combine(basePath, "sample", "Fedex_CheckList.xlsx") };
@@ -173,9 +168,9 @@ namespace QDLogistics.Commons
                             fsIn.Close();
 
                             ISheet sheet = workbook.GetSheetAt(0);
-                            sheet.GetRow(5).GetCell(3).SetCellValue(box.TrackingNumber);
+                            sheet.GetRow(5).GetCell(3).SetCellValue(boxList[0].TrackingNumber);
 
-                            List<Items> itemList = box.Packages.Where(p => p.IsEnable.Value).SelectMany(p => p.Items.Where(i => i.IsEnable.Value)).ToList();
+                            List<Items> itemList = boxList.SelectMany(b => b.Packages.Where(p => p.IsEnable.Value)).SelectMany(p => p.Items.Where(i => i.IsEnable.Value)).ToList();
                             foreach (var group in itemList.GroupBy(i => i.ProductID).ToList())
                             {
                                 Skus sku = group.First().Skus;
@@ -210,8 +205,6 @@ namespace QDLogistics.Commons
                         }
                         break;
                 }
-                Box.Update(box, box.BoxID);
-                Box.SaveChanges();
             }
             catch (Exception e)
             {
@@ -466,21 +459,21 @@ namespace QDLogistics.Commons
                 }
             }
 
-            iTextSharp.text.pdf.PdfReader.unethicalreading = true;
+            PdfReader.unethicalreading = true;
             // Reads the PDF document
-            using (iTextSharp.text.pdf.PdfReader pdfReader = new iTextSharp.text.pdf.PdfReader(Path.Combine(filePath, "pdf_temp.pdf")))
+            using (PdfReader pdfReader = new PdfReader(Path.Combine(filePath, "pdf_temp.pdf")))
             {
                 using (MemoryStream ms = new MemoryStream())
                 {
                     // Create a new document
                     //using (iTextSharp.text.Document doc = 
                     //	new iTextSharp.text.Document(new iTextSharp.text.Rectangle(288f,432f)))
-                    using (iTextSharp.text.Document doc = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4))
+                    using (Document doc = new Document(PageSize.A4))
                     {
                         // Make a copy of the document
-                        iTextSharp.text.pdf.PdfSmartCopy smartCopy = new iTextSharp.text.pdf.PdfSmartCopy(doc, ms)
+                        PdfSmartCopy smartCopy = new PdfSmartCopy(doc, ms)
                         {
-                            PdfVersion = iTextSharp.text.pdf.PdfWriter.VERSION_1_7
+                            PdfVersion = PdfWriter.VERSION_1_7
                         };
                         smartCopy.CloseStream = false;
                         // Open the newly created document                        
@@ -554,73 +547,54 @@ namespace QDLogistics.Commons
             }
         }
 
-        private void Download_FedEx_PDF(byte[] zpl, string filePath, string fileName)
+        private void Download_FedEx_PDF(List<Box> boxList, string filePath, string fileName)
         {
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://api.labelary.com/v1/printers/8dpmm/labels/4x6/");
-            request.Method = "POST";
-            request.Accept = "application/pdf";
-            request.ContentType = "application/x-www-form-urlencoded";
-            request.ContentLength = zpl.Length;
-
-            using (Stream requestStream = request.GetRequestStream())
+            Document document = new Document();
+            //create newFileStream object which will be disposed at the end
+            using (FileStream newFileStream = new FileStream(Path.Combine(filePath, fileName), FileMode.Create))
             {
-                requestStream.Write(zpl, 0, zpl.Length);
-
-                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                using (Stream responseStream = response.GetResponseStream())
+                // step 2: we create a writer that listens to the document
+                PdfCopy writer = new PdfCopy(document, newFileStream);
+                if (writer == null)
                 {
-                    using (FileStream fileStream = File.Create(Path.Combine(filePath, "pdf_temp.pdf")))
-                    {
-                        responseStream.CopyTo(fileStream);
-                    }
+                    return;
                 }
-            }
 
-            iTextSharp.text.pdf.PdfReader.unethicalreading = true;
-            // Reads the PDF document
-            using (iTextSharp.text.pdf.PdfReader pdfReader = new iTextSharp.text.pdf.PdfReader(Path.Combine(filePath, "pdf_temp.pdf")))
-            {
-                using (MemoryStream ms = new MemoryStream())
+                // step 3: we open the document
+                document.Open();
+
+                string[] fileList = boxList.Select(b => Path.Combine(filePath, b.BoxID + ".pdf")).ToArray();
+                foreach (string file in fileList)
                 {
-                    // Create a new document
-                    //using (iTextSharp.text.Document doc = 
-                    //	new iTextSharp.text.Document(new iTextSharp.text.Rectangle(288f,432f)))
-                    using (iTextSharp.text.Document doc = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4))
-                    {
-                        // Make a copy of the document
-                        iTextSharp.text.pdf.PdfSmartCopy smartCopy = new iTextSharp.text.pdf.PdfSmartCopy(doc, ms)
-                        {
-                            PdfVersion = iTextSharp.text.pdf.PdfWriter.VERSION_1_7
-                        };
-                        smartCopy.CloseStream = false;
-                        // Open the newly created document                        
-                        doc.Open();
-                        // Loop through all pages of the source document
-                        for (int i = pdfReader.NumberOfPages; i >= 1; i--)
-                        {
-                            doc.NewPage();// net necessary line
-                                          // Get a page
-                            var page = pdfReader.GetPageN(i);
-                            // Copy the content and insert into the new document
-                            var copiedPage = smartCopy.GetImportedPage(pdfReader, i);
-                            smartCopy.AddPage(copiedPage);
+                    // we create a reader for a certain document
+                    PdfReader reader = new PdfReader(file);
+                    reader.ConsolidateNamedDestinations();
 
-                            if (i.Equals(1))
-                            {
-                                doc.NewPage();
-                                smartCopy.AddPage(copiedPage);
-                            }
+                    // step 4: we add content
+                    for (int i = 1; i <= reader.NumberOfPages; i++)
+                    {
+                        PdfImportedPage page = writer.GetImportedPage(reader, i);
+                        writer.AddPage(page);
+
+                        if(fileList[0].Equals(file) && i.Equals(reader.NumberOfPages))
+                        {
+                            writer.AddPage(page);
                         }
-                        smartCopy.FreeReader(pdfReader);
-                        smartCopy.Close();
-                        ms.Position = 0;
-                        File.WriteAllBytes(Path.Combine(filePath, fileName), ms.GetBuffer());
-                        // Close the output document
-                        doc.Close();
                     }
+
+                    PRAcroForm form = reader.AcroForm;
+                    if (form != null)
+                    {
+                        writer.CopyDocumentFields(reader);
+                    }
+
+                    reader.Close();
                 }
-            }
-            File.Delete(Path.Combine(filePath, "pdf_temp.pdf"));
+
+                // step 5: we close the document and writer
+                writer.Close();
+                document.Close();
+            }//disposes the newFileStream object
         }
 
         private void TWN_CreateInvoice(string basePath, string filePath, DateTime date)
@@ -688,7 +662,7 @@ namespace QDLogistics.Commons
             }
         }
 
-        private void Box_CreateInvoice(Box box, DirectLine directLine, string basePath, string filePath)
+        private void Box_CreateInvoice(List<Box> boxList, DirectLine directLine, string basePath, string filePath)
         {
             var Invoice = new { fileName = "Invoice.xls", samplePath = Path.Combine(basePath, "sample", "Invoice-2.xls") };
             using (FileStream fsIn = new FileStream(Invoice.samplePath, FileMode.Open))
@@ -697,9 +671,9 @@ namespace QDLogistics.Commons
                 fsIn.Close();
 
                 HSSFSheet sheet = (HSSFSheet)workbook.GetSheetAt(0);
-                sheet.GetRow(4).GetCell(3).SetCellValue(box.TrackingNumber);
-                sheet.GetRow(7).GetCell(1).SetCellValue(box.Create_at.ToString("MMM dd, yyyy", CultureInfo.CreateSpecificCulture("en-US")));
-                sheet.GetRow(7).GetCell(8).SetCellValue(box.BoxID);
+                sheet.GetRow(4).GetCell(3).SetCellValue(boxList[0].TrackingNumber);
+                sheet.GetRow(7).GetCell(1).SetCellValue(boxList[0].Create_at.ToString("MMM dd, yyyy", CultureInfo.CreateSpecificCulture("en-US")));
+                sheet.GetRow(7).GetCell(8).SetCellValue(boxList[0].MainBox);
 
                 sheet.GetRow(10).GetCell(1).SetCellValue("Zhi You Wan LTD (53362065)");
                 sheet.GetRow(11).GetCell(1).SetCellValue("51 Section 3 Jianguo North Road");
@@ -725,7 +699,7 @@ namespace QDLogistics.Commons
                 sheet.GetRow(21).GetCell(1).SetCellValue(directLine.CountryName);
 
                 rowIndex = 26;
-                List<Items> itemList = box.Packages.Where(p => p.IsEnable.Value).SelectMany(p => p.Items.Where(i => i.IsEnable.Value)).ToList();
+                List<Items> itemList = boxList.SelectMany(b => b.Packages.Where(p => p.IsEnable.Value)).SelectMany(p => p.Items.Where(i => i.IsEnable.Value)).ToList();
                 if (itemList.Count() > 22)
                 {
                     int insertRow = 47, add = itemList.Count() - 22;
@@ -764,7 +738,7 @@ namespace QDLogistics.Commons
                 sheet.GetRow(rowIndex).GetCell(10).SetCellValue(itemList.Sum(i => i.Qty.Value * ((double)i.Skus.Weight / 1000)) + "kg");
                 sheet.GetRow(rowIndex).GetCell(11).SetCellValue("USD");
                 sheet.GetRow(rowIndex).GetCell(16).SetCellValue(itemList.Sum(i => i.Qty.Value * i.DeclaredValue).ToString("N"));
-                sheet.GetRow(rowIndex + 10).GetCell(9).SetCellValue(box.Create_at.ToString("yyyy-MM-dd"));
+                sheet.GetRow(rowIndex + 10).GetCell(9).SetCellValue(boxList[0].Create_at.ToString("yyyy-MM-dd"));
 
                 using (FileStream fsOut = new FileStream(Path.Combine(filePath, Invoice.fileName), FileMode.Create))
                 {
@@ -950,25 +924,25 @@ namespace QDLogistics.Commons
         {
             byte[] rslt = null;
             // Allows PdfReader to read a pdf document without the owner's password
-            iTextSharp.text.pdf.PdfReader.unethicalreading = true;
+            PdfReader.unethicalreading = true;
             // Reads the PDF document
-            using (iTextSharp.text.pdf.PdfReader pdfReader = new iTextSharp.text.pdf.PdfReader(pdfbytes))
+            using (PdfReader pdfReader = new PdfReader(pdfbytes))
             {
                 // Set which part of the source document will be copied.
                 // PdfRectangel(bottom-left-x, bottom-left-y, upper-right-x, upper-right-y)
-                iTextSharp.text.pdf.PdfRectangle rect = new iTextSharp.text.pdf.PdfRectangle(llx, lly, urx, ury);
+                PdfRectangle rect = new PdfRectangle(llx, lly, urx, ury);
 
                 using (MemoryStream ms = new MemoryStream())
                 {
                     // Create a new document
-                    //using (iTextSharp.text.Document doc = 
-                    //	new iTextSharp.text.Document(new iTextSharp.text.Rectangle(288f,432f)))
-                    using (iTextSharp.text.Document doc = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4))
+                    //using (Document doc = 
+                    //	new Document(new Rectangle(288f,432f)))
+                    using (Document doc = new Document(PageSize.A4))
                     {
                         // Make a copy of the document
-                        iTextSharp.text.pdf.PdfSmartCopy smartCopy = new iTextSharp.text.pdf.PdfSmartCopy(doc, ms)
+                        PdfSmartCopy smartCopy = new PdfSmartCopy(doc, ms)
                         {
-                            PdfVersion = iTextSharp.text.pdf.PdfWriter.VERSION_1_7
+                            PdfVersion = PdfWriter.VERSION_1_7
                         };
                         smartCopy.CloseStream = false;
                         // Open the newly created document                        
@@ -980,8 +954,8 @@ namespace QDLogistics.Commons
                             // Get a page
                             var page = pdfReader.GetPageN(i);
                             // Apply the rectangle filter we created
-                            page.Put(iTextSharp.text.pdf.PdfName.CROPBOX, rect);
-                            page.Put(iTextSharp.text.pdf.PdfName.MEDIABOX, rect);
+                            page.Put(PdfName.CROPBOX, rect);
+                            page.Put(PdfName.MEDIABOX, rect);
                             // Copy the content and insert into the new document
                             var copiedPage = smartCopy.GetImportedPage(pdfReader, i);
                             smartCopy.AddPage(copiedPage);

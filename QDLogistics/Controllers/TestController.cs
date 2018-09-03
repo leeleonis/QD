@@ -11,6 +11,8 @@ using CarrierApi.FedEx;
 using CarrierApi.Sendle;
 using CarrierApi.Winit;
 using DirectLineApi.IDS;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
 using QDLogistics.Commons;
@@ -335,14 +337,12 @@ namespace QDLogistics.Controllers
             }
         }
 
-        private void Box_Test(string boxID)
+        public void Box_Test(string boxID)
         {
-            using (IRepository<Box> Box = new GenericRepository<Box>(db))
-            {
-                SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
-                ShipProcess shipProcess = new ShipProcess(SCWS);
-                ShipResult boxResult = shipProcess.Dispatch(Box.Get(boxID));
-            }
+            SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
+            ShipProcess shipProcess = new ShipProcess(SCWS);
+            ShipResult boxResult = shipProcess.Dispatch(db.Box.Where(b => b.IsEnable && b.MainBox.Equals(boxID)).OrderBy(b => b.Create_at).ToList());
+            db.SaveChanges();
         }
 
         private void Excel_Test()
@@ -473,11 +473,11 @@ namespace QDLogistics.Controllers
             Packages package = db.Packages.First(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID));
             Sendle_API Sendle = new Sendle_API(api);
 
-            //var result = Sendle.Create(package);
+            var result = Sendle.Create(package);
             //var order = Sendle.Order(result.order_id);
-            //Sendle.Label("b48878bf-e847-49d2-bb3e-312c4e7afeb2", string.Format("{0}-{1}-{2}", package.Items.First().ProductID, package.OrderID.Value, "SVCFGK"));
+            Sendle.Label(result.order_id, string.Format("{0}-{1}-{2}", package.Items.First().ProductID, package.OrderID.Value, result.sendle_reference), @"C:\Users\qdtuk\Downloads");
             //var track = Sendle.Track("SVCFGK");
-            var cancel = Sendle.Cancel("ed551843-4df3-476b-8371-3baa0489b72f");
+            var cancel = Sendle.Cancel(result.order_id);
         }
     }
 }

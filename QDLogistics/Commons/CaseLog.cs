@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using CarrierApi.Sendle;
 using DirectLineApi.IDS;
 using Newtonsoft.Json;
 using QDLogistics.Models;
@@ -38,7 +39,8 @@ namespace QDLogistics.Commons
 
         private Dictionary<string, string[]> MailList = new Dictionary<string, string[]>()
         {
-            { "IDS", new string[]{ "gloria.chiu@contin-global.com", "cherry.chen@contin-global.com", "TWCS@contin-global.com", "contincs@gmail.com", "shipping_qd@hotmail.com" } }
+            { "IDS", new string[]{ "gloria.chiu@contin-global.com", "cherry.chen@contin-global.com", "TWCS@contin-global.com", "contincs@gmail.com", "shipping_qd@hotmail.com" } },
+            { "Sendle", new string[]{ "customerservice@ecof.com.au" } }
         };
 
         private HttpContextBase _currentHttpContext;
@@ -199,6 +201,25 @@ namespace QDLogistics.Commons
                             CaseEvent.SaveChanges();
 
                             throw new Exception("寄送IDS Direct Line Cancel Shipment通知失敗");
+                        }
+                        break;
+                    case "Sendle":
+                        Sendle_API sendle = new Sendle_API(packageData.Method.Carriers.CarrierAPI);
+                        sendle.Cancel(packageData.TagNo);
+
+                        //receiveMails = MailList["Sendle"];
+                        receiveMails = new string[] { "qd.tuko@hotmail.com" };
+                        ccMails[ccMails.Length] = "sophia.wang@ecof.com.au";
+                        mailTitle = string.Format("TW018 - Cancel Shipment Request for {0} (in {1} tracking {2})", packageData.TagNo, packageData.Method.Carriers.Name, packageData.TrackingNumber);
+                        mailBody = CreateCancelMailBody(directLine.Abbreviation, eventData);
+
+                        if (!MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, null, null, false))
+                        {
+                            eventData.Status = (byte)EnumData.CaseEventStatus.Error;
+                            CaseEvent.Update(eventData, eventData.ID);
+                            CaseEvent.SaveChanges();
+
+                            throw new Exception("寄送Sendle Direct Line Cancel Shipment通知失敗");
                         }
                         break;
                 }
@@ -752,6 +773,8 @@ namespace QDLogistics.Commons
                     mailBody += "If you have failed to cancel, click <a href='{3}' target='_bland'>here</a>.<br /><br />";
                     mailBody += "You can only click on either of the links above ONCE.Please make sure to choose correctly.<br /><br />Please email us if the above sitaution doesn't apply.<br /><br />Regards<br /><br />QD Shipping";
                     mailBody = string.Format(mailBody, eventData.LabelID, HK_link, UK_link, failed_link);
+                    break;
+                case "Sendle":
                     break;
             }
 

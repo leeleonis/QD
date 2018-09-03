@@ -47,6 +47,7 @@ namespace QDLogistics.Controllers
         [CheckSession]
         public ActionResult DirectLine()
         {
+            ViewBag.directLineList = db.DirectLine.AsNoTracking().Where(d => d.IsEnable).Select(d => new SelectListItem() { Text = d.Name, Value = d.ID.ToString() }).ToList();
             return View();
         }
 
@@ -140,21 +141,20 @@ namespace QDLogistics.Controllers
             return Content(JsonConvert.SerializeObject(new { total, rows = dataList }), "appllication/json");
         }
 
-        public ActionResult AjaxDirectLineData(DataFilter filter, int page = 1, int rows = 100)
+        public ActionResult AjaxDirectLineData(DataFilter filter, int directLine, int page = 1, int rows = 100)
         {
             int warehouseID = 0, total = 0;
             List<object> dataList = new List<object>();
 
             if (int.TryParse(Session["warehouseId"].ToString(), out warehouseID))
             {
-                Warehouses = new GenericRepository<Warehouses>(db);
-                Warehouses warehouse = Warehouses.Get(warehouseID);
+                Warehouses warehouse = db.Warehouses.Find(warehouseID);
                 if (warehouse != null && warehouse.WarehouseType.Value.Equals((int)WarehouseTypeType.DropShip))
                 {
                     /** Order Filter **/
                     var OrderFilter = db.Orders.AsNoTracking().Where(o => !o.StatusCode.Value.Equals((int)OrderStatusCode.Completed) && o.PaymentStatus.Value.Equals((int)OrderPaymentStatus2.Charged));
                     /** Shipping Method Filter **/
-                    var MethodFilter = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && m.IsDirectLine);
+                    var MethodFilter = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && m.IsDirectLine && m.DirectLine.Equals(directLine));
                     List<OrderJoinData> results = DataFilter(filter, OrderFilter, MethodFilter, EnumData.ProcessStatus.待出貨, warehouseID);
                     if (results.Any())
                     {
@@ -548,7 +548,7 @@ namespace QDLogistics.Controllers
             return Json(result, JsonRequestBehavior.AllowGet);
         }
 
-        public ActionResult Dispatch(int[] packageIDs)
+        public ActionResult Dispatch(int[] packageIDs, string tracking)
         {
             AjaxResult result = new AjaxResult();
 
@@ -563,7 +563,7 @@ namespace QDLogistics.Controllers
 
                 if (!SCWS.Is_login) throw new Exception("SC is not login");
 
-                Packages  = new GenericRepository<Packages>(db);
+                Packages = new GenericRepository<Packages>(db);
                 IRepository<Box> Box = new GenericRepository<Box>(db);
                 IRepository<DirectLineLabel> Label = new GenericRepository<DirectLineLabel>(db);
 
@@ -582,129 +582,119 @@ namespace QDLogistics.Controllers
 
                         try
                         {
-                            List<Packages> packageList = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && packageIDs.Contains(p.ID)).ToList();
-                            int[] methodIDs = packageList.Select(p => p.ShippingMethod.Value).Distinct().ToArray();
-                            List<ShippingMethod> methodList = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && m.IsDirectLine && methodIDs.Contains(m.ID)).ToList();
-                            List<DirectLine> directLineList = db.DirectLine.AsNoTracking().Where(d => d.IsEnable).ToList();
-
                             TimeZoneConvert timeZoneConvert = new TimeZoneConvert();
 
-                            List<Packages> dispatchList;
+                            List<Packages> dispatchList = new List<Packages>();
                             List<string> errorList = new List<string>();
-                            var groupList = methodList.GroupBy(m => m.DirectLine).ToList();
-                            foreach (var group in groupList)
+
+                            List<Packages> packageList = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && packageIDs.Contains(p.ID)).ToList();
+                            DirectLine directLine = db.DirectLine.Find(packageList[0].Method.DirectLine);
+                            string boxID = string.Format("{0}-{1}", directLine.Abbreviation, timeZoneConvert.Utc.ToString("yyyyMMdd"));
+                            int count = Box.GetAll(true).Count(b => b.IsEnable && b.DirectLine.Equals(directLine.ID) && b.BoxID.Contains(boxID)) + 1;
+                            byte[] Byte = BitConverter.GetBytes(count);
+                            Byte[0] += 64;
+                            boxID = string.Format("{0}-{1}", boxID, System.Text.Encoding.ASCII.GetString(Byte.Take(1).ToArray()));
+
+                            foreach (Packages package in packageList)
                             {
-                                if (group.Join(packageList, m => m.ID, p => p.ShippingMethod, (m, p) => p).Any())
+                                DirectLineLabel label = package.Label;
+                                OrderData order = SCWS.Get_OrderData(package.OrderID.Value);
+                                if (CheckOrderStatus(package, order.Order))
                                 {
-                                    DirectLine directLine = directLineList.First(d => d.ID.Equals(group.Key));
-                                    string boxID = string.Format("{0}-{1}", directLine.Abbreviation, timeZoneConvert.Utc.ToString("yyyyMMdd"));
-                                    int count = Box.GetAll(true).Count(b => b.IsEnable && b.DirectLine.Equals(directLine.ID) && b.BoxID.Contains(boxID)) + 1;
-                                    byte[] Byte = BitConverter.GetBytes(count);
-                                    Byte[0] += 64;
-                                    boxID = string.Format("{0}-{1}", boxID, System.Text.Encoding.ASCII.GetString(Byte.Take(1).ToArray()));
+                                    ThreadTask uploadPOTask = new ThreadTask(string.Format("直發商待出貨區 - 更新訂單【{0}】以及PO【{1}】資料至SC", package.OrderID, package.POId), session);
 
-                                    dispatchList = new List<Packages>();
-                                    foreach (Packages package in group.Join(packageList, m => m.ID, p => p.ShippingMethod, (m, p) => p))
+                                    lock (factory)
                                     {
-                                        DirectLineLabel label = package.Label;
-                                        OrderData order = SCWS.Get_OrderData(package.OrderID.Value);
-                                        if (CheckOrderStatus(package, order.Order))
+                                        uploadPOTask.AddWork(factory.StartNew(() =>
                                         {
-                                            ThreadTask uploadPOTask = new ThreadTask(string.Format("直發商待出貨區 - 更新訂單【{0}】以及PO【{1}】資料至SC", package.OrderID, package.POId), session);
+                                            uploadPOTask.Start();
 
-                                            lock (factory)
+                                            string error = "";
+
+                                            try
                                             {
-                                                uploadPOTask.AddWork(factory.StartNew(() =>
+                                                SyncProcess Sync = new SyncProcess(session, factory);
+                                                error = Sync.Update_PurchaseOrder(package.ID, false);
+
+                                                if (string.IsNullOrEmpty(error))
                                                 {
-                                                    uploadPOTask.Start();
-
-                                                    string error = "";
-
-                                                    try
+                                                    foreach (Items item in package.Items.Where(i => i.IsEnable.Value).ToList())
                                                     {
-                                                        SyncProcess Sync = new SyncProcess(session, factory);
-                                                        error = Sync.Update_PurchaseOrder(package.ID, false);
-
-                                                        if (string.IsNullOrEmpty(error))
-                                                        {
-                                                            foreach (Items item in package.Items.Where(i => i.IsEnable.Value).ToList())
-                                                            {
-                                                                if (item.SerialNumbers.Any()) SCWS.Update_ItemSerialNumber(item.ID, item.SerialNumbers.Select(s => s.SerialNumber).ToArray());
-                                                            }
-                                                        }
+                                                        if (item.SerialNumbers.Any()) SCWS.Update_ItemSerialNumber(item.ID, item.SerialNumbers.Select(s => s.SerialNumber).ToArray());
                                                     }
-                                                    catch (Exception e)
-                                                    {
-                                                        error = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
-                                                    }
-
-                                                    return error;
-                                                }));
+                                                }
+                                            }
+                                            catch (Exception e)
+                                            {
+                                                error = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
                                             }
 
-                                            package.ProcessStatus = (int)EnumData.ProcessStatus.已出貨;
-                                            package.BoxID = label.BoxID = boxID;
-                                            label.Status = (byte)EnumData.LabelStatus.正常;
-                                            dispatchList.Add(package);
-                                        }
-                                        else
-                                        {
-                                            MyHelp.Log("DirectLineLabel", label.LabelID, string.Format("標籤【{0}】狀態異常", label.LabelID), session);
-
-                                            package.Orders.StatusCode = (int)order.Order.StatusCode;
-                                            package.Orders.PaymentStatus = (int)order.Order.PaymentStatus;
-                                            label.Status = (byte)EnumData.LabelStatus.鎖定中;
-
-                                            if (order.Order.StatusCode.Equals((int)OrderStatusCode.Canceled))
-                                            {
-                                                label.Status = (byte)EnumData.LabelStatus.作廢;
-
-                                                SerialNumbers = new GenericRepository<SerialNumbers>(db);
-                                                foreach (var ss in SerialNumbers.GetAll().Where(s => s.OrderID.Equals(package.OrderID)))
-                                                {
-                                                    SerialNumbers.Delete(ss);
-                                                };
-                                            }
-
-                                            errorList.Add(string.Format("標籤【{0}】狀態異常，請重新取出!", package.OrderID.Value));
-                                        }
-                                        Packages.Update(package, package.ID);
-                                        Label.Update(label, label.LabelID);
+                                            return error;
+                                        }));
                                     }
 
-                                    if (dispatchList.Any())
-                                    {
-                                        Box box = new Box()
-                                        {
-                                            IsEnable = true,
-                                            BoxID = boxID,
-                                            DirectLine = directLine.ID,
-                                            WarehouseFrom = warehouseID,
-                                            ShippingStatus = (byte)EnumData.DirectLineStatus.已到貨,
-                                            BoxType = (byte)EnumData.DirectLineBoxType.DirectLine,
-                                            Create_at = timeZoneConvert.Utc
-                                        };
-
-                                        Box.Create(box);
-                                        Box.SaveChanges();
-                                        MyHelp.Log("Box", boxID, string.Format("Box【{0}】建立成功", boxID), session);
-
-                                        MyHelp.Log("Box", box.BoxID, string.Format("寄送 Box【{0}】DL資料", box.BoxID), session);
-                                        SendMailToCarrier(box, db.DirectLine.AsNoTracking().First(d => d.ID.Equals(box.DirectLine)));
-
-                                        MyHelp.Log("Box", box.BoxID, string.Format("Box【{0}】完成出貨", box.BoxID), session);
-                                    }
-
-                                    Packages.SaveChanges();
+                                    package.ProcessStatus = (int)EnumData.ProcessStatus.已出貨;
+                                    package.BoxID = label.BoxID = boxID;
+                                    label.Status = (byte)EnumData.LabelStatus.正常;
+                                    dispatchList.Add(package);
                                 }
+                                else
+                                {
+                                    MyHelp.Log("DirectLineLabel", label.LabelID, string.Format("標籤【{0}】狀態異常", label.LabelID), session);
+
+                                    package.Orders.StatusCode = (int)order.Order.StatusCode;
+                                    package.Orders.PaymentStatus = (int)order.Order.PaymentStatus;
+                                    label.Status = (byte)EnumData.LabelStatus.鎖定中;
+
+                                    if (order.Order.StatusCode.Equals((int)OrderStatusCode.Canceled))
+                                    {
+                                        label.Status = (byte)EnumData.LabelStatus.作廢;
+
+                                        SerialNumbers = new GenericRepository<SerialNumbers>(db);
+                                        foreach (var ss in SerialNumbers.GetAll().Where(s => s.OrderID.Equals(package.OrderID)))
+                                        {
+                                            SerialNumbers.Delete(ss);
+                                        };
+                                    }
+
+                                    errorList.Add(string.Format("標籤【{0}】狀態異常，請重新取出!", package.OrderID.Value));
+                                }
+                                Packages.Update(package, package.ID);
+                                Label.Update(label, label.LabelID);
                             }
+
+                            if (dispatchList.Any())
+                            {
+                                Box box = new Box()
+                                {
+                                    IsEnable = true,
+                                    BoxID = boxID,
+                                    DirectLine = directLine.ID,
+                                    WarehouseFrom = warehouseID,
+                                    ShippingStatus = (byte)EnumData.DirectLineStatus.已到貨,
+                                    BoxType = (byte)EnumData.DirectLineBoxType.DirectLine,
+                                    TrackingNumber = tracking,
+                                    Create_at = timeZoneConvert.Utc
+                                };
+
+                                Box.Create(box);
+                                Box.SaveChanges();
+                                MyHelp.Log("Box", boxID, string.Format("Box【{0}】建立成功", boxID), session);
+
+                                MyHelp.Log("Box", box.BoxID, string.Format("寄送 Box【{0}】DL資料", box.BoxID), session);
+                                SendMailToCarrier(box, db.DirectLine.AsNoTracking().First(d => d.ID.Equals(box.DirectLine)));
+
+                                MyHelp.Log("Box", box.BoxID, string.Format("Box【{0}】完成出貨", box.BoxID), session);
+                            }
+
+                            Packages.SaveChanges();
 
                             if (errorList.Any()) message = string.Join("\n", errorList.ToArray());
                         }
                         catch (Exception e)
                         {
                             message = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
-                        }                       
+                        }
 
                         return message;
                     }, HttpContext.Session));
@@ -756,7 +746,6 @@ namespace QDLogistics.Controllers
                 string mailTitle;
                 string mailBody;
                 string[] receiveMails;
-                //string[] ccMails = new string[] { "peter@qd.com.tw", "kelly@qd.com.tw", "demi@qd.com.tw" };
                 string[] ccMails = new string[] { "peter@qd.com.tw", "kelly@qd.com.tw", "demi@qd.com.tw" };
 
                 switch (directLine.Abbreviation)
@@ -770,6 +759,27 @@ namespace QDLogistics.Controllers
 
                         bool IDS_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, null, null, false);
                         if (IDS_Status)
+                        {
+                            MyHelp.Log("PickProduct", null, mailTitle);
+                        }
+                        else
+                        {
+                            MyHelp.Log("PickProduct", null, string.Format("{0} 寄送失敗", mailTitle));
+                        }
+                        break;
+                    case "Sendle":
+                        MyHelp.Log("PickProduct", null, "寄送Sendle出貨通知");
+
+                        receiveMails = new string[] { "customerservice@ecof.com.au" };
+                        ccMails[ccMails.Length] = "sophia.wang@ecof.com.au";
+
+                        var packageList = box.Packages.Where(p => p.IsEnable.Value).ToList();
+                        mailTitle = string.Format("DISPATCHED: {0}, {1}pcs", box.TrackingNumber, packageList.Count());
+                        mailBody = string.Format("Tracking {0}({1}pcs, {2}</ br>", box.TrackingNumber, packageList.Count(), box.BoxID);
+                        mailBody += string.Join("</ br>", box.Packages.Where(p => p.IsEnable.Value).Select(p => string.Format("{0}-{1}-{2}", p.Items.First().ProductID, p.OrderID.Value, p.TrackingNumber)).ToArray());
+
+                        bool Sendle_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, null, null, false);
+                        if (Sendle_Status)
                         {
                             MyHelp.Log("PickProduct", null, mailTitle);
                         }
