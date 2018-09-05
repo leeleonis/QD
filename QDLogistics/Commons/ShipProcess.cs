@@ -119,6 +119,8 @@ namespace QDLogistics.Commons
             DirectLine directLine = db.DirectLine.Find(boxList.First().DirectLine);
             CarrierAPI api = method.Carriers.CarrierAPI;
 
+            string currency = directLine.Abbreviation.Equals("IDS") ? "USD" : Enum.GetName(typeof(OrderService.CurrencyCodeType2), boxList[0].Packages.First(p => p.IsEnable.Value).Orders.OrderCurrencyCode.Value);
+
             DateTime date;
             string basePath, filePath;
             try
@@ -156,9 +158,9 @@ namespace QDLogistics.Commons
 
                         /***** Air Waybill *****/
                         Download_FedEx_PDF(boxList, filePath, "AirWaybill.pdf");
-
+                        
                         /***** Commercial Invoice *****/
-                        Box_CreateInvoice(boxList, directLine, basePath, filePath);
+                        Box_CreateInvoice(boxList, directLine, basePath, filePath, currency);
 
                         /***** Recognizance Book *****/
                         var CheckList = new { fileName = "CheckList-{0}.xlsx", samplePath = Path.Combine(basePath, "sample", "Fedex_CheckList.xlsx") };
@@ -192,7 +194,7 @@ namespace QDLogistics.Commons
                                 sheet.GetRow(28).GetCell(11).SetCellValue(!sku.Brand.Equals(0) ? sku.Manufacturers.ManufacturerName : "");
 
                                 sheet.GetRow(32).GetCell(9).SetCellValue(group.Sum(i => i.Qty.Value * i.DeclaredValue).ToString("N"));
-                                sheet.GetRow(32).GetCell(10).SetCellValue("USD");
+                                sheet.GetRow(32).GetCell(10).SetCellValue(currency);
 
                                 using (FileStream fsOut = new FileStream(Path.Combine(filePath, string.Format(CheckList.fileName, sku.Sku)), FileMode.Create))
                                 {
@@ -662,7 +664,7 @@ namespace QDLogistics.Commons
             }
         }
 
-        private void Box_CreateInvoice(List<Box> boxList, DirectLine directLine, string basePath, string filePath)
+        private void Box_CreateInvoice(List<Box> boxList, DirectLine directLine, string basePath, string filePath, string currency)
         {
             var Invoice = new { fileName = "Invoice.xls", samplePath = Path.Combine(basePath, "sample", "Invoice-2.xls") };
             using (FileStream fsIn = new FileStream(Invoice.samplePath, FileMode.Open))
@@ -736,7 +738,7 @@ namespace QDLogistics.Commons
 
                 sheet.GetRow(rowIndex).GetCell(3).SetCellValue(1);
                 sheet.GetRow(rowIndex).GetCell(10).SetCellValue(itemList.Sum(i => i.Qty.Value * ((double)i.Skus.Weight / 1000)) + "kg");
-                sheet.GetRow(rowIndex).GetCell(11).SetCellValue("USD");
+                sheet.GetRow(rowIndex).GetCell(11).SetCellValue(currency);
                 sheet.GetRow(rowIndex).GetCell(16).SetCellValue(itemList.Sum(i => i.Qty.Value * i.DeclaredValue).ToString("N"));
                 sheet.GetRow(rowIndex + 10).GetCell(9).SetCellValue(boxList[0].Create_at.ToString("yyyy-MM-dd"));
 

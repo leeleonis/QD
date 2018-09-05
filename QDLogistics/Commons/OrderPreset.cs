@@ -70,7 +70,7 @@ namespace QDLogistics.Commons
                     Items.Update(item, item.ID);
                 }
                 package.ShippingMethod = MethodOfService.ContainsKey(Order.ShippingServiceSelected) ? MethodOfService[Order.ShippingServiceSelected] : 9;
-                package.FirstMile = 0;
+                package.FirstMile = 35;
                 package.Export = itemList.Min(i => methodOfSku.ContainsKey(i.ProductID) ? methodOfSku[i.ProductID]["export"] : 0);
                 package.ExportMethod = itemList.Min(i => methodOfSku.ContainsKey(i.ProductID) ? methodOfSku[i.ProductID]["exportMethod"] : 0);
                 package.UploadTracking = true;

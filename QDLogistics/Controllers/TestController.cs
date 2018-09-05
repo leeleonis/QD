@@ -385,7 +385,7 @@ namespace QDLogistics.Controllers
             var serials = db.SerialNumberForRefundLabel.AsNoTracking().Where(s => !s.IsUsed && s.oldOrderID.Equals(OrderID)).ToList();
             using (CaseLog CaseLog = new CaseLog(package, Session))
             {
-                CaseLog.SendResendShipmentMail("123", serials.First().Create_at);
+               // CaseLog.SendResendShipmentMail(, serials.First().Create_at);
             }
         }
 

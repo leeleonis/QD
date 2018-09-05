@@ -103,7 +103,7 @@
 
                 if ($typeSelect.find('option:selected').text() == 'Sendle') {
                     tracking = prompt("請輸入Tracking Number");
-                    if (isEmpty(tracking)) alert('未輸入Tracking Number!')
+                    if (isEmpty(tracking)) return alert('未輸入Tracking Number!')
                 }
 
                 ajaxUrl("@Url.Action("dispatch", "dropShip")", 'post', { packageIDs, tracking }).done(function (response) {

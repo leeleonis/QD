@@ -56,6 +56,8 @@ namespace QDLogistics.Controllers
                             break;
                     }
                 }
+                db.Entry(package).State = System.Data.Entity.EntityState.Modified;
+                db.SaveChanges();
             }
             catch (Exception e)
             {

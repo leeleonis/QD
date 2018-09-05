@@ -86,7 +86,7 @@
                         formatter: function (value, row, index) {
                             var href = '';
 
-                            if (row.ShippingMethod == 'FedEx') href = "https://www.fedex.com/apps/fedextrack/?action=track&trackingnumber=" + value;
+                            if (row.Carrier == 'FedEx') href = "https://www.fedex.com/apps/fedextrack/?action=track&trackingnumber=" + value;
 
                             return href != '' ? "<a href='" + href + "' target='_blank'>" + value + "</a>" : value;
                         }

@@ -742,6 +742,8 @@ namespace QDLogistics.Controllers
             List<Items> itemsList = box.Packages.Where(p => p.IsEnable.Value).SelectMany(p => p.Items.Where(i => i.IsEnable.Value)).ToList();
             if (itemsList.Any())
             {
+                string basePath = HostingEnvironment.MapPath("~/FileUploads");
+
                 string sendMail = "dispatch-qd@hotmail.com";
                 string mailTitle;
                 string mailBody;
@@ -771,14 +773,33 @@ namespace QDLogistics.Controllers
                         MyHelp.Log("PickProduct", null, "寄送Sendle出貨通知");
 
                         receiveMails = new string[] { "customerservice@ecof.com.au" };
-                        ccMails[ccMails.Length] = "sophia.wang@ecof.com.au";
+                        var CC_Mails = ccMails.ToList();
+                        CC_Mails.Add("sophia.wang@ecof.com.au");
 
                         var packageList = box.Packages.Where(p => p.IsEnable.Value).ToList();
                         mailTitle = string.Format("DISPATCHED: {0}, {1}pcs", box.TrackingNumber, packageList.Count());
-                        mailBody = string.Format("Tracking {0}({1}pcs, {2}</ br>", box.TrackingNumber, packageList.Count(), box.BoxID);
-                        mailBody += string.Join("</ br>", box.Packages.Where(p => p.IsEnable.Value).Select(p => string.Format("{0}-{1}-{2}", p.Items.First().ProductID, p.OrderID.Value, p.TrackingNumber)).ToArray());
+                        mailBody = string.Format("Tracking {0}({1}pcs, {2}<br />", box.TrackingNumber, packageList.Count(), box.BoxID);
+                        mailBody += string.Join("<br />", box.Packages.Where(p => p.IsEnable.Value).Select(p => string.Format("{0}-{1}-{2}", p.Items.First().ProductID, p.OrderID.Value, p.TrackingNumber)).ToArray());
 
-                        bool Sendle_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, null, null, false);
+                        List<Tuple<Stream, string>> SendleFile = new List<Tuple<Stream, string>>();
+                        var memoryStream = new MemoryStream();
+                        using (var file = new ZipFile())
+                        {
+                            foreach (Packages package in box.Packages.Where(p => p.IsEnable.Value).ToList())
+                            {
+                                string AWB_File = Path.Combine(basePath, package.FilePath, string.Format("AWB-{0}.pdf", package.OrderID));
+                                if (!System.IO.File.Exists(AWB_File))
+                                {
+                                    System.IO.File.Copy(Path.Combine(basePath, package.FilePath, "AirWaybill.pdf"), AWB_File);
+                                }
+                                file.AddFile(AWB_File, "");
+                            }
+                            file.Save(memoryStream);
+                        }
+                        memoryStream.Seek(0, SeekOrigin.Begin);
+                        SendleFile.Add(new Tuple<Stream, string>(memoryStream, "Labels.zip"));
+
+                        bool Sendle_Status = MyHelp.Mail_Send(sendMail, receiveMails, CC_Mails.ToArray(), mailTitle, mailBody, true, null, SendleFile, false);
                         if (Sendle_Status)
                         {
                             MyHelp.Log("PickProduct", null, mailTitle);

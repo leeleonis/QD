@@ -170,6 +170,10 @@
                 $typeMethodSelect.trigger('change');
             });
 
+            $methodSelect.change(function () {
+                ProductSerialData.Get_Data();
+            });
+
             $typeMethodSelect.change(function(){
                 ProductSerialData.Get_Data();
             });
@@ -206,7 +210,7 @@
             });
 
             $("#btn-pick").click(function () {
-                $pickWin.window("open").window("refresh", "@Url.Action("packagePickUpList", "directLine")");
+                $pickWin.window("open").window("refresh", "@Url.Action("packagePickUpList", "directLine")?directLine=" + $typeSelect.val());
             });
 
             $shipBtn.click(function () {
@@ -219,9 +223,9 @@
             });
 
             $("#btn-next").click(function () {
-                if (confirm("是否確定進行下一步?")) {
-                    ProductSerialData.Save_box();
-                }
+                if (parseInt($('#input-boxNo').val()) == parseInt($('#text-boxNo').text()) && !confirm("是否確定進行封箱出貨?")) return;
+
+                ProductSerialData.Save_box();
             });
 
             $("#btn-prev").click(function () {
@@ -319,7 +323,7 @@
 
         function printPickUpList() {
             var url = '@Url.Action("printPickUpList", "directLine")';
-            ajaxUrl(url, 'post', { warehouseId:@route.warehouseId, adminId:@route.adminId }).done(function (response) {
+            ajaxUrl(url, 'post', { warehouseId:@route.warehouseId, directLine: $typeSelect.val(), adminId:@route.adminId }).done(function (response) {
                 if(response['status']){
                     print($.param({fileName: response['fileName'], filePath: response['filePath'], amount: response['amount']}, true));
                 }
@@ -363,7 +367,7 @@
         var ProductSerialData = function () {
             var isInit = false, needSerial, orderChangeList = [], boxOrderList = { rows: [] };
             var groupList, productList, serialList, fileList;
-            var gb_OrderID, gb_PackageID, boxInfo;
+            var gb_OrderID, gb_PackageID;
 
             var init = function (){
                 var url = '@Url.Action("getOrderSerialData", "directLine")';
@@ -393,6 +397,7 @@
 
                             list.forEach(function (value, i) {
                                 value.Weight = value.Weight / 1000,
+                                value.Declared = value.DeclaredValue,
                                 value.Battery = "<img src='../content/img/" + (value.IsBattery ? "checked" : "error") + ".png' runat='server' style='width: auto; height: 15px;'>";
                                 value.InBox = "<img src='../content/img/" + (value.InBox ? "checked" : "error") + ".png' runat='server' style='width: auto; height: 15px;'>";
                                 boxOrderList.rows.push(value);
@@ -508,12 +513,12 @@
             }
 
             function checkDeclaredValue(itemList) {
-                var value = 0;
+                var value = 0, maxTotal = parseFloat($('#text-maxTotal').text());
                 Object.keys(itemList).forEach(function (itemID) {
-                    value += itemList[itemID].data.Weight / 1000;
+                    value += itemList[itemID].data.DeclaredValue;
                 });
-                console.log(value);
-                return parseFloat($('#text-maxTotal').text()) <= parseFloat($('#text-total').text()) + value;
+
+                return maxTotal == 0 || maxTotal >= parseFloat($('#text-total').text()) + value;
             }
 
             function findOrderChange(orderID){
@@ -532,25 +537,25 @@
             }
 
             function updatePicked(pData, order, retry) {
-                var data = new FormData();
                 var picked = new Array(), serials = new Object();
 
+                var itemList = order[pData.PackageID];
+                var weight = parseFloat($('#text-weight').text());
+                var total = parseFloat($('#text-total').text());
                 for(var itemID in order[pData.PackageID]){
-                    picked.push(order[pData.PackageID][itemID].data);
-                    serials[itemID] = order[pData.PackageID][itemID].serial;
+                    picked.push(itemList[itemID].data);
+                    serials[itemID] = itemList[itemID].serial;
+                    weight += parseFloat(itemList[itemID].data.Weight) / 1000 * itemList[itemID].data.Qty;
+                    total += parseFloat(itemList[itemID].data.DeclaredValue) * itemList[itemID].data.Qty;
                 }
+                $('#text-total').text(total);
+                $('#text-weight').text(weight);
 
                 var url = '@Url.Action("orderPicked", "directLine")';
-                ajaxUrl(url, 'post', { boxID: boxInfo.BoxID, picked: picked, serials: serials }).done(function(response){
+                ajaxUrl(url, 'post', { boxID: $('#text-boxID').text(), picked: picked, serials: serials }).done(function(response){
                     if (response['status']) {
                         if (retry) error('訂單【' + gb_OrderID + '】更新失敗，資料已重新寄送!');
                         print($.param(response.data, true));
-
-                        var total = parseFloat($('#text-maxTotal').text());
-                        Object.keys(itemList).forEach(function (itemID) {
-                            total += itemList[itemID].data.Weight / 1000;
-                        });
-                        $('#text-maxTotal').text(total);
                         orderLocked();
                     } else {
                         alert(response['message']);
@@ -630,7 +635,7 @@
                     for(var i=1; i <= product.Qty; i++){
                         data.rows.push({
                             IsPicked: product.IsPicked, OrderID: product.OrderID, PackageID: product.PackageID, ProductID: product.ProductID, ProductName: product.ProductName, SerialNumber: (i <= product.QtyPicked ? serialNumber[i - 1] : ""),
-                            TagNo: product.TagNo, Note: product.Note, Declared: product.DeclaredValue, Weight: product.Weight/1000,
+                            TagNo: product.TagNo, Note: product.Note, Declared: product.DeclaredValue, Weight: product.Weight / 1000,
                             Battery: "<img src='../content/img/" + (product.IsBattery ? "checked" : "error") + ".png' runat='server' style='width: auto; height: 15px;'>",
                             Picked: "<img src='../content/img/" + (i <= product.QtyPicked ? "checked" : "error") + ".png' runat='server' style='width: auto; height: 15px;'>"});
                         data.total++;
@@ -651,7 +656,7 @@
                     for (var i = 1; i <= product.Qty; i++) {
                         boxOrderList.rows.push({
                             OrderID: product.OrderID, PackageID: product.PackageID, ProductID: product.ProductID, ProductName: product.ProductName, SerialNumber: (i <= product.QtyPicked ? serialNumber[i - 1] : ""),
-                            TagNo: product.TagNo, Note: product.Note, Declared: product.DeclaredValue, Weight: product.Weight/1000,
+                            TagNo: product.TagNo, Note: product.Note, Declared: product.DeclaredValue, Weight: product.Weight / 1000,
                             Battery: "<img src='../content/img/" + (product.IsBattery ? "checked" : "error") + ".png' runat='server' style='width: auto; height: 15px;'>",
                             InBox: "<img src='../content/img/" + (product.InBox ? "checked" : "error") + ".png' runat='server' style='width: auto; height: 15px;'>"
                         });

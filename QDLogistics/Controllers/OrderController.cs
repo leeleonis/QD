@@ -677,7 +677,7 @@ namespace QDLogistics.Controllers
                                     {
                                         MyHelp.Log("Box", box.BoxID, "寄送Box到貨通知", session);
 
-                                        box.ShippingStatus = (byte)EnumData.DirectLineStatus.已到貨;
+                                        box.ShippingStatus = box.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.延誤中) ? (byte)EnumData.DirectLineStatus.延誤後抵達 : (byte)EnumData.DirectLineStatus.已到貨;
                                         Box.Update(box, box.BoxID);
 
                                         DirectLine directLine = db.DirectLine.AsNoTracking().First(d => d.IsEnable && d.ID.Equals(box.DirectLine));
@@ -697,14 +697,24 @@ namespace QDLogistics.Controllers
                                                 break;
                                             case "Sendle":
                                                 receiveMails = new string[] { "customerservice@ecof.com.au" };
-                                                ccMails[ccMails.Length] = "sophia.wang@ecof.com.au";
+                                                var CC_Mails = ccMails.ToList();
+                                                CC_Mails.Add("sophia.wang@ecof.com.au");
                                                 var packageList = box.Packages.Where(p => p.IsEnable.Value).ToList();
                                                 mailTitle = string.Format("ARRIVED: [0} {1}, {2}pcs", method.Carriers.Name, box.TrackingNumber, packageList.Count());
                                                 mailBody = string.Format("Tracking {0}({1}pcs, {2}</ br>", box.TrackingNumber, packageList.Count(), box.BoxID);
                                                 mailBody += string.Join("</ br>", box.Packages.Where(p => p.IsEnable.Value).Select(p => string.Format("{0}-{1}-{2}", p.Items.First().ProductID, p.OrderID.Value, p.TrackingNumber)).ToArray());
-                                                bool Sendle_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, null, null, false);
+                                                bool Sendle_Status = MyHelp.Mail_Send(sendMail, receiveMails, CC_Mails.ToArray(), mailTitle, mailBody, true, null, null, false);
                                                 if (!Sendle_Status) MyHelp.Log("Box", box.BoxID, "寄送Box到貨通知失敗", session);
                                                 break;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        DateTime deliveryDate = MyHelp.SkipWeekend(box.Create_at.AddDays(2));
+                                        if(DateTime.Compare(deliveryDate, DateTime.UtcNow) < 0)
+                                        {
+                                            box.ShippingStatus = (byte)EnumData.DirectLineStatus.延誤中;
+                                            Box.Update(box, box.BoxID);
                                         }
                                     }
                                 }

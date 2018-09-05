@@ -25,6 +25,7 @@ namespace QDLogistics.Commons
         private List<Items> itemList;
 
         private IDS_API IDS_Api;
+        private Sendle_API Sendle_Api;
         private SC_WebService SCWS;
 
         private bool disposed = false;
@@ -204,16 +205,17 @@ namespace QDLogistics.Commons
                         }
                         break;
                     case "Sendle":
-                        Sendle_API sendle = new Sendle_API(packageData.Method.Carriers.CarrierAPI);
-                        sendle.Cancel(packageData.TagNo);
+                        Sendle_Api = new Sendle_API(packageData.Method.Carriers.CarrierAPI);
+                        Sendle_Api.Cancel(packageData.TagNo);
 
-                        //receiveMails = MailList["Sendle"];
-                        receiveMails = new string[] { "qd.tuko@hotmail.com" };
-                        ccMails[ccMails.Length] = "sophia.wang@ecof.com.au";
-                        mailTitle = string.Format("TW018 - Cancel Shipment Request for {0} (in {1} tracking {2})", packageData.TagNo, packageData.Method.Carriers.Name, packageData.TrackingNumber);
+                        receiveMails = MailList["Sendle"];
+                        var CC_Mails = ccMails.ToList();
+                        CC_Mails.Add("sophia.wang@ecof.com.au");
+                        string labelID = string.Format("{0}-{1}-{2}", packageData.Items.First(i => i.IsEnable.Value).ProductID, packageData.OrderID, packageData.TrackingNumber);
+                        mailTitle = string.Format("Quality Deals Cancel Shipment Request for <{0}> (in <{1}> )", labelID, packageData.TrackingNumber);
                         mailBody = CreateCancelMailBody(directLine.Abbreviation, eventData);
 
-                        if (!MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, null, null, false))
+                        if (!MyHelp.Mail_Send(sendMail, receiveMails, CC_Mails.ToArray(), mailTitle, mailBody, true, null, null, false))
                         {
                             eventData.Status = (byte)EnumData.CaseEventStatus.Error;
                             CaseEvent.Update(eventData, eventData.ID);
@@ -485,6 +487,7 @@ namespace QDLogistics.Commons
                 DirectLine directLine = db.DirectLine.AsNoTracking().FirstOrDefault(d => d.ID.Equals(packageData.Method.DirectLine));
                 if (directLine == null) throw new Exception("找不到Direct Line運輸廠商!");
 
+                string oldTracking = packageData.TrackingNumber;
                 CaseEvent eventData = GetCaseEvent(EnumData.CaseEventType.ChangeShippingMethod);
                 eventData.NewLabelID = string.IsNullOrEmpty(newLabelID) ? CreateNewLabel(directLine.Abbreviation, method) : newLabelID;
                 eventData.MethodID = method.ID;
@@ -514,6 +517,21 @@ namespace QDLogistics.Commons
                             throw new Exception("寄送IDS Direct Line Change Shipping Method通知失敗");
                         }
                         break;
+                    //case "Sendle":
+                    //    receiveMails = MailList["Sendle"];
+
+                    //    mailTitle = string.Format("Quality Deals Change Shipping Method for <{0}> (in <{1}> )", packageData.TagNo, oldTracking);
+                    //    mailBody = CreateChangeShippingMethodMailBody(directLine.Abbreviation, string.Format("{0} to {1}", oldMethodType, newMethodType), eventData);
+
+                    //    if (!MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, null, null, false))
+                    //    {
+                    //        eventData.Status = (byte)EnumData.CaseEventStatus.Error;
+                    //        CaseEvent.Update(eventData, eventData.ID);
+                    //        CaseEvent.SaveChanges();
+
+                    //        throw new Exception("寄送IDS Direct Line Change Shipping Method通知失敗");
+                    //    }
+                    //    break;
                 }
             }
             catch (Exception e)
@@ -550,6 +568,13 @@ namespace QDLogistics.Commons
                         }
 
                         labelID = IDS_Result.labels.First(l => l.salesRecordNumber.Equals(packageData.OrderID.ToString())).orderid;
+                        break;
+                    case "Sendle":
+                        Sendle_Api = new Sendle_API(method.Carriers.CarrierAPI);
+                        Sendle_API.OrderResponse Sendle_Result = Sendle_Api.Create(packageData);
+
+                        labelID = Sendle_Result.order_id;
+                        packageData.TrackingNumber = Sendle_Result.sendle_reference;
                         break;
                 }
             }
@@ -607,8 +632,8 @@ namespace QDLogistics.Commons
 
             return eventData;
         }
-        
-        public void SendResendShipmentMail(string newLabelID, DateTime confirmDate)
+
+        public void SendResendShipmentMail(Packages newPackage, DateTime confirmDate)
         {
             if (packageData == null) throw new Exception("未設定訂單!");
 
@@ -619,7 +644,7 @@ namespace QDLogistics.Commons
                 MyHelp.Log("CaseEvent", orderData.OrderID, "開始寄送Direct Line Resend Shipment通知", Session);
 
                 CaseEvent eventData = GetCaseEvent(EnumData.CaseEventType.ResendShipment);
-                eventData.NewLabelID = newLabelID;
+                eventData.NewLabelID = newPackage.TagNo;
                 eventData.Request_at = DateTime.UtcNow;
 
                 CaseEvent.Update(eventData, eventData.ID);
@@ -638,6 +663,23 @@ namespace QDLogistics.Commons
                         mailBody = CreateResendShipmentMailBody(directLine.Abbreviation, confirmDate, eventData);
 
                         if (!MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, null, null, false))
+                        {
+                            eventData.Status = (byte)EnumData.CaseEventStatus.Error;
+                            CaseEvent.Update(eventData, eventData.ID);
+                            CaseEvent.SaveChanges();
+
+                            throw new Exception("寄送IDS Direct Line Resend Shipment通知失敗");
+                        }
+                        break;
+                    case "Sendle":
+                        receiveMails = MailList["Sendle"];
+                        var CC_Mails = ccMails.ToList();
+                        CC_Mails.Add("sophia.wang@ecof.com.au");
+                        string oldLabelID = string.Format("{0}-{1}-{2}", packageData.Items.First(i => i.IsEnable.Value).ProductID, packageData.OrderID, packageData.TrackingNumber);
+                        mailTitle = string.Format("Quality Deals Reship inventory for <Label ID1>", oldLabelID);
+                        mailBody = CreateResendShipmentMailBody(directLine.Abbreviation, confirmDate, eventData, newPackage);
+
+                        if (!MyHelp.Mail_Send(sendMail, receiveMails, CC_Mails.ToArray(), mailTitle, mailBody, true, null, null, false))
                         {
                             eventData.Status = (byte)EnumData.CaseEventStatus.Error;
                             CaseEvent.Update(eventData, eventData.ID);
@@ -744,6 +786,9 @@ namespace QDLogistics.Commons
                             tracking = IDS_Result.trackingnumber.Last(t => t.First().Equals(packageData.OrderID.ToString()))[1];
                         }
                         break;
+                    case "Sendle":
+                        tracking = packageData.TrackingNumber;
+                        break;
                 }
             }
             catch (Exception e)
@@ -758,7 +803,7 @@ namespace QDLogistics.Commons
 
         private string CreateCancelMailBody(string directLine, CaseEvent eventData)
         {
-            string mailBody = "";
+            string mailBody = "", failed_link;
             string receiveUrl = AddQueryString(string.Format("{0}/CaseEvent/Receive?", BaseUrl), new Dictionary<string, object> { { "caseID", eventData.ID }, { "type", (byte)EnumData.CaseEventType.CancelShipment } });
 
             switch (directLine)
@@ -766,7 +811,7 @@ namespace QDLogistics.Commons
                 case "IDS":
                     string HK_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Successful }, { "returnWarehouseID", 163 } });
                     string UK_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Successful }, { "returnWarehouseID", 215 } });
-                    string failed_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Failed } });
+                    failed_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Failed } });
                     mailBody = "Hi All<br /><br />Please cancel the shipment for {0} and keep it in inventory.<br /><br />";
                     mailBody += "If you have successfully cancelled in Hong Kong, click <a href='{1}' target='_bland'>here</a>.<br /><br />";
                     mailBody += "If you have successfully cancelled in the UK, click <a href='{2}' target='_bland'>here</a>.<br /><br />";
@@ -775,6 +820,14 @@ namespace QDLogistics.Commons
                     mailBody = string.Format(mailBody, eventData.LabelID, HK_link, UK_link, failed_link);
                     break;
                 case "Sendle":
+                    string labelID = string.Format("{0}-{1}-{2}", packageData.Items.First(i => i.IsEnable.Value).ProductID, packageData.OrderID, packageData.TrackingNumber);
+                    string Sendle_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Successful }, { "returnWarehouseID", 118 } });
+                    failed_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Failed } });
+                    mailBody = "Body:<b />Hi<b /><b />Please cancel the shipment for <{0}> and keep it in inventory.<br /><br />";
+                    mailBody += "If you have successfully cancelled in the Regents Park, click <a href='{1}' target='_bland'>here</a>.<br /><br />";
+                    mailBody += "If you have failed to cancel, click <a href='{2}' target='_bland'>here</a>.<br /><br />";
+                    mailBody += "You can only click on either of the links above ONCE.Please make sure to choose correctly.<br /><br />Please email us if the above sitaution doesn't apply.<br /><br />Regards<br /><br />QD Shipping";
+                    mailBody = string.Format(mailBody, labelID, Sendle_link, failed_link);
                     break;
             }
 
@@ -804,16 +857,16 @@ namespace QDLogistics.Commons
             return mailBody;
         }
 
-        private string CreateChangeShippingMethodMailBody(string directLine, string methodTypeChange, CaseEvent eventData)
+        private string CreateChangeShippingMethodMailBody(string directLine, string methodTypeChange, CaseEvent eventData, string oldTracking = null)
         {
-            string mailBody = "";
+            string mailBody = "", confirm_link, faild_link;
             string receiveUrl = AddQueryString(string.Format("{0}/CaseEvent/Receive?", BaseUrl), new Dictionary<string, object> { { "caseID", eventData.ID }, { "type", (byte)EnumData.CaseEventType.ChangeShippingMethod } });
 
             switch (directLine)
             {
                 case "IDS":
-                    string confirm_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Successful } });
-                    string faild_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Failed } });
+                    confirm_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Successful } });
+                    faild_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Failed } });
                     mailBody = "Hi All<br /><br />The shipping method for {0} needs to change from {1}. The new code is {2}. <br /><br />";
                     mailBody += "Old: {0} <br />New: {2}<br /><br />";
                     mailBody += "If you confirm the change, click <a href='{3}' target='_bland'>here</a>.<br /><br />";
@@ -821,24 +874,45 @@ namespace QDLogistics.Commons
                     mailBody += "You can only click on either of the links above ONCE. Please make sure to choose correctly.<br /><br />Please email us if the above sitaution doesn't apply.<br /><br />Regards<br /><br />QD Shipping";
                     mailBody = string.Format(mailBody, eventData.LabelID, methodTypeChange, eventData.NewLabelID, confirm_link, faild_link);
                     break;
+                case "Sendle":
+                    string oldLabelID = string.Format("{0}-{1}-{2}", packageData.Items.First(i => i.IsEnable.Value).ProductID, packageData.OrderID, oldTracking);
+                    string newLabelID = string.Format("{0}-{1}-{2}", packageData.Items.First(i => i.IsEnable.Value).ProductID, packageData.OrderID, packageData.TrackingNumber);
+                    confirm_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Successful } });
+                    faild_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Failed } });
+                    mailBody = "Hi All<br /><br />The shipping method for {0} needs to change from {1}. The new code is {2}. <br /><br />";
+                    mailBody += "Old: {0} <br />New: {2}<br /><br />";
+                    mailBody += "If you confirm the change, click <a href='{3}' target='_bland'>here</a>.<br /><br />";
+                    mailBody += "If you could not change, click <a href='{4}' target='_bland'>here</a>.<br /><br />";
+                    mailBody += "You can only click on either of the links above ONCE. Please make sure to choose correctly.<br /><br />Please email us if the above sitaution doesn't apply.<br /><br />Regards<br /><br />QD Shipping";
+                    mailBody = string.Format(mailBody, oldLabelID, methodTypeChange, newLabelID, confirm_link, faild_link);
+                    break;
             }
 
             return mailBody;
         }
 
-        private string CreateResendShipmentMailBody(string directLine, DateTime confirmDate, CaseEvent eventData)
+        private string CreateResendShipmentMailBody(string directLine, DateTime confirmDate, CaseEvent eventData, Packages newPackage = null)
         {
-            string mailBody = "";
+            string mailBody = "", successful_link;
             string receiveUrl = AddQueryString(string.Format("{0}/CaseEvent/Receive?", BaseUrl), new Dictionary<string, object> { { "caseID", eventData.ID }, { "type", (byte)EnumData.CaseEventType.ResendShipment } });
 
             switch (directLine)
             {
                 case "IDS":
-                    string successful_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Successful } });
+                    successful_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Successful } });
                     mailBody = "Hello<br /><br />Order ({0}) confirmed cancelled on {1} requires reship with new # {2}.<br /><br />";
                     mailBody += "Please click <a href='{3}' target='_bland'>here</a> to confirm the change.<br /><br />";
                     mailBody += "Regards<br /><br />QD Shipping";
                     mailBody = string.Format(mailBody, eventData.LabelID, confirmDate.ToString("MM/dd/yyyy hh:mm tt"), eventData.NewLabelID, successful_link);
+                    break;
+                case "Sendle":
+                    string oldLabelID = string.Format("{0}-{1}-{2}", packageData.Items.First(i => i.IsEnable.Value).ProductID, packageData.OrderID, packageData.TrackingNumber);
+                    string newLabelID = string.Format("{0}-{1}-{2}", packageData.Items.First(i => i.IsEnable.Value).ProductID, newPackage.OrderID, newPackage.TrackingNumber);
+                    successful_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Successful } });
+                    mailBody = "Hi<br /><br /><{0}> confirmed cancelled on <{1}> requires reship with new # <{2}>.<br /><br />";
+                    mailBody += "Please click <a href='{3}' target='_bland'>here</a> to confirm the change.<br /><br />";
+                    mailBody += "Regards<br /><br />QD Shipping";
+                    mailBody = string.Format(mailBody, oldLabelID, confirmDate.ToString("MM/dd/yyyy hh:mm tt"), newLabelID, successful_link);
                     break;
             }
 
