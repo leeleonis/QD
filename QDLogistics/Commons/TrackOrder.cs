@@ -1,5 +1,6 @@
 ﻿using CarrierApi.DHL;
 using CarrierApi.FedEx;
+using CarrierApi.Sendle;
 using CarrierApi.Winit;
 using QDLogistics.FedExTrackService;
 using QDLogistics.Models;
@@ -23,15 +24,15 @@ namespace QDLogistics.Commons
 
         public TrackOrder(Packages package)
         {
-            setOrder(package.Orders, package);
+            SetOrder(package.Orders, package);
         }
 
         public TrackOrder(Orders order, Packages package)
         {
-            setOrder(order, package);
+            SetOrder(order, package);
         }
 
-        public void setOrder(Orders order, Packages package)
+        public void SetOrder(Orders order, Packages package)
         {
             _order = order;
             _package = package;
@@ -39,7 +40,7 @@ namespace QDLogistics.Commons
             _trackingNumber = _package.TrackingNumber;
         }
 
-        public TrackResult track()
+        public TrackResult Track()
         {
             TrackResult result = new TrackResult();
 
@@ -62,6 +63,9 @@ namespace QDLogistics.Commons
                     case "FedEx":
                         result = FedEx_Track(_carrier.CarrierAPI, _trackingNumber);
                         break;
+                    case "Sendle":
+                        result = Sendle_Track(_carrier.CarrierAPI, _trackingNumber);
+                        break;
                 }
             }
             catch (Exception e)
@@ -72,7 +76,7 @@ namespace QDLogistics.Commons
             return result;
         }
 
-        public TrackResult track(string warehouseID, string outboundNum, string trackingNum = "")
+        public TrackResult Track(string warehouseID, string outboundNum, string trackingNum = "")
         {
             TrackResult result = new TrackResult();
 
@@ -206,6 +210,33 @@ namespace QDLogistics.Commons
                     result.DeliveryDate = FedEx_EventList.First(e => e.EventType == "DL").Timestamp.ToUniversalTime();
                     result.DeliveryStatus = (int)OrderService.DeliveryStatusType.Delivered;
                 }
+            }
+
+            return result;
+        }
+
+        private TrackResult Sendle_Track(CarrierAPI api, string trackingNumber)
+        {
+            TrackResult result = new TrackResult();
+
+            Sendle_API Sendle = new Sendle_API(api);
+            Sendle_API.TrackResponse Sendle_Result = Sendle.Track(trackingNumber);
+
+            if (Sendle_Result.tracking_events.Any())
+            {
+                if(Sendle_Result.tracking_events.Any(e => e.event_type == "Pickup"))
+                {
+                    result.PickUpDate = Sendle_Result.tracking_events.First(e => e.event_type == "Pickup").scan_time;
+                    result.DeliveryStatus = (int)OrderService.DeliveryStatusType.Intransit;
+                }
+
+                if (Sendle_Result.tracking_events.Any(e => e.event_type == "Delivered"))
+                {
+                    result.PickUpDate = Sendle_Result.tracking_events.First(e => e.event_type == "Delivered").scan_time;
+                    result.DeliveryStatus = (int)OrderService.DeliveryStatusType.Delivered;
+                }
+
+                result.DeliveryNote = Sendle_Result.tracking_events.Select(e => e.scan_time.ToString() + " " + e.description).Last();
             }
 
             return result;

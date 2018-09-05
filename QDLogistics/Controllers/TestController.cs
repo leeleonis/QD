@@ -51,7 +51,7 @@ namespace QDLogistics.Controllers
             IRepository<Orders> Orders = new GenericRepository<Orders>(db);
             Orders order = Orders.Get(OrderID);
             TrackOrder track = new TrackOrder(order, order.Packages.First(p => p.IsEnable.Value));
-            TrackResult result = track.track();
+            TrackResult result = track.Track();
         }
 
         private void DHL_Test(int OrderID)
@@ -139,7 +139,7 @@ namespace QDLogistics.Controllers
             IRepository<Orders> Orders = new GenericRepository<Orders>(db);
             Orders order = Orders.Get(OrderID);
             TrackOrder track = new TrackOrder(order, order.Packages.First());
-            TrackResult result = track.track();
+            TrackResult result = track.Track();
         }
 
         private void FedEx_Test(int OrderID)
@@ -462,22 +462,17 @@ namespace QDLogistics.Controllers
 
         public void Sendle_Test(int OrderID)
         {
-            CarrierAPI api = new CarrierAPI()
-            {
-                IsEnable = true,
-                IsTest = false,
-                ApiKey = "48BgtBpRNFKW4QJsFY6XQ2mz",
-                ApiAccount = "peter_qd_com_tw"
-            };
-
             Packages package = db.Packages.First(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID));
-            Sendle_API Sendle = new Sendle_API(api);
+            Sendle_API Sendle = new Sendle_API(package.Method.Carriers.CarrierAPI);
 
-            var result = Sendle.Create(package);
+            TrackOrder track = new TrackOrder();
+            track.SetOrder(package.Orders, package);
+            var result = track.Track();
+            //var result = Sendle.Create(package);
             //var order = Sendle.Order(result.order_id);
-            Sendle.Label(result.order_id, string.Format("{0}-{1}-{2}", package.Items.First().ProductID, package.OrderID.Value, result.sendle_reference), @"C:\Users\qdtuk\Downloads");
-            //var track = Sendle.Track("SVCFGK");
-            var cancel = Sendle.Cancel(result.order_id);
+            //Sendle.Label(result.order_id, string.Format("{0}-{1}-{2}", package.Items.First().ProductID, package.OrderID.Value, result.sendle_reference), @"C:\Users\qdtuk\Downloads");
+            //var track = Sendle.Track(package.TrackingNumber);
+            //var cancel = Sendle.Cancel(result.order_id);
         }
     }
 }

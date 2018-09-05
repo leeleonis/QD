@@ -168,7 +168,7 @@ namespace QDLogistics.Controllers
                                             MyHelp.Log("Orders", packageData.OrderID, "訂單提交完成", session);
 
                                             byte[] carrierType = new byte[] { (byte)EnumData.CarrierType.DHL, (byte)EnumData.CarrierType.FedEx, (byte)EnumData.CarrierType.IDS, (byte)EnumData.CarrierType.Sendle };
-                                            if (!shipProcess.isDropShip && carrierType.Contains(package.Method.Carriers.CarrierAPI.Type.Value))
+                                            if (carrierType.Contains(package.Method.Carriers.CarrierAPI.Type.Value))
                                             {
                                                 PickProduct = new GenericRepository<PickProduct>(db);
 
@@ -495,8 +495,8 @@ namespace QDLogistics.Controllers
 
                             foreach (var data in packageList.Join(Orders.GetAll(true), p => p.OrderID, o => o.OrderID, (p, o) => new { order = o, package = p }).ToList())
                             {
-                                track.setOrder(data.order, data.package);
-                                result = track.track();
+                                track.SetOrder(data.order, data.package);
+                                result = track.Track();
 
                                 data.package.PickUpDate = result.PickUpDate;
                                 data.package.DeliveryDate = result.DeliveryDate;
@@ -569,9 +569,9 @@ namespace QDLogistics.Controllers
 
                                     foreach (var data in dataList)
                                     {
-                                        track.setOrder(data.order, data.package);
+                                        track.SetOrder(data.order, data.package);
                                         outboundOrderListData trackData = trackList.First(t => t.sellerOrderNo == data.order.OrderID.ToString());
-                                        result = track.track(trackData.warehouseId, trackData.documentNo, trackData.trackingNo);
+                                        result = track.Track(trackData.warehouseId, trackData.documentNo, trackData.trackingNo);
 
                                         if (string.IsNullOrEmpty(data.package.TrackingNumber) && !string.IsNullOrEmpty(trackData.trackingNo))
                                         {

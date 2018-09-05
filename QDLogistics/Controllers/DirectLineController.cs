@@ -433,6 +433,7 @@ namespace QDLogistics.Controllers
             var OrderFilter = db.Orders.AsNoTracking();
             var PackageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.BoxID.Equals(boxID));
             var ItemFilter = db.Items.AsNoTracking().Where(i => i.IsEnable.Value);
+            var MethodFilter = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && m.IsDirectLine);
 
             var results = PackageFilter.ToList()
                 .Join(OrderFilter, p => p.OrderID.Value, o => o.OrderID, (p, o) => new OrderJoinData() { order = o, package = p })
@@ -444,6 +445,8 @@ namespace QDLogistics.Controllers
                 int start = (page - 1) * length;
                 total = results.Count();
                 results = results.OrderByDescending(data => data.order.OrderID).Skip(start).Take(length).ToList();
+
+                DirectLine directLine = db.DirectLine.Find(results.First().package.Method.DirectLine);
 
                 string[] skuList = results.Select(data => data.item.ProductID).ToArray();
                 Dictionary<string, string> SkuName = db.Skus.AsNoTracking().Where(s => s.IsEnable.Value & skuList.Contains(s.Sku)).ToDictionary(s => s.Sku, s => s.ProductName);
@@ -458,12 +461,28 @@ namespace QDLogistics.Controllers
                     data.order.OrderID,
                     Serial = data.item.SerialNumbers.Any() ? (data.itemCount == 1 ? data.item.SerialNumbers.First().SerialNumber : "Multi") : "找不到",
                     Tracking = data.package.TrackingNumber,
-                    LabelID = string.Format("<a href='http://internal.qd.com.tw/fileUploads/{0}/Label.pdf' target='_blank'>{1}</a>", data.package.FilePath, data.package.TagNo),
+                    LabelID = GetLabelLink(directLine.Abbreviation, data),
                     data.order.StatusCode
                 }));
             }
 
             return Json(new { total, rows = dataList }, JsonRequestBehavior.AllowGet);
+        }
+
+        private string GetLabelLink(string directLine, OrderJoinData data)
+        {
+            string link = "<a href='http://internal.qd.com.tw/fileUploads/{0}/Label.pdf' target='_blank'>{1}</a>";
+            switch (directLine)
+            {
+                case "Sendle":
+                    string Sendle_Label = string.Format("{0}-{1}-{2}", data.item.ProductID, data.order.OrderID, data.package.TrackingNumber);
+                    link = string.Format(link, data.package.FilePath, Sendle_Label);
+                    break;
+                default:
+                    link = string.Format(link, data.package.FilePath, data.package.TagNo);
+                    break;
+            }
+            return link;
         }
 
         public ActionResult GetCancelData(CancelFilter filter, int page = 1, int rows = 100)
@@ -991,6 +1010,7 @@ namespace QDLogistics.Controllers
                         var method = db.ShippingMethod.Find(box.FirstMileMethod);
 
                         result.data = Box_Shippping(db.Box.Where(b => b.IsEnable && b.MainBox.Equals(box.MainBox)).OrderBy(b => b.BoxID).ToList(), method);
+
                         break;
                     case 1:
                         if (!box.Packages.Any()) throw new Exception("尚未有任何訂單，無法前往下一箱!");
@@ -1045,7 +1065,7 @@ namespace QDLogistics.Controllers
             return Json(result, JsonRequestBehavior.AllowGet);
         }
 
-        private List<List<object>> Box_Shippping(List<Box> boxList, ShippingMethod method)
+        private List<object> Box_Shippping(List<Box> boxList, ShippingMethod method)
         {
             List<object> fileList = new List<object>();
             List<object> errorList = new List<object>();
@@ -1180,7 +1200,8 @@ namespace QDLogistics.Controllers
             }
             db.SaveChanges();
 
-            return new List<List<object>>() { fileList, errorList };
+            boxID = "";
+            return new List<object>() { boxID, fileList, errorList };
         }
 
         private bool CheckOrderStatus(Packages package, Order order)
