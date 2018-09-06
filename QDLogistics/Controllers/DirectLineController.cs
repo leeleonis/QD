@@ -64,7 +64,8 @@ namespace QDLogistics.Controllers
                 {
                     Dictionary<int, bool> methodData = JsonConvert.DeserializeObject<Dictionary<int, bool>>(warehouse.CarrierData);
                     int[] methodIDs = methodData.Where(m => m.Value).Select(m => m.Key).ToArray();
-                    MethodList = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && methodIDs.Contains(m.ID)).Select(m => new SelectListItem() { Text = m.Name, Value = m.ID.ToString() }).ToList();
+                    MethodList = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && methodIDs.Contains(m.ID))
+                        .Select(m => new SelectListItem() { Text = m.Name, Value = m.ID.ToString(), Selected = m.ID.Equals(35) }).ToList();
                 }
             }
 

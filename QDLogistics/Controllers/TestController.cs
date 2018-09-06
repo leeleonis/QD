@@ -385,20 +385,18 @@ namespace QDLogistics.Controllers
             var serials = db.SerialNumberForRefundLabel.AsNoTracking().Where(s => !s.IsUsed && s.oldOrderID.Equals(OrderID)).ToList();
             using (CaseLog CaseLog = new CaseLog(package, Session))
             {
-               // CaseLog.SendResendShipmentMail(, serials.First().Create_at);
+                // CaseLog.SendResendShipmentMail(, serials.First().Create_at);
             }
         }
 
-        private void Mail_Test()
+        public void Mail_Test(string BoxID)
         {
-            string mailFrom = "dispatch-qd@hotmail.com";
-            string[] mailTo = new string[] { "qd.tuko@hotmail.com" };
-
-            bool mailResult = MyHelp.Mail_Send(mailFrom, mailTo, null, "Mail Test", "Mail Test", true, null, null, false);
-            if (mailResult)
-            {
-                Response.Write("Success!");
-            }
+            Box box = db.Box.Find(BoxID);
+            ShippingMethod method = db.ShippingMethod.Find(box.FirstMileMethod);
+            var packageList = box.Packages.Where(p => p.IsEnable.Value).ToList();
+            var mailTitle = string.Format("ARRIVED: {0} {1}, {2}pcs", method.Carriers.Name, box.TrackingNumber, packageList.Count());
+            var mailBody = string.Format("Tracking {0}({1}pcs, {2}</ br>", box.TrackingNumber, packageList.Count(), box.BoxID);
+            mailBody += string.Join("</ br>", packageList.Select(p => string.Format("{0}-{1}-{2}", p.Items.First().ProductID, p.OrderID.Value, p.TrackingNumber)).ToArray());
         }
 
         private void RMA_Test(int OrderID)
@@ -473,6 +471,30 @@ namespace QDLogistics.Controllers
             //Sendle.Label(result.order_id, string.Format("{0}-{1}-{2}", package.Items.First().ProductID, package.OrderID.Value, result.sendle_reference), @"C:\Users\qdtuk\Downloads");
             //var track = Sendle.Track(package.TrackingNumber);
             //var cancel = Sendle.Cancel(result.order_id);
+        }
+
+        public void Track_Test()
+        {
+            GenericRepository<Packages> Packages = new GenericRepository<Packages>(db);
+            GenericRepository<Items> Items = new GenericRepository<Items>(db);
+            GenericRepository<PickProduct> PickProduct = new GenericRepository<PickProduct>(db);
+            GenericRepository<Payments> Payments = new GenericRepository<Payments>(db);
+            GenericRepository<ShippingMethod> ShippingMethod = new GenericRepository<ShippingMethod>(db);
+
+            var date = DateTime.UtcNow.AddDays(-14);
+            var PackageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((int)EnumData.ProcessStatus.已出貨) && !string.IsNullOrEmpty(p.TrackingNumber) && !p.DeliveryStatus.Value.Equals((int)OrderService.DeliveryStatusType.Delivered));
+            var ApiList = new List<byte> { (byte)EnumData.CarrierType.DHL, (byte)EnumData.CarrierType.FedEx, (byte)EnumData.CarrierType.Sendle };
+            var ApiFilter = db.CarrierAPI.AsNoTracking().Where(a => a.IsEnable && ApiList.Contains(a.Type.Value));
+            var trackList = PackageFilter.Join(db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable)
+                .Join(db.Carriers.AsNoTracking().Where(c => c.IsEnable)
+                    .Join(ApiFilter, c => c.Api.Value, api => api.Id, (c, api) => c),
+                    m => m.CarrierID.Value, c => c.ID, (m, c) => m),
+                p => p.ShippingMethod.Value, m => m.ID, (p, m) => p).Where(p => DateTime.Compare(p.ShipDate.Value, date) > 0).ToList();
+            List<PickProduct> pickList = PickProduct.GetAll(true).Where(pick => pick.IsEnable == true && pick.IsPicked == true).OrderByDescending(pick => pick.PickUpDate).ToList();
+            List<Packages> packageList = pickList
+                .Join(Packages.GetAll(true).Where(p => p.IsEnable.Value && !p.DeliveryStatus.Equals((int)OrderService.DeliveryStatusType.Delivered) && !p.ShippingMethod.Equals(0) && !string.IsNullOrEmpty(p.TrackingNumber)), pick => pick.PackageID, p => p.ID, (pick, p) => p).ToList()
+                .Join(ShippingMethod.GetAll(true).Where(m => m.IsEnable), p => p.ShippingMethod, method => method.ID, (p, method) => p).ToList()
+                .Join(Payments.GetAll(true), p => p.OrderID, payment => payment.OrderID, (p, payment) => p).Where(p => DateTime.Compare(p.ShipDate.Value, date) > 0).ToList();
         }
     }
 }

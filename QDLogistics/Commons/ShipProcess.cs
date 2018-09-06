@@ -675,7 +675,7 @@ namespace QDLogistics.Commons
                 HSSFSheet sheet = (HSSFSheet)workbook.GetSheetAt(0);
                 sheet.GetRow(4).GetCell(3).SetCellValue(boxList[0].TrackingNumber);
                 sheet.GetRow(7).GetCell(1).SetCellValue(boxList[0].Create_at.ToString("MMM dd, yyyy", CultureInfo.CreateSpecificCulture("en-US")));
-                sheet.GetRow(7).GetCell(8).SetCellValue(boxList[0].MainBox);
+                //sheet.GetRow(7).GetCell(8).SetCellValue(boxList[0].MainBox);
 
                 sheet.GetRow(10).GetCell(1).SetCellValue("Zhi You Wan LTD (53362065)");
                 sheet.GetRow(11).GetCell(1).SetCellValue("51 Section 3 Jianguo North Road");

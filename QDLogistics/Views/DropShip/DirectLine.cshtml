@@ -36,6 +36,25 @@
                         </form>
                     </div>
                 </div>
+                <div class="hidden">
+                    <div id="dialog-dispatch" class="easyui-dialog" title="請選擇Shipping Method以及輸入Tracking Number"
+                         data-options="iconCls:'icon-edit',closed:true,draggable:false,resizable:false,onClose:function(){$trackingInput.val('');}" style="width:500px;">
+                        <div class="col-sm-12" data-options="border:false" style="text-align:right;padding:5px;">
+                            <div class="col-sm-4 no-padding">
+                                @Html.DropDownList("Method", (List<SelectListItem>)ViewBag.MethodList, htmlAttributes: new { @class = "form-control", @id = "select-method" })
+                            </div>
+                            <div class="col-sm-8 no-padding">
+                                <input type="text" class="form-control" id="input-tracking" />
+                            </div>
+                            <div class="col-sm-2 col-sm-offset-8 no-padding">
+                                <button type="button" class="btn btn-default btn-sm btn-block" id="btn-yes">Yes</button>
+                            </div>
+                            <div class="col-sm-2 no-padding">
+                                <button type="button" class="btn btn-default btn-sm btn-block" onclick="$dispatchDialog.dialog('close');">No</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -55,6 +74,7 @@
         var selected = false, selectOption, filterValue = {}
         var $dataGrid;
         var $typeSelect = $('#select-type'), $downloadBtn = $('#btn-download'), $dispatchBtn = $('#btn-dispatch'), $importBtn = $('#btn-import'), $importFile = $("#file-import"), $exportBtn = $('#btn-export');
+        var $dispatchDialog = $('#dialog-dispatch'), $methodSelect = $('#select-method'), $trackingInput = $('#input-tracking'), $yesBtn = $('#btn-yes');
 
         $(function () {
             var data = { optionType: ['CountryCode', 'Method', 'StatusCode'] };
@@ -93,7 +113,6 @@
 
             $dispatchBtn.click(function () {
                 var rows = $dataGrid.datagrid('getSelections');
-                var tracking, isDispatch = true;
 
                 if (rows.length == 0) return alert('請先選擇訂單!');
 
@@ -102,11 +121,30 @@
                 });
 
                 if ($typeSelect.find('option:selected').text() == 'Sendle') {
-                    tracking = prompt("請輸入Tracking Number");
-                    if (isEmpty(tracking)) return alert('未輸入Tracking Number!')
+                    $dispatchDialog.dialog('open');
+                } else {
+                    ajaxUrl("@Url.Action("dispatch", "dropShip")", 'post', { packageIDs }).done(function (response) {
+                        if (response.status) {
+                            alert("Success!");
+                        } else {
+                            alert(response.message);
+                        }
+                    });
                 }
+            });
 
-                ajaxUrl("@Url.Action("dispatch", "dropShip")", 'post', { packageIDs, tracking }).done(function (response) {
+            $yesBtn.click(function () {
+                var rows = $dataGrid.datagrid('getSelections');
+
+                if (rows.length == 0) return alert('請先選擇訂單!');
+
+                var packageIDs = $.map(rows, function (row) {
+                    return row.PackageID;
+                });
+
+                if (isEmpty($trackingInput.val())) return alert('請先輸入Tracking Number!');
+
+                ajaxUrl("@Url.Action("dispatch", "dropShip")", 'post', { packageIDs, method: $methodSelect.val(), tracking: $trackingInput.val() }).done(function (response) {
                     if (response.status) {
                         alert("Success!");
                     } else {

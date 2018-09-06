@@ -48,6 +48,7 @@ namespace QDLogistics.Controllers
         public ActionResult DirectLine()
         {
             ViewBag.directLineList = db.DirectLine.AsNoTracking().Where(d => d.IsEnable).Select(d => new SelectListItem() { Text = d.Name, Value = d.ID.ToString() }).ToList();
+            ViewBag.methodList = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable).Select(m => new SelectListItem() { Text = m.Name, Value = m.ID.ToString(), Selected = m.ID.Equals(9) }).ToList();
             return View();
         }
 
@@ -548,7 +549,7 @@ namespace QDLogistics.Controllers
             return Json(result, JsonRequestBehavior.AllowGet);
         }
 
-        public ActionResult Dispatch(int[] packageIDs, string tracking)
+        public ActionResult Dispatch(int[] packageIDs, int? method, string tracking)
         {
             AjaxResult result = new AjaxResult();
 
@@ -684,8 +685,9 @@ namespace QDLogistics.Controllers
                                     IsEnable = true,
                                     BoxID = boxID,
                                     DirectLine = directLine.ID,
+                                    FirstMileMethod = method ?? 0,
                                     WarehouseFrom = warehouseID,
-                                    ShippingStatus = (byte)EnumData.DirectLineStatus.已到貨,
+                                    ShippingStatus = method.HasValue ? (byte)EnumData.DirectLineStatus.運輸中 : (byte)EnumData.DirectLineStatus.已到貨,
                                     BoxType = (byte)EnumData.DirectLineBoxType.DirectLine,
                                     TrackingNumber = tracking,
                                     Create_at = timeZoneConvert.Utc

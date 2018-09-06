@@ -487,26 +487,28 @@ namespace QDLogistics.Controllers
 
                             TrackResult result;
                             TrackOrder track = new TrackOrder();
-                            List<PickProduct> pickList = PickProduct.GetAll(true).Where(pick => pick.IsEnable == true && pick.IsPicked == true).OrderByDescending(pick => pick.PickUpDate).ToList();
-                            List<Packages> packageList = pickList
-                                .Join(Packages.GetAll(true).Where(p => p.IsEnable.Value && !p.DeliveryStatus.Equals((int)DeliveryStatusType.Delivered) && !p.ShippingMethod.Equals(0) && !string.IsNullOrEmpty(p.TrackingNumber)), pick => pick.PackageID, p => p.ID, (pick, p) => p).ToList()
-                                .Join(ShippingMethod.GetAll(true).Where(m => m.IsEnable && !m.IsDirectLine), p => p.ShippingMethod, method => method.ID, (p, method) => p).ToList()
-                                .Join(Payments.GetAll(true), p => p.OrderID, payment => payment.OrderID, (p, payment) => p).ToList();
+                            var date = DateTime.UtcNow.AddDays(-14);
+                            var PackageFilter = db.Packages.Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((int)EnumData.ProcessStatus.已出貨) && !string.IsNullOrEmpty(p.TrackingNumber) && !p.DeliveryStatus.Value.Equals((int)OrderService.DeliveryStatusType.Delivered));
+                            var ApiList = new List<byte> { (byte)EnumData.CarrierType.DHL, (byte)EnumData.CarrierType.FedEx, (byte)EnumData.CarrierType.Sendle };
+                            var ApiFilter = db.CarrierAPI.AsNoTracking().Where(a => a.IsEnable && ApiList.Contains(a.Type.Value));
+                            var packageList = PackageFilter.Join(db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable)
+                                .Join(db.Carriers.AsNoTracking().Where(c => c.IsEnable)
+                                    .Join(ApiFilter, c => c.Api.Value, api => api.Id, (c, api) => c),
+                                    m => m.CarrierID.Value, c => c.ID, (m, c) => m),
+                                p => p.ShippingMethod.Value, m => m.ID, (p, m) => p).Where(p => DateTime.Compare(p.ShipDate.Value, date) > 0).ToList();
 
-                            foreach (var data in packageList.Join(Orders.GetAll(true), p => p.OrderID, o => o.OrderID, (p, o) => new { order = o, package = p }).ToList())
+                            foreach (var package in packageList)
                             {
-                                track.SetOrder(data.order, data.package);
+                                track.SetOrder(package.Orders, package);
                                 result = track.Track();
 
-                                data.package.PickUpDate = result.PickUpDate;
-                                data.package.DeliveryDate = result.DeliveryDate;
-                                data.package.DeliveryStatus = result.DeliveryStatus;
-                                data.package.DeliveryNote = result.DeliveryNote;
-
-                                Packages.Update(data.package, data.package.ID);
+                                package.PickUpDate = result.PickUpDate;
+                                package.DeliveryDate = result.DeliveryDate;
+                                package.DeliveryStatus = result.DeliveryStatus;
+                                package.DeliveryNote = result.DeliveryNote;
+                                db.Entry(package).State = System.Data.Entity.EntityState.Modified;
                             }
-
-                            Packages.SaveChanges();
+                            db.SaveChanges();
                         }
                         catch (DbEntityValidationException ex)
                         {
@@ -682,6 +684,7 @@ namespace QDLogistics.Controllers
 
                                         DirectLine directLine = db.DirectLine.AsNoTracking().First(d => d.IsEnable && d.ID.Equals(box.DirectLine));
                                         string[] address, boxLabel;
+                                        string basePath = HostingEnvironment.MapPath("~/FileUploads");
                                         switch (directLine.Abbreviation)
                                         {
                                             case "IDS":
@@ -700,10 +703,29 @@ namespace QDLogistics.Controllers
                                                 var CC_Mails = ccMails.ToList();
                                                 CC_Mails.Add("sophia.wang@ecof.com.au");
                                                 var packageList = box.Packages.Where(p => p.IsEnable.Value).ToList();
-                                                mailTitle = string.Format("ARRIVED: [0} {1}, {2}pcs", method.Carriers.Name, box.TrackingNumber, packageList.Count());
+                                                mailTitle = string.Format("ARRIVED: {0} {1}, {2}pcs", method.Carriers.Name, box.TrackingNumber, packageList.Count());
                                                 mailBody = string.Format("Tracking {0}({1}pcs, {2}</ br>", box.TrackingNumber, packageList.Count(), box.BoxID);
-                                                mailBody += string.Join("</ br>", box.Packages.Where(p => p.IsEnable.Value).Select(p => string.Format("{0}-{1}-{2}", p.Items.First().ProductID, p.OrderID.Value, p.TrackingNumber)).ToArray());
-                                                bool Sendle_Status = MyHelp.Mail_Send(sendMail, receiveMails, CC_Mails.ToArray(), mailTitle, mailBody, true, null, null, false);
+                                                mailBody += string.Join("</ br>", packageList.Select(p => string.Format("{0}-{1}-{2}", p.Items.First(i => i.IsEnable.Value).ProductID, p.OrderID.Value, p.TrackingNumber)).ToArray());
+
+                                                List<Tuple<Stream, string>> SendleFile = new List<Tuple<Stream, string>>();
+                                                using (var file = new ZipFile())
+                                                {
+                                                    var memoryStream = new MemoryStream();
+                                                    foreach (Packages package in box.Packages.Where(p => p.IsEnable.Value).ToList())
+                                                    {
+                                                        string AWB_File = Path.Combine(basePath, package.FilePath, string.Format("AWB-{0}.pdf", package.OrderID));
+                                                        if (!System.IO.File.Exists(AWB_File))
+                                                        {
+                                                            System.IO.File.Copy(Path.Combine(basePath, package.FilePath, "AirWaybill.pdf"), AWB_File);
+                                                        }
+                                                        file.AddFile(AWB_File, "");
+                                                    }
+                                                    file.Save(memoryStream);
+                                                    memoryStream.Seek(0, SeekOrigin.Begin);
+                                                    SendleFile.Add(new Tuple<Stream, string>(memoryStream, "Labels.zip"));
+                                                }
+
+                                                bool Sendle_Status = MyHelp.Mail_Send(sendMail, receiveMails, CC_Mails.ToArray(), mailTitle, mailBody, true, null, SendleFile, false);
                                                 if (!Sendle_Status) MyHelp.Log("Box", box.BoxID, "寄送Box到貨通知失敗", session);
                                                 break;
                                         }
@@ -711,7 +733,7 @@ namespace QDLogistics.Controllers
                                     else
                                     {
                                         DateTime deliveryDate = MyHelp.SkipWeekend(box.Create_at.AddDays(2));
-                                        if(DateTime.Compare(deliveryDate, DateTime.UtcNow) < 0)
+                                        if (DateTime.Compare(deliveryDate, DateTime.UtcNow) < 0)
                                         {
                                             box.ShippingStatus = (byte)EnumData.DirectLineStatus.延誤中;
                                             Box.Update(box, box.BoxID);
@@ -724,6 +746,8 @@ namespace QDLogistics.Controllers
                             List<DirectLineLabel> labelList = Label.GetAll(true).Where(l => l.IsEnable && !string.IsNullOrEmpty(l.BoxID) && l.Status.Equals((byte)EnumData.LabelStatus.正常)).ToList();
                             if (labelList.Any())
                             {
+                                MyHelp.Log("Orders", null, "開始追蹤Direct Line訂單", session);
+
                                 Packages = new GenericRepository<Packages>(db);
 
                                 SC_WebService SCWS = new SC_WebService("tim@weypro.com", "timfromweypro");
@@ -1215,7 +1239,7 @@ namespace QDLogistics.Controllers
                 {
                     foreach (Packages package in packageList)
                     {
-                        if(System.IO.File.Exists(Path.Combine(basePath, package.FilePath, "AirWaybill.pdf")))
+                        if (System.IO.File.Exists(Path.Combine(basePath, package.FilePath, "AirWaybill.pdf")))
                         {
                             string AWB_File = Path.Combine(basePath, package.FilePath, string.Format("AWB-{0}.pdf", package.OrderID));
                             if (!System.IO.File.Exists(AWB_File))

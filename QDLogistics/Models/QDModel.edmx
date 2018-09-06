@@ -2048,7 +2048,7 @@
           <Property Name="PickUpDate" Type="DateTime" Precision="7" />
           <Property Name="DeliveryDate" Type="DateTime" Precision="7" />
           <Property Name="DeliveryStatus" Type="Int32" />
-          <Property Name="DeliveryNote" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
+          <Property Name="DeliveryNote" Type="String" MaxLength="300" FixedLength="false" Unicode="true" />
           <Property Name="WinitNo" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="BoxID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="TagNo" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
