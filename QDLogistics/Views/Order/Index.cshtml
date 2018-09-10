@@ -524,6 +524,9 @@
                         }
                     }
                 ]],
+                rowStyler: function (index, row) {
+                    if (row.OrderQtyTotal != 1) return 'background-color:yellow';
+                },
                 onLoadSuccess: function (data) {
                     $dataGrid.datagrid('uncheckAll');
                     $('div.datagrid-body').unbind('dblclick');

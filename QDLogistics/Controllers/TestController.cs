@@ -395,8 +395,8 @@ namespace QDLogistics.Controllers
             ShippingMethod method = db.ShippingMethod.Find(box.FirstMileMethod);
             var packageList = box.Packages.Where(p => p.IsEnable.Value).ToList();
             var mailTitle = string.Format("ARRIVED: {0} {1}, {2}pcs", method.Carriers.Name, box.TrackingNumber, packageList.Count());
-            var mailBody = string.Format("Tracking {0}({1}pcs, {2}</ br>", box.TrackingNumber, packageList.Count(), box.BoxID);
-            mailBody += string.Join("</ br>", packageList.Select(p => string.Format("{0}-{1}-{2}", p.Items.First().ProductID, p.OrderID.Value, p.TrackingNumber)).ToArray());
+            var mailBody = string.Format("Tracking {0}({1}pcs, {2}<br />", box.TrackingNumber, packageList.Count(), box.BoxID);
+            mailBody += string.Join("<br />", packageList.Select(p => string.Format("{0}-{1}-{2}", p.Items.First().ProductID, p.OrderID.Value, p.TrackingNumber)).ToArray());
         }
 
         private void RMA_Test(int OrderID)

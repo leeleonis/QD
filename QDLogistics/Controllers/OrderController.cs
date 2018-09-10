@@ -664,7 +664,8 @@ namespace QDLogistics.Controllers
                             HttpSessionStateBase session = (HttpSessionStateBase)Session;
                             MyHelp.Log("Box", null, "追蹤Direct Line訂單開始", session);
 
-                            List<Box> boxList = Box.GetAll(true).Where(b => b.IsEnable && b.BoxType.Equals((byte)EnumData.DirectLineBoxType.DirectLine) && b.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.運輸中)).ToList();
+                            List<byte> statusList = new List<byte>() { (byte)EnumData.DirectLineStatus.運輸中, (byte)EnumData.DirectLineStatus.延誤中 };
+                            List<Box> boxList = Box.GetAll(true).Where(b => b.IsEnable && b.BoxType.Equals((byte)EnumData.DirectLineBoxType.DirectLine) && statusList.Contains(b.ShippingStatus)).ToList();
                             if (boxList.Any())
                             {
                                 int[] methodList = boxList.Select(b => b.FirstMileMethod).Distinct().ToArray();
@@ -704,8 +705,8 @@ namespace QDLogistics.Controllers
                                                 CC_Mails.Add("sophia.wang@ecof.com.au");
                                                 var packageList = box.Packages.Where(p => p.IsEnable.Value).ToList();
                                                 mailTitle = string.Format("ARRIVED: {0} {1}, {2}pcs", method.Carriers.Name, box.TrackingNumber, packageList.Count());
-                                                mailBody = string.Format("Tracking {0}({1}pcs, {2}</ br>", box.TrackingNumber, packageList.Count(), box.BoxID);
-                                                mailBody += string.Join("</ br>", packageList.Select(p => string.Format("{0}-{1}-{2}", p.Items.First(i => i.IsEnable.Value).ProductID, p.OrderID.Value, p.TrackingNumber)).ToArray());
+                                                mailBody = string.Format("Tracking {0}({1}pcs, {2}<br />", box.TrackingNumber, packageList.Count(), box.BoxID);
+                                                mailBody += string.Join("<br />", packageList.Select(p => string.Format("{0}-{1}-{2}", p.Items.First(i => i.IsEnable.Value).ProductID, p.OrderID.Value, p.TrackingNumber)).ToArray());
 
                                                 List<Tuple<Stream, string>> SendleFile = new List<Tuple<Stream, string>>();
                                                 using (var file = new ZipFile())
@@ -755,6 +756,7 @@ namespace QDLogistics.Controllers
                                 List<DirectLineLabel> remindList = new List<DirectLineLabel>();
                                 DateTime today = new TimeZoneConvert().ConvertDateTime(EnumData.TimeZone.EST);
 
+                                statusList = new List<byte>() { (byte)EnumData.DirectLineStatus.已到貨, (byte)EnumData.DirectLineStatus.延誤後抵達 };
                                 foreach (DirectLineLabel label in labelList)
                                 {
                                     Packages package = label.Packages.First();
@@ -790,7 +792,7 @@ namespace QDLogistics.Controllers
                                         if (paymentDate.DayOfWeek == DayOfWeek.Saturday) paymentDate = paymentDate.AddDays(2);
                                         if (paymentDate.DayOfWeek == DayOfWeek.Sunday) paymentDate = paymentDate.AddDays(1);
 
-                                        if (label.Box.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.已到貨) && DateTime.Compare(today, paymentDate) > 0)
+                                        if (statusList.Contains(label.Box.ShippingStatus) && DateTime.Compare(today, paymentDate) > 0)
                                         {
                                             if (string.IsNullOrEmpty(package.TrackingNumber))
                                             {

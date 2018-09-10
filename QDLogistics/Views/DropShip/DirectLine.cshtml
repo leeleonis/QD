@@ -71,7 +71,7 @@
     <script src="~/scripts/jquery.number.min.js"></script>
     <script type="text/javascript">
         var pager, pageSize = 100;
-        var selected = false, selectOption, filterValue = {}
+        var selected = false, dispatching = false, selectOption, filterValue = {}
         var $dataGrid;
         var $typeSelect = $('#select-type'), $downloadBtn = $('#btn-download'), $dispatchBtn = $('#btn-dispatch'), $importBtn = $('#btn-import'), $importFile = $("#file-import"), $exportBtn = $('#btn-export');
         var $dispatchDialog = $('#dialog-dispatch'), $methodSelect = $('#select-method'), $trackingInput = $('#input-tracking'), $yesBtn = $('#btn-yes');
@@ -112,6 +112,8 @@
             });
 
             $dispatchBtn.click(function () {
+                if (dispatching) return alert('前工作尚未結束!');
+
                 var rows = $dataGrid.datagrid('getSelections');
 
                 if (rows.length == 0) return alert('請先選擇訂單!');
@@ -123,17 +125,22 @@
                 if ($typeSelect.find('option:selected').text() == 'Sendle') {
                     $dispatchDialog.dialog('open');
                 } else {
+                    dispatching = true;
                     ajaxUrl("@Url.Action("dispatch", "dropShip")", 'post', { packageIDs }).done(function (response) {
                         if (response.status) {
                             alert("Success!");
+                            $dataGrid.datagrid('reload');
                         } else {
                             alert(response.message);
                         }
+                        dispatching = false;
                     });
                 }
             });
 
             $yesBtn.click(function () {
+                if (dispatching) return alert('前工作尚未結束!');
+
                 var rows = $dataGrid.datagrid('getSelections');
 
                 if (rows.length == 0) return alert('請先選擇訂單!');
@@ -144,12 +151,15 @@
 
                 if (isEmpty($trackingInput.val())) return alert('請先輸入Tracking Number!');
 
+                dispatching = true;
                 ajaxUrl("@Url.Action("dispatch", "dropShip")", 'post', { packageIDs, method: $methodSelect.val(), tracking: $trackingInput.val() }).done(function (response) {
                     if (response.status) {
                         alert("Success!");
+                        $dataGrid.datagrid('reload');
                     } else {
                         alert(response.message);
                     }
+                    dispatching = false;
                 });
             });
 

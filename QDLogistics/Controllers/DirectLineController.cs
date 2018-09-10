@@ -526,15 +526,17 @@ namespace QDLogistics.Controllers
                 Skus = results.Where(data => data.qty == 1).Select(data => data.label.Sku).ToArray();
                 Dictionary<string, string> ProductName = SkuFilter.Where(s => Skus.Contains(s.Sku)).ToDictionary(s => s.Sku, s => s.ProductName);
 
+                Dictionary<int, string> DirectLine = db.DirectLine.ToDictionary(d => d.ID, d => d.Abbreviation);
+
                 int[] WarehouseIDs = results.Select(data => data.label.WarehouseID).Distinct().ToArray();
                 Dictionary<int, string> WarehouseName = db.Warehouses.AsNoTracking().Where(w => w.IsEnable.Value && WarehouseIDs.Contains(w.ID)).ToDictionary(w => w.ID, w => w.Name);
 
                 dataList.AddRange(results.Select(data => new
                 {
                     data.label.IsUsed,
-                    LabelID = data.label.oldLabelID,
+                    LabelID = GetCorrectLabelID(data.label.oldLabelID),
                     OrderID = data.label.oldOrderID,
-                    NewLabelID = data.label.newLabelID,
+                    NewLabelID = GetCorrectLabelID(data.label.newLabelID),
                     NewOrderID = data.label.newOrderID,
                     data.label.RMAID,
                     Qty = data.qty,
@@ -548,6 +550,24 @@ namespace QDLogistics.Controllers
             }
 
             return Json(new { total, rows = dataList }, JsonRequestBehavior.AllowGet);
+        }
+
+        private string GetCorrectLabelID(string labelID)
+        {
+            DirectLineLabel label = db.DirectLineLabel.Find(labelID);
+
+            if (label == null) return "";
+
+            Packages package = db.Packages.Find(label.PackageID);
+            if (package.Method.IsDirectLine)
+            {
+                if (db.DirectLine.Any(d => d.ID.Equals(package.Method.DirectLine) && d.Abbreviation.Equals("Sendle")))
+                {
+                    return string.Format("{0}-{1}-{2}", package.Items.First(i => i.IsEnable.Value).ProductID, package.OrderID, package.TrackingNumber);
+                }
+            }
+
+            return label.LabelID;
         }
 
         public ActionResult GetSelectOption(List<string> optionType)
@@ -1006,8 +1026,6 @@ namespace QDLogistics.Controllers
                     case 0:
                         if (!box.Packages.Any()) throw new Exception("尚未有任何訂單!");
 
-                        var fileList = new List<object>();
-                        var errorList = new List<object>();
                         var method = db.ShippingMethod.Find(box.FirstMileMethod);
 
                         result.data = Box_Shippping(db.Box.Where(b => b.IsEnable && b.MainBox.Equals(box.MainBox)).OrderBy(b => b.BoxID).ToList(), method);
@@ -1066,7 +1084,7 @@ namespace QDLogistics.Controllers
             return Json(result, JsonRequestBehavior.AllowGet);
         }
 
-        private List<object> Box_Shippping(List<Box> boxList, ShippingMethod method)
+        private object Box_Shippping(List<Box> boxList, ShippingMethod method)
         {
             List<object> fileList = new List<object>();
             List<object> errorList = new List<object>();
@@ -1202,7 +1220,7 @@ namespace QDLogistics.Controllers
             db.SaveChanges();
 
             boxID = "";
-            return new List<object>() { boxID, fileList, errorList };
+            return new { boxID, fileList, errorList };
         }
 
         private bool CheckOrderStatus(Packages package, Order order)

@@ -92,12 +92,21 @@ namespace QDLogistics.Commons
                                 Orders.Update(Order, package.OrderID.Value);
                                 break;
                             case 3: //Declare Value
-                                subTotal = package.Items.Sum(i => i.UnitPrice.Value * i.Qty.Value);
+                                subTotal = itemList.Sum(i => i.UnitPrice.Value * i.Qty.Value);
                                 package.DeclaredTotal = preset.ValueType.Equals(0) ? subTotal * preset.Value / 100 : preset.Value;
-                                foreach (Items item in itemList)
+                                if(itemList.Sum(i => i.Qty.Value).Equals(1))
                                 {
-                                    item.DeclaredValue = item.UnitPrice.Value * (package.DeclaredTotal / subTotal);
+                                    Items item = itemList.First();
+                                    item.DeclaredValue = package.DeclaredTotal;
                                     Items.Update(item, item.ID);
+                                }
+                                else
+                                {
+                                    foreach (Items item in itemList)
+                                    {
+                                        item.DeclaredValue = item.UnitPrice.Value * (package.DeclaredTotal / subTotal);
+                                        Items.Update(item, item.ID);
+                                    }
                                 }
                                 break;
                             case 4: //Warehouse & shipping method
@@ -109,12 +118,21 @@ namespace QDLogistics.Commons
                                 }
                                 break;
                             case 5: //DL Declare Value
-                                subTotal = package.Items.Sum(i => i.UnitPrice.Value * i.Qty.Value);
+                                subTotal = itemList.Sum(i => i.UnitPrice.Value * i.Qty.Value);
                                 package.DLDeclaredTotal = preset.ValueType.Equals(0) ? subTotal * preset.Value / 100 : preset.Value;
-                                foreach (Items item in itemList)
+                                if (itemList.Sum(i => i.Qty.Value).Equals(1))
                                 {
-                                    item.DLDeclaredValue = item.UnitPrice.Value * (package.DLDeclaredTotal / subTotal);
+                                    Items item = itemList.First();
+                                    item.DLDeclaredValue = package.DLDeclaredTotal;
                                     Items.Update(item, item.ID);
+                                }
+                                else
+                                {
+                                    foreach (Items item in itemList)
+                                    {
+                                        item.DLDeclaredValue = item.UnitPrice.Value * (package.DLDeclaredTotal / subTotal);
+                                        Items.Update(item, item.ID);
+                                    }
                                 }
                                 break;
                             case 6: //Warehouse & First Mile

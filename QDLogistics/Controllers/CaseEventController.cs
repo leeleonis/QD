@@ -229,7 +229,7 @@ namespace QDLogistics.Controllers
                 {
                     CaseID = c.ID,
                     c.OrderID,
-                    c.LabelID,
+                    LabelID = DirectLine[c.Packages.Method.DirectLine].Equals("Sendle") ? string.Format("{0}-{1}-{2}", c.Packages.Items.First(i => i.IsEnable.Value).ProductID, c.OrderID, c.Packages.TrackingNumber) : c.LabelID,
                     CreateDate = timeZoneConvert.InitDateTime(c.Create_at, EnumData.TimeZone.UTC).ConvertDateTime(TimeZone).ToString("MM/dd/yyyy tt hh:mm"),
                     RequestDate = c.Request_at.HasValue ? timeZoneConvert.InitDateTime(c.Request_at.Value, EnumData.TimeZone.UTC).ConvertDateTime(TimeZone).ToString("MM/dd/yyyy tt hh:mm") : "",
                     ResponseDate = c.Response_at.HasValue ? timeZoneConvert.InitDateTime(c.Response_at.Value, EnumData.TimeZone.UTC).ConvertDateTime(TimeZone).ToString("MM/dd/yyyy tt hh:mm") : "",
