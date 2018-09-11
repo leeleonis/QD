@@ -208,11 +208,15 @@ namespace QDLogistics.Commons
                         Sendle_Api = new Sendle_API(packageData.Method.Carriers.CarrierAPI);
                         Sendle_Api.Cancel(packageData.TagNo);
 
+                        ShippingMethod method = db.ShippingMethod.Find(packageData.Box.FirstMileMethod);
+
+                        //receiveMails = new string[] { "peter@qd.com.tw", "qd.tuko@hotmail.com" };
+                        //List<string> CC_Mails = new List<string>();
                         receiveMails = MailList["Sendle"];
                         var CC_Mails = ccMails.ToList();
                         CC_Mails.Add("sophia.wang@ecof.com.au");
                         string labelID = string.Format("{0}-{1}-{2}", packageData.Items.First(i => i.IsEnable.Value).ProductID, packageData.OrderID, packageData.TrackingNumber);
-                        mailTitle = string.Format("Quality Deals Cancel Shipment Request for <{0}> (in <{1}> )", labelID, packageData.TrackingNumber);
+                        mailTitle = string.Format("CANCEL SHIPMENT Request from Quality Deals for <{0}> (in <{1}> <{2}>)", labelID, method.Carriers.Name, packageData.Box.TrackingNumber);
                         mailBody = CreateCancelMailBody(directLine.Abbreviation, eventData);
 
                         if (!MyHelp.Mail_Send(sendMail, receiveMails, CC_Mails.ToArray(), mailTitle, mailBody, true, null, null, false))
@@ -259,6 +263,22 @@ namespace QDLogistics.Commons
                 {
                     if (Items == null) Items = new GenericRepository<Items>(db);
 
+                    DirectLine directLine = db.DirectLine.Find(packageData.Method.DirectLine);
+                    switch (directLine.Abbreviation)
+                    {
+                        case "Sendle":
+                            ShippingMethod method = db.ShippingMethod.Find(packageData.Box.FirstMileMethod);
+
+                            receiveMails = MailList["Sendle"];
+                            var CC_Mails = ccMails.ToList();
+                            CC_Mails.Add("sophia.wang@ecof.com.au");
+                            string labelID = string.Format("{0}-{1}-{2}", packageData.Items.First(i => i.IsEnable.Value).ProductID, packageData.OrderID, packageData.TrackingNumber);
+                            mailTitle = string.Format("CONFIRMED: CANCEL SHIPMENT Request from Quality Deals for <{0}> (in <{1}> <{2}>)", labelID, method.Carriers.Name, packageData.Box.TrackingNumber);
+                            mailBody = "We have confirmed that you have successfully cancelled the above order/s. Thank you!";
+                            MyHelp.Mail_Send(sendMail, receiveMails, CC_Mails.ToArray(), mailTitle, mailBody, true, null, null, false);
+                            break;
+                    }
+
                     try
                     {
                         MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】開始更新退貨倉", orderData.OrderID), Session);
@@ -293,7 +313,7 @@ namespace QDLogistics.Commons
                     MoveSku();
                 }
 
-                MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0} 完成退貨動作", orderData.OrderID), Session);
+                MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】完成退貨動作", orderData.OrderID), Session);
             }
             catch (Exception e)
             {
@@ -823,7 +843,7 @@ namespace QDLogistics.Commons
                     string labelID = string.Format("{0}-{1}-{2}", packageData.Items.First(i => i.IsEnable.Value).ProductID, packageData.OrderID, packageData.TrackingNumber);
                     string Sendle_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Successful }, { "returnWarehouseID", 118 } });
                     failed_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Failed } });
-                    mailBody = "Body:<b />Hi<b /><b />Please cancel the shipment for <{0}> and keep it in inventory.<br /><br />";
+                    mailBody = "Hi<br /><br />Please cancel the shipment for <{0}> and keep it in inventory.<br /><br />";
                     mailBody += "If you have successfully cancelled in the Regents Park, click <a href='{1}' target='_bland'>here</a>.<br /><br />";
                     mailBody += "If you have failed to cancel, click <a href='{2}' target='_bland'>here</a>.<br /><br />";
                     mailBody += "You can only click on either of the links above ONCE.Please make sure to choose correctly.<br /><br />Please email us if the above sitaution doesn't apply.<br /><br />Regards<br /><br />QD Shipping";
@@ -959,6 +979,7 @@ namespace QDLogistics.Commons
             packageData = null;
             itemList = null;
             IDS_Api = null;
+            Sendle_Api = null;
             MailList = null;
             Session = null;
             disposed = true;

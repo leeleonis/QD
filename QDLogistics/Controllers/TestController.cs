@@ -389,14 +389,12 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public void Mail_Test(string BoxID)
+        public void Mail_Test(int OrderID)
         {
-            Box box = db.Box.Find(BoxID);
-            ShippingMethod method = db.ShippingMethod.Find(box.FirstMileMethod);
-            var packageList = box.Packages.Where(p => p.IsEnable.Value).ToList();
-            var mailTitle = string.Format("ARRIVED: {0} {1}, {2}pcs", method.Carriers.Name, box.TrackingNumber, packageList.Count());
-            var mailBody = string.Format("Tracking {0}({1}pcs, {2}<br />", box.TrackingNumber, packageList.Count(), box.BoxID);
-            mailBody += string.Join("<br />", packageList.Select(p => string.Format("{0}-{1}-{2}", p.Items.First().ProductID, p.OrderID.Value, p.TrackingNumber)).ToArray());
+            Packages package = db.Packages.First(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID));
+            CaseLog caseLog = new CaseLog(Session);
+            caseLog.OrderInit(package);
+            caseLog.SendCancelMail();
         }
 
         private void RMA_Test(int OrderID)
@@ -458,7 +456,7 @@ namespace QDLogistics.Controllers
 
         }
 
-        public void Sendle_Test(int OrderID)
+        private void Sendle_Test(int OrderID)
         {
             Packages package = db.Packages.First(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID));
             Sendle_API Sendle = new Sendle_API(package.Method.Carriers.CarrierAPI);
@@ -473,7 +471,7 @@ namespace QDLogistics.Controllers
             //var cancel = Sendle.Cancel(result.order_id);
         }
 
-        public void Track_Test()
+        private void Track_Test()
         {
             GenericRepository<Packages> Packages = new GenericRepository<Packages>(db);
             GenericRepository<Items> Items = new GenericRepository<Items>(db);
