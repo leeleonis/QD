@@ -36,14 +36,14 @@ namespace QDLogistics.Commons
             Items = new GenericRepository<Items>(db);
             Preset = new GenericRepository<Preset>(db);
 
-            PresetList = db.Preset.AsNoTracking().Where(p => p.IsEnable && p.IsVisible).ToList();
+            PresetList = db.Preset.AsNoTracking().Where(p => p.IsEnable && p.IsVisible).OrderBy(p => p.Type).OrderBy(p => p.Priority).ToList();
             MethodOfService = db.Services.AsNoTracking().Where(s => s.IsEnable.Value && s.ShippingMethod.HasValue).ToDictionary(s => s.ServiceCode, s => s.ShippingMethod.Value);
             MethodOfService.Add("Expedited", 9);
             this.Order = order;
             this.Session = session;
         }
 
-        public void init(int OrderID)
+        public void Init(int OrderID)
         {
             this.Order = Orders.Get(OrderID);
         }
@@ -305,8 +305,13 @@ namespace QDLogistics.Commons
         {
             List<Items> itemList = package.Items.Where(i => i.IsEnable.Equals(true)).ToList();
 
+            int zipCode;
+
             bool total = preset.Total.Equals(0) || Compare(preset.TotalType, preset.Total, itemList.Sum(i => i.Qty * i.UnitPrice).Value);
             bool country = string.IsNullOrEmpty(preset.Country) || preset.Country.Equals(Order.Addresses.CountryCode);
+            bool state = string.IsNullOrEmpty(preset.State) || preset.State.Equals(Order.Addresses.StateCode);
+            bool zipCodeFrom = preset.ZipCodeFrom.Equals(0) || (int.TryParse(Order.Addresses.PostalCode, out zipCode) && preset.ZipCodeFrom <= int.Parse(Order.Addresses.PostalCode));
+            bool zipCodeTo = preset.ZipCodeTo.Equals(0) || (int.TryParse(Order.Addresses.PostalCode, out zipCode) && preset.ZipCodeTo >= int.Parse(Order.Addresses.PostalCode));
             bool company = preset.CompanyID.Equals(0) || preset.CompanyID.Equals(Order.CompanyID.Value);
             bool source = preset.SourceID.Equals(0) || preset.SourceID.Equals(Order.OrderSource.Value + 1);
             bool qty = preset.Amount.Equals(0) || Compare(preset.AmountType, preset.Amount, itemList.Sum(i => i.Qty).Value);
@@ -314,7 +319,7 @@ namespace QDLogistics.Commons
             bool sku = string.IsNullOrEmpty(preset.Sku) || itemList.Any(i => i.ProductID.Substring(i.ProductID.Length - preset.Sku.Length).Equals(preset.Sku));
             bool weight = preset.Weight.Equals(0) || Compare(preset.WeightType, preset.Weight, itemList.Sum(i => i.Qty * i.Skus.Weight).Value);
 
-            return total && country && company && source && method && sku && weight;
+            return total && country && state && zipCodeFrom && zipCodeTo && company && source && method && sku && weight;
         }
 
         private bool Compare(byte type, decimal compare, decimal value)

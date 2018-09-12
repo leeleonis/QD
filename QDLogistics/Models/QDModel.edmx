@@ -337,7 +337,7 @@
           <Property Name="PickUpDate" Type="datetime2" Precision="7" />
           <Property Name="DeliveryDate" Type="datetime2" Precision="7" />
           <Property Name="DeliveryStatus" Type="int" />
-          <Property Name="DeliveryNote" Type="nvarchar" MaxLength="150" />
+          <Property Name="DeliveryNote" Type="nvarchar" MaxLength="300" />
           <Property Name="WinitNo" Type="nvarchar" MaxLength="50" />
           <Property Name="BoxID" Type="nvarchar" MaxLength="50" />
           <Property Name="TagNo" Type="nvarchar" MaxLength="50" />
@@ -400,11 +400,17 @@
           <Property Name="IsDispatch" Type="bit" Nullable="false" />
           <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="Type" Type="tinyint" Nullable="false" />
+          <Property Name="Priority" Type="int" Nullable="false" />
           <Property Name="Value" Type="decimal" Precision="18" Scale="2" Nullable="false" />
           <Property Name="ValueType" Type="tinyint" Nullable="false" />
+          <Property Name="WarehouseID" Type="int" Nullable="false" />
+          <Property Name="MethodID" Type="int" Nullable="false" />
           <Property Name="Total" Type="decimal" Precision="18" Scale="2" Nullable="false" />
           <Property Name="TotalType" Type="tinyint" Nullable="false" />
           <Property Name="Country" Type="nchar" MaxLength="2" />
+          <Property Name="State" Type="nvarchar" MaxLength="10" />
+          <Property Name="ZipCodeFrom" Type="int" Nullable="false" />
+          <Property Name="ZipCodeTo" Type="int" Nullable="false" />
           <Property Name="CompanyID" Type="int" Nullable="false" />
           <Property Name="SourceID" Type="int" Nullable="false" />
           <Property Name="Amount" Type="int" Nullable="false" />
@@ -413,8 +419,6 @@
           <Property Name="Sku" Type="nvarchar" MaxLength="10" />
           <Property Name="Weight" Type="int" Nullable="false" />
           <Property Name="WeightType" Type="tinyint" Nullable="false" />
-          <Property Name="WarehouseID" Type="int" Nullable="false" />
-          <Property Name="MethodID" Type="int" Nullable="false" />
         </EntityType>
         <EntityType Name="ProductType">
           <Key>
@@ -1812,11 +1816,17 @@
           <Property Name="IsDispatch" Type="Boolean" Nullable="false" />
           <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="Type" Type="Byte" Nullable="false" />
+          <Property Name="Priority" Type="Int32" Nullable="false" DefaultValue="1" />
           <Property Name="Value" Type="Decimal" Nullable="false" Precision="18" Scale="2" />
           <Property Name="ValueType" Type="Byte" Nullable="false" />
+          <Property Name="WarehouseID" Type="Int32" Nullable="false" />
+          <Property Name="MethodID" Type="Int32" Nullable="false" />
           <Property Name="Total" Type="Decimal" Nullable="false" Precision="18" Scale="2" />
           <Property Name="TotalType" Type="Byte" Nullable="false" />
           <Property Name="Country" Type="String" MaxLength="2" FixedLength="true" Unicode="true" />
+          <Property Name="State" Type="String" MaxLength="10" FixedLength="false" Unicode="true" />
+          <Property Name="ZipCodeFrom" Type="Int32" Nullable="false" />
+          <Property Name="ZipCodeTo" Type="Int32" Nullable="false" />
           <Property Name="CompanyID" Type="Int32" Nullable="false" />
           <Property Name="SourceID" Type="Int32" Nullable="false" />
           <Property Name="Amount" Type="Int32" Nullable="false" />
@@ -1825,8 +1835,6 @@
           <Property Name="Sku" Type="String" MaxLength="10" FixedLength="false" Unicode="true" />
           <Property Name="Weight" Type="Int32" Nullable="false" />
           <Property Name="WeightType" Type="Byte" Nullable="false" />
-          <Property Name="WarehouseID" Type="Int32" Nullable="false" />
-          <Property Name="MethodID" Type="Int32" Nullable="false" />
         </EntityType>
         <EntityType Name="Carriers">
           <Key>
@@ -2546,6 +2554,10 @@
           <EntitySetMapping Name="Preset">
             <EntityTypeMapping TypeName="QDLogisticsModel.Preset">
               <MappingFragment StoreEntitySet="Preset">
+                <ScalarProperty Name="ZipCodeTo" ColumnName="ZipCodeTo" />
+                <ScalarProperty Name="ZipCodeFrom" ColumnName="ZipCodeFrom" />
+                <ScalarProperty Name="State" ColumnName="State" />
+                <ScalarProperty Name="Priority" ColumnName="Priority" />
                 <ScalarProperty Name="MethodID" ColumnName="MethodID" />
                 <ScalarProperty Name="WarehouseID" ColumnName="WarehouseID" />
                 <ScalarProperty Name="WeightType" ColumnName="WeightType" />

@@ -158,7 +158,7 @@ namespace QDLogistics.Commons
                         preset.Factory = this.Factory;
                         foreach (int OrderID in presetList)
                         {
-                            preset.init(OrderID);
+                            preset.Init(OrderID);
                             preset.Save();
                         }
                     }

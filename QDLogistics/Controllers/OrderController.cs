@@ -714,7 +714,7 @@ namespace QDLogistics.Controllers
                                                     var memoryStream = new MemoryStream();
                                                     foreach (Packages package in box.Packages.Where(p => p.IsEnable.Value).ToList())
                                                     {
-                                                        string AWB_File = Path.Combine(basePath, package.FilePath, string.Format("AWB-{0}.pdf", package.OrderID));
+                                                        string AWB_File = Path.Combine(basePath, package.FilePath, string.Format("{0}-{1}-{2}.pdf", package.Items.First(i => i.IsEnable.Value).ProductID, package.OrderID, package.TrackingNumber));
                                                         if (!System.IO.File.Exists(AWB_File))
                                                         {
                                                             System.IO.File.Copy(Path.Combine(basePath, package.FilePath, "AirWaybill.pdf"), AWB_File);

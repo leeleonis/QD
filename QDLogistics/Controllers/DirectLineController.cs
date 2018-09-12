@@ -1482,14 +1482,20 @@ namespace QDLogistics.Controllers
 
                                 using (CaseLog CaseLog = new CaseLog(oldPackage, Session, CurrentHttpContext))
                                 {
-                                    CaseLog.SendResendShipmentMail(newPackage, serials.First().Create_at);
+                                    //CaseLog.SendResendShipmentMail(newPackage, serials.First().Create_at);
                                 }
                             }
                             else
                             {
+                                foreach(var serial in SerialNumbers.GetAll().Where(s => s.OrderID.Value.Equals(newPackage.OrderID.Value)))
+                                {
+                                    SerialNumbers.Delete(serial);
+                                }
+                                SerialNumbers.SaveChanges();
+
                                 string msg = string.Format("新訂單【{0}】提交失敗", newOrder.OrderID);
                                 MyHelp.Log("Orders", newOrder.OrderID, msg + " - " + ShipResult.Message, Session);
-                                throw new Exception(msg + "!");
+                                throw new Exception(msg + "! - " + ShipResult.Message);
                             }
 
                             MyHelp.Log("DirectLineLabel", labelID, string.Format("完成標籤【{0}】再次寄送", labelID), Session);
@@ -1684,7 +1690,7 @@ namespace QDLogistics.Controllers
                                                 var memoryStream = new MemoryStream();
                                                 foreach (Packages package in box.Packages.Where(p => p.IsEnable.Value).ToList())
                                                 {
-                                                    string AWB_File = Path.Combine(basePath, package.FilePath, string.Format("AWB-{0}.pdf", package.OrderID));
+                                                    string AWB_File = Path.Combine(basePath, package.FilePath, string.Format("{0}-{1}-{2}.pdf", package.Items.First(i => i.IsEnable.Value).ProductID, package.OrderID, package.TrackingNumber));
                                                     if (!System.IO.File.Exists(AWB_File))
                                                     {
                                                         System.IO.File.Copy(Path.Combine(basePath, package.FilePath, "AirWaybill.pdf"), AWB_File);
@@ -1804,7 +1810,7 @@ namespace QDLogistics.Controllers
                             var memoryStream = new MemoryStream();
                             foreach (Packages package in boxList.SelectMany(b => b.Packages.Where(p => p.IsEnable.Value)).ToList())
                             {
-                                string AWB_File = Path.Combine(basePath, package.FilePath, string.Format("AWB-{0}.pdf", package.OrderID));
+                                string AWB_File = Path.Combine(basePath, package.FilePath, string.Format("{0}-{1}-{2}.pdf", package.Items.First(i => i.IsEnable.Value).ProductID, package.OrderID, package.TrackingNumber));
                                 if (!System.IO.File.Exists(AWB_File))
                                 {
                                     System.IO.File.Copy(Path.Combine(basePath, package.FilePath, "AirWaybill.pdf"), AWB_File);

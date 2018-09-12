@@ -57,6 +57,7 @@ namespace QDLogistics
                 "~/scripts/plugin/datatables/dataTables.colVis.min.js",
                 "~/scripts/plugin/datatables/dataTables.tableTools.min.js",
                 "~/scripts/plugin/datatables/dataTables.bootstrap.min.js",
+                "~/scripts/plugin/datatables/dataTables.fixedColumns.min.js",
                 "~/scripts/plugin/datatable-responsive/datatables.responsive.min.js"
                 ));
 

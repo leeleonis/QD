@@ -109,11 +109,13 @@ namespace QDLogistics.Controllers.Website
                     sourceList.Add((source + 1).ToString(), Enum.GetName(typeof(OrderService.OrderSource), source));
                 }
 
+                string[] stateList = new string[] { "NSW", "QLD", "SA", "TAS", "VIC", "WA", "NT", "ACT" };
                 result.data = new
                 {
                     countryList = MyHelp.GetCountries().ToDictionary(c => c.ID, c => c.Name),
+                    stateList = stateList.ToDictionary(s => s),
                     companyList = Companies.GetAll(true).ToDictionary(c => c.ID.ToString(), c => c.CompanyName),
-                    sourceList = sourceList,
+                    sourceList,
                     methodList = Services.GetAll(true).Where(s => s.IsEnable.Equals(true)).ToDictionary(s => s.ServiceCode, s => s.ServiceCode),
                     warehouseList = Warehouses.GetAll(true).Where(w => w.IsEnable.Equals(true) && w.IsSellable.Equals(true)).OrderByDescending(w => w.IsDefault).OrderBy(w => w.ID).ToDictionary(w => w.ID.ToString(), w => w.Name)
                 };
@@ -164,31 +166,34 @@ namespace QDLogistics.Controllers.Website
 
                 switch (int.Parse(order[0].First(o => o.Key.Equals("column")).Value))
                 {
-                    case 2:
+                    case 3:
                         results = MyHelp.SetOrder(results, p => p.Type, dir);
                         break;
-                    case 4:
+                    case 5:
                         results = MyHelp.SetOrder(results, p => p.Total, dir);
                         break;
-                    case 5:
+                    case 6:
                         results = MyHelp.SetOrder(results, p => p.Country, dir);
                         break;
-                    case 6:
-                        results = MyHelp.SetOrder(results, p => p.CompanyID, dir);
-                        break;
                     case 7:
-                        results = MyHelp.SetOrder(results, p => p.SourceID, dir);
-                        break;
-                    case 8:
-                        results = MyHelp.SetOrder(results, p => p.Amount, dir);
+                        results = MyHelp.SetOrder(results, p => p.State, dir);
                         break;
                     case 9:
-                        results = MyHelp.SetOrder(results, p => p.ShippingMethod, dir);
+                        results = MyHelp.SetOrder(results, p => p.CompanyID, dir);
                         break;
                     case 10:
-                        results = MyHelp.SetOrder(results, p => p.Sku, dir);
+                        results = MyHelp.SetOrder(results, p => p.SourceID, dir);
                         break;
                     case 11:
+                        results = MyHelp.SetOrder(results, p => p.Amount, dir);
+                        break;
+                    case 12:
+                        results = MyHelp.SetOrder(results, p => p.ShippingMethod, dir);
+                        break;
+                    case 13:
+                        results = MyHelp.SetOrder(results, p => p.Sku, dir);
+                        break;
+                    case 14:
                         results = MyHelp.SetOrder(results, p => p.Weight, dir);
                         break;
                     default:
@@ -208,11 +213,15 @@ namespace QDLogistics.Controllers.Website
                         dispatch = preset.IsDispatch,
                         id = preset.Id,
                         type = preset.Type,
+                        priority = preset.Priority,
                         value = preset.Value,
                         valueType = preset.ValueType,
                         total = preset.Total,
                         totalType = preset.TotalType,
                         country = preset.Country,
+                        state = preset.State,
+                        zipCodeFrom = preset.ZipCodeFrom,
+                        zipCodeTo = preset.ZipCodeTo,
                         company = preset.CompanyID,
                         channel = preset.SourceID,
                         amount = preset.Amount,

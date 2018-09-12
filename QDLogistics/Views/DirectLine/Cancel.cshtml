@@ -80,7 +80,7 @@
                     ajaxUrl('@Url.Action("reDispatch", "directLine")', 'post', data).done(function (response) {
                         if (response.status) {
                             alert("Success!");
-                            $caseDialog.dialog("close");
+                            $dispatchDialog.dialog("close");
                         } else {
                             alert(response.message);
                         }

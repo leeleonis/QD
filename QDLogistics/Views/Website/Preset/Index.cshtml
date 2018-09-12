@@ -23,6 +23,14 @@
             .checkbox-inline label span :before {
                 margin-right: 3px;
             }
+
+    .DTFC_LeftHeadWrapper, .DTFC_RightHeadWrapper {
+        margin-top: -6px;
+    }
+
+    .DTFC_LeftBodyLiner, .DTFC_RightBodyLiner {
+        z-index: 40;
+    }
 </style>
 <div id="content">
     <section id="widget-grid" class="">
@@ -45,17 +53,20 @@
                                         <tr>
                                             <th width="30" class="text-center">啟用</th>
                                             <th width="30" class="text-center">提交</th>
-                                            <th width="10%" class="text-center">類型</th>
-                                            <th class="text-center">數值</th>
-                                            <th width="8%" class="text-center">Order value</th>
-                                            <th width="8%" class="text-center">Delivery country</th>
-                                            <th width="10%" class="text-center">Company</th>
-                                            <th width="8%" class="text-center">Sales channel</th>
-                                            <th width="8%" class="text-center">Item QTY per order</th>
-                                            <th width="8%" class="text-center">Shipping Method</th>
-                                            <th width="7%" class="text-center">Last 3 digits of SKU</th>
-                                            <th width="8%" class="text-center">Item shipping weight</th>
-                                            <th width="160" class="text-center">功能</th>
+                                            <th width="50" class="text-center">優先權</th>
+                                            <th width="200" class="text-center">類型</th>
+                                            <th width="200" class="text-center">數值</th>
+                                            <th width="150" class="text-center">Order value</th>
+                                            <th width="120" class="text-center">Delivery country</th>
+                                            <th width="100" class="text-center">State</th>
+                                            <th width="100" class="text-center">Zip Code</th>
+                                            <th width="200" class="text-center">Company</th>
+                                            <th width="150" class="text-center">Sales channel</th>
+                                            <th width="120" class="text-center">Item QTY per order</th>
+                                            <th width="200" class="text-center">Shipping Method</th>
+                                            <th width="100" class="text-center">Last 3 digits of SKU</th>
+                                            <th width="150" class="text-center">Item shipping weight</th>
+                                            <th width="" class="text-center">功能</th>
                                         </tr>
                                     </thead>
                                 </table>
@@ -70,13 +81,14 @@
 @section pagespecific {
     <script type="text/javascript">
         var $Table;
-        var countryList, companyList, sourceList, methodList, warehouseList;
+        var countryList, stateList, companyList, sourceList, methodList, warehouseList;
 
         $(document).ready(function () {
             var url = '@Url.RouteUrl("website", new {controller = "preset", action = "ajaxOption"})';
             ajaxData(url).done(function (response) {
                 if (response['status']) {
                     countryList = response['data']['countryList'];
+                    stateList = response['data']['stateList'];
                     companyList = response['data']['companyList'];
                     sourceList = response['data']['sourceList'];
                     methodList = response['data']['methodList'];
@@ -95,7 +107,12 @@
             };
 
             $Table = $('#dt_basic').DataTable({
-                "autoWidth": false,
+                "scrollX": true,
+                "scrollCollapse": true,
+                "fixedColumns": {
+                    "leftColumns": 5,
+                    "rightColumns": 1
+                },
                 "ordering": true,
                 "serverSide": true,
                 "sDom": "<'dt-toolbar'<'col-sm-8 hidden-xs'><'col-xs-12 col-sm-4'Tl>>" + "t" + "<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
@@ -136,6 +153,10 @@
                             return "<div class='checkbox-inline'><label><input type='checkbox' class='checkbox' id='" + id + "' " + checked + "><span></span></lebel></div>";
                         }
                     }, {
+                        data: "priority", orderable: false, render: function (data, type, row, meta) {
+                            return "<input type='number' class='form-control' id='priority-" + row.id + "' value='" + data + "' min='1'>";
+                        }
+                    }, {
                         data: "type", render: function (data, type, row, meta) {
                             var id = 'type-' + row.id;
                             var option = ['尚未選擇', 'Upload Tracking', 'Rush order', 'Declare Value', 'Warehouse & Shipping Method', 'DL Declare Value', 'Warehouse & First Mile'];
@@ -153,6 +174,16 @@
                         data: "country", render: function (data, type, row, meta) {
                             var id = 'country-' + row.id;
                             return "<select class='form-control' id='" + id + "'><option value=''>不選擇</option>" + setSelectOption(countryList, data) + "</select>";
+                        }
+                    }, {
+                        data: "state", render: function (data, type, row, meta) {
+                            var id = 'state-' + row.id;
+                            return "<select class='form-control' id='" + id + "'><option value=''>不選擇</option>" + setSelectOption(stateList, data) + "</select>";
+                        }
+                    }, {
+                        data: "zipCode", orderable: false, render: function (data, type, row, meta) {
+                            return "<input type='number' class='form-control' id='zipCodeFrom-" + row.id + "' value='" + row.zipCodeFrom + "' min='0' placeholder='From'>"
+                                + "<input type='number' class='form-control' id='zipCodeTo-" + row.id + "' value='" + row.zipCodeTo + "' min='0' placeholder='To'>";
                         }
                     }, {
                         data: "company", render: function (data, type, row, meta) {
@@ -217,8 +248,8 @@
         }
 
         function changeBox(id) {
-            var type = $('#type-' + id).val();
-            $('#box-' + id).html(setBoxHtml(type, id, {}));
+            var type = $('.DTFC_Cloned #type-' + id).val();
+            $('div#box-' + id).html(setBoxHtml(type, id, {}));
         }
 
         function setNumberType(column, id, value, type) {
@@ -270,7 +301,6 @@
                     getMethodOption(id, warehouseID, !isEmpty(row.shippingMethod) ? row.shippingMethod.toString() : '');
                     break;
             }
-
             return html;
         }
 
@@ -278,7 +308,7 @@
             var url = '@Url.RouteUrl("website", new { controller = "preset", action = "ajaxShippingMethod" })';
             ajaxData(url, 'get', { warehouseID: warehouseID }).done(function (response) {
                 if (response['status']) {
-                    $('#methodID-' + id).html(setSelectOption(response['data'], methodID));
+                    $('select#methodID-' + id).html(setSelectOption(response['data'], methodID));
                 }
             });
         }
@@ -287,15 +317,19 @@
             var url = '@Url.RouteUrl("website", new { controller = "preset", action = "edit" })';
             var data = {
                 IsEnable: true,
-                IsVisible: $('#visible-' + id).prop('checked') && $('#type-' + id).val() != 0,
-                IsDispatch: $('#dispatch-' + id).prop('checked'),
+                IsVisible: $('.DTFC_Cloned #visible-' + id).prop('checked') && $('.DTFC_Cloned #type-' + id).val() != 0,
+                IsDispatch: $('.DTFC_Cloned #dispatch-' + id).prop('checked'),
                 Id: parseInt(id),
-                Type: checkValue($('#type-' + id).val(), true),
-                Value: checkValue($('#value-' + id).val(), true),
-                ValueType: checkValue($('#valueType-' + id).val(), true),
+                Pirority: checkValue($('.DTFC_Cloned #priority-' + id).val(), true),
+                Type: checkValue($('.DTFC_Cloned #type-' + id).val(), true),
+                Value: checkValue($('.DTFC_Cloned #value-' + id).val(), true),
+                ValueType: checkValue($('.DTFC_Cloned #valueType-' + id).val(), true),
                 Total: checkValue($('#total-' + id).val(), true),
                 TotalType: checkValue($('#totalType-' + id).val(), true),
                 Country: checkValue($('#country-' + id).val(), false),
+                State: checkValue($('#state-' + id).val(), false),
+                ZipCodeFrom: checkValue($('#zipCodeFrom-' + id).val(), true),
+                ZipCodeTo: checkValue($('#zipCodeTo-' + id).val(), true),
                 CompanyID: checkValue($('#company-' + id).val(), true),
                 SourceID: checkValue($('#channel-' + id).val(), true),
                 Amount: checkValue($('#amount-' + id).val(), true),
