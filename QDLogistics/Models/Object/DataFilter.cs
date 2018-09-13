@@ -8,7 +8,10 @@ namespace QDLogistics.Models.Object
     public class DataFilter
     {
         private string OrderIDField { get; set; }
+        private string ItemNameField { get; set; }
         private string UserIDField { get; set; }
+        private string TrackingField { get; set; }
+        private string SerialField { get; set; }
 
         /***** Order Filter *****/
         public Nullable<int> WarehouseID { get; set; }
@@ -19,13 +22,14 @@ namespace QDLogistics.Models.Object
         public Nullable<byte> ProccessStatus { get; set; }
 
         public string OrderID { get { return this.OrderIDField; } set { this.OrderIDField = !string.IsNullOrEmpty(value) ? value.Trim() : value; } }
-        public string ItemName { get; set; }
+        public string ItemName { get { return this.ItemNameField; } set { this.ItemNameField = !string.IsNullOrEmpty(value) ? value.Trim() : value; } }
         public string Country { get; set; }
         public string CountryCode { get; set; }
         public Nullable<int> CurrencyCode { get; set; }
         public Nullable<int> Source { get; set; }
         public string UserID { get { return this.UserIDField; } set { this.UserIDField = !string.IsNullOrEmpty(value) ? value.Trim() : value; } }
-        public string Tracking { get; set; }
+        public string Tracking { get { return this.TrackingField; } set { this.TrackingField = !string.IsNullOrEmpty(value) ? value.Trim() : value; } }
+        public string Serial { get { return this.SerialField; } set { this.SerialField = !string.IsNullOrEmpty(value) ? value.Trim() : value; } }
         public string Comment { get; set; }
         public string SupplierComment { get; set; }
         public decimal DeclaredTotal { get; set; }

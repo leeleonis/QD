@@ -232,7 +232,7 @@ namespace QDLogistics.Commons
 
                 if (Sendle_Result.tracking_events.Any(e => e.event_type == "Delivered"))
                 {
-                    result.PickUpDate = Sendle_Result.tracking_events.First(e => e.event_type == "Delivered").scan_time;
+                    result.DeliveryDate = Sendle_Result.tracking_events.First(e => e.event_type == "Delivered").scan_time;
                     result.DeliveryStatus = (int)OrderService.DeliveryStatusType.Delivered;
                 }
 

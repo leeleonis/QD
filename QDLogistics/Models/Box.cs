@@ -37,6 +37,9 @@ namespace QDLogistics.Models
         public int BoxNo { get; set; }
         public int CurrentNo { get; set; }
         public string TrackingNumber { get; set; }
+        public Nullable<System.DateTime> PickUpDate { get; set; }
+        public string DeliveryNote { get; set; }
+        public Nullable<System.DateTime> DeliveryDate { get; set; }
         public string Note { get; set; }
         public System.DateTime Create_at { get; set; }
     

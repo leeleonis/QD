@@ -250,7 +250,7 @@
         }
 
         function getOption(url, type, data) {
-            type = !isEmpty(type) ? type : {};
+            type = !isEmpty(type) ? type : 'get';
             data = !isEmpty(data) ? data : {};
 
             return $.ajax({

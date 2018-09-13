@@ -23,50 +23,22 @@
                     <div class="table-parent">
                         <div class="table-cell form-horizontal col-xs-11 no-padding">
                             <div class="col-xs-12 no-padding">
-                                <label class="col-xs-4 col-md-1 control-label">Order ID</label>
+                                <label class="col-xs-4 col-md-1 control-label">Source ID</label>
                                 <div class="col-xs-8 col-md-3">
-                                    <input class="form-control input-sm" type="text" id="search-orderID">
+                                    <input class="form-control input-sm" type="text" id="input-sourceID">
                                 </div>
-                                <label class="col-xs-4 col-md-1 control-label">Country</label>
-                                <div class="col-xs-8 col-md-3">
-                                    <select class="form-control input-sm" id="search-country" style="margin-top: 4px;">
-                                        <option value="">全部</option>
-                                        @foreach (var country in MyHelp.GetCountries())
-                                        {
-                                            <option value="@country.ID">@country.Name</option>
-                                        }
-                                    </select>
-                                </div>
+
                                 <label class="col-xs-4 col-md-1 control-label">Payment From</label>
                                 <div class="col-xs-8 col-md-3">
                                     <input class="form-control input-sm datepicker" type="text" id="search-paymentDateFrom" data-dateformat="yy-mm-dd" placeholder="選擇日期">
                                 </div>
-                            </div>
-                            <div class="col-xs-12 no-padding">
-                                <label class="col-xs-4 col-md-1 control-label">User ID</label>
+
+                                <label class="col-xs-4 col-md-1 control-label">Pick Up From</label>
                                 <div class="col-xs-8 col-md-3">
-                                    <input class="form-control input-sm" type="text" id="search-userID">
-                                </div>
-                                <label class="col-xs-4 col-md-1 control-label">Warehouse</label>
-                                <div class="col-xs-8 col-md-3">
-                                    <select class="form-control input-sm" id="search-warehouse" style="margin-top: 4px;">
-                                        <option value="">全部</option>
-                                        @foreach (Warehouses warehouse in warehouseList)
-                                        {
-                                            <option value="@warehouse.ID">@warehouse.Name</option>
-                                        }
-                                    </select>
-                                </div>
-                                <label class="col-xs-4 col-md-1 control-label">Payment To</label>
-                                <div class="col-xs-8 col-md-3">
-                                    <input class="form-control input-sm datepicker" type="text" id="search-paymentDateTo" data-dateformat="yy-mm-dd" placeholder="選擇日期">
+                                    <input class="form-control input-sm datepicker" type="text" id="search-pickUpDateFrom" data-dateformat="yy-mm-dd" placeholder="選擇日期">
                                 </div>
                             </div>
                             <div class="col-xs-12 no-padding">
-                                <label class="col-xs-4 col-md-1 control-label">Source ID</label>
-                                <div class="col-xs-8 col-md-3">
-                                    <input class="form-control input-sm" type="text" id="search-sourceID">
-                                </div>
                                 <label class="col-xs-4 col-md-1 control-label">Channel</label>
                                 <div class="col-xs-8 col-md-3">
                                     <select class="form-control input-sm" id="search-channel" style="margin-top: 4px;">
@@ -77,26 +49,16 @@
                                         }
                                     </select>
                                 </div>
-                                <label class="col-xs-4 col-md-1 control-label">Pick Up From</label>
+
+                                <label class="col-xs-4 col-md-1 control-label">Payment To</label>
                                 <div class="col-xs-8 col-md-3">
-                                    <input class="form-control input-sm datepicker" type="text" id="search-pickUpDateFrom" data-dateformat="yy-mm-dd" placeholder="選擇日期">
+                                    <input class="form-control input-sm datepicker" type="text" id="search-paymentDateTo" data-dateformat="yy-mm-dd" placeholder="選擇日期">
                                 </div>
-                            </div>
-                            <div class="col-xs-12 no-padding">
-                                <label class="col-xs-4 col-md-1 control-label">Item</label>
-                                <div class="col-xs-8 col-md-3">
-                                    <input class="form-control input-sm" type="text" id="search-item">
-                                </div>
-                                <label class="col-xs-4 col-md-1 control-label">Tracking</label>
-                                <div class="col-xs-8 col-md-3">
-                                    <input class="form-control input-sm" type="text" id="search-tracking">
-                                </div>
+
                                 <label class="col-xs-4 col-md-1 control-label">Pick Up To</label>
                                 <div class="col-xs-8 col-md-3">
                                     <input class="form-control input-sm datepicker" type="text" id="search-pickUpDateTo" data-dateformat="yy-mm-dd" placeholder="選擇日期">
                                 </div>
-                            </div>
-                            <div class="col-xs-12 no-padding">
                             </div>
                         </div>
                         <div class="table-cell col-xs-1">
@@ -104,7 +66,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="action-button table-cell col-xs-2">
+                <div class="action-button table-cell col-xs-1">
                     <button type="button" class="btn btn-default btn-sm btn-block" id="btn-return">Return to sender</button>
                     <button type="button" class="btn btn-default btn-sm btn-block" id="btn-rma">建立RMA</button>
                     <div id="dialog-reason" class="easyui-dialog" title="RMA Reason List" data-options="iconCls:'icon-edit',closed:true,draggable:false,resizable:false,onClose:function(){$reasonSelect.val('');}" style="width:700px;top:300px;">
@@ -140,6 +102,8 @@
                         </div>
                     </div>
                     @*<button class="btn btn-default btn-sm btn-block" id="btn-syncDays" data-href="@Url.Action("checkOrder", "orderSync", new { day = 14 })"><span>14天資料同步</span></button>*@
+                </div>
+                <div class="action-button table-cell col-xs-1">
                     <button type="button" class="btn btn-default btn-sm btn-block" id="btn-download">Download</button>
                     <button type="button" class="btn btn-default btn-sm btn-block" id="btn-export">匯出 Export</button>
                     <form id="form-data" method="post">
@@ -162,7 +126,7 @@
     <script src="~/scripts/datagrid-detailview.js"></script>
     <script src="~/scripts/jquery.edatagrid.js"></script>
     <script type="text/javascript">
-        var pager, pageSize = 100;
+        var pager, pageSize = 100, selectOption, filterValue = {};
         var selected = false;
         var $dataGrid;
         var $searchBtn = $('#btn-search'), $returnBtn = $("#btn-return"), $rmaBtn = $("#btn-rma"), $syncDaysBtn = $("#btn-syncDays"), $downloadBtn = $('#btn-download'), $exportBtn = $("#btn-export");
@@ -173,9 +137,20 @@
             $pickUpDateFromSearch = $("#search-pickUpDateFrom"), $pickUpDateToSearch = $("#search-pickUpDateTo");
 
         $(function () {
-            if (!isEmpty(urlParam('OrderID'))) $orderIDSearch.val(urlParam('OrderID'));
+            var data = {
+                optionType: ['CountryCode', 'Warehouse', 'Method', 'Export', 'ExportMethod', 'StatusCode']
+            };
+            ajaxUrl("@Url.Action("getSelectOption", "order")", 'post', data).done(function (response) {
+                if (response['status']) {
+                    selectOption = response['data'];
 
-            dataInit();
+                    dataInit();
+                } else {
+                    alert(response['message']);
+                }
+            });
+
+            if (!isEmpty(urlParam('OrderID'))) filterValue['OrderID'] = urlParam('OrderID');
 
             $searchBtn.click(function () {
                 $dataGrid.datagrid("clearChecked");
@@ -255,16 +230,6 @@
                 }
             });
 
-            //$syncDaysBtn.click(function () {
-            //    $.ajax({
-            //        url: $(this).data("href"),
-            //        dataType: "json",
-            //        success: function (response) {
-            //            alert(response['message']);
-            //        }
-            //    });
-            //});
-
             $downloadBtn.click(function () {
                 var rows = $dataGrid.datagrid('getSelections');
 
@@ -304,7 +269,7 @@
                 url: "@Url.Action("orderShippedData", "ajax")",
                 queryParams: {},
                 width: "100%",
-                height: window.screen.availHeight - 370,
+                height: window.screen.availHeight - 280,
                 checkOnSelect: false,
                 selectOnCheck: false,
                 singleSelect: false,
@@ -313,13 +278,17 @@
                     {
                         field: "OrderID", title: "Order ID<br />訂單號碼", width: 200, align: "center", sortable: true,
                         formatter: function (value, row, index) {
-                            if (row.ParentOrderID != 0) {
-                                var url = value + "(<a href='https://dm.cwa.sellercloud.com/Orders/Orders_details.aspx?id=" + row.ParentOrderID + "' target='_blank'>" + row.ParentOrderID + "</a>)"
+                            if (!isEmpty(value)) {
+                                if (row.ParentOrderID != 0) {
+                                    var url = value + "(<a href='https://dm.cwa.sellercloud.com/Orders/Orders_details.aspx?id=" + row.ParentOrderID + "' target='_blank'>" + row.ParentOrderID + "</a>)"
+                                } else {
+                                    var url = "<a href='https://dm.cwa.sellercloud.com/Orders/Orders_details.aspx?id=" + value + "' target='_blank'>" + value + "</a>";
+                                }
+                                if (row.OrderSourceOrderId != "") url += "<br />" + row.OrderSourceOrderId;
+                                return url;
                             } else {
-                                var url = "<a href='https://dm.cwa.sellercloud.com/Orders/Orders_details.aspx?id=" + value + "' target='_blank'>" + value + "</a>";
+                                return "<input type='text' class='form-control s-orderID' value='" + (!isEmpty(filterValue['OrderID']) ? filterValue['OrderID'] : '') + "'>";
                             }
-                            if (row.OrderSourceOrderId != "") url += "<br />" + row.OrderSourceOrderId;
-                            return url;
                         }
                     }
                 ]],
@@ -373,19 +342,33 @@
                         }
                     }
                 ]],
+                rowStyler: function (index, value) {
+                    if (index == 0) return { class: 'filterColumn' }
+                },
+                onLoadSuccess: function (data) {
+                    $dataGrid.datagrid('insertRow', {
+                        index: 0,
+                        row: setFilterColumn(filterValue)
+                    });
+
+                    if (data.total > 0) {
+                        $('.datepicker').datepicker({
+                            dateFormat: 'yy-mm-dd'
+                        });
+
+                        $('.filterColumn').on('change', 'input, select', function () {
+                            filterValue = getFilterData();
+
+                            $dataGrid.datagrid('reload');
+                        });
+                    } else {
+                        $dataGrid.datagrid('deleteRow', 0);
+                    }
+                },
                 onBeforeLoad: function (param) {
-                    param.OrderID = $orderIDSearch.val();
-                    param.UserID = $userIDSearch.val();
-                    param.SourceID = $sourceIDSearch.val();
-                    param.Country = $countrySearch.val();
-                    param.WarehouseID = $warehouseSearch.val();
-                    param.Source = $channelSearch.val();
-                    param.Tracking = $trackingSearch.val();
-                    param.ItemName = $itemSearch.val();
-                    param.DateFrom = $paymentDateFromSearch.val();
-                    param.DateTo = $paymentDateToSearch.val();
-                    param.PickUpDateFrom = $pickUpDateFromSearch.val();
-                    param.PickUpDateTo = $pickUpDateToSearch.val();
+                    Object.keys(filterValue).forEach(function (key) {
+                        if (!isEmpty(filterValue[key])) param[key] = filterValue[key];
+                    });
                 },
                 onBeforeSelect: selectAction,
                 onBeforeUnselect: selectAction,
@@ -472,13 +455,6 @@
             return option;
         }
 
-        function getOption(url) {
-            return $.ajax({
-                url: url,
-                dataType: "json"
-            });
-        }
-
         function downloadFile(index, fileName) {
             var row = $dataGrid.datagrid('getRows')[index];
             window.open('../' + row.Download + '/' + fileName);
@@ -489,7 +465,7 @@
         }
 
         function ajaxUrl(url, type, data) {
-            type = !isEmpty(type) ? type : {};
+            type = !isEmpty(type) ? type : 'get';
             data = !isEmpty(data) ? data : {};
 
             return $.ajax({
@@ -508,6 +484,56 @@
             else {
                 return decodeURI(results[1]) || 0;
             }
+        }
+
+        function getFilterData() {
+            return {
+                OrderID: $('.filterColumn .s-orderID').val(),
+                Sku: $('.filterColumn .s-sku').val(),
+                ItemName: $('.filterColumn .s-displayName').val(),
+                CountryCode: $('.filterColumn .s-countryCode').val(),
+                WarehouseID: $('.filterColumn .s-warehouse').val(),
+                MethodID: $('.filterColumn .s-shippingMethod').val(),
+                Export: $('.filterColumn .s-export').val(),
+                ExportMethod: $('.filterColumn .s-exportMethod').val(),
+                Serial: $('.filterColumn .s-serialNumber').val(),
+                Tracking: $('.filterColumn .s-trackingNumber').val(),
+
+                SourceID: $('#input-sourceID').val(),
+                Source: $('#select-channel').val(),
+                DateFrom: $('#date-dateFrom').val(),
+                DateTo: $('#date-dateTo').val(),
+                PickUpDateFrom: $('#date-pickUpDateFrom').val(),
+                PickUpDateTo: $('#date-pickUpDateTo').val()
+            };
+        }
+
+        function setFilterColumn(filterValue) {
+            return {
+                ItemCount: 1,
+                OrderID: "",
+                Sku: "<input type='text' class='form-control s-sku' value='" + (!isEmpty(filterValue['Sku']) ? filterValue['Sku'] : '') + "'>",
+                DisplayName: "<input type='text' class='form-control s-displayName' value='" + (!isEmpty(filterValue['ItemName']) ? filterValue['ItemName'] : '') + "'>",
+                ShippingCountry: "<select class='form-control s-countryCode'><option value=''>全部</option>" + setSelectOption(selectOption['CountryCode'], filterValue['CountryCode']) + "</select>",
+                Warehouse: "<select class='form-control s-warehouse'><option value=''>全部</option>" + setSelectOption(selectOption['Warehouse'], filterValue['WarehouseID']) + "</select>",
+                ShippingMethod: "<select class='form-control s-shippingMethod'><option value=''>全部</option>" + setSelectOption(selectOption['Method'], filterValue['MethodID']) + "</select>",
+                Export: "<select class='form-control s-export'><option value=''>全部</option>" + setSelectOption(selectOption['Export'], filterValue['Export']) + "</select>",
+                ExportMethod: "<select class='form-control s-exportMethod'><option value=''>全部</option>" + setSelectOption(selectOption['ExportMethod'], filterValue['ExportMethod']) + "</select>",
+                SerialNumber: "<input type='text' class='form-control s-serialNumber' value='" + (!isEmpty(filterValue['Serial']) ? filterValue['Serial'] : '') + "'>",
+                TrackingNumber: "<input type='text' class='form-control s-trackingNumber' value='" + (!isEmpty(filterValue['Tracking']) ? filterValue['Tracking'] : '') + "'>"
+            };
+        }
+
+        function setSelectOption(optionList, value) {
+            var option = "";
+
+            if (!isEmpty(optionList) && optionList.length > 0) {
+                for (var i in optionList) {
+                    option += "<option value='" + optionList[i]["value"] + "' " + (!isEmpty(value) && optionList[i]["value"] == value ? "selected" : "") + ">" + optionList[i]["text"] + "</option>";
+                }
+            }
+
+            return option;
         }
     </script>
 }

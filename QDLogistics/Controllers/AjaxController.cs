@@ -990,14 +990,16 @@ namespace QDLogistics.Controllers
                 /** Order Filter **/
                 var OrderFilter = db.Orders.AsNoTracking().Where(o => o.StatusCode.Value.Equals((int)OrderStatusCode.Completed) || o.ShippingStatus.Value.Equals((int)OrderShippingStatus.PartiallyShipped));
 
-                if (!string.IsNullOrWhiteSpace(filter.OrderID)) OrderFilter = OrderFilter.Where(o => o.OrderID.ToString().Equals(filter.OrderID));
-                if (!string.IsNullOrWhiteSpace(filter.UserID)) OrderFilter = OrderFilter.Where(o => o.eBayUserID.Contains(filter.UserID));
+                if (!string.IsNullOrWhiteSpace(filter.OrderID)) OrderFilter = OrderFilter.Where(o => o.OrderID.ToString().Equals(filter.OrderID) || o.eBayUserID.Contains(filter.UserID));
                 if (!string.IsNullOrWhiteSpace(filter.SourceID)) OrderFilter = OrderFilter.Where(o => (o.OrderSource.Value.Equals(1) && o.eBaySalesRecordNumber.Equals(filter.SourceID)) || (o.OrderSource.Value.Equals(4) && o.OrderSourceOrderId.Equals(filter.SourceID)));
-                if (!filter.Source.Equals(null)) OrderFilter = OrderFilter.Where(o => o.OrderSource.Value.Equals(filter.Source.Value));
+                if (filter.Source.HasValue) OrderFilter = OrderFilter.Where(o => o.OrderSource.Value.Equals(filter.Source.Value));
 
                 /** Package Filter **/
                 var PackageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.ProcessStatus == (byte)EnumData.ProcessStatus.已出貨);
+                if (filter.MethodID.HasValue) PackageFilter = PackageFilter.Where(p => p.ShippingMethod.Value.Equals(filter.MethodID.Value));
                 if (!string.IsNullOrWhiteSpace(filter.Tracking)) PackageFilter = PackageFilter.Where(p => p.TrackingNumber.Equals(filter.Tracking));
+                if (filter.Export.HasValue) PackageFilter = PackageFilter.Where(p => p.Export.Value.Equals(filter.Export.Value));
+                if (filter.ExportMethod.HasValue) PackageFilter = PackageFilter.Where(p => p.ExportMethod.Value.Equals(filter.Export.Value));
                 if (!filter.PickUpDateFrom.Equals(new DateTime()))
                 {
                     DateTime pickUpDateFrom = new DateTime(filter.PickUpDateFrom.Year, filter.PickUpDateFrom.Month, filter.PickUpDateFrom.Day, 0, 0, 0);
@@ -1013,16 +1015,18 @@ namespace QDLogistics.Controllers
 
                 /** Item Filter **/
                 var ItemFilter = db.Items.AsNoTracking().Where(i => i.IsEnable.Value);
-                if (!filter.WarehouseID.Equals(null)) ItemFilter = ItemFilter.Where(i => i.ShipFromWarehouseID.Value.Equals(filter.WarehouseID.Value));
-                if (!string.IsNullOrWhiteSpace(filter.ItemName))
+                if (filter.WarehouseID.HasValue) ItemFilter = ItemFilter.Where(i => i.ShipFromWarehouseID.Value.Equals(filter.WarehouseID.Value));
+                if (!string.IsNullOrEmpty(filter.Sku) || !string.IsNullOrWhiteSpace(filter.ItemName))
                 {
-                    string[] ProductIDs = db.Skus.AsNoTracking().Where(s => s.UPC.Equals(filter.ItemName)).Select(s => s.Sku).ToArray();
-                    ItemFilter = ItemFilter.Where(i => i.DisplayName.ToLower().Contains(filter.ItemName.ToLower()) || i.ProductID.Equals(filter.ItemName) || ProductIDs.Contains(i.ProductID));
+                    var SkuFilter = db.Skus.AsNoTracking().Where(s => s.IsEnable.Value);
+                    if (!string.IsNullOrEmpty(filter.Sku)) SkuFilter = SkuFilter.Where(sku => sku.Sku.Equals(filter.Sku) || sku.UPC.Equals(filter.Sku));
+                    if (!string.IsNullOrEmpty(filter.ItemName)) SkuFilter = SkuFilter.Where(sku => sku.ProductName.ToLower().Contains(filter.ItemName.ToLower()));
+                    ItemFilter = ItemFilter.Join(SkuFilter, i => i.ProductID, sku => sku.Sku, (i, sku) => i);
                 }
 
                 /** Address Filter **/
                 var AddressFilter = db.Addresses.AsNoTracking().Where(a => a.IsEnable.Value);
-                if (!string.IsNullOrWhiteSpace(filter.Country)) AddressFilter = AddressFilter.Where(a => a.CountryCode.Equals(filter.Country));
+                if (!string.IsNullOrWhiteSpace(filter.CountryCode)) AddressFilter = AddressFilter.Where(a => a.CountryCode.Equals(filter.CountryCode));
 
                 /** Payment Filter **/
                 var PaymentFilter = db.Payments.AsNoTracking().Where(p => p.IsEnable.Value);
@@ -1056,6 +1060,14 @@ namespace QDLogistics.Controllers
                     int length = rows;
                     int start = (page - 1) * length;
                     total = results.Count();
+
+                    int[] itemIDs;
+                    if (!string.IsNullOrEmpty(filter.Serial))
+                    {
+                        itemIDs = db.SerialNumbers.AsNoTracking().Where(serial => serial.SerialNumber.Contains(filter.Serial)).Select(serial => serial.OrderItemID).ToArray();
+                        results = results.Where(data => itemIDs.Contains(data.item.ID)).ToList();
+                    }
+
                     results = results.OrderByDescending(data => data.order.TimeOfOrder).Skip(start).Take(length).ToList();
 
                     Warehouses = new GenericRepository<Warehouses>(db);
@@ -1066,7 +1078,7 @@ namespace QDLogistics.Controllers
 
                     Dictionary<int, string> warehouses = db.Warehouses.AsNoTracking().Where(w => w.IsEnable.Value).ToDictionary(w => w.ID, w => w.Name);
 
-                    int[] itemIDs = results.SelectMany(data => data.items.Select(i => i.ID)).ToArray();
+                    itemIDs = results.SelectMany(data => data.items.Select(i => i.ID)).ToArray();
                     Dictionary<int, string> serialOfItem = db.SerialNumbers.AsNoTracking().Where(s => itemIDs.Contains(s.OrderItemID)).GroupBy(s => s.OrderItemID).ToDictionary(s => s.Key, s => s.First().SerialNumber);
 
                     dataList.AddRange(results.Select(data => new

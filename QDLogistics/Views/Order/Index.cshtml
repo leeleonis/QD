@@ -612,6 +612,7 @@
                 var Package = $dataGrid.datagrid("getRows")[index];
                 var warehouseID = $("select#ShipWarehouse:eq(" + index + ")").val();
                 $("select#MethodID:eq(" + index + ")").html(getSelectOption(filterCarrierOption(warehouseID), Package.MethodID));
+                $("select#FirstMile:eq(" + index + ")").html(getSelectOption(filterCarrierOption(warehouseID), Package.MethodID));
             }
 
             $dataGrid.datagrid('checkRow', index);

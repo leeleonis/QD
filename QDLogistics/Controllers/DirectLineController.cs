@@ -374,11 +374,12 @@ namespace QDLogistics.Controllers
 
             //int warehouseID = 0;
             //if (int.TryParse(Session["warehouseId"].ToString(), out warehouseID)) BoxFilter = BoxFilter.Where(b => b.WarehouseFrom.Equals(warehouseID));
-            if (!filter.Warehouse.Equals(null)) BoxFilter = BoxFilter.Where(b => b.WarehouseTo.Equals(filter.Warehouse.Value));
+            if (filter.WarehouseFrom.HasValue) BoxFilter = BoxFilter.Where(b => b.WarehouseFrom.Equals(filter.WarehouseFrom.Value));
+            if (filter.WarehouseTo.HasValue) BoxFilter = BoxFilter.Where(b => b.WarehouseTo.Equals(filter.WarehouseTo.Value));
             if (!string.IsNullOrEmpty(filter.WITID)) BoxFilter = BoxFilter.Where(b => b.WITID.Contains(filter.WITID));
             if (!string.IsNullOrEmpty(filter.Tracking)) BoxFilter = BoxFilter.Where(b => b.TrackingNumber.Contains(filter.Tracking));
-            if (!filter.Status.Equals(null)) BoxFilter = BoxFilter.Where(b => b.ShippingStatus.Equals(filter.Status.Value));
-            if (!filter.Type.Equals(null)) BoxFilter = BoxFilter.Where(b => b.BoxType.Equals(filter.Type.Value));
+            if (filter.Status.HasValue) BoxFilter = BoxFilter.Where(b => b.ShippingStatus.Equals(filter.Status.Value));
+            if (filter.Type.HasValue) BoxFilter = BoxFilter.Where(b => b.BoxType.Equals(filter.Type.Value));
             if (!string.IsNullOrEmpty(filter.Notes)) BoxFilter = BoxFilter.Where(b => b.Note.Contains(filter.Notes));
 
             var results = BoxFilter.ToList();
@@ -397,8 +398,12 @@ namespace QDLogistics.Controllers
                     .GroupJoin(db.Items.AsNoTracking().Where(i => i.IsEnable.Value), p => p.ID, i => i.PackageID, (p, i) => new { package = p, items = i.ToList() })
                     .GroupBy(data => data.package.BoxID).ToDictionary(group => group.Key, group => group.SelectMany(data => data.items).ToList());
 
+                Dictionary<int, string> warehouseName = db.Warehouses.AsNoTracking().Where(w => w.IsEnable.Value && w.IsSellable.Value).ToDictionary(w => w.ID, w => w.Name);
+
                 int[] methodIDs = results.Select(m => m.FirstMileMethod).ToArray();
-                Dictionary<int, string> carrierName = db.ShippingMethod.Where(m => methodIDs.Contains(m.ID)).ToDictionary(m => m.ID, m => m.Carriers.Name);
+                Dictionary<int, string> carrierName = db.ShippingMethod.AsNoTracking().Where(m => methodIDs.Contains(m.ID)).ToDictionary(m => m.ID, m => m.Carriers.Name);
+
+                var boxTypeList = EnumData.BoxTypeList();
                 List<DirectLineLabel> lockLabel = db.DirectLineLabel.AsNoTracking().Where(l => l.IsEnable && l.Status.Equals((byte)EnumData.LabelStatus.鎖定中) && !string.IsNullOrEmpty(l.BoxID)).ToList();
 
                 string baseUrl = Request.Url.Scheme + "://" + Request.Url.Authority + Request.ApplicationPath.TrimEnd('/') + "/fileUploads";
@@ -408,7 +413,8 @@ namespace QDLogistics.Controllers
                     data.BoxID,
                     data.SupplierBoxID,
                     CreateDate = timeZoneConvert.InitDateTime(data.Create_at, EnumData.TimeZone.UTC).ConvertDateTime(TimeZone).ToString("MM/dd/yyyy<br />hh:mm tt"),
-                    WharehouseTO = "",
+                    WarehouseFrom = warehouseName.ContainsKey(data.WarehouseFrom) ? warehouseName[data.WarehouseFrom] : "",
+                    WarehouseTO = warehouseName.ContainsKey(data.WarehouseTo) ? warehouseName[data.WarehouseTo] : "",
                     BoxQty = data.BoxNo,
                     TotalWeight = itemGroup.Any(i => i.Key.Equals(data.BoxID)) ? itemGroup[data.BoxID].Sum(i => i.Qty * ((float)i.Skus.Weight / 1000)) : 0,
                     data.WITID,
@@ -416,7 +422,7 @@ namespace QDLogistics.Controllers
                     Tracking = data.TrackingNumber,
                     Status = Enum.GetName(typeof(EnumData.DirectLineStatus), data.ShippingStatus),
                     data.ShippingStatus,
-                    Type = EnumData.BoxTypeList()[(EnumData.DirectLineBoxType)data.BoxType],
+                    Type = boxTypeList[(EnumData.DirectLineBoxType)data.BoxType],
                     data.Note,
                     Download = !data.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.未發貨) ? string.Format("{0}/export/box/{1}/{2}", baseUrl, data.Create_at.ToString("yyyy/MM/dd"), data.BoxID) : "",
                     OrderLock = lockLabel.Count(l => l.BoxID.Equals(data.BoxID))
@@ -588,12 +594,10 @@ namespace QDLogistics.Controllers
                             optionList.Add(type, MyHelp.GetCountries().Select(c => new { text = c.Name, value = c.ID }).ToArray());
                             break;
                         case "Warehouse":
-                            Warehouses = new GenericRepository<Warehouses>(db);
-                            optionList.Add(type, Warehouses.GetAll(true).Where(w => w.IsEnable.Value && w.IsSellable.Value).Select(w => new { text = w.Name, value = w.ID }).ToArray());
+                            optionList.Add(type, db.Warehouses.AsNoTracking().Where(w => w.IsEnable.Value && w.IsSellable.Value).Select(w => new { text = w.Name, value = w.ID }).ToArray());
                             break;
                         case "Method":
-                            Method = new GenericRepository<ShippingMethod>(db);
-                            optionList.Add(type, Method.GetAll(true).Where(m => m.IsEnable && m.IsDirectLine).Select(m => new { text = m.Name, value = m.ID }).ToArray());
+                            optionList.Add(type, db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && m.IsDirectLine).Select(m => new { text = m.Name, value = m.ID }).ToArray());
                             break;
                         case "StatusCode":
                             optionList.Add(type, Enum.GetValues(typeof(OrderStatusCode)).Cast<OrderStatusCode>().Select(s => new { text = s.ToString(), value = (int)s }).ToArray());
@@ -1482,7 +1486,7 @@ namespace QDLogistics.Controllers
 
                                 using (CaseLog CaseLog = new CaseLog(oldPackage, Session, CurrentHttpContext))
                                 {
-                                    //CaseLog.SendResendShipmentMail(newPackage, serials.First().Create_at);
+                                    CaseLog.SendResendShipmentMail(newPackage, serials.First().Create_at);
                                 }
                             }
                             else
@@ -1653,6 +1657,11 @@ namespace QDLogistics.Controllers
                                 ShippingMethod method = db.ShippingMethod.Find(box.FirstMileMethod);
 
                                 TrackResult boxResult = TrackOrder.Track(box, method.Carriers.CarrierAPI);
+                                box.PickUpDate = boxResult.PickUpDate;
+                                box.DeliveryNote = boxResult.DeliveryNote;
+                                box.DeliveryDate = boxResult.DeliveryDate;
+                                db.Entry(box).State = System.Data.Entity.EntityState.Modified;
+
                                 if (boxResult.DeliveryStatus.Equals((int)DeliveryStatusType.Delivered))
                                 {
                                     MyHelp.Log("Box", box.BoxID, "寄送Box到貨通知", session);
@@ -1710,7 +1719,7 @@ namespace QDLogistics.Controllers
                                 else
                                 {
                                     DateTime deliveryDate = MyHelp.SkipWeekend(box.Create_at.AddDays(2));
-                                    if (DateTime.Compare(deliveryDate, DateTime.UtcNow) < 0)
+                                    if (DateTime.Compare(deliveryDate, DateTime.UtcNow) < 0 && box.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.運輸中))
                                     {
                                         box.ShippingStatus = (byte)EnumData.DirectLineStatus.延誤中;
                                         db.Entry(box).State = System.Data.Entity.EntityState.Modified;
@@ -1971,7 +1980,8 @@ namespace QDLogistics.Controllers
             public string BoxID { get; set; }
             public string SupplierBoxID { get; set; }
             public DateTime CreateDate { get; set; }
-            public Nullable<int> Warehouse { get; set; }
+            public Nullable<int> WarehouseFrom { get; set; }
+            public Nullable<int> WarehouseTo { get; set; }
             public string WITID { get; set; }
             public string Tracking { get; set; }
             public Nullable<byte> Status { get; set; }

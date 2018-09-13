@@ -77,6 +77,7 @@
                 ]],
                 columns: [[
                     { field: "CreateDate", title: "Create Date", width: 120, align: "center", sortable: false },
+                    { field: "WarehouseFrom", title: "Warehouse", width: 150, align: "center", sortable: false },
                     { field: "WarehouseTo", title: "To", width: 150, align: "center", sortable: false },
                     { field: "BoxQty", title: "Box Qty", width: 60, align: "center", sortable: false },
                     { field: "TotalWeight", title: "Total Weight", width: 80, align: "center", sortable: false },
@@ -93,6 +94,7 @@
                         }
                     },
                     { field: "Status", title: "Status", width: 100, align: "center", sortable: false },
+                    { field: "DeliveryNote", title: "Delivery Note", width: 250, align: "center", sortable: false },
                     { field: "Type", title: "Type", width: 150, align: "center", sortable: false },
                     { field: "Note", title: "Notes", width: 250, align: "center", sortable: false },
                     {
@@ -106,6 +108,7 @@
                     }
                 ]],
                 rowStyler: function (index, row) {
+                    if (index == 0) return { class: 'filterColumn' };
                     if (row.OrderLock != 0) return 'background-color:red';
                     if (row.ShippingStatus == 3) return 'background-color:yellow';
                     if (row.ShippingStatus == 4) return 'background-color:orange';
@@ -188,7 +191,8 @@
                 BoxID: $('.filterColumn .s-boxID').val(),
                 SupplierBoxID: $('.filterColumn .s-supplierBoxID').val(),
                 CreateDate: $('.filterColumn .s-createDate').val(),
-                Warehouse: $('.filterColumn .s-warehouse').val(),
+                WarehouseFrom: $('.filterColumn .s-warehouseFrom').val(),
+                WarehouseTo: $('.filterColumn .s-warehouseTo').val(),
                 WITID: $('.filterColumn .s-WITID').val(),
                 Tracking: $('.filterColumn .s-tracking').val(),
                 Status: $('.filterColumn .s-status').val(),
@@ -202,12 +206,14 @@
                 BoxID: "",
                 SupplierBoxID: "<input type='text' class='form-control s-supplierBoxID' value='" + (!isEmpty(filterValue['SupplierBoxID']) ? filterValue['SupplierBoxID'] : '') + "'>",
                 CreateDate: "<input type='text' class='form-control datepicker s-createDate' value='" + (!isEmpty(filterValue['CreateDate']) ? filterValue['CreateDate'] : '') + "'>",
-                WarehouseTo: "<select class='form-control s-warehouse'><option value=''>全部</option>" + setSelectOption(selectOption['Warehouse'], filterValue['Warehouse']) + "</select>",
+                WarehouseFrom: "<select class='form-control s-warehouseFrom'><option value=''>全部</option>" + setSelectOption(selectOption['Warehouse'], filterValue['WarehouseFrom']) + "</select>",
+                WarehouseTo: "<select class='form-control s-warehouseTo'><option value=''>全部</option>" + setSelectOption(selectOption['Warehouse'], filterValue['WarehouseTo']) + "</select>",
                 BoxQty: "",
                 TotalWeight: "",
                 WITID: "<input type='text' class='form-control s-WITID' value='" + (!isEmpty(filterValue['WITID']) ? filterValue['WITID'] : '') + "'>",
                 Tracking: "<input type='text' class='form-control s-tracking' value='" + (!isEmpty(filterValue['Tracking']) ? filterValue['Tracking'] : '') + "'>",
                 Status: "<select class='form-control s-status'><option value=''>全部</option>" + setSelectOption(selectOption['DirectLineStatus'], filterValue['Status']) + "</select>",
+                DeliveryNote: "",
                 Type: "<select class='form-control s-type'><option value=''>全部</option>" + setSelectOption(selectOption['DirectLineBoxType'], filterValue['Type']) + "</select>",
                 Note: "<input type='text' class='form-control s-notes' value='" + (!isEmpty(filterValue['Notes']) ? filterValue['Notes'] : '') + "'>",
                 OrderLock: 0
