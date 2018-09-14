@@ -788,10 +788,7 @@ namespace QDLogistics.Controllers
                     case "Sendle":
                         MyHelp.Log("PickProduct", null, "寄送Sendle出貨通知");
 
-                        receiveMails = new string[] { "customerservice@ecof.com.au" };
-                        var CC_Mails = ccMails.ToList();
-                        CC_Mails.Add("sophia.wang@ecof.com.au");
-
+                        receiveMails = new string[] { "customerservice@ecof.com.au", "sophia.wang@ecof.com.au", "Ada.chen@ecof.com.au", "mandy.liang@ecof.com.au" };
                         var packageList = box.Packages.Where(p => p.IsEnable.Value).ToList();
                         mailTitle = string.Format("DISPATCHED: {0}, {1}pcs", box.TrackingNumber, packageList.Count());
                         mailBody = string.Format("Tracking {0}({1}pcs, {2}<br />", box.TrackingNumber, packageList.Count(), box.BoxID);
@@ -815,7 +812,7 @@ namespace QDLogistics.Controllers
                         memoryStream.Seek(0, SeekOrigin.Begin);
                         SendleFile.Add(new Tuple<Stream, string>(memoryStream, "Labels.zip"));
 
-                        bool Sendle_Status = MyHelp.Mail_Send(sendMail, receiveMails, CC_Mails.ToArray(), mailTitle, mailBody, true, null, SendleFile, false);
+                        bool Sendle_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, null, SendleFile, false);
                         if (Sendle_Status)
                         {
                             MyHelp.Log("PickProduct", null, mailTitle);

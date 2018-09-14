@@ -41,7 +41,7 @@ namespace QDLogistics.Commons
         private Dictionary<string, string[]> MailList = new Dictionary<string, string[]>()
         {
             { "IDS", new string[]{ "gloria.chiu@contin-global.com", "cherry.chen@contin-global.com", "TWCS@contin-global.com", "contincs@gmail.com", "shipping_qd@hotmail.com" } },
-            { "Sendle", new string[]{ "customerservice@ecof.com.au" } }
+            { "Sendle", new string[]{ "customerservice@ecof.com.au", "sophia.wang@ecof.com.au", "Ada.chen@ecof.com.au", "mandy.liang@ecof.com.au" } }
         };
 
         private HttpContextBase _currentHttpContext;
@@ -213,13 +213,11 @@ namespace QDLogistics.Commons
                         //receiveMails = new string[] { "peter@qd.com.tw", "qd.tuko@hotmail.com" };
                         //List<string> CC_Mails = new List<string>();
                         receiveMails = MailList["Sendle"];
-                        var CC_Mails = ccMails.ToList();
-                        CC_Mails.Add("sophia.wang@ecof.com.au");
                         string labelID = string.Format("{0}-{1}-{2}", packageData.Items.First(i => i.IsEnable.Value).ProductID, packageData.OrderID, packageData.TrackingNumber);
                         mailTitle = string.Format("CANCEL SHIPMENT Request from Quality Deals for <{0}> (in <{1}> <{2}>)", labelID, method.Carriers.Name, packageData.Box.TrackingNumber);
                         mailBody = CreateCancelMailBody(directLine.Abbreviation, eventData);
 
-                        if (!MyHelp.Mail_Send(sendMail, receiveMails, CC_Mails.ToArray(), mailTitle, mailBody, true, null, null, false))
+                        if (!MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, null, null, false))
                         {
                             eventData.Status = (byte)EnumData.CaseEventStatus.Error;
                             CaseEvent.Update(eventData, eventData.ID);
@@ -270,12 +268,10 @@ namespace QDLogistics.Commons
                             ShippingMethod method = db.ShippingMethod.Find(packageData.Box.FirstMileMethod);
 
                             receiveMails = MailList["Sendle"];
-                            var CC_Mails = ccMails.ToList();
-                            CC_Mails.Add("sophia.wang@ecof.com.au");
                             string labelID = string.Format("{0}-{1}-{2}", packageData.Items.First(i => i.IsEnable.Value).ProductID, packageData.OrderID, packageData.TrackingNumber);
                             mailTitle = string.Format("CONFIRMED: CANCEL SHIPMENT Request from Quality Deals for <{0}> (in <{1}> <{2}>)", labelID, method.Carriers.Name, packageData.Box.TrackingNumber);
                             mailBody = "We have confirmed that you have successfully cancelled the above order/s. Thank you!";
-                            MyHelp.Mail_Send(sendMail, receiveMails, CC_Mails.ToArray(), mailTitle, mailBody, true, null, null, false);
+                            MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, null, null, false);
                             break;
                     }
 
@@ -693,13 +689,11 @@ namespace QDLogistics.Commons
                         break;
                     case "Sendle":
                         receiveMails = MailList["Sendle"];
-                        var CC_Mails = ccMails.ToList();
-                        CC_Mails.Add("sophia.wang@ecof.com.au");
                         string oldLabelID = string.Format("{0}-{1}-{2}", packageData.Items.First(i => i.IsEnable.Value).ProductID, packageData.OrderID, packageData.TrackingNumber);
                         mailTitle = string.Format("Quality Deals Reship inventory for <Label ID1>", oldLabelID);
                         mailBody = CreateResendShipmentMailBody(directLine.Abbreviation, confirmDate, eventData, newPackage);
 
-                        if (!MyHelp.Mail_Send(sendMail, receiveMails, CC_Mails.ToArray(), mailTitle, mailBody, true, null, null, false))
+                        if (!MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, null, null, false))
                         {
                             eventData.Status = (byte)EnumData.CaseEventStatus.Error;
                             CaseEvent.Update(eventData, eventData.ID);

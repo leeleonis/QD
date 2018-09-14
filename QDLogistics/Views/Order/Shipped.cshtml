@@ -249,13 +249,14 @@
             });
 
             $exportBtn.click(function () {
-                var orderIDs = [];
                 var rows = $dataGrid.datagrid('getRows');
 
-                if (rows.length > 0) {
-                    for (var i in rows) {
-                        orderIDs[i] = rows[i].OrderID;
-                    }
+                if (rows.length > 1) {
+                    var orderIDs = rows.filter(function (row, i) {
+                        return !isEmpty(row.OrderID);
+                    }).map(function (row, i) {
+                        return row.OrderID;
+                    });
 
                     $("#input-IDs").val(orderIDs);
                     $("#form-data").attr("action", "@Url.Action("export", "file")").submit();

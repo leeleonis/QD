@@ -422,6 +422,7 @@ namespace QDLogistics.Controllers
                     Tracking = data.TrackingNumber,
                     Status = Enum.GetName(typeof(EnumData.DirectLineStatus), data.ShippingStatus),
                     data.ShippingStatus,
+                    data.DeliveryNote,
                     Type = boxTypeList[(EnumData.DirectLineBoxType)data.BoxType],
                     data.Note,
                     Download = !data.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.未發貨) ? string.Format("{0}/export/box/{1}/{2}", baseUrl, data.Create_at.ToString("yyyy/MM/dd"), data.BoxID) : "",
@@ -1491,7 +1492,7 @@ namespace QDLogistics.Controllers
                             }
                             else
                             {
-                                foreach(var serial in SerialNumbers.GetAll().Where(s => s.OrderID.Value.Equals(newPackage.OrderID.Value)))
+                                foreach (var serial in SerialNumbers.GetAll().Where(s => s.OrderID.Value.Equals(newPackage.OrderID.Value)))
                                 {
                                     SerialNumbers.Delete(serial);
                                 }
@@ -1627,13 +1628,17 @@ namespace QDLogistics.Controllers
             AjaxResult result = new AjaxResult();
 
             TaskFactory Factory = System.Web.HttpContext.Current.Application.Get("TaskFactory") as TaskFactory;
+            ThreadTask threadTask = new ThreadTask("追蹤 Direct Line Box 狀態");
 
             try
             {
                 lock (Factory)
                 {
-                    Factory.StartNew(Session =>
+                    threadTask.AddWork(Factory.StartNew(Session =>
                     {
+                        threadTask.Start();
+                        string message = "";
+
                         string sendMail = "dispatch-qd@hotmail.com";
                         string mailTitle;
                         string mailBody;
@@ -1645,90 +1650,96 @@ namespace QDLogistics.Controllers
 
                         MyHelp.Log("Box", null, "追蹤 Direct Line Box 狀態", session);
 
-                        List<byte> statusList = new List<byte>() { (byte)EnumData.DirectLineStatus.運輸中, (byte)EnumData.DirectLineStatus.延誤中 };
-                        List<Box> boxList = db.Box.Where(b => b.IsEnable && b.BoxType.Equals((byte)EnumData.DirectLineBoxType.DirectLine) && statusList.Contains(b.ShippingStatus)).ToList();
-                        if (boxList.Any())
+                        try
                         {
-                            TrackOrder TrackOrder = new TrackOrder();
-                            int[] methodList = boxList.Select(b => b.FirstMileMethod).Distinct().ToArray();
-
-                            foreach (Box box in boxList)
+                            List<byte> statusList = new List<byte>() { (byte)EnumData.DirectLineStatus.運輸中, (byte)EnumData.DirectLineStatus.延誤中 };
+                            List<Box> boxList = db.Box.Where(b => b.IsEnable && b.BoxType.Equals((byte)EnumData.DirectLineBoxType.DirectLine) && statusList.Contains(b.ShippingStatus)).ToList();
+                            if (boxList.Any())
                             {
-                                ShippingMethod method = db.ShippingMethod.Find(box.FirstMileMethod);
-
-                                TrackResult boxResult = TrackOrder.Track(box, method.Carriers.CarrierAPI);
-                                box.PickUpDate = boxResult.PickUpDate;
-                                box.DeliveryNote = boxResult.DeliveryNote;
-                                box.DeliveryDate = boxResult.DeliveryDate;
-                                db.Entry(box).State = System.Data.Entity.EntityState.Modified;
-
-                                if (boxResult.DeliveryStatus.Equals((int)DeliveryStatusType.Delivered))
+                                TrackOrder TrackOrder = new TrackOrder();
+                                foreach (Box box in boxList)
                                 {
-                                    MyHelp.Log("Box", box.BoxID, "寄送Box到貨通知", session);
+                                    ShippingMethod method = db.ShippingMethod.Find(box.FirstMileMethod);
 
-                                    box.ShippingStatus = box.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.延誤中) ? (byte)EnumData.DirectLineStatus.延誤後抵達 : (byte)EnumData.DirectLineStatus.已到貨;
+                                    TrackResult boxResult = TrackOrder.Track(box, method.Carriers.CarrierAPI);
+                                    box.PickUpDate = boxResult.PickUpDate;
+                                    box.DeliveryNote = boxResult.DeliveryNote;
+                                    box.DeliveryDate = boxResult.DeliveryDate;
                                     db.Entry(box).State = System.Data.Entity.EntityState.Modified;
 
-                                    string basePath = HostingEnvironment.MapPath("~/FileUploads");
-                                    DirectLine directLine = db.DirectLine.Find(box.DirectLine);
-                                    switch (directLine.Abbreviation)
+                                    if (boxResult.DeliveryStatus.Equals((int)DeliveryStatusType.Delivered))
                                     {
-                                        case "IDS":
-                                            string[] address;
+                                        MyHelp.Log("Box", box.BoxID, "寄送Box到貨通知", session);
 
-                                            receiveMails = new string[] { "gloria.chiu@contin-global.com", "cherry.chen@contin-global.com", "TWCS@contin-global.com", "contincs@gmail.com", "shipping_qd@hotmail.com" };
-                                            mailTitle = string.Format("TW018 至優網有限公司 First Mile 包裹 {0} {1} ({2} 件包裹) 已抵達", method.Carriers.Name, box.TrackingNumber, box.DirectLineLabel.Count(l => l.IsEnable));
-                                            mailBody = "您好<br /><br />包裹已抵達:<br />{0}<br /><br />內容包含:<br />{1}<br /><br />請盡速處理並確認已經全數收到<br />謝謝!";
-                                            address = new string[] { directLine.StreetLine1, directLine.StreetLine2, directLine.City, directLine.StateName, directLine.CountryName, directLine.PostalCode };
-                                            mailBody = string.Format(mailBody, string.Join(" ", address.Except(new string[] { "", null })), string.Join("<br />", box.DirectLineLabel.Where(l => l.IsEnable).Select(l => l.LabelID).ToArray()));
-                                            bool IDS_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, null, null, false);
-                                            if (!IDS_Status) MyHelp.Log("Box", box.BoxID, "寄送Box到貨通知失敗", session);
-                                            break;
-                                        case "Sendle":
-                                            receiveMails = new string[] { "customerservice@ecof.com.au" };
-                                            var CC_Mails = ccMails.ToList();
-                                            CC_Mails.Add("sophia.wang@ecof.com.au");
-                                            var packageList = box.Packages.Where(p => p.IsEnable.Value).ToList();
-                                            mailTitle = string.Format("ARRIVED: {0} {1}, {2}pcs", method.Carriers.Name, box.TrackingNumber, packageList.Count());
-                                            mailBody = string.Format("Tracking {0}({1}pcs, {2}<br />", box.TrackingNumber, packageList.Count(), box.BoxID);
-                                            mailBody += string.Join("<br />", packageList.Select(p => string.Format("{0}-{1}-{2}", p.Items.First(i => i.IsEnable.Value).ProductID, p.OrderID.Value, p.TrackingNumber)).ToArray());
-
-                                            List<Tuple<Stream, string>> SendleFile = new List<Tuple<Stream, string>>();
-                                            using (var file = new ZipFile())
-                                            {
-                                                var memoryStream = new MemoryStream();
-                                                foreach (Packages package in box.Packages.Where(p => p.IsEnable.Value).ToList())
-                                                {
-                                                    string AWB_File = Path.Combine(basePath, package.FilePath, string.Format("{0}-{1}-{2}.pdf", package.Items.First(i => i.IsEnable.Value).ProductID, package.OrderID, package.TrackingNumber));
-                                                    if (!System.IO.File.Exists(AWB_File))
-                                                    {
-                                                        System.IO.File.Copy(Path.Combine(basePath, package.FilePath, "AirWaybill.pdf"), AWB_File);
-                                                    }
-                                                    file.AddFile(AWB_File, "");
-                                                }
-                                                file.Save(memoryStream);
-                                                memoryStream.Seek(0, SeekOrigin.Begin);
-                                                SendleFile.Add(new Tuple<Stream, string>(memoryStream, "Labels.zip"));
-                                            }
-
-                                            bool Sendle_Status = MyHelp.Mail_Send(sendMail, receiveMails, CC_Mails.ToArray(), mailTitle, mailBody, true, null, SendleFile, false);
-                                            if (!Sendle_Status) MyHelp.Log("Box", box.BoxID, "寄送Box到貨通知失敗", session);
-                                            break;
-                                    }
-                                }
-                                else
-                                {
-                                    DateTime deliveryDate = MyHelp.SkipWeekend(box.Create_at.AddDays(2));
-                                    if (DateTime.Compare(deliveryDate, DateTime.UtcNow) < 0 && box.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.運輸中))
-                                    {
-                                        box.ShippingStatus = (byte)EnumData.DirectLineStatus.延誤中;
+                                        box.ShippingStatus = box.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.延誤中) ? (byte)EnumData.DirectLineStatus.延誤後抵達 : (byte)EnumData.DirectLineStatus.已到貨;
                                         db.Entry(box).State = System.Data.Entity.EntityState.Modified;
+
+                                        string basePath = HostingEnvironment.MapPath("~/FileUploads");
+                                        DirectLine directLine = db.DirectLine.Find(box.DirectLine);
+                                        switch (directLine.Abbreviation)
+                                        {
+                                            case "IDS":
+                                                string[] address;
+
+                                                receiveMails = new string[] { "gloria.chiu@contin-global.com", "cherry.chen@contin-global.com", "TWCS@contin-global.com", "contincs@gmail.com", "shipping_qd@hotmail.com" };
+                                                mailTitle = string.Format("TW018 至優網有限公司 First Mile 包裹 {0} {1} ({2} 件包裹) 已抵達", method.Carriers.Name, box.TrackingNumber, box.DirectLineLabel.Count(l => l.IsEnable));
+                                                mailBody = "您好<br /><br />包裹已抵達:<br />{0}<br /><br />內容包含:<br />{1}<br /><br />請盡速處理並確認已經全數收到<br />謝謝!";
+                                                address = new string[] { directLine.StreetLine1, directLine.StreetLine2, directLine.City, directLine.StateName, directLine.CountryName, directLine.PostalCode };
+                                                mailBody = string.Format(mailBody, string.Join(" ", address.Except(new string[] { "", null })), string.Join("<br />", box.DirectLineLabel.Where(l => l.IsEnable).Select(l => l.LabelID).ToArray()));
+                                                bool IDS_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, null, null, false);
+                                                if (!IDS_Status) MyHelp.Log("Box", box.BoxID, "寄送Box到貨通知失敗", session);
+                                                break;
+                                            case "Sendle":
+                                                receiveMails = new string[] { "customerservice@ecof.com.au", "sophia.wang@ecof.com.au", "Ada.chen@ecof.com.au", "mandy.liang@ecof.com.au" };
+                                                var packageList = box.Packages.Where(p => p.IsEnable.Value).ToList();
+                                                mailTitle = string.Format("ARRIVED: {0} {1}, {2}pcs", method.Carriers.Name, box.TrackingNumber, packageList.Count());
+                                                mailBody = string.Format("Tracking {0}({1}pcs, {2}<br />", box.TrackingNumber, packageList.Count(), box.BoxID);
+                                                mailBody += string.Join("<br />", packageList.Select(p => string.Format("{0}-{1}-{2}", p.Items.First(i => i.IsEnable.Value).ProductID, p.OrderID.Value, p.TrackingNumber)).ToArray());
+
+                                                List<Tuple<Stream, string>> SendleFile = new List<Tuple<Stream, string>>();
+                                                using (var file = new ZipFile())
+                                                {
+                                                    var memoryStream = new MemoryStream();
+                                                    foreach (Packages package in box.Packages.Where(p => p.IsEnable.Value).ToList())
+                                                    {
+                                                        string AWB_File = Path.Combine(basePath, package.FilePath, string.Format("{0}-{1}-{2}.pdf", package.Items.First(i => i.IsEnable.Value).ProductID, package.OrderID, package.TrackingNumber));
+                                                        if (!System.IO.File.Exists(AWB_File))
+                                                        {
+                                                            System.IO.File.Copy(Path.Combine(basePath, package.FilePath, "AirWaybill.pdf"), AWB_File);
+                                                        }
+                                                        file.AddFile(AWB_File, "");
+                                                    }
+                                                    file.Save(memoryStream);
+                                                    memoryStream.Seek(0, SeekOrigin.Begin);
+                                                    SendleFile.Add(new Tuple<Stream, string>(memoryStream, "Labels.zip"));
+                                                }
+
+                                                bool Sendle_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, null, SendleFile, false);
+                                                if (!Sendle_Status) MyHelp.Log("Box", box.BoxID, "寄送Box到貨通知失敗", session);
+                                                break;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        DateTime deliveryDate = MyHelp.SkipWeekend(box.Create_at.AddDays(2));
+                                        if (DateTime.Compare(deliveryDate, DateTime.UtcNow) < 0 && box.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.運輸中))
+                                        {
+                                            box.ShippingStatus = (byte)EnumData.DirectLineStatus.延誤中;
+                                            db.Entry(box).State = System.Data.Entity.EntityState.Modified;
+                                        }
                                     }
                                 }
+                                db.SaveChanges();
                             }
-                            db.SaveChanges();
                         }
-                    }, Session);
+                        catch (Exception e)
+                        {
+                            message = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+                            MyHelp.Log("Box", null, message, session);
+                        }
+
+                        return message;
+                    }, Session));
                 }
             }
             catch (Exception e)
@@ -1737,7 +1748,7 @@ namespace QDLogistics.Controllers
 
                 string message = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
                 MyHelp.Log("Box", null, message, Session);
-            }            
+            }
 
             return Json(result, JsonRequestBehavior.AllowGet);
         }
@@ -1800,10 +1811,7 @@ namespace QDLogistics.Controllers
                     case "Sendle":
                         MyHelp.Log("PickProduct", null, "寄送Sendle出貨通知");
 
-                        receiveMails = new string[] { "customerservice@ecof.com.au" };
-                        var CC_Mails = ccMails.ToList();
-                        CC_Mails.Add("sophia.wang@ecof.com.au");
-
+                        receiveMails = new string[] { "customerservice@ecof.com.au", "sophia.wang@ecof.com.au", "Ada.chen@ecof.com.au", "mandy.liang@ecof.com.au" };
                         var packageList = boxList.SelectMany(b => b.Packages.Where(p => p.IsEnable.Value)).ToList();
                         mailTitle = string.Format("DISPATCHED: {0} {1}, {2}pcs", method.Carriers.Name, trackingNumber, packageList.Count());
                         foreach (Box box in boxList)
@@ -1831,7 +1839,7 @@ namespace QDLogistics.Controllers
                             SendleFile.Add(new Tuple<Stream, string>(memoryStream, "Labels.zip"));
                         }
 
-                        bool Sendle_Status = MyHelp.Mail_Send(sendMail, receiveMails, CC_Mails.ToArray(), mailTitle, mailBody, true, null, SendleFile, false);
+                        bool Sendle_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, null, SendleFile, false);
                         if (Sendle_Status)
                         {
                             MyHelp.Log("PickProduct", null, mailTitle);

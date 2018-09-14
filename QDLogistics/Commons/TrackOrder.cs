@@ -127,8 +127,6 @@ namespace QDLogistics.Commons
 
             try
             {
-                TimeZoneConvert timeZone = new TimeZoneConvert();
-
                 switch (api.Type)
                 {
                     case (byte)EnumData.CarrierType.DHL:
