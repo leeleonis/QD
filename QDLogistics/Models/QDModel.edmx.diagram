@@ -28,7 +28,7 @@
         <EntityTypeShape EntityType="QDLogisticsModel.Menu" Width="1.5" PointX="7.375" PointY="0.75" />
         <AssociationConnector Association="QDLogisticsModel.FK_Menu_Menu" />
         <EntityTypeShape EntityType="QDLogisticsModel.PickProduct" Width="1.5" PointX="11.5" PointY="5.75" />
-        <EntityTypeShape EntityType="QDLogisticsModel.ProductType" Width="1.5" PointX="0.625" PointY="5.875" />
+        <EntityTypeShape EntityType="QDLogisticsModel.ProductType" Width="1.5" PointX="0.625" PointY="5.625" />
         <AssociationConnector Association="QDLogisticsModel.FK_Skus_ProductType" />
         <AssociationConnector Association="QDLogisticsModel.FK_Skus_Skus" ManuallyRouted="false" >
         </AssociationConnector>

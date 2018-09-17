@@ -22,7 +22,7 @@
 @media (min-width: 979px) {
     .menu-on-top aside#left-panel {
         width: auto !important;
-        max-width: 1165px !important;
+        /*max-width: 1165px !important;*/
         height: 50px;
         padding-top: 0px;
         right: 96px;

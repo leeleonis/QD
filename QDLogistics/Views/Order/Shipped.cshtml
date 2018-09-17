@@ -457,7 +457,7 @@
         }
 
         function downloadFile(index, fileName) {
-            var row = $dataGrid.datagrid('getRows')[index];
+            var row = $dataGrid.datagrid('getRows')[index + 1];
             window.open('../' + row.Download + '/' + fileName);
         }
 

@@ -25,6 +25,7 @@ namespace QDLogistics.Models
         public int ID { get; set; }
         public string ProductTypeName { get; set; }
         public string ChtName { get; set; }
+        public string HSCode { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Skus> Skus { get; set; }

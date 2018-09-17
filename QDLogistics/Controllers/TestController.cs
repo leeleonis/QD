@@ -337,7 +337,7 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public void Box_Test(string boxID)
+        private void Box_Test(string boxID)
         {
             SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
             ShipProcess shipProcess = new ShipProcess(SCWS);
@@ -345,32 +345,75 @@ namespace QDLogistics.Controllers
             db.SaveChanges();
         }
 
-        private void Excel_Test()
+        public void Excel_Test(int OrderID)
         {
-            string basePath = HostingEnvironment.MapPath("~/FileUploads");
+            Packages package = db.Packages.AsNoTracking().First(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID));
+            DateTime date = package.ShipDate.Value;
 
-            using (FileStream fsIn = new FileStream(@"C:\Users\qdtuk\Downloads\Invoice.xls", FileMode.Open))
+            string basePath = HostingEnvironment.MapPath("~/FileUploads");
+            package.FilePath = Path.Combine("export", date.ToString("yyyy/MM/dd"), package.ID.ToString());
+            string filePath = Path.Combine(basePath, package.FilePath);
+            if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
+
+            var Invoice = new { fileName = "Invoice.xls", samplePath = Path.Combine(basePath, "sample", "Invoice.xls") };
+            using (FileStream fsIn = new FileStream(Invoice.samplePath, FileMode.Open))
             {
                 HSSFWorkbook workbook = new HSSFWorkbook(fsIn);
                 fsIn.Close();
 
-                HSSFSheet sheet = (HSSFSheet)workbook.GetSheetAt(0);
+                ISheet sheet = workbook.GetSheetAt(0);
+                sheet.GetRow(4).GetCell(3).SetCellValue(package.TrackingNumber);
+                sheet.GetRow(7).GetCell(1).SetCellValue(date.ToString("MMM dd, yyyy", System.Globalization.CultureInfo.CreateSpecificCulture("en-US")));
+                sheet.GetRow(7).GetCell(8).SetCellValue(package.OrderID.Value);
 
-                int insertRow = 47, add = 8;
-                MyHelp.ShiftRows(ref sheet, insertRow, sheet.LastRowNum, add);
+                sheet.GetRow(10).GetCell(1).SetCellValue("Zhi You Wan LTD (53362065)");
+                sheet.GetRow(11).GetCell(1).SetCellValue("51 Section 3 Jianguo North Road");
+                sheet.GetRow(12).GetCell(1).SetCellValue("Taichung City West District");
+                sheet.GetRow(13).GetCell(1).SetCellValue("Taiwan (R.O.C) 40243");
 
-                for (int row = insertRow; row < insertRow + add; row++)
+                int rowIndex = 10;
+                Addresses address = package.Orders.Addresses;
+                string fullName = string.Join(" ", new string[] { address.FirstName, address.MiddleInitial, address.LastName });
+                if (!string.IsNullOrWhiteSpace(fullName))
+                    sheet.GetRow(rowIndex++).GetCell(5).SetCellValue(fullName);
+                if (!string.IsNullOrWhiteSpace(address.CompanyName))
+                    sheet.GetRow(rowIndex++).GetCell(5).SetCellValue(address.CompanyName);
+                if (!string.IsNullOrWhiteSpace(address.StreetLine1))
+                    sheet.GetRow(rowIndex++).GetCell(5).SetCellValue(address.StreetLine1);
+                if (!string.IsNullOrWhiteSpace(address.StreetLine2))
+                    sheet.GetRow(rowIndex++).GetCell(5).SetCellValue(address.StreetLine2);
+                string cityArea = address.City + " " + address.StateName + " " + address.PostalCode;
+                if (!string.IsNullOrWhiteSpace(cityArea))
+                    sheet.GetRow(rowIndex++).GetCell(5).SetCellValue(cityArea);
+                if (!string.IsNullOrWhiteSpace(address.CountryName))
+                    sheet.GetRow(rowIndex).GetCell(5).SetCellValue(address.CountryName);
+
+                sheet.GetRow(17).GetCell(1).SetCellValue("Taiwan");
+                sheet.GetRow(21).GetCell(1).SetCellValue(address.CountryName);
+
+                rowIndex = 24;
+                foreach (Items item in package.Items.Where(i => i.IsEnable == true))
                 {
-                    MyHelp.CopyRow(ref sheet, insertRow - 1, row, true, false, true, false);
+                    Country country = MyHelp.GetCountries().FirstOrDefault(c => c.ID == item.Skus.Origin);
+                    sheet.GetRow(rowIndex).GetCell(1).SetCellValue(country.OriginName);
+                    string productName = item.Skus.ProductType.ProductTypeName + " - " + item.Skus.ProductName;
+                    sheet.GetRow(rowIndex).GetCell(4).SetCellValue(productName);
+                    sheet.GetRow(rowIndex).GetCell(5).SetCellValue(item.Skus.ProductType.HSCode);
+                    sheet.GetRow(rowIndex).GetCell(8).SetCellValue(item.Qty.Value);
+                    sheet.GetRow(rowIndex).GetCell(9).SetCellValue("pieces");
+                    sheet.GetRow(rowIndex).GetCell(10).SetCellValue(item.Qty * ((double)item.Skus.Weight / 1000) + "kg");
+                    sheet.GetRow(rowIndex).GetCell(11).SetCellValue(item.DeclaredValue.ToString("N"));
+                    sheet.GetRow(rowIndex).GetCell(16).SetCellValue((item.DeclaredValue * item.Qty.Value).ToString("N"));
+                    sheet.GetRow(rowIndex).HeightInPoints = (productName.Length / 30 + 1) * sheet.DefaultRowHeight / 20;
+                    sheet.GetRow(rowIndex++).RowStyle.VerticalAlignment = VerticalAlignment.Center;
                 }
+                sheet.GetRow(47).GetCell(3).SetCellValue(1);
+                sheet.GetRow(47).GetCell(10).SetCellValue(package.Items.Where(i => i.IsEnable == true).Sum(i => i.Qty.Value * ((double)i.Skus.Weight / 1000)) + "kg");
+                sheet.GetRow(47).GetCell(11).SetCellValue(Enum.GetName(typeof(OrderService.CurrencyCodeType2), package.Orders.OrderCurrencyCode.Value));
+                sheet.GetRow(47).GetCell(16).SetCellValue(package.Items.Where(i => i.IsEnable == true).Sum(i => i.Qty.Value * i.DeclaredValue).ToString("N"));
+                sheet.GetRow(57).GetCell(9).SetCellValue(date.ToString("yyyy-MM-dd"));
 
-                byte[] picData = System.IO.File.ReadAllBytes(@"C:\Users\qdtuk\Downloads\company.png");
-                int picIndex = workbook.AddPicture(picData, PictureType.PNG);
-                var drawing = sheet.CreateDrawingPatriarch();
-                var anchor = new HSSFClientAnchor(400, 50, 500, 50, 4, insertRow + add + 1, 6, insertRow + add + 5);
-                var pictuer = drawing.CreatePicture(anchor, picIndex);
-
-                using (FileStream fsOut = new FileStream(@"C:\Users\qdtuk\Downloads\Invoice_test.xls", FileMode.Create))
+                using (FileStream fsOut = new FileStream(Path.Combine(filePath, Invoice.fileName), FileMode.Create))
                 {
                     workbook.Write(fsOut);
 
@@ -389,7 +432,7 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public void Mail_Test(int OrderID)
+        private void Mail_Test(int OrderID)
         {
             Packages package = db.Packages.First(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID));
             CaseLog caseLog = new CaseLog(Session);

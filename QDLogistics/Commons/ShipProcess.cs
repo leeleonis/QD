@@ -637,23 +637,24 @@ namespace QDLogistics.Commons
                 sheet.GetRow(17).GetCell(1).SetCellValue("Taiwan");
                 sheet.GetRow(21).GetCell(1).SetCellValue(address.CountryName);
 
-                rowIndex = 26;
+                rowIndex = 24;
                 foreach (Items item in package.Items.Where(i => i.IsEnable == true))
                 {
                     Country country = MyHelp.GetCountries().FirstOrDefault(c => c.ID == item.Skus.Origin);
                     sheet.GetRow(rowIndex).GetCell(1).SetCellValue(country.OriginName);
-                    sheet.GetRow(rowIndex).GetCell(5).SetCellValue(item.Skus.ProductType.ProductTypeName);
+                    sheet.GetRow(rowIndex).GetCell(4).SetCellValue(item.Skus.ProductType.ProductTypeName);
+                    sheet.GetRow(rowIndex).GetCell(5).SetCellValue(item.Skus.ProductType.HSCode);
                     sheet.GetRow(rowIndex).GetCell(8).SetCellValue(item.Qty.Value);
                     sheet.GetRow(rowIndex).GetCell(9).SetCellValue("pieces");
                     sheet.GetRow(rowIndex).GetCell(10).SetCellValue(item.Qty.Value * ((double)item.Skus.Weight / 1000) + "kg");
                     sheet.GetRow(rowIndex).GetCell(11).SetCellValue(item.DeclaredValue.ToString("N"));
                     sheet.GetRow(rowIndex++).GetCell(16).SetCellValue((item.DeclaredValue * item.Qty.Value).ToString("N"));
                 }
-                sheet.GetRow(49).GetCell(3).SetCellValue(1);
-                sheet.GetRow(49).GetCell(10).SetCellValue(package.Items.Where(i => i.IsEnable == true).Sum(i => i.Qty.Value * ((double)i.Skus.Weight / 1000)) + "kg");
-                sheet.GetRow(49).GetCell(11).SetCellValue(Enum.GetName(typeof(OrderService.CurrencyCodeType2), package.Orders.OrderCurrencyCode.Value));
-                sheet.GetRow(49).GetCell(16).SetCellValue(package.Items.Where(i => i.IsEnable == true).Sum(i => i.Qty.Value * i.DeclaredValue).ToString("N"));
-                sheet.GetRow(59).GetCell(9).SetCellValue(date.ToString("yyyy-MM-dd"));
+                sheet.GetRow(47).GetCell(3).SetCellValue(1);
+                sheet.GetRow(47).GetCell(10).SetCellValue(package.Items.Where(i => i.IsEnable == true).Sum(i => i.Qty.Value * ((double)i.Skus.Weight / 1000)) + "kg");
+                sheet.GetRow(47).GetCell(11).SetCellValue(Enum.GetName(typeof(OrderService.CurrencyCodeType2), package.Orders.OrderCurrencyCode.Value));
+                sheet.GetRow(47).GetCell(16).SetCellValue(package.Items.Where(i => i.IsEnable == true).Sum(i => i.Qty.Value * i.DeclaredValue).ToString("N"));
+                sheet.GetRow(57).GetCell(9).SetCellValue(date.ToString("yyyy-MM-dd"));
 
                 using (FileStream fsOut = new FileStream(Path.Combine(filePath, Invoice.fileName), FileMode.Create))
                 {
@@ -700,7 +701,7 @@ namespace QDLogistics.Commons
                 sheet.GetRow(17).GetCell(1).SetCellValue("Taiwan");
                 sheet.GetRow(21).GetCell(1).SetCellValue(directLine.CountryName);
 
-                rowIndex = 26;
+                rowIndex = 24;
                 List<Items> itemList = boxList.SelectMany(b => b.Packages.Where(p => p.IsEnable.Value)).SelectMany(p => p.Items.Where(i => i.IsEnable.Value)).ToList();
                 if (itemList.Count() > 22)
                 {
@@ -719,7 +720,8 @@ namespace QDLogistics.Commons
                     Country country = MyHelp.GetCountries().FirstOrDefault(c => c.ID.Equals(sku.Origin));
                     sheet.GetRow(rowIndex).GetCell(1).SetCellValue(country.OriginName);
                     string productName = sku.ProductType.ProductTypeName + " - " + sku.ProductName;
-                    sheet.GetRow(rowIndex).GetCell(5).SetCellValue(productName);
+                    sheet.GetRow(rowIndex).GetCell(4).SetCellValue(productName);
+                    sheet.GetRow(rowIndex).GetCell(5).SetCellValue(sku.ProductType.HSCode);
                     sheet.GetRow(rowIndex).GetCell(8).SetCellValue(item.Qty.Value);
                     sheet.GetRow(rowIndex).GetCell(9).SetCellValue("pieces");
                     sheet.GetRow(rowIndex).GetCell(10).SetCellValue((item.Qty.Value * (double)sku.Weight / 1000) + "kg");
@@ -728,7 +730,7 @@ namespace QDLogistics.Commons
                     sheet.GetRow(rowIndex++).HeightInPoints = (productName.Length / 20 + 1) * sheet.DefaultRowHeight / 20;
                 }
 
-                rowIndex = (rowIndex > 48) ? rowIndex + 1 : 49;
+                rowIndex = (rowIndex > 46) ? rowIndex + 1 : 47;
 
                 byte[] picData = File.ReadAllBytes(Path.Combine(basePath, "sample", "company.png"));
                 int picIndex = workbook.AddPicture(picData, PictureType.PNG);

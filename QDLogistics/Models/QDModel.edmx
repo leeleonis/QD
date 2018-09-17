@@ -91,9 +91,9 @@
           <Property Name="BoxNo" Type="int" Nullable="false" />
           <Property Name="CurrentNo" Type="int" Nullable="false" />
           <Property Name="TrackingNumber" Type="nvarchar" MaxLength="50" />
-          <Property Name="PickUpDate" Type="datetime" />
+          <Property Name="PickUpDate" Type="datetime2" Precision="7" />
           <Property Name="DeliveryNote" Type="text" />
-          <Property Name="DeliveryDate" Type="datetime" />
+          <Property Name="DeliveryDate" Type="datetime2" Precision="7" />
           <Property Name="Note" Type="nvarchar(max)" />
           <Property Name="Create_at" Type="datetime" Nullable="false" />
         </EntityType>
@@ -431,6 +431,7 @@
           <Property Name="ID" Type="int" Nullable="false" />
           <Property Name="ProductTypeName" Type="nvarchar" MaxLength="100" />
           <Property Name="ChtName" Type="nvarchar" MaxLength="100" />
+          <Property Name="HSCode" Type="nchar" MaxLength="20" />
         </EntityType>
         <EntityType Name="PurchaseItemReceive">
           <Key>
@@ -1650,6 +1651,7 @@
           <Property Name="ProductTypeName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="true" />
           <NavigationProperty Name="Skus" Relationship="QDLogisticsModel.FK_Skus_ProductType" FromRole="ProductType" ToRole="Skus" />
           <Property Name="ChtName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="HSCode" Type="String" MaxLength="20" FixedLength="true" Unicode="true" />
         </EntityType>
         <Association Name="FK_Skus_ProductType">
           <End Type="QDLogisticsModel.ProductType" Role="ProductType" Multiplicity="0..1" />
@@ -1938,9 +1940,9 @@
           <Property Name="BoxNo" Type="Int32" Nullable="false" DefaultValue="1" />
           <Property Name="CurrentNo" Type="Int32" Nullable="false" DefaultValue="1" />
           <Property Name="TrackingNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Name="PickUpDate" Type="DateTime" Precision="3" />
+          <Property Name="PickUpDate" Type="DateTime" Precision="7" />
           <Property Name="DeliveryNote" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
-          <Property Name="DeliveryDate" Type="DateTime" Precision="3" />
+          <Property Name="DeliveryDate" Type="DateTime" Precision="7" />
           <Property Name="Note" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="Create_at" Type="DateTime" Nullable="false" Precision="3" />
           <NavigationProperty Name="DirectLineLabel" Relationship="QDLogisticsModel.FK_DirectLineLabel_Box" FromRole="Box" ToRole="DirectLineLabel" />
@@ -2464,6 +2466,7 @@
           <EntitySetMapping Name="ProductType">
             <EntityTypeMapping TypeName="QDLogisticsModel.ProductType">
               <MappingFragment StoreEntitySet="ProductType">
+                <ScalarProperty Name="HSCode" ColumnName="HSCode" />
                 <ScalarProperty Name="ChtName" ColumnName="ChtName" />
                 <ScalarProperty Name="ProductTypeName" ColumnName="ProductTypeName" />
                 <ScalarProperty Name="ID" ColumnName="ID" />

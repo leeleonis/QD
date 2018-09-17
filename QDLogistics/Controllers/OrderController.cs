@@ -1082,13 +1082,14 @@ namespace QDLogistics.Controllers
 
                                                 ISheet FedEx_sheet = FedEx_workbook.GetSheetAt(0);
 
-                                                int rowIndex = 26;
+                                                int rowIndex = 24;
                                                 foreach (Items item in itemList)
                                                 {
                                                     Country country = MyHelp.GetCountries().FirstOrDefault(c => c.ID == item.Skus.Origin);
                                                     FedEx_sheet.GetRow(rowIndex).GetCell(1).SetCellValue(country.OriginName);
                                                     string productName = item.Skus.ProductType.ProductTypeName + " - " + item.Skus.ProductName;
-                                                    FedEx_sheet.GetRow(rowIndex).GetCell(5).SetCellValue(productName);
+                                                    FedEx_sheet.GetRow(rowIndex).GetCell(4).SetCellValue(productName);
+                                                    FedEx_sheet.GetRow(rowIndex).GetCell(5).SetCellValue(item.Skus.ProductType.HSCode);
                                                     FedEx_sheet.GetRow(rowIndex).GetCell(8).SetCellValue(item.Qty.Value);
                                                     FedEx_sheet.GetRow(rowIndex).GetCell(9).SetCellValue("pieces");
                                                     FedEx_sheet.GetRow(rowIndex).GetCell(10).SetCellValue(item.Qty * ((double)item.Skus.Weight / 1000) + "kg");

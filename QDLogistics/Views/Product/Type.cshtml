@@ -64,6 +64,11 @@
                             return "<input type='text' class='form-control input-sm' id='ChtName-" + index + "' value='" + value + "' onchange='onSelect(" + index + ")'>";
                         }
                     }, {
+                        field: "HSCode", title: "HS Code", width: "20%", align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            return "<input type='text' class='form-control input-sm' id='HSCode-" + index + "' value='" + value + "' onchange='onSelect(" + index + ")'>";
+                        }
+                    }, {
                         field: "save", title: "<button type='button' class='btn btn-default btn-sm' onclick='saveData()'>SAVE</button>", width: "60", sortable: false,
                         formatter: function (value, row, index) {
                             return "<button type='button' class='btn btn-default btn-sm' id='btn-" + index + "' onclick='saveData(" + index + ")' disabled>SAVE</button>"
@@ -135,7 +140,8 @@
         function setData(row, index) {
             return {
                 ID: row.ID,
-                ChtName: $("#ChtName-" + index).val()
+                ChtName: $("#ChtName-" + index).val(),
+                HSCode: $('#HSCode-' + index).val()
             }
         }
 

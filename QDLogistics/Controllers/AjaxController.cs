@@ -1743,9 +1743,10 @@ namespace QDLogistics.Controllers
 
                 dataList.AddRange(results.OrderBy(t => t.ID).Skip(start).Take(length).Select(type => new
                 {
-                    ID = type.ID,
+                    type.ID,
                     Name = type.ProductTypeName,
-                    ChtName = string.IsNullOrEmpty(type.ChtName) ? "" : type.ChtName
+                    ChtName = type.ChtName ?? "",
+                    HSCode = type.HSCode ?? ""
                 }));
             }
 
@@ -1764,7 +1765,8 @@ namespace QDLogistics.Controllers
                 if (type != null)
                 {
                     type.ChtName = tData.ChtName;
-                    ProductType.Update(type);
+                    type.HSCode = tData.HSCode;
+                    ProductType.Update(type, type.ID);
                 }
 
                 MyHelp.Log("ProductType", tData.ID, "更新品項資料");
