@@ -36,11 +36,14 @@ namespace QDLogistics.Commons
         private Packages package;
         private SC_WebService SCWS;
 
+        private Warehouses warehouse;
+
         public bool isSplitShip;
         public bool isDropShip;
         public bool isDirectLine;
 
-        private Warehouses warehouse;
+        private readonly string basePath = HostingEnvironment.MapPath("~/FileUploads");
+        private string filePath;
 
         public ShipProcess(SC_WebService SCWS)
         {
@@ -53,7 +56,7 @@ namespace QDLogistics.Commons
             this.order = package.Orders;
             this.package = package;
             this.isSplitShip = order.Packages.Count(p => p.IsEnable.Value) >= 2;
-            this.warehouse = package.Items.Where(i => i.IsEnable.Value).First().ShipWarehouses;
+            this.warehouse = package.Items.First(i => i.IsEnable.Value).ShipWarehouses;
             this.isDropShip = warehouse.WarehouseType.Equals((int)OrderService.WarehouseTypeType.DropShip);
             this.isDirectLine = package.Method.IsDirectLine;
         }
@@ -61,6 +64,11 @@ namespace QDLogistics.Commons
         public ShipResult Dispatch()
         {
             ShipResult result = new ShipResult(false);
+
+            package.ShipDate = SCWS.SyncOn;
+            package.FilePath = Path.Combine("export", package.ShipDate.Value.ToString("yyyy/MM/dd"), package.ID.ToString());
+            filePath = Path.Combine(basePath, package.FilePath);
+            if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
 
             if (isDirectLine)
             {
@@ -114,14 +122,13 @@ namespace QDLogistics.Commons
         public ShipResult Dispatch(List<Box> boxList)
         {
             ShipResult result = new ShipResult(true);
-            
+
             ShippingMethod method = db.ShippingMethod.Find(boxList.First().FirstMileMethod);
             DirectLine directLine = db.DirectLine.Find(boxList.First().DirectLine);
             CarrierAPI api = method.Carriers.CarrierAPI;
 
             string currency = directLine.Abbreviation.Equals("IDS") ? "USD" : Enum.GetName(typeof(OrderService.CurrencyCodeType2), boxList[0].Packages.First(p => p.IsEnable.Value).Orders.OrderCurrencyCode.Value);
 
-            DateTime date;
             string basePath, filePath;
             try
             {
@@ -158,7 +165,7 @@ namespace QDLogistics.Commons
 
                         /***** Air Waybill *****/
                         Download_FedEx_PDF(boxList, filePath, "AirWaybill.pdf");
-                        
+
                         /***** Commercial Invoice *****/
                         Box_CreateInvoice(boxList, directLine, basePath, filePath, currency);
 
@@ -221,65 +228,119 @@ namespace QDLogistics.Commons
             Carriers carrier = package.Method.Carriers;
             CarrierAPI api = carrier.CarrierAPI;
 
-            switch (api.Type)
+            package.ShippingServiceCode = carrier.Name;
+            if (api != null)
             {
-                case (int)EnumData.CarrierType.IDS:
-                    try
-                    {
-                        IDS_API IDS = new IDS_API(package.Method.Carriers.CarrierAPI);
-                        CreateOrderResponse result = IDS.CreateOrder(package);
-
-                        if (!result.status.Equals("200"))
+                switch (api.Type)
+                {
+                    case (int)EnumData.CarrierType.IDS:
+                        try
                         {
-                            var error = JsonConvert.DeserializeObject<List<List<List<object>>>>(JsonConvert.SerializeObject(result.error));
-                            var msg = JsonConvert.SerializeObject(error.SelectMany(e => e).First(e => e[0].Equals(package.OrderID.ToString()))[1]);
-                            throw new Exception(JsonConvert.DeserializeObject<string[]>(msg)[0]);
-                        }
+                            IDS_API IDS = new IDS_API(package.Method.Carriers.CarrierAPI);
+                            CreateOrderResponse result = IDS.CreateOrder(package);
 
-                        package.TagNo = result.labels.First(l => l.salesRecordNumber.Equals(package.OrderID.ToString())).orderid;
-                        string basePath = HostingEnvironment.MapPath("~/FileUploads");
-                        package.ShipDate = SCWS.SyncOn;
-                        package.FilePath = Path.Combine("export", package.ShipDate.Value.ToString("yyyy/MM/dd"), package.ID.ToString());
-                        string filePath = Path.Combine(basePath, package.FilePath);
-                        if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
-
-                        using (var client = new WebClient())
-                        {
-                            client.DownloadFile(result.labels.First().labellink, Path.Combine(filePath, "Label.zip"));
-                        }
-
-                        using (ZipArchive archive = ZipFile.OpenRead(Path.Combine(filePath, "Label.zip")))
-                        {
-                            if (File.Exists(Path.Combine(filePath, "Label.pdf")))
+                            if (!result.status.Equals("200"))
                             {
-                                File.Delete(Path.Combine(filePath, "Label.pdf"));
+                                var error = JsonConvert.DeserializeObject<List<List<List<object>>>>(JsonConvert.SerializeObject(result.error));
+                                var msg = JsonConvert.SerializeObject(error.SelectMany(e => e).First(e => e[0].Equals(package.OrderID.ToString()))[1]);
+                                throw new Exception(JsonConvert.DeserializeObject<string[]>(msg)[0]);
                             }
 
-                            foreach (ZipArchiveEntry entry in archive.Entries)
+                            package.TagNo = result.labels.First(l => l.salesRecordNumber.Equals(package.OrderID.ToString())).orderid;
+                            using (var client = new WebClient())
                             {
-                                if (entry.FullName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+                                client.DownloadFile(result.labels.First().labellink, Path.Combine(filePath, "Label.zip"));
+                            }
+
+                            using (ZipArchive archive = ZipFile.OpenRead(Path.Combine(filePath, "Label.zip")))
+                            {
+                                if (File.Exists(Path.Combine(filePath, "Label.pdf")))
                                 {
-                                    entry.ExtractToFile(Path.Combine(filePath, "Label.pdf"));
+                                    File.Delete(Path.Combine(filePath, "Label.pdf"));
+                                }
+
+                                foreach (ZipArchiveEntry entry in archive.Entries)
+                                {
+                                    if (entry.FullName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        entry.ExtractToFile(Path.Combine(filePath, "Label.pdf"));
+                                    }
                                 }
                             }
                         }
-
-                        IRepository<DirectLineLabel> DirectLineLabel = new GenericRepository<DirectLineLabel>(new QDLogisticsEntities());
-                        DirectLineLabel.Create(new DirectLineLabel()
+                        catch (Exception e)
                         {
-                            IsEnable = true,
-                            LabelID = package.TagNo,
-                            OrderID = package.OrderID.Value,
-                            PackageID = package.ID
-                        });
-                        DirectLineLabel.SaveChanges();
-                    }
-                    catch (Exception e)
-                    {
-                        return new ShipResult(false, e.Message);
-                    }
-                    break;
+                            MyHelp.Log("Packages", package.ID, string.Format("建立IDS提單失敗 - {0}", e.Message));
+                            return new ShipResult(false, e.Message);
+                        }
+                        break;
+
+                    case (int)EnumData.CarrierType.Sendle:
+                        try
+                        {
+                            Sendle_API Sendle = new Sendle_API(api);
+                            Sendle_API.OrderResponse result = Sendle.Create(package);
+
+                            package.TagNo = result.order_id;
+                            package.TrackingNumber = result.sendle_reference;
+
+                            while (Sendle.Order(result.order_id).labels == null)
+                            {
+                                System.Threading.Thread.Sleep(1000);
+                            }
+
+                            string code = string.Format("{0}-{1}-{2}", package.Items.First().ProductID, package.OrderID.Value, result.sendle_reference);
+                            Sendle.Label(result.order_id, code, filePath);
+                        }
+                        catch (Exception e)
+                        {
+                            MyHelp.Log("Packages", package.ID, string.Format("建立Sendle提單失敗 - {0}", e.Message));
+                            return new ShipResult(false, e.Message);
+                        }
+                        break;
+                }
             }
+            else
+            {
+                try
+                {
+                    package.TagNo = string.Format("{0}-{1}", package.Items.First(i => i.IsEnable.Value).ProductID, package.OrderID.Value);
+
+                    if (File.Exists(Path.Combine(filePath, "Label.pdf"))) File.Delete(Path.Combine(filePath, "Label.pdf"));
+
+                    Document document = new Document();
+                    PdfWriter writer = PdfWriter.GetInstance(document, new FileStream(Path.Combine(filePath, "Label.pdf"), FileMode.Create));
+
+                    document.Open();
+                    PdfContentByte cb = writer.DirectContent;
+                    PdfReader reader = new PdfReader(Path.Combine(basePath, "sample/Label.pdf"));
+                    document.SetPageSize(reader.GetPageSizeWithRotation(1));
+
+                    document.NewPage();
+                    Paragraph pp = new Paragraph();
+                    Barcode128 barcode = new Barcode128 { CodeType = Barcode.CODE128_UCC, Code = package.TagNo };
+                    Image barcodeImage = barcode.CreateImageWithBarcode(cb, null, null);
+                    barcodeImage.Alignment = Element.ALIGN_CENTER;
+                    pp.Add(barcodeImage);
+                    document.Add(pp);
+
+                    document.Close();
+                    writer.Close();
+                }
+                catch (Exception e)
+                {
+                    return new ShipResult(false, e.Message);
+                }
+            }
+
+            db.DirectLineLabel.Add(new DirectLineLabel()
+            {
+                IsEnable = true,
+                LabelID = package.TagNo,
+                OrderID = package.OrderID.Value,
+                PackageID = package.ID
+            });
+            db.SaveChanges();
 
             return new ShipResult(true);
         }
@@ -320,7 +381,6 @@ namespace QDLogistics.Commons
                     });
                 }
 
-                package.ShipDate = SCWS.SyncOn;
                 package.POId = newPurchase.ID;
                 package.TrackingNumber = "";
                 MyHelp.Log("PurchaseOrder", package.OrderID, string.Format("開啟 Purchase Order【{0}】成功", package.POId));
@@ -338,74 +398,60 @@ namespace QDLogistics.Commons
             Carriers carrier = package.Method.Carriers;
             CarrierAPI api = carrier.CarrierAPI;
 
-            switch (api.Type)
+            package.ShippingServiceCode = carrier.Name;
+            if(api != null)
             {
-                case (int)EnumData.CarrierType.DHL:
-                    try
-                    {
-                        MyHelp.Log("Packages", package.ID, "開始建立DHL提單");
-
-                        DHL_API DHL = new DHL_API(api);
-                        ShipmentResponse result = DHL.Create(package);
-
-                        package.TrackingNumber = result.AirwayBillNumber;
-                        package.ShipDate = SCWS.SyncOn;
-                        package.ShippingServiceCode = carrier.Name;
-
-                        MyHelp.Log("Packages", package.ID, "完成建立DHL提單");
-
-                        if (package.Export == (byte)EnumData.Export.正式)
+                switch (api.Type)
+                {
+                    case (int)EnumData.CarrierType.DHL:
+                        try
                         {
-                            DHL_SaveFile(result);
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        string DHL_error = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
-                        MyHelp.Log("Packages", package.ID, string.Format("建立DHL提單失敗 - {0}", DHL_error));
-                        return new ShipResult(false, DHL_error);
-                    }
-                    break;
-                case (int)EnumData.CarrierType.FedEx:
-                    try
-                    {
-                        FedEx_API FedEx = new FedEx_API(api);
-                        ProcessShipmentReply result = FedEx.Create(package);
+                            MyHelp.Log("Packages", package.ID, "開始建立DHL提單");
 
-                        if (!result.HighestSeverity.Equals(NotificationSeverityType.SUCCESS))
+                            DHL_API DHL = new DHL_API(api);
+                            ShipmentResponse result = DHL.Create(package);
+
+                            package.TrackingNumber = result.AirwayBillNumber;
+
+                            MyHelp.Log("Packages", package.ID, "完成建立DHL提單");
+
+                            if (package.Export == (byte)EnumData.Export.正式)
+                            {
+                                DHL_SaveFile(result);
+                            }
+                        }
+                        catch (Exception e)
                         {
-                            throw new Exception(string.Join("\n", result.Notifications.Select(n => n.Message).ToArray()));
+                            string DHL_error = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+                            MyHelp.Log("Packages", package.ID, string.Format("建立DHL提單失敗 - {0}", DHL_error));
+                            return new ShipResult(false, DHL_error);
                         }
-
-                        CompletedPackageDetail data = result.CompletedShipmentDetail.CompletedPackageDetails.First();
-                        package.TrackingNumber = data.TrackingIds.Select(t => t.TrackingNumber).First();
-                        package.ShipDate = SCWS.SyncOn;
-                        package.ShippingServiceCode = carrier.Name;
-
-                        if (package.Export == (byte)EnumData.Export.正式)
+                        break;
+                    case (int)EnumData.CarrierType.FedEx:
+                        try
                         {
-                            FedEx_SaveFile(data);
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        return new ShipResult(false, e.Message);
-                    }
-                    break;
-                case (int)EnumData.CarrierType.Sendle:
-                    try
-                    {
-                        Sendle_Shipped(api);
+                            FedEx_API FedEx = new FedEx_API(api);
+                            ProcessShipmentReply result = FedEx.Create(package);
 
-                        package.ShipDate = SCWS.SyncOn;
-                        package.ShippingServiceCode = carrier.Name;
-                    }
-                    catch (Exception e)
-                    {
-                        MyHelp.Log("Packages", package.ID, string.Format("建立Sendle提單失敗 - {0}", e.Message));
-                        return new ShipResult(false, e.Message);
-                    }
-                    break;
+                            if (!result.HighestSeverity.Equals(NotificationSeverityType.SUCCESS))
+                            {
+                                throw new Exception(string.Join("\n", result.Notifications.Select(n => n.Message).ToArray()));
+                            }
+
+                            CompletedPackageDetail data = result.CompletedShipmentDetail.CompletedPackageDetails.First();
+                            package.TrackingNumber = data.TrackingIds.Select(t => t.TrackingNumber).First();
+
+                            if (package.Export == (byte)EnumData.Export.正式)
+                            {
+                                FedEx_SaveFile(data);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            return new ShipResult(false, e.Message);
+                        }
+                        break;
+                }
             }
 
             return new ShipResult(true);
@@ -414,12 +460,6 @@ namespace QDLogistics.Commons
         private void DHL_SaveFile(ShipmentResponse result)
         {
             MyHelp.Log("Packages", package.ID, "開始建立AWB、Invoice");
-
-            DateTime date = package.ShipDate.Value;
-            string basePath = HostingEnvironment.MapPath("~/FileUploads");
-            package.FilePath = Path.Combine("export", date.ToString("yyyy/MM/dd"), package.ID.ToString());
-            string filePath = Path.Combine(basePath, package.FilePath);
-            if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
 
             /***** Air Waybill *****/
             File.WriteAllBytes(Path.Combine(filePath, "AirWaybill.pdf"), Crop(result.LabelImage.First().OutputImage, 97f, 30f, 356f, 553f));
@@ -433,12 +473,6 @@ namespace QDLogistics.Commons
 
         private void FedEx_SaveFile(CompletedPackageDetail data)
         {
-            DateTime date = package.ShipDate.Value;
-            string basePath = HostingEnvironment.MapPath("~/FileUploads");
-            package.FilePath = Path.Combine("export", date.ToString("yyyy/MM/dd"), package.ID.ToString());
-            string filePath = Path.Combine(basePath, package.FilePath);
-            if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
-
             /***** Air Waybill *****/
             byte[] zpl = data.Label.Parts.First().Image;
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://api.labelary.com/v1/printers/8dpmm/labels/4x6/");
@@ -508,7 +542,7 @@ namespace QDLogistics.Commons
             File.Delete(Path.Combine(filePath, "pdf_temp.pdf"));
 
             /***** Commercial Invoice *****/
-            TWN_CreateInvoice(basePath, filePath, date);
+            TWN_CreateInvoice();
 
             /***** Recognizance Book *****/
             var CheckList = new { fileName = "CheckList.xlsx", samplePath = Path.Combine(basePath, "sample", "Fedex_CheckList.xlsx") };
@@ -578,7 +612,7 @@ namespace QDLogistics.Commons
                         PdfImportedPage page = writer.GetImportedPage(reader, i);
                         writer.AddPage(page);
 
-                        if(fileList[0].Equals(file) && i.Equals(reader.NumberOfPages))
+                        if (fileList[0].Equals(file) && i.Equals(reader.NumberOfPages))
                         {
                             writer.AddPage(page);
                         }
@@ -599,7 +633,7 @@ namespace QDLogistics.Commons
             }//disposes the newFileStream object
         }
 
-        private void TWN_CreateInvoice(string basePath, string filePath, DateTime date)
+        private void TWN_CreateInvoice()
         {
             var Invoice = new { fileName = "Invoice.xls", samplePath = Path.Combine(basePath, "sample", "Invoice.xls") };
             using (FileStream fsIn = new FileStream(Invoice.samplePath, FileMode.Open))
@@ -609,7 +643,7 @@ namespace QDLogistics.Commons
 
                 ISheet sheet = workbook.GetSheetAt(0);
                 sheet.GetRow(4).GetCell(3).SetCellValue(package.TrackingNumber);
-                sheet.GetRow(7).GetCell(1).SetCellValue(date.ToString("MMM dd, yyyy", CultureInfo.CreateSpecificCulture("en-US")));
+                sheet.GetRow(7).GetCell(1).SetCellValue(package.ShipDate.Value.ToString("MMM dd, yyyy", CultureInfo.CreateSpecificCulture("en-US")));
                 sheet.GetRow(7).GetCell(8).SetCellValue(package.OrderID.Value);
 
                 sheet.GetRow(10).GetCell(1).SetCellValue("Zhi You Wan LTD (53362065)");
@@ -654,7 +688,7 @@ namespace QDLogistics.Commons
                 sheet.GetRow(47).GetCell(10).SetCellValue(package.Items.Where(i => i.IsEnable == true).Sum(i => i.Qty.Value * ((double)i.Skus.Weight / 1000)) + "kg");
                 sheet.GetRow(47).GetCell(11).SetCellValue(Enum.GetName(typeof(OrderService.CurrencyCodeType2), package.Orders.OrderCurrencyCode.Value));
                 sheet.GetRow(47).GetCell(16).SetCellValue(package.Items.Where(i => i.IsEnable == true).Sum(i => i.Qty.Value * i.DeclaredValue).ToString("N"));
-                sheet.GetRow(57).GetCell(9).SetCellValue(date.ToString("yyyy-MM-dd"));
+                sheet.GetRow(57).GetCell(9).SetCellValue(package.ShipDate.Value.ToString("yyyy-MM-dd"));
 
                 using (FileStream fsOut = new FileStream(Path.Combine(filePath, Invoice.fileName), FileMode.Create))
                 {
@@ -705,7 +739,7 @@ namespace QDLogistics.Commons
                 List<Items> itemList = boxList.SelectMany(b => b.Packages.Where(p => p.IsEnable.Value)).SelectMany(p => p.Items.Where(i => i.IsEnable.Value)).ToList();
                 if (itemList.Count() > 22)
                 {
-                    int insertRow = 47, add = itemList.Count() - 22;
+                    int insertRow = 45, add = itemList.Count() - 22;
                     MyHelp.ShiftRows(ref sheet, insertRow, sheet.LastRowNum, add);
 
                     for (int row = insertRow; row < insertRow + add; row++)
@@ -761,18 +795,6 @@ namespace QDLogistics.Commons
             switch (api.Type)
             {
                 case (int)EnumData.CarrierType.Sendle:
-                    try
-                    {
-                        Sendle_Shipped(api);
-
-                        package.ShipDate = SCWS.SyncOn;
-                        package.ShippingServiceCode = carrier.Name;
-                    }
-                    catch (Exception e)
-                    {
-                        MyHelp.Log("Packages", package.ID, string.Format("建立Sendle提單失敗 - {0}", e.Message));
-                        return new ShipResult(false, e.Message);
-                    }
                     break;
             }
 
@@ -787,18 +809,6 @@ namespace QDLogistics.Commons
             switch (api.Type)
             {
                 case (int)EnumData.CarrierType.Sendle:
-                    try
-                    {
-                        Sendle_Shipped(api);
-
-                        package.ShipDate = SCWS.SyncOn;
-                        package.ShippingServiceCode = carrier.Name;
-                    }
-                    catch (Exception e)
-                    {
-                        MyHelp.Log("Packages", package.ID, string.Format("建立Sendle提單失敗 - {0}", e.Message));
-                        return new ShipResult(false, e.Message);
-                    }
                     break;
             }
 
@@ -813,53 +823,10 @@ namespace QDLogistics.Commons
             switch (api.Type)
             {
                 case (int)EnumData.CarrierType.Sendle:
-                    try
-                    {
-                        Sendle_Shipped(api);
-
-                        package.ShipDate = SCWS.SyncOn;
-                        package.ShippingServiceCode = carrier.Name;
-                    }
-                    catch (Exception e)
-                    {
-                        MyHelp.Log("Packages", package.ID, string.Format("建立Sendle提單失敗 - {0}", e.Message));
-                        return new ShipResult(false, e.Message);
-                    }
                     break;
             }
 
             return new ShipResult(true);
-        }
-
-        private void Sendle_Shipped(CarrierAPI api)
-        {
-            Sendle_API Sendle = new Sendle_API(api);
-            Sendle_API.OrderResponse result = Sendle.Create(package);
-
-            package.TagNo = result.order_id;
-            package.TrackingNumber = result.sendle_reference;
-
-            db.DirectLineLabel.Add(new DirectLineLabel()
-            {
-                IsEnable = true,
-                LabelID = package.TagNo,
-                OrderID = package.OrderID.Value,
-                PackageID = package.ID
-            });
-            db.SaveChanges();
-
-            string basePath = HostingEnvironment.MapPath("~/FileUploads");
-            package.FilePath = Path.Combine("export", package.ShipDate.Value.ToString("yyyy/MM/dd"), package.ID.ToString());
-            string filePath = Path.Combine(basePath, package.FilePath);
-            if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
-
-            while (Sendle.Order(result.order_id).labels == null)
-            {
-                System.Threading.Thread.Sleep(1000);
-            }
-
-            string code = string.Format("{0}-{1}-{2}", package.Items.First().ProductID, package.OrderID.Value, result.sendle_reference);
-            Sendle.Label(result.order_id, code, filePath);
         }
 
         private ShipResult Winit_Carrier()
@@ -874,7 +841,7 @@ namespace QDLogistics.Commons
             {
                 createOutboundOrder_data data = new createOutboundOrder_data()
                 {
-                    warehouseID = int.Parse(winit.warehouseIDs[package.Items.First(i => i.IsEnable == true).ShipFromWarehouseID.Value]),
+                    warehouseID = int.Parse(winit.warehouseIDs[package.Items.First(i => i.IsEnable.Value).ShipFromWarehouseID.Value]),
                     eBayOrderID = order.OrderSourceOrderId,
                     repeatable = "Y",
                     deliveryWayID = package.Method.MethodType.ToString(),
@@ -894,7 +861,7 @@ namespace QDLogistics.Commons
                     productList = new List<createOutboundInfo_productList>()
                 };
 
-                foreach (Items item in package.Items.Where(i => i.IsEnable == true))
+                foreach (Items item in package.Items.Where(i => i.IsEnable.Value))
                 {
                     data.productList.Add(new createOutboundInfo_productList()
                     {
@@ -914,7 +881,6 @@ namespace QDLogistics.Commons
                 createOutboundOrderData outboundOrderData = result.data.ToObject<createOutboundOrderData>();
                 package.WinitNo = outboundOrderData.outboundOrderNum;
                 package.ShippingServiceCode = carrier.Name;
-                package.ShipDate = SCWS.SyncOn;
             }
             catch (Exception e)
             {

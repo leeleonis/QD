@@ -537,5 +537,15 @@ namespace QDLogistics.Controllers
                 .Join(ShippingMethod.GetAll(true).Where(m => m.IsEnable), p => p.ShippingMethod, method => method.ID, (p, method) => p).ToList()
                 .Join(Payments.GetAll(true), p => p.OrderID, payment => payment.OrderID, (p, payment) => p).Where(p => DateTime.Compare(p.ShipDate.Value, date) > 0).ToList();
         }
+
+        public void StarTrack_Test(int OrderID)
+        {
+            Packages package = db.Packages.First(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID));
+
+            SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
+            ShipProcess ship = new ShipProcess(SCWS);
+            ship.Init(package);
+            var result = ship.Dispatch();
+        }
     }
 }

@@ -167,12 +167,12 @@ namespace QDLogistics.Controllers
                                         {
                                             MyHelp.Log("Orders", packageData.OrderID, "訂單提交完成", session);
 
-                                            byte[] carrierType = new byte[] { (byte)EnumData.CarrierType.DHL, (byte)EnumData.CarrierType.FedEx, (byte)EnumData.CarrierType.IDS, (byte)EnumData.CarrierType.Sendle };
-                                            if (carrierType.Contains(package.Method.Carriers.CarrierAPI.Type.Value))
+                                            if (packageData.Items.First(i => i.IsEnable.Value).ShipWarehouses.Name.Equals("TWN"))
                                             {
                                                 PickProduct = new GenericRepository<PickProduct>(db);
 
-                                                List<PickProduct> pickList = PickProduct.GetAll(true).Where(p => packageData.Items.Where(i => i.IsEnable == true).Select(i => i.ID).Contains(p.ItemID.Value)).ToList();
+                                                int[] itemIDs = packageData.Items.Where(i => i.IsEnable.Value).Select(i => i.ID).ToArray();
+                                                List<PickProduct> pickList = PickProduct.GetAll(true).Where(p => itemIDs.Contains(p.ItemID.Value)).ToList();
                                                 foreach (Items item in packageData.Items.Where(i => i.IsEnable == true))
                                                 {
                                                     PickProduct pick = pickList.FirstOrDefault(pk => pk.ItemID == item.ID);

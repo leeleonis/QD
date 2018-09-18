@@ -666,20 +666,6 @@ namespace QDLogistics.Controllers
 
                             if (dispatchList.Any())
                             {
-                                int AdminId = 0;
-                                int.TryParse(session["AdminId"].ToString(), out AdminId);
-
-                                packageIDs = dispatchList.Select(p => p.ID).ToArray();
-                                foreach (PickProduct pick in db.PickProduct.Where(pick => packageIDs.Contains(pick.PackageID.Value)).ToList())
-                                {
-                                    pick.IsPicked = true;
-                                    pick.IsMail = true;
-                                    pick.QtyPicked = pick.Qty.Value;
-                                    pick.PickUpDate = DateTime.UtcNow;
-                                    pick.PickUpBy = AdminId;
-                                    db.Entry(pick).State = System.Data.Entity.EntityState.Modified;
-                                }
-
                                 Box box = new Box()
                                 {
                                     IsEnable = true,

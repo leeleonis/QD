@@ -442,6 +442,7 @@ namespace QDLogistics.Controllers
             AjaxResult result = new AjaxResult();
             Packages = new GenericRepository<Packages>(db);
             PickProduct = new GenericRepository<PickProduct>(db);
+            SerialNumbers = new GenericRepository<SerialNumbers>(db);
 
             TaskFactory factory = System.Web.HttpContext.Current.Application.Get("TaskFactory") as TaskFactory;
 
@@ -485,6 +486,7 @@ namespace QDLogistics.Controllers
                             }
 
                             package.ProcessStatus = (int)EnumData.ProcessStatus.訂單管理;
+                            package.TrackingNumber = "";
                             Packages.Update(package, package.ID);
                             Packages.SaveChanges();
 
@@ -496,8 +498,13 @@ namespace QDLogistics.Controllers
                                 pick.QtyPicked = 0;
                                 PickProduct.Update(pick, pick.ID);
                             }
-
                             PickProduct.SaveChanges();
+
+                            foreach(SerialNumbers serial in package.Items.Where(i => i.IsEnable.Value).SelectMany(i => i.SerialNumbers))
+                            {
+                                SerialNumbers.Delete(serial);
+                            }
+                            SerialNumbers.SaveChanges();
 
                             using (Hubs.ServerHub server = new Hubs.ServerHub())
                                 server.BroadcastOrderChange(package.OrderID.Value, EnumData.OrderChangeStatus.取消出貨);
@@ -1070,11 +1077,10 @@ namespace QDLogistics.Controllers
 
                     results = results.OrderByDescending(data => data.order.TimeOfOrder).Skip(start).Take(length).ToList();
 
-                    Warehouses = new GenericRepository<Warehouses>(db);
-                    SerialNumbers = new GenericRepository<SerialNumbers>(db);
-
                     TimeZoneConvert TimeZoneConvert = new TimeZoneConvert();
                     EnumData.TimeZone TimeZone = MyHelp.GetTimeZone((int)Session["TimeZone"]);
+
+                    Dictionary<int, string> method = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable).ToDictionary(m => m.ID, m => m.Name);
 
                     Dictionary<int, string> warehouses = db.Warehouses.AsNoTracking().Where(w => w.IsEnable.Value).ToDictionary(w => w.ID, w => w.Name);
 
@@ -1095,7 +1101,7 @@ namespace QDLogistics.Controllers
                         DisplayName = data.itemCount == 1 ? data.item.DisplayName : "Multi",
                         OrderQtyTotal = data.items.Sum(i => i.Qty),
                         ShippingCountry = data.address.CountryName,
-                        ShippingMethod = data.order.ShippingCarrier,
+                        ShippingMethod = method.ContainsKey(data.package.ShippingMethod.Value) ? method[data.package.ShippingMethod.Value] : data.order.ShippingCarrier,
                         Export = Enum.GetName(typeof(EnumData.Export), data.package.Export != null ? data.package.Export : 0),
                         ExportMethod = Enum.GetName(typeof(EnumData.ExportMethod), data.package.ExportMethod != null ? data.package.ExportMethod : 0),
                         StatusCode = Enum.GetName(typeof(OrderStatusCode), data.order.StatusCode),

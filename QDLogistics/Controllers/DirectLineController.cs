@@ -916,7 +916,9 @@ namespace QDLogistics.Controllers
 
                 foreach (PickProduct pick in picked)
                 {
+                    pick.IsPicked = true;
                     pick.IsMail = false;
+                    pick.QtyPicked = pick.Qty.Value;
                     pick.PickUpDate = PickUpDate;
                     pick.PickUpBy = AdminId;
                     PickProduct.Update(pick, pick.ID);
@@ -1012,7 +1014,7 @@ namespace QDLogistics.Controllers
                 switch (boxNo - box.BoxNo)
                 {
                     case -1:
-                        if (box.Packages.Any()) throw new Exception("已經有訂單，無法回前一箱!");
+                        if (box.Packages.Any(p => p.IsEnable.Value)) throw new Exception("已經有訂單，無法回前一箱!");
 
                         box.IsEnable = false;
                         db.Entry(box).State = System.Data.Entity.EntityState.Modified;
@@ -1029,7 +1031,7 @@ namespace QDLogistics.Controllers
                         result.data = new { boxID = prevBoxID };
                         break;
                     case 0:
-                        if (!box.Packages.Any()) throw new Exception("尚未有任何訂單!");
+                        if (!box.Packages.Any(p => p.IsEnable.Value)) throw new Exception("尚未有任何訂單!");
 
                         var method = db.ShippingMethod.Find(box.FirstMileMethod);
 
@@ -1037,7 +1039,7 @@ namespace QDLogistics.Controllers
 
                         break;
                     case 1:
-                        if (!box.Packages.Any()) throw new Exception("尚未有任何訂單，無法前往下一箱!");
+                        if (!box.Packages.Any(p => p.IsEnable.Value)) throw new Exception("尚未有任何訂單，無法前往下一箱!");
 
                         var newBoxID = string.Format("{0}{1}", box.MainBox, boxNo);
                         Box newBox = db.Box.Find(newBoxID);
@@ -1331,9 +1333,9 @@ namespace QDLogistics.Controllers
             try
             {
                 Packages oldPackage = db.Packages.FirstOrDefault(p => p.IsEnable.Value && p.TagNo.Equals(labelID));
-                var serials = db.SerialNumberForRefundLabel.AsNoTracking().Where(s => !s.IsUsed && s.oldLabelID.Equals(labelID) && s.oldOrderID.Equals(oldPackage.OrderID.Value)).ToList();
-
                 if (oldPackage == null) throw new Exception("沒有找到此訂單!");
+
+                var serials = db.SerialNumberForRefundLabel.AsNoTracking().Where(s => !s.IsUsed && s.oldLabelID.Equals(labelID) && s.oldOrderID.Equals(oldPackage.OrderID.Value)).ToList();
                 if (!serials.Any()) throw new Exception("沒有找到任何序號!");
 
                 TaskFactory factory = System.Web.HttpContext.Current.Application.Get("TaskFactory") as TaskFactory;
