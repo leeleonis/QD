@@ -20,7 +20,7 @@ namespace QDLogistics.Hubs
             Clients = clients;
         }
 
-        public void BroadcastOrderChange(string Message)
+        public void BroadcastToAll(string Message)
         {
             Clients.All.refreshOrderPickUp(Message);
         }

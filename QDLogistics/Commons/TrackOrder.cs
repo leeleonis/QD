@@ -55,15 +55,15 @@ namespace QDLogistics.Commons
 
                 if (_carrier == null) throw new Exception("Not found carrier!");
 
-                switch (_carrier.Name)
+                switch (_carrier.CarrierAPI.Type.Value)
                 {
-                    case "DHL":
+                    case (byte)EnumData.CarrierType.DHL:
                         result = DHL_Track(_carrier.CarrierAPI, _trackingNumber);
                         break;
-                    case "FedEx":
+                    case (byte)EnumData.CarrierType.FedEx:
                         result = FedEx_Track(_carrier.CarrierAPI, _trackingNumber);
                         break;
-                    case "Sendle":
+                    case (byte)EnumData.CarrierType.Sendle:
                         result = Sendle_Track(_carrier.CarrierAPI, _trackingNumber);
                         break;
                 }
@@ -177,7 +177,7 @@ namespace QDLogistics.Commons
             else
             {
                 result.DeliveryNote = DHL_Result.AWBInfo.First().Status.ActionStatus;
-                result.DeliveryStatus = (int)OrderService.DeliveryStatusType.Delivered;
+                //result.DeliveryStatus = (int)OrderService.DeliveryStatusType.Delivered;
             }
 
             return result;

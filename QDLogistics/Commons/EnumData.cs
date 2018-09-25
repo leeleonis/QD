@@ -18,7 +18,7 @@ namespace QDLogistics.Commons
                 { ProcessStatus.已出貨, "已出貨 Fulfilled" }
             };
         }
-        public enum OrderChangeStatus { 提交至待出貨區, 取消出貨, 已完成出貨 }
+        public enum OrderChangeStatus { 提交至待出貨區, 取消出貨, 已完成出貨, 狀態異常, 產品異常 }
 
         public enum Export { 正式, 簡易 };
         public enum ExportMethod { 外貨復出口, 國貨出口 };
@@ -90,7 +90,7 @@ namespace QDLogistics.Commons
 
         public enum LabelStatus { 正常, 鎖定中, 完成, 作廢, 回收 }
 
-        public enum CaseEventType { CancelShipment, UpdateTracking, UpdateShipment, ChangeShippingMethod, ResendShipment }
+        public enum CaseEventType { CancelShipment, UpdateTracking, UpdateShipment, ChangeShippingMethod, ResendShipment, SerialError }
         public static Dictionary<CaseEventType, string> CaseEventTypeList()
         {
             return new Dictionary<CaseEventType, string>()
@@ -99,7 +99,8 @@ namespace QDLogistics.Commons
                 { CaseEventType.UpdateTracking, "Update Tracking" },
                 { CaseEventType.UpdateShipment, "Update Shipment" },
                 { CaseEventType.ChangeShippingMethod, "Change Shipping Method" },
-                { CaseEventType.ResendShipment, "Resend Shipment" }
+                { CaseEventType.ResendShipment, "Resend Shipment" },
+                {  CaseEventType.SerialError, "Serial Error" }
             };
         }
         public enum CaseEventRequest { None, Successful, Investigating, InTransit, Lost, Failed }

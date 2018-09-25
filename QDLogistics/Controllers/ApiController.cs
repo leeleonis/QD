@@ -509,20 +509,21 @@ namespace QDLogistics.Controllers
                 package.DispatchDate = PickUpDate;
                 Packages.Update(package, package.ID);
 
-                if (receiveData.itemData.Any(i => i.Item2.Any()))
+                foreach (var itemData in receiveData.itemData.Where(i => i.Item2.Any()).ToList())
                 {
-                    MyHelp.Log("Packages", package.ID, string.Format("訂單【{0}】產品建立序號", package.OrderID), Session);
+                    PickProduct pick = pickList.First(p => p.ID.Equals(itemData.Item1));
 
-                    foreach (var itemData in receiveData.itemData.Where(i => i.Item2.Any()).ToList())
+                    MyHelp.Log("Orders", package.OrderID, string.Format("產品【{0}】存入 {1}", pick.ItemID.Value, string.Join("、", itemData.Item2.ToArray())), Session);
+
+                    foreach (string serialNumber in itemData.Item2)
                     {
-                        PickProduct pick = pickList.First(p => p.ID == itemData.Item1);
-                        foreach (string serial in itemData.Item2)
+                        if (!db.SerialNumbers.AsNoTracking().Any(s => s.SerialNumber.Equals(serialNumber) && s.OrderItemID.Equals(pick.ItemID.Value)))
                         {
                             SerialNumbers.Create(new SerialNumbers
                             {
                                 OrderID = pick.OrderID,
                                 ProductID = pick.ProductID,
-                                SerialNumber = serial,
+                                SerialNumber = serialNumber,
                                 OrderItemID = pick.ItemID.Value,
                                 KitItemID = 0
                             });
@@ -531,6 +532,28 @@ namespace QDLogistics.Controllers
                 }
 
                 Packages.SaveChanges();
+
+                MyHelp.Log("Orders", package.OrderID, string.Format("開始檢查訂單【{0}】的產品", package.OrderID), Session);
+
+                using (StockKeepingUnit SKU = new StockKeepingUnit())
+                {
+                    foreach (Items item in package.Items.Where(i => i.IsEnable.Value))
+                    {
+                        SKU.SetItemData(item.ID);
+
+                        if (!SKU.CheckSkuSerial())
+                        {
+                            using (Hubs.ServerHub server = new Hubs.ServerHub())
+                                server.BroadcastProductError(package.OrderID.Value, item.ProductID, EnumData.OrderChangeStatus.產品異常);
+
+                            throw new Exception(string.Format("產品 {0} 的 Serial Number 發現異常!", item.ProductID));
+                        }
+                    }
+                }
+
+                using (Hubs.ServerHub server = new Hubs.ServerHub())
+                    server.BroadcastOrderChange(package.OrderID.Value, EnumData.OrderChangeStatus.已完成出貨);
+
                 MyHelp.Log("Packages", package.ID, string.Format("訂單【{0}】出貨完成", package.OrderID), Session);
             }
             catch (Exception e)

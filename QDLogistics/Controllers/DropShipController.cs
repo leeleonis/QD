@@ -771,8 +771,8 @@ namespace QDLogistics.Controllers
                             MyHelp.Log("PickProduct", null, string.Format("{0} 寄送失敗", mailTitle));
                         }
                         break;
-                    case "Sendle":
-                        MyHelp.Log("PickProduct", null, "寄送Sendle出貨通知");
+                    case "ECOF":
+                        MyHelp.Log("PickProduct", null, "寄送ECOF出貨通知");
 
                         receiveMails = new string[] { "customerservice@ecof.com.au", "sophia.wang@ecof.com.au", "Ada.chen@ecof.com.au", "mandy.liang@ecof.com.au" };
                         var packageList = box.Packages.Where(p => p.IsEnable.Value).ToList();
@@ -780,7 +780,7 @@ namespace QDLogistics.Controllers
                         mailBody = string.Format("Tracking {0}({1}pcs, {2}<br />", box.TrackingNumber, packageList.Count(), box.BoxID);
                         mailBody += string.Join("<br />", box.Packages.Where(p => p.IsEnable.Value).Select(p => string.Format("{0}-{1}-{2}", p.Items.First().ProductID, p.OrderID.Value, p.TrackingNumber)).ToArray());
 
-                        List<Tuple<Stream, string>> SendleFile = new List<Tuple<Stream, string>>();
+                        List<Tuple<Stream, string>> ECOF_File = new List<Tuple<Stream, string>>();
                         var memoryStream = new MemoryStream();
                         using (var file = new ZipFile())
                         {
@@ -796,10 +796,10 @@ namespace QDLogistics.Controllers
                             file.Save(memoryStream);
                         }
                         memoryStream.Seek(0, SeekOrigin.Begin);
-                        SendleFile.Add(new Tuple<Stream, string>(memoryStream, "Labels.zip"));
+                        ECOF_File.Add(new Tuple<Stream, string>(memoryStream, "Labels.zip"));
 
-                        bool Sendle_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, null, SendleFile, false);
-                        if (Sendle_Status)
+                        bool ECOF_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, null, ECOF_File, false);
+                        if (ECOF_Status)
                         {
                             MyHelp.Log("PickProduct", null, mailTitle);
                         }

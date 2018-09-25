@@ -195,7 +195,13 @@
             });
 
             conn.client.refreshOrderPickUp = function (response) {
-                ProductSerialData.Update_OrderList($.parseJSON(response));
+                var data = $.parseJSON(response)
+                if (data.Status == 4) {
+                    var msg = '訂單【' + data.OrderID + '】' + (!isEmpty(data.ProductID) ? ' - ' + data.ProductID : '') + '發現異常，請確認是否取出!';
+                    if (confirm(msg)) { }
+                } else {
+                    ProductSerialData.Update_OrderList(data);
+                }
             };
 
             $methodSelect.change(function(){

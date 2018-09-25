@@ -419,7 +419,7 @@ namespace QDLogistics.Controllers
                     TotalWeight = itemGroup.Any(i => i.Key.Equals(data.BoxID)) ? itemGroup[data.BoxID].Sum(i => i.Qty * ((float)i.Skus.Weight / 1000)) : 0,
                     data.WITID,
                     Carrier = carrierName.ContainsKey(data.FirstMileMethod) ? carrierName[data.FirstMileMethod] : "",
-                    Tracking = data.TrackingNumber,
+                    Tracking = data.TrackingNumber ?? "",
                     Status = Enum.GetName(typeof(EnumData.DirectLineStatus), data.ShippingStatus),
                     data.ShippingStatus,
                     data.DeliveryNote,
@@ -445,6 +445,7 @@ namespace QDLogistics.Controllers
 
             var results = PackageFilter.ToList()
                 .Join(OrderFilter, p => p.OrderID.Value, o => o.OrderID, (p, o) => new OrderJoinData() { order = o, package = p })
+                .Join(MethodFilter, oData => oData.package.ShippingMethod.Value, m => m.ID, (oData, m) => new OrderJoinData(oData) { method = m })
                 .Join(ItemFilter.GroupBy(i => i.PackageID.Value), oData => oData.package.ID, i => i.Key, (oData, i) => new OrderJoinData(oData) { item = i.First(), items = i.ToList(), itemCount = i.Sum(ii => ii.Qty + ii.KitItemCount).Value }).ToList();
 
             if (results.Any())
@@ -482,9 +483,17 @@ namespace QDLogistics.Controllers
             string link = "<a href='http://internal.qd.com.tw/fileUploads/{0}/Label.pdf' target='_blank'>{1}</a>";
             switch (directLine)
             {
-                case "Sendle":
-                    string Sendle_Label = string.Format("{0}-{1}-{2}", data.item.ProductID, data.order.OrderID, data.package.TrackingNumber);
-                    link = string.Format(link, data.package.FilePath, Sendle_Label);
+                case "ECOF":
+                    switch(data.method.Carriers.CarrierAPI.Type.Value)
+                    {
+                        case (byte)EnumData.CarrierType.Sendle:
+                            string Sendle_Label = string.Format("{0}-{1}-{2}", data.item.ProductID, data.order.OrderID, data.package.TrackingNumber);
+                            link = string.Format(link, data.package.FilePath, Sendle_Label);
+                            break;
+                        default:
+                            link = string.Format(link, data.package.FilePath, data.package.TagNo);
+                            break;
+                    }
                     break;
                 default:
                     link = string.Format(link, data.package.FilePath, data.package.TagNo);
@@ -568,9 +577,13 @@ namespace QDLogistics.Controllers
             Packages package = db.Packages.Find(label.PackageID);
             if (package.Method.IsDirectLine)
             {
-                if (db.DirectLine.Any(d => d.ID.Equals(package.Method.DirectLine) && d.Abbreviation.Equals("Sendle")))
+                if (db.DirectLine.Any(d => d.ID.Equals(package.Method.DirectLine) && d.Abbreviation.Equals("ECOF")))
                 {
-                    return string.Format("{0}-{1}-{2}", package.Items.First(i => i.IsEnable.Value).ProductID, package.OrderID, package.TrackingNumber);
+                    switch (package.Method.Carriers.CarrierAPI.Type.Value)
+                    {
+                        case (byte)EnumData.CarrierType.Sendle:
+                            return string.Format("{0}-{1}-{2}", package.Items.First(i => i.IsEnable.Value).ProductID, package.OrderID, package.TrackingNumber);
+                    }
                 }
             }
 
@@ -884,7 +897,7 @@ namespace QDLogistics.Controllers
             return Json(result, JsonRequestBehavior.AllowGet);
         }
 
-        public ActionResult OrderPicked(string boxID, List<PickProduct> picked, Dictionary<string, string[]> serials, int reTry = 0)
+        public ActionResult OrderPicked(string boxID, List<PickProduct> picked, Dictionary<string, string[]> serials)
         {
             AjaxResult result = new AjaxResult();
 
@@ -900,13 +913,11 @@ namespace QDLogistics.Controllers
 
                 if (package.Orders.StatusCode != (int)OrderStatusCode.InProcess)
                 {
-                    reTry = 3;
                     throw new Exception(string.Format("訂單【{0}】無法出貨因為並非InProcess的狀態", package.OrderID));
                 }
 
                 if (package.ProcessStatus != (byte)EnumData.ProcessStatus.待出貨)
                 {
-                    reTry = 3;
                     throw new Exception(string.Format("訂單【{0}】無法出貨因為並非待出貨的狀態", package.OrderID));
                 }
 
@@ -928,22 +939,22 @@ namespace QDLogistics.Controllers
                 package.DispatchDate = PickUpDate;
                 Packages.Update(package, package.ID);
 
-                int itemID;
-                List<SerialNumbers> serialList = package.Items.Where(i => i.IsEnable.Value).SelectMany(i => i.SerialNumbers).ToList();
-                foreach (var sn in serials)
+                foreach (Items item in package.Items.Where(i => i.IsEnable.Value))
                 {
-                    if (int.TryParse(sn.Key, out itemID))
+                    if (serials.ContainsKey(item.ID.ToString()) && serials[item.ID.ToString()].Any())
                     {
-                        foreach (var serialNumber in sn.Value)
+                        MyHelp.Log("Orders", package.OrderID, string.Format("產品【{0}】存入 {1}", item.ID, string.Join("、", serials[item.ID.ToString()])), Session);
+
+                        foreach (string serialNumber in serials[item.ID.ToString()])
                         {
-                            if (!serialList.Any(s => s.OrderItemID.Equals(itemID) && s.SerialNumber.Equals(serialNumber)))
+                            if (!db.SerialNumbers.AsNoTracking().Any(s => s.SerialNumber.Equals(serialNumber) && s.OrderItemID.Equals(item.ID)))
                             {
                                 SerialNumbers.Create(new SerialNumbers
                                 {
-                                    OrderID = package.OrderID,
-                                    ProductID = package.Items.First(i => i.ID == itemID).ProductID,
+                                    OrderID = item.OrderID,
+                                    ProductID = item.ProductID,
                                     SerialNumber = serialNumber,
-                                    OrderItemID = itemID,
+                                    OrderItemID = item.ID,
                                     KitItemID = 0
                                 });
                             }
@@ -952,6 +963,24 @@ namespace QDLogistics.Controllers
                 }
 
                 Packages.SaveChanges();
+
+                MyHelp.Log("Orders", package.OrderID, string.Format("開始檢查訂單【{0}】的產品", package.OrderID), Session);
+
+                using (StockKeepingUnit SKU = new StockKeepingUnit())
+                {
+                    foreach (Items item in package.Items.Where(i => i.IsEnable.Value))
+                    {
+                        SKU.SetItemData(item.ID);
+
+                        if (!SKU.CheckSkuSerial())
+                        {
+                            using (Hubs.ServerHub server = new Hubs.ServerHub())
+                                server.BroadcastProductError(package.OrderID.Value, item.ProductID, EnumData.OrderChangeStatus.產品異常);
+
+                            throw new Exception(string.Format("產品 {0} 的 Serial Number 發現異常!", item.ProductID));
+                        }
+                    }
+                }
 
                 string basePath = HostingEnvironment.MapPath("~/FileUploads");
                 result.data = new { fileName = new string[] { "Label.pdf" }, filePath = new string[] { Path.Combine(basePath, package.FilePath, "Label.pdf") }, amount = new int[] { 1 }, printerName = package.Method.PrinterName };
@@ -964,13 +993,7 @@ namespace QDLogistics.Controllers
             catch (Exception e)
             {
                 ResetShippedData(package, picked, serials);
-
-                if (reTry < 2)
-                {
-                    MyHelp.Log("", null, string.Format("訂單【{0}】第{1}次重新出貨", package.OrderID, reTry + 1));
-                    return OrderPicked(boxID, picked, serials, reTry + 1);
-                }
-
+                
                 MyHelp.ErrorLog(e, string.Format("訂單【{0}】出貨失敗", package.OrderID), package.OrderID.ToString());
                 result.message = string.Format("訂單【{0}】出貨失敗，錯誤：", package.OrderID) + (e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
                 result.status = false;
@@ -981,7 +1004,9 @@ namespace QDLogistics.Controllers
 
         private void ResetShippedData(Packages package, List<PickProduct> picked, Dictionary<string, string[]> serials)
         {
-            MyHelp.Log("", null, string.Format("訂單【{0}】出貨狀態重置", package.OrderID));
+            MyHelp.Log("Orders", package.OrderID, string.Format("訂單【{0}】出貨狀態重置", package.OrderID));
+
+            package.BoxID = package.Label.BoxID = null;
 
             foreach (PickProduct data in picked)
             {
@@ -996,7 +1021,6 @@ namespace QDLogistics.Controllers
                 SerialNumbers.Delete(ss);
             };
 
-            package.ProcessStatus = (int)EnumData.ProcessStatus.待出貨;
             Packages.Update(package, package.ID);
             Packages.SaveChanges();
         }
@@ -1691,14 +1715,14 @@ namespace QDLogistics.Controllers
                                                 bool IDS_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, null, null, false);
                                                 if (!IDS_Status) MyHelp.Log("Box", box.BoxID, "寄送Box到貨通知失敗", session);
                                                 break;
-                                            case "Sendle":
+                                            case "ECOF":
                                                 receiveMails = new string[] { "customerservice@ecof.com.au", "sophia.wang@ecof.com.au", "Ada.chen@ecof.com.au", "mandy.liang@ecof.com.au" };
                                                 var packageList = box.Packages.Where(p => p.IsEnable.Value).ToList();
                                                 mailTitle = string.Format("ARRIVED: {0} {1}, {2}pcs", method.Carriers.Name, box.TrackingNumber, packageList.Count());
                                                 mailBody = string.Format("Tracking {0}({1}pcs, {2}<br />", box.TrackingNumber, packageList.Count(), box.BoxID);
                                                 mailBody += string.Join("<br />", packageList.Select(p => string.Format("{0}-{1}-{2}", p.Items.First(i => i.IsEnable.Value).ProductID, p.OrderID.Value, p.TrackingNumber)).ToArray());
 
-                                                List<Tuple<Stream, string>> SendleFile = new List<Tuple<Stream, string>>();
+                                                List<Tuple<Stream, string>> ECOF_File = new List<Tuple<Stream, string>>();
                                                 using (var file = new ZipFile())
                                                 {
                                                     var memoryStream = new MemoryStream();
@@ -1713,11 +1737,11 @@ namespace QDLogistics.Controllers
                                                     }
                                                     file.Save(memoryStream);
                                                     memoryStream.Seek(0, SeekOrigin.Begin);
-                                                    SendleFile.Add(new Tuple<Stream, string>(memoryStream, "Labels.zip"));
+                                                    ECOF_File.Add(new Tuple<Stream, string>(memoryStream, "Labels.zip"));
                                                 }
 
-                                                bool Sendle_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, null, SendleFile, false);
-                                                if (!Sendle_Status) MyHelp.Log("Box", box.BoxID, "寄送Box到貨通知失敗", session);
+                                                bool ECOF_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, null, ECOF_File, false);
+                                                if (!ECOF_Status) MyHelp.Log("Box", box.BoxID, "寄送Box到貨通知失敗", session);
                                                 break;
                                         }
                                     }
@@ -1810,8 +1834,8 @@ namespace QDLogistics.Controllers
                             MyHelp.Log("PickProduct", null, string.Format("{0} 寄送失敗", mailTitle));
                         }
                         break;
-                    case "Sendle":
-                        MyHelp.Log("PickProduct", null, "寄送Sendle出貨通知");
+                    case "ECOF":
+                        MyHelp.Log("PickProduct", null, "寄送ECOF出貨通知");
 
                         receiveMails = new string[] { "customerservice@ecof.com.au", "sophia.wang@ecof.com.au", "Ada.chen@ecof.com.au", "mandy.liang@ecof.com.au" };
                         var packageList = boxList.SelectMany(b => b.Packages.Where(p => p.IsEnable.Value)).ToList();
@@ -1823,7 +1847,7 @@ namespace QDLogistics.Controllers
                             mailBody += "<br /><br />";
                         }
 
-                        List<Tuple<Stream, string>> SendleFile = new List<Tuple<Stream, string>>();
+                        List<Tuple<Stream, string>> ECOF_File = new List<Tuple<Stream, string>>();
                         using (var file = new ZipFile())
                         {
                             var memoryStream = new MemoryStream();
@@ -1838,11 +1862,11 @@ namespace QDLogistics.Controllers
                             }
                             file.Save(memoryStream);
                             memoryStream.Seek(0, SeekOrigin.Begin);
-                            SendleFile.Add(new Tuple<Stream, string>(memoryStream, "Labels.zip"));
+                            ECOF_File.Add(new Tuple<Stream, string>(memoryStream, "Labels.zip"));
                         }
 
-                        bool Sendle_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, null, SendleFile, false);
-                        if (Sendle_Status)
+                        bool ECOF_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, null, ECOF_File, false);
+                        if (ECOF_Status)
                         {
                             MyHelp.Log("PickProduct", null, mailTitle);
                         }

@@ -60,12 +60,17 @@ namespace QDLogistics.Controllers
             AdminUsers = new GenericRepository<AdminUsers>(db);
             TaskScheduler = new GenericRepository<Models.TaskScheduler>(db);
 
-            List<Models.TaskScheduler> schedulers = TaskScheduler.GetAll(true).Where(s => s.Status == (byte)EnumData.TaskStatus.執行完).Take(30).ToList();
-            var admins = AdminUsers.GetAll(true).Where(user => schedulers.Select(s => s.UpdateBy).Contains(user.Id)).ToDictionary(user => user.Id, user => user.Name);
+            List<Models.TaskScheduler> schedulerList = db.TaskScheduler.AsNoTracking().Where(s => s.Status.Equals((byte)EnumData.TaskStatus.執行完)).OrderByDescending(s => s.CreateDate).Take(30).ToList();
+            int[] adminIDs = schedulerList.Select(s => s.UpdateBy.Value).ToArray();
+            var admins = AdminUsers.GetAll(true).Where(user => adminIDs.Contains(user.Id)).ToDictionary(user => user.Id, user => user.Name);
             admins = admins.Concat(new Dictionary<int, string> { { -1, "工作排程" }, { 0, "Weypro" } }).ToDictionary(x => x.Key, x => x.Value);
 
-            var list = MyHelp.RenderViewToString(ControllerContext, "_TaskList", null, new ViewDataDictionary() { { "schedulers", schedulers }, { "admins", admins } });
-            result.data = new { list = list, date = new TimeZoneConvert().ConvertDateTime(MyHelp.GetTimeZone((int)Session["TimeZone"])).ToString("MM/dd/yyyy hh:mm tt") };
+            result.data = new
+            {
+                list = MyHelp.RenderViewToString(ControllerContext, "_TaskList", null, new ViewDataDictionary() { { "schedulers", schedulerList }, { "admins", admins } }),
+                date = new TimeZoneConvert().ConvertDateTime(MyHelp.GetTimeZone((int)Session["TimeZone"])).ToString("MM/dd/yyyy hh:mm tt")
+            };
+
             return Content(JsonConvert.SerializeObject(result), "appllication/json");
         }
 
@@ -463,22 +468,37 @@ namespace QDLogistics.Controllers
                         try
                         {
                             Carriers carrier = package.Method.Carriers;
-
-                            if (!string.IsNullOrEmpty(package.WinitNo))
+                            if (carrier != null)
                             {
-                                Winit_API winit = new Winit_API(carrier.CarrierAPI);
-                                Received received = winit.Void(package.WinitNo);
-                                if (received.code != "0") throw new Exception(received.code + "-" + received.msg);
-                                package.WinitNo = null;
+                                switch (carrier.CarrierAPI.Type.Value)
+                                {
+                                    case (byte)EnumData.CarrierType.Winit:
+                                        if (!string.IsNullOrEmpty(package.WinitNo))
+                                        {
+                                            Winit_API winit = new Winit_API(carrier.CarrierAPI);
+                                            Received received = winit.Void(package.WinitNo);
+                                            if (received.code != "0") throw new Exception(received.code + "-" + received.msg);
+                                            package.WinitNo = null;
+                                        }
+                                        break;
+                                    case (byte)EnumData.CarrierType.Sendle:
+                                        if (!string.IsNullOrEmpty(package.TagNo))
+                                        {
+                                            Sendle_API sendle = new Sendle_API(carrier.CarrierAPI);
+                                            Sendle_API.CancelResponse cancel = sendle.Cancel(package.TagNo);
+                                            if (string.IsNullOrEmpty(cancel.cancellation_message)) throw new Exception("取消訂單出貨失敗!");
+                                        }
+                                        break;
+                                }
                             }
 
                             if (!string.IsNullOrEmpty(package.TagNo))
                             {
-                                if(carrier.Name == "Sendle")
+                                if (!string.IsNullOrEmpty(package.BoxID))
                                 {
-                                    Sendle_API sendle = new Sendle_API(carrier.CarrierAPI);
-                                    Sendle_API.CancelResponse cancel = sendle.Cancel(package.TagNo);
-                                    if (string.IsNullOrEmpty(cancel.cancellation_message)) throw new Exception("取消訂單出貨失敗!");
+                                    CaseLog caseLog = new CaseLog((HttpSessionStateBase)Session);
+                                    caseLog.OrderInit(package);
+                                    caseLog.CreateSerialError();
                                 }
 
                                 package.Label.IsEnable = false;
@@ -500,11 +520,21 @@ namespace QDLogistics.Controllers
                             }
                             PickProduct.SaveChanges();
 
-                            foreach(SerialNumbers serial in package.Items.Where(i => i.IsEnable.Value).SelectMany(i => i.SerialNumbers))
+                            if (db.SerialNumbers.AsNoTracking().Any(s => s.OrderID.Value.Equals(package.OrderID.Value)))
                             {
-                                SerialNumbers.Delete(serial);
+                                using (Hubs.ServerHub server = new Hubs.ServerHub())
+                                    server.BroadcastProductError(package.OrderID.Value, null, EnumData.OrderChangeStatus.產品異常);
+
+                                var serialList = package.Items.Where(i => i.IsEnable.Value).SelectMany(i => i.SerialNumbers);
+
+                                MyHelp.Log("Orders", package.OrderID, string.Format("訂單【{0}】移除 Serial Number - {1}", package.OrderID, string.Join("、", serialList.Select(s => s.SerialNumber))), (HttpSessionStateBase)Session);
+
+                                foreach (SerialNumbers serial in serialList)
+                                {
+                                    SerialNumbers.Delete(serial);
+                                }
+                                SerialNumbers.SaveChanges();
                             }
-                            SerialNumbers.SaveChanges();
 
                             using (Hubs.ServerHub server = new Hubs.ServerHub())
                                 server.BroadcastOrderChange(package.OrderID.Value, EnumData.OrderChangeStatus.取消出貨);
@@ -820,14 +850,13 @@ namespace QDLogistics.Controllers
 
         [CheckSession]
         [HttpPost]
-        public ActionResult UpdatePicked(List<PickProduct> picked, Dictionary<string, string[]> serial, int reTry = 0, AjaxResult result = null)
+        public ActionResult UpdatePicked(List<PickProduct> picked, Dictionary<string, string[]> serial)
         {
             Packages = new GenericRepository<Packages>(db);
             PickProduct = new GenericRepository<PickProduct>(db);
             SerialNumbers = new GenericRepository<SerialNumbers>(db);
 
-            if (result == null)
-                result = new AjaxResult();
+            AjaxResult result = new AjaxResult();
 
             Packages package = Packages.Get(picked.First().PackageID.Value);
 
@@ -837,13 +866,11 @@ namespace QDLogistics.Controllers
 
                 if (package.Orders.StatusCode != (int)OrderStatusCode.InProcess)
                 {
-                    reTry = 3;
                     throw new Exception(string.Format("訂單【{0}】無法出貨因為並非InProcess的狀態", package.OrderID));
                 }
 
                 if (package.ProcessStatus != (byte)EnumData.ProcessStatus.待出貨)
                 {
-                    reTry = 3;
                     throw new Exception(string.Format("訂單【{0}】無法出貨因為並非待出貨的狀態", package.OrderID));
                 }
 
@@ -863,22 +890,22 @@ namespace QDLogistics.Controllers
                 package.DispatchDate = PickUpDate;
                 Packages.Update(package, package.ID);
 
-                int itemID;
-                List<SerialNumbers> serials = package.Items.Where(i => i.Equals(true)).SelectMany(i => i.SerialNumbers).ToList();
-                foreach (var sn in serial)
+                foreach (Items item in package.Items.Where(i => i.IsEnable.Value))
                 {
-                    if (int.TryParse(sn.Key, out itemID))
+                    if (serial.ContainsKey(item.ID.ToString()) && serial[item.ID.ToString()].Any())
                     {
-                        foreach (var serialNumber in sn.Value)
+                        MyHelp.Log("Orders", package.OrderID, string.Format("產品【{0}】存入 {1}", item.ID, string.Join("、", serial[item.ID.ToString()])), Session);
+
+                        foreach (string serialNumber in serial[item.ID.ToString()])
                         {
-                            if (!serials.Any(s => s.OrderItemID == itemID && s.SerialNumber == serialNumber))
+                            if (!db.SerialNumbers.AsNoTracking().Any(s => s.SerialNumber.Equals(serialNumber) && s.OrderItemID.Equals(item.ID)))
                             {
                                 SerialNumbers.Create(new SerialNumbers
                                 {
-                                    OrderID = package.OrderID,
-                                    ProductID = package.Items.First(i => i.ID == itemID).ProductID,
+                                    OrderID = item.OrderID,
+                                    ProductID = item.ProductID,
                                     SerialNumber = serialNumber,
-                                    OrderItemID = itemID,
+                                    OrderItemID = item.ID,
                                     KitItemID = 0
                                 });
                             }
@@ -887,6 +914,24 @@ namespace QDLogistics.Controllers
                 }
 
                 Packages.SaveChanges();
+
+                MyHelp.Log("Orders", package.OrderID, string.Format("開始檢查訂單【{0}】的產品", package.OrderID), Session);
+
+                using (StockKeepingUnit SKU = new StockKeepingUnit())
+                {
+                    foreach (Items item in package.Items.Where(i => i.IsEnable.Value))
+                    {
+                        SKU.SetItemData(item.ID);
+
+                        if (!SKU.CheckSkuSerial())
+                        {
+                            using (Hubs.ServerHub server = new Hubs.ServerHub())
+                                server.BroadcastProductError(package.OrderID.Value, item.ProductID, EnumData.OrderChangeStatus.產品異常);
+
+                            throw new Exception(string.Format("產品 {0} 的 Serial Number 發現異常!", item.ProductID));
+                        }
+                    }
+                }
 
                 using (Hubs.ServerHub server = new Hubs.ServerHub())
                     server.BroadcastOrderChange(package.OrderID.Value, EnumData.OrderChangeStatus.已完成出貨);
@@ -897,17 +942,9 @@ namespace QDLogistics.Controllers
             {
                 ResetShippedData(package, picked, serial);
 
-                if (reTry <= 2)
-                {
-                    MyHelp.Log("", null, string.Format("訂單【{0}】第{1}次重新出貨", package.OrderID, reTry + 1));
-                    return UpdatePicked(picked, serial, reTry + 1, result);
-                }
-                else
-                {
-                    MyHelp.ErrorLog(e, string.Format("訂單【{0}】出貨失敗", package.OrderID), package.OrderID.ToString());
-                    result.message = string.Format("訂單【{0}】出貨失敗，錯誤：", package.OrderID) + (e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
-                    result.status = false;
-                }
+                MyHelp.ErrorLog(e, string.Format("訂單【{0}】出貨失敗", package.OrderID), package.OrderID.ToString());
+                result.message = string.Format("訂單【{0}】出貨失敗，錯誤：", package.OrderID) + (e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
+                result.status = false;
             }
 
             if (result.status)
@@ -960,7 +997,7 @@ namespace QDLogistics.Controllers
         [CheckSession]
         private void ResetShippedData(Packages package, List<PickProduct> picked, Dictionary<string, string[]> serial)
         {
-            MyHelp.Log("", null, string.Format("訂單【{0}】出貨狀態重置", package.OrderID));
+            MyHelp.Log("OrderID", package.OrderID, string.Format("訂單【{0}】出貨狀態重置", package.OrderID));
 
             foreach (PickProduct data in picked)
             {
@@ -970,10 +1007,11 @@ namespace QDLogistics.Controllers
             }
 
             var serialArray = serial.SelectMany(s => s.Value).ToArray();
+            MyHelp.Log("Orders", package.OrderID, string.Format("訂單【{0}】移除 Serial Number - {1}", package.OrderID, string.Join("、", serialArray)), Session);
             foreach (var ss in SerialNumbers.GetAll().Where(s => s.OrderID.Equals(package.OrderID) && serialArray.Contains(s.SerialNumber)))
             {
                 SerialNumbers.Delete(ss);
-            };
+            }
 
             package.ProcessStatus = (int)EnumData.ProcessStatus.待出貨;
             Packages.Update(package, package.ID);

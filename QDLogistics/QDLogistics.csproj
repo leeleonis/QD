@@ -6873,6 +6873,7 @@
     <Compile Include="Commons\EnumData.cs" />
     <Compile Include="Commons\OrderPreset.cs" />
     <Compile Include="Commons\ShipProcess.cs" />
+    <Compile Include="Commons\StockKeepingUnit.cs" />
     <Compile Include="Commons\SyncProcess.cs" />
     <Compile Include="Commons\ThreadTask.cs" />
     <Compile Include="Commons\TrackOrder.cs" />

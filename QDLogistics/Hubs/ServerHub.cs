@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
+using QDLogistics.Commons;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -23,10 +24,16 @@ namespace QDLogistics.Hubs
             _apiServer = apiServer;
         }
 
-        public void BroadcastOrderChange(int OrderID, Commons.EnumData.OrderChangeStatus Status)
+        public void BroadcastOrderChange(int OrderID, EnumData.OrderChangeStatus Status)
         {
             string message = Newtonsoft.Json.JsonConvert.SerializeObject(new { OrderID, Status });
-            _apiServer.BroadcastOrderChange(message);
+            _apiServer.BroadcastToAll(message);
+        }
+
+        public void BroadcastProductError(int OrderID, string ProductID, EnumData.OrderChangeStatus Status)
+        {
+            string message = Newtonsoft.Json.JsonConvert.SerializeObject(new { OrderID, ProductID, Status });
+            _apiServer.BroadcastToAll(message);
         }
 
         public Dictionary<string, ClientInfo> GetAllClinet()
