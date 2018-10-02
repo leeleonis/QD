@@ -499,14 +499,23 @@ namespace QDLogistics.Controllers
 
         }
 
-        private void Sendle_Test(int OrderID)
+        public void Sendle_Test(int OrderID)
         {
-            Packages package = db.Packages.First(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID));
-            Sendle_API Sendle = new Sendle_API(package.Method.Carriers.CarrierAPI);
+            var packageList = db.Box.Where(b => b.BoxID.Contains("ECOF-")).SelectMany(b => b.Packages.Where(p => p.IsEnable.Value)).ToList();
+            foreach(var package in packageList)
+            {
+                Sendle_API Sendle = new Sendle_API(package.Method.Carriers.CarrierAPI);
+                var order = Sendle.Order(package.TagNo);
+                package.TrackingNumber = order.sendle_reference;
+                db.Entry(package).State = System.Data.Entity.EntityState.Modified;
+            }
+            db.SaveChanges();
+            //Packages package = db.Packages.First(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID));
+            //Sendle_API Sendle = new Sendle_API(package.Method.Carriers.CarrierAPI);
 
-            TrackOrder track = new TrackOrder();
-            track.SetOrder(package.Orders, package);
-            var result = track.Track();
+            //TrackOrder track = new TrackOrder();
+            //track.SetOrder(package.Orders, package);
+            //var result = track.Track();
             //var result = Sendle.Create(package);
             //var order = Sendle.Order(result.order_id);
             //Sendle.Label(result.order_id, string.Format("{0}-{1}-{2}", package.Items.First().ProductID, package.OrderID.Value, result.sendle_reference), @"C:\Users\qdtuk\Downloads");

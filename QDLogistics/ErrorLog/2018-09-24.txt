@@ -1,0 +1,19 @@
+ActionName : 同步1天訂單資料失敗
+Message : Thread was being aborted.
+StackTrace : at System.Buffer.BlockCopy(Array src, Int32 srcOffset, Array dst, Int32 dstOffset, Int32 count)
+   at System.Data.SqlClient.TdsParserStateObject.TryReadByteArray(Byte[] buff, Int32 offset, Int32 len, Int32& totalRead)
+   at System.Data.SqlClient.TdsParser.TryReadSqlDateTime(SqlBuffer value, Byte tdsType, Int32 length, Byte scale, TdsParserStateObject stateObj)
+   at System.Data.SqlClient.TdsParser.TryReadSqlValue(SqlBuffer value, SqlMetaDataPriv md, Int32 length, TdsParserStateObject stateObj, SqlCommandColumnEncryptionSetting columnEncryptionOverride, String columnName)
+   at System.Data.SqlClient.SqlDataReader.TryReadColumnData()
+   at System.Data.SqlClient.SqlDataReader.TryReadColumnInternal(Int32 i, Boolean readHeaderOnly)
+   at System.Data.SqlClient.SqlDataReader.TryReadColumn(Int32 i, Boolean setTimeout, Boolean allowPartiallyReadColumn)
+   at System.Data.SqlClient.SqlDataReader.GetDateTime(Int32 i)
+   at lambda_method(Closure , Shaper )
+   at System.Data.Entity.Core.Common.Internal.Materialization.Coordinator`1.ReadNextElement(Shaper shaper)
+   at System.Data.Entity.Core.Common.Internal.Materialization.Shaper`1.SimpleEnumerator.MoveNext()
+   at System.Linq.Enumerable.Any[TSource](IEnumerable`1 source, Func`2 predicate)
+   at QDLogistics.Commons.SyncProcess.Sync_Orders(Int32 day) in C:\QD Project\Order Shipping System\QDLogistics\Commons\SyncProcess.cs:line 116
+Date : 9/24/2018 1:30:09 PM
+
+-----------------------------------------------------------------------------
+

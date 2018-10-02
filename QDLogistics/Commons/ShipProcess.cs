@@ -382,7 +382,6 @@ namespace QDLogistics.Commons
                 }
 
                 package.POId = newPurchase.ID;
-                package.TrackingNumber = "";
                 MyHelp.Log("PurchaseOrder", package.OrderID, string.Format("開啟 Purchase Order【{0}】成功", package.POId));
             }
             catch (Exception e)

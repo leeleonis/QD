@@ -245,7 +245,7 @@ namespace QDLogistics.Commons
 
             if (!package.ProcessStatus.Equals((int)EnumData.ProcessStatus.待出貨))
             {
-                if (string.IsNullOrEmpty(package.BoxID) || package.Box.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.已到貨))
+                if (string.IsNullOrEmpty(package.BoxID))
                 {
                     if (package.ProcessStatus.Equals((int)EnumData.ProcessStatus.訂單管理))
                     {

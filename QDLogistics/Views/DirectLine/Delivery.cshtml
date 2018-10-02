@@ -11,12 +11,12 @@
     <section id="widget-grid" class="">
         <div class="row table-parent">
             <div class="tool-content table-row col-xs-12">
-                <div class="table-cell col-xs-10">
-                    <div class="cancel-button col-xs-12">
-                    </div>
-                </div>
-                <div class="table-cell col-xs-1">
-                    <div class="action-button col-xs-12">
+                <div class="table-parent form-horizontal col-xs-12">
+                    <div class="table-row col-xs-6 no-padding">
+                        <label class="col-xs-2 control-label">Label ID</label>
+                        <div class="col-xs-4">
+                            <input class="form-control input-sm" type="text" id="search-label">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -36,7 +36,7 @@
     <script type="text/javascript">
         var pager, pageSize = 100, selectOption, filterValue = {};
         var selected = false;
-        var $dataGrid;
+        var $dataGrid, $labelSeach = $('#search-label');
 
         $(function () {
             var data = { optionType: ['Warehouse', 'DirectLineStatus', 'DirectLineBoxType'] };
@@ -48,6 +48,12 @@
                 } else {
                     alert(response['message']);
                 }
+            });
+
+            $labelSeach.change(function () {
+                filterValue = getFilterData();
+
+                $dataGrid.datagrid('reload');
             });
         });
 
@@ -190,6 +196,7 @@
             return {
                 BoxID: $('.filterColumn .s-boxID').val(),
                 SupplierBoxID: $('.filterColumn .s-supplierBoxID').val(),
+                LabelID: $labelSeach.val(),
                 CreateDate: $('.filterColumn .s-createDate').val(),
                 WarehouseFrom: $('.filterColumn .s-warehouseFrom').val(),
                 WarehouseTo: $('.filterColumn .s-warehouseTo').val(),

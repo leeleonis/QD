@@ -619,9 +619,22 @@ namespace QDLogistics.Controllers
 
                                                 if (string.IsNullOrEmpty(error))
                                                 {
-                                                    foreach (Items item in package.Items.Where(i => i.IsEnable.Value).ToList())
+                                                    if (directLine.Abbreviation.Equals("ECOF"))
                                                     {
-                                                        if (item.SerialNumbers.Any()) SCWS.Update_ItemSerialNumber(item.ID, item.SerialNumbers.Select(s => s.SerialNumber).ToArray());
+                                                        ThreadTask SyncTask = new ThreadTask(string.Format("Direct Line 訂單【{0}】SC更新", package.OrderID));
+                                                        SyncTask.AddWork(factory.StartNew(() =>
+                                                        {
+                                                            SyncTask.Start();
+                                                            SyncProcess sync = new SyncProcess(session);
+                                                            return sync.Update_Tracking(package);
+                                                        }));
+                                                    }
+                                                    else
+                                                    {
+                                                        foreach (Items item in package.Items.Where(i => i.IsEnable.Value).ToList())
+                                                        {
+                                                            if (item.SerialNumbers.Any()) SCWS.Update_ItemSerialNumber(item.ID, item.SerialNumbers.Select(s => s.SerialNumber).ToArray());
+                                                        }
                                                     }
                                                 }
                                             }

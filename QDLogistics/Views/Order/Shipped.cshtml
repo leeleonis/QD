@@ -344,7 +344,7 @@
                     }
                 ]],
                 rowStyler: function (index, value) {
-                    if (index == 0) return { class: 'filterColumn' }
+                    if (!isEmpty(value.IsFilter)) return { class: 'filterColumn' }
                 },
                 onLoadSuccess: function (data) {
                     $dataGrid.datagrid('insertRow', {
@@ -358,9 +358,11 @@
                         });
 
                         $('.filterColumn').on('change', 'input, select', function () {
-                            filterValue = getFilterData();
+                            if (!$(this).is(':checkbox')) {
+                                filterValue = getFilterData();
 
-                            $dataGrid.datagrid('reload');
+                                $dataGrid.datagrid('reload');
+                            }
                         });
                     } else {
                         $dataGrid.datagrid('deleteRow', 0);
@@ -511,6 +513,7 @@
 
         function setFilterColumn(filterValue) {
             return {
+                IsFilter: true,
                 ItemCount: 1,
                 OrderID: "",
                 Sku: "<input type='text' class='form-control s-sku' value='" + (!isEmpty(filterValue['Sku']) ? filterValue['Sku'] : '') + "'>",

@@ -371,6 +371,7 @@ namespace QDLogistics.Controllers
                 dateTo = new TimeZoneConvert(dateTo, MyHelp.GetTimeZone((int)Session["TimeZone"])).ConvertDateTime(EnumData.TimeZone.EST);
                 BoxFilter = BoxFilter.Where(b => DateTime.Compare(b.Create_at, dateFrom) >= 0 && DateTime.Compare(b.Create_at, dateTo) < 0);
             }
+            if (!string.IsNullOrEmpty(filter.LabelID)) BoxFilter = BoxFilter.Where(b => b.DirectLineLabel.Any(l => l.LabelID.Contains(filter.LabelID)));
 
             //int warehouseID = 0;
             //if (int.TryParse(Session["warehouseId"].ToString(), out warehouseID)) BoxFilter = BoxFilter.Where(b => b.WarehouseFrom.Equals(warehouseID));
@@ -484,7 +485,7 @@ namespace QDLogistics.Controllers
             switch (directLine)
             {
                 case "ECOF":
-                    switch(data.method.Carriers.CarrierAPI.Type.Value)
+                    switch (data.method.Carriers.CarrierAPI.Type.Value)
                     {
                         case (byte)EnumData.CarrierType.Sendle:
                             string Sendle_Label = string.Format("{0}-{1}-{2}", data.item.ProductID, data.order.OrderID, data.package.TrackingNumber);
@@ -550,8 +551,9 @@ namespace QDLogistics.Controllers
                 dataList.AddRange(results.Select(data => new
                 {
                     data.label.IsUsed,
-                    LabelID = GetCorrectLabelID(data.label.oldLabelID),
+                    LabelID = data.label.oldLabelID,
                     OrderID = data.label.oldOrderID,
+                    OldLabelID = GetCorrectLabelID(data.label.oldLabelID),
                     NewLabelID = GetCorrectLabelID(data.label.newLabelID),
                     NewOrderID = data.label.newOrderID,
                     data.label.RMAID,
@@ -993,7 +995,7 @@ namespace QDLogistics.Controllers
             catch (Exception e)
             {
                 ResetShippedData(package, picked, serials);
-                
+
                 MyHelp.ErrorLog(e, string.Format("訂單【{0}】出貨失敗", package.OrderID), package.OrderID.ToString());
                 result.message = string.Format("訂單【{0}】出貨失敗，錯誤：", package.OrderID) + (e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
                 result.status = false;
@@ -1121,6 +1123,7 @@ namespace QDLogistics.Controllers
             List<object> errorList = new List<object>();
 
             SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
+            TaskFactory factory = System.Web.HttpContext.Current.Application.Get("TaskFactory") as TaskFactory;
 
             if (!SCWS.Is_login) throw new Exception("SC is not login");
 
@@ -1128,6 +1131,7 @@ namespace QDLogistics.Controllers
             {
                 MyHelp.Log("Box", box.BoxID, string.Format("開始檢查 Box【{0}】內的訂單狀態", box.BoxID), Session);
 
+                DirectLine directLine = db.DirectLine.Find(box.DirectLine);
                 foreach (Packages package in box.Packages.Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨)).ToList())
                 {
                     DirectLineLabel label = package.Label;
@@ -1136,9 +1140,22 @@ namespace QDLogistics.Controllers
                     {
                         if (label.Status.Equals((byte)EnumData.LabelStatus.正常))
                         {
-                            foreach (Items item in package.Items.Where(i => i.IsEnable.Value).ToList())
+                            if (directLine.Abbreviation.Equals("ECOF"))
                             {
-                                if (item.SerialNumbers.Any()) SCWS.Update_ItemSerialNumber(item.ID, item.SerialNumbers.Select(s => s.SerialNumber).ToArray());
+                                ThreadTask SyncTask = new ThreadTask(string.Format("Direct Line 訂單【{0}】SC更新", package.OrderID));
+                                SyncTask.AddWork(factory.StartNew(() =>
+                                {
+                                    SyncTask.Start();
+                                    SyncProcess sync = new SyncProcess(Session);
+                                    return sync.Update_Tracking(package);
+                                }));
+                            }
+                            else
+                            {
+                                foreach (Items item in package.Items.Where(i => i.IsEnable.Value).ToList())
+                                {
+                                    if (item.SerialNumbers.Any()) SCWS.Update_ItemSerialNumber(item.ID, item.SerialNumbers.Select(s => s.SerialNumber).ToArray());
+                                }
                             }
 
                             package.ProcessStatus = (int)EnumData.ProcessStatus.已出貨;
@@ -1262,7 +1279,7 @@ namespace QDLogistics.Controllers
             return OrderCompare && PaymentCompare;
         }
 
-        public ActionResult ProductList(int TargetID, string Type)
+        public ActionResult ProductList(string TargetID, string Type)
         {
             Packages package = null;
             List<string[]> productList = new List<string[]>();
@@ -1271,11 +1288,11 @@ namespace QDLogistics.Controllers
             {
                 case "WaitingOrder":
                 case "BoxOrder":
-                    package = db.Packages.AsNoTracking().FirstOrDefault(p => p.IsEnable.Value && p.ID.Equals(TargetID));
+                    package = db.Packages.AsNoTracking().FirstOrDefault(p => p.IsEnable.Value && p.ID.Equals(int.Parse(TargetID)));
                     break;
 
                 case "CancelLabel":
-                    package = db.Packages.AsNoTracking().FirstOrDefault(p => p.IsEnable.Value && p.Label.Equals(TargetID));
+                    package = db.Packages.AsNoTracking().FirstOrDefault(p => p.IsEnable.Value && p.TagNo.Equals(TargetID));
                     break;
             }
 
@@ -1286,7 +1303,6 @@ namespace QDLogistics.Controllers
                     switch (Type)
                     {
                         case "WaitingOrder":
-                        case "CancelLabel":
                             productList.Add(new string[] { item.ProductID, item.Skus.ProductName, item.Qty.ToString() });
 
                             if (item.BundleItems.Any())
@@ -1299,6 +1315,7 @@ namespace QDLogistics.Controllers
                             break;
 
                         case "BoxOrder":
+                        case "CancelLabel":
                             for (int i = 0; i < item.Qty; i++)
                             {
                                 SerialNumbers serial = item.SerialNumbers.Skip(i).FirstOrDefault();
@@ -2013,6 +2030,7 @@ namespace QDLogistics.Controllers
         {
             public string BoxID { get; set; }
             public string SupplierBoxID { get; set; }
+            public string LabelID { get; set; }
             public DateTime CreateDate { get; set; }
             public Nullable<int> WarehouseFrom { get; set; }
             public Nullable<int> WarehouseTo { get; set; }

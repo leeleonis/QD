@@ -525,7 +525,7 @@ namespace QDLogistics.Controllers
                                 using (Hubs.ServerHub server = new Hubs.ServerHub())
                                     server.BroadcastProductError(package.OrderID.Value, null, EnumData.OrderChangeStatus.產品異常);
 
-                                var serialList = package.Items.Where(i => i.IsEnable.Value).SelectMany(i => i.SerialNumbers);
+                                var serialList = package.Items.Where(i => i.IsEnable.Value).SelectMany(i => i.SerialNumbers).ToList();
 
                                 MyHelp.Log("Orders", package.OrderID, string.Format("訂單【{0}】移除 Serial Number - {1}", package.OrderID, string.Join("、", serialList.Select(s => s.SerialNumber))), (HttpSessionStateBase)Session);
 

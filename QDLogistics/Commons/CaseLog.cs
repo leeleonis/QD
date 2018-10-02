@@ -384,24 +384,19 @@ namespace QDLogistics.Commons
 
                 foreach (Items item in packageData.Items.Where(i => i.IsEnable.Value).ToList())
                 {
-                    if (item.SerialNumbers.Any())
+                    for(int i = 0; i<item.Qty; i++)
                     {
-                        var refundList = item.SerialNumbers.Select(serial => new SerialNumberForRefundLabel()
+                        RefundLabelSerial.Create(new SerialNumberForRefundLabel()
                         {
                             IsUsed = false,
-                            oldOrderID = serial.OrderID.Value,
+                            oldOrderID = item.OrderID.Value,
                             oldLabelID = eventData.LabelID,
                             RMAID = packageData.RMAId.Value,
                             Sku = item.ProductID,
-                            SerialNumber = serial.SerialNumber,
+                            SerialNumber = item.SerialNumbers.Skip(i).Any() ? item.SerialNumbers.Skip(i).First().SerialNumber : "",
                             WarehouseID = item.ReturnedToWarehouseID.Value,
                             Create_at = DateTime.UtcNow
-                        }).ToArray();
-
-                        foreach (var refund in refundList)
-                        {
-                            RefundLabelSerial.Create(refund);
-                        }
+                        });
                     }
                 }
 
