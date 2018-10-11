@@ -493,60 +493,60 @@ namespace QDLogistics.Commons
 
                 if (!SCWS.Is_login) throw new Exception("SC is not logged in!");
 
-                PurchaseOrderService.Purchase purchaseOrder = SCWS.Get_PurchaseOrder(package.POId.Value);
-                PurchaseOrderService.PurchaseItemReceiveRequest receiveRequest = new PurchaseOrderService.PurchaseItemReceiveRequest() { PurchaseID = purchaseOrder.ID };
+                //PurchaseOrderService.Purchase purchaseOrder = SCWS.Get_PurchaseOrder(package.POId.Value);
+                //PurchaseOrderService.PurchaseItemReceiveRequest receiveRequest = new PurchaseOrderService.PurchaseItemReceiveRequest() { PurchaseID = purchaseOrder.ID };
 
-                Warehouses WarehouseData = package.Items.First(i => i.IsEnable.Value).ShipWarehouses;
-                List<PurchaseItemReceive> PurchaseItemList = PurchaseItems.GetAll(true).Where(p => p.WarehouseName.Equals(WarehouseData.Name)).ToList();
-                string[] SerialList = PurchaseItemList.Select(p => p.SerialNumber).Distinct().ToArray();
+                //Warehouses WarehouseData = package.Items.First(i => i.IsEnable.Value).ShipWarehouses;
+                //List<PurchaseItemReceive> PurchaseItemList = PurchaseItems.GetAll(true).Where(p => p.WarehouseName.Equals(WarehouseData.Name)).ToList();
+                //string[] SerialList = PurchaseItemList.Select(p => p.SerialNumber).Distinct().ToArray();
 
-                List<SerialNumbers> SerialNumberList = package.Items.Where(i => i.IsEnable.Equals(true)).SelectMany(i => i.SerialNumbers).Where(s => !SerialList.Contains(s.SerialNumber)).ToList();
-                if (SerialNumberList.Any())
-                {
-                    List<PurchaseOrderService.PurchaseItemReceiveRequestProduct> receiveRequestProduct = new List<PurchaseOrderService.PurchaseItemReceiveRequestProduct>();
-                    foreach (PurchaseOrderService.PurchaseItem purchaseItem in purchaseOrder.Products)
-                    {
-                        int qty = SerialNumberList.Where(s => s.ProductID.Equals(purchaseItem.ProductID)).Count();
-                        if (qty > 0)
-                        {
-                            receiveRequestProduct.Add(new PurchaseOrderService.PurchaseItemReceiveRequestProduct()
-                            {
-                                QtyReceived = qty,
-                                WarehouseID = purchaseItem.DefaultWarehouseID,
-                                PurchaseItemID = purchaseItem.ID,
-                                PurchaseID = purchaseItem.PurchaseID
-                            });
-                        }
-                    }
+                //List<SerialNumbers> SerialNumberList = package.Items.Where(i => i.IsEnable.Equals(true)).SelectMany(i => i.SerialNumbers).Where(s => !SerialList.Contains(s.SerialNumber)).ToList();
+                //if (SerialNumberList.Any())
+                //{
+                //    List<PurchaseOrderService.PurchaseItemReceiveRequestProduct> receiveRequestProduct = new List<PurchaseOrderService.PurchaseItemReceiveRequestProduct>();
+                //    foreach (PurchaseOrderService.PurchaseItem purchaseItem in purchaseOrder.Products)
+                //    {
+                //        int qty = SerialNumberList.Where(s => s.ProductID.Equals(purchaseItem.ProductID)).Count();
+                //        if (qty > 0)
+                //        {
+                //            receiveRequestProduct.Add(new PurchaseOrderService.PurchaseItemReceiveRequestProduct()
+                //            {
+                //                QtyReceived = qty,
+                //                WarehouseID = purchaseItem.DefaultWarehouseID,
+                //                PurchaseItemID = purchaseItem.ID,
+                //                PurchaseID = purchaseItem.PurchaseID
+                //            });
+                //        }
+                //    }
 
-                    if (receiveRequestProduct.Any())
-                    {
-                        receiveRequest.Products = receiveRequestProduct.ToArray();
-                        purchaseItemReceive = SCWS.Create_PurchaseOrder_ItemReceive(receiveRequest);
+                //    if (receiveRequestProduct.Any())
+                //    {
+                //        receiveRequest.Products = receiveRequestProduct.ToArray();
+                //        purchaseItemReceive = SCWS.Create_PurchaseOrder_ItemReceive(receiveRequest);
 
-                        receiveSerial = new List<PurchaseOrderService.PurchaseItemReceiveSerial>();
-                        foreach (SerialNumbers SerialNumber in SerialNumberList)
-                        {
-                            PurchaseOrderService.PurchaseItemReceive itemReceive = purchaseItemReceive.First(i => i.ProductID.Equals(SerialNumber.ProductID));
+                //        receiveSerial = new List<PurchaseOrderService.PurchaseItemReceiveSerial>();
+                //        foreach (SerialNumbers SerialNumber in SerialNumberList)
+                //        {
+                //            PurchaseOrderService.PurchaseItemReceive itemReceive = purchaseItemReceive.First(i => i.ProductID.Equals(SerialNumber.ProductID));
 
-                            receiveSerial.Add(new PurchaseOrderService.PurchaseItemReceiveSerial()
-                            {
-                                PurchaseID = itemReceive.PurchaseID,
-                                WarehouseID = itemReceive.WarehouseID,
-                                ProductID = itemReceive.ProductID,
-                                PurchaseReceiveID = itemReceive.Id,
-                                SerialNumber = SerialNumber.SerialNumber
-                            });
-                        }
+                //            receiveSerial.Add(new PurchaseOrderService.PurchaseItemReceiveSerial()
+                //            {
+                //                PurchaseID = itemReceive.PurchaseID,
+                //                WarehouseID = itemReceive.WarehouseID,
+                //                ProductID = itemReceive.ProductID,
+                //                PurchaseReceiveID = itemReceive.Id,
+                //                SerialNumber = SerialNumber.SerialNumber
+                //            });
+                //        }
 
-                        SCWS.Update_PurchaseOrder_ItemReceive_Serials(receiveSerial.ToArray());
-                    }
-                }
+                //        SCWS.Update_PurchaseOrder_ItemReceive_Serials(receiveSerial.ToArray());
+                //    }
+                //}
 
-                purchaseOrder.Status = PurchaseOrderService.PurchaseStatus.Completed;
-                purchaseOrder.TrackingNumber = package.TrackingNumber;
-                purchaseOrder.Memo = package.SupplierComment;
-                SCWS.Update_PurchaseOrder(purchaseOrder);
+                //purchaseOrder.Status = PurchaseOrderService.PurchaseStatus.Completed;
+                //purchaseOrder.TrackingNumber = package.TrackingNumber;
+                //purchaseOrder.Memo = package.SupplierComment;
+                //SCWS.Update_PurchaseOrder(purchaseOrder);
 
                 MyHelp.Log("Orders", package.OrderID, string.Format("訂單包裹 - PO【{0}】更新完成", package.POId), Session);
 
@@ -556,14 +556,14 @@ namespace QDLogistics.Commons
             {
                 if (receiveSerial.Any())
                 {
-                    SCWS.Delete_PurchaseOrder_ItemReceive_Serials(receiveSerial.ToArray());
+                    //SCWS.Delete_PurchaseOrder_ItemReceive_Serials(receiveSerial.ToArray());
                 }
 
                 if (purchaseItemReceive != null)
                 {
                     foreach (var Receive in purchaseItemReceive)
                     {
-                        SCWS.Delete_PurchaseOrder_ItemReceive(Receive);
+                        //SCWS.Delete_PurchaseOrder_ItemReceive(Receive);
                     }
                 }
 

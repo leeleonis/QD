@@ -216,7 +216,7 @@ namespace QDLogistics.Controllers
 
                                     if (packageData.ProcessStatus.Equals((int)EnumData.ProcessStatus.待出貨))
                                         using (Hubs.ServerHub server = new Hubs.ServerHub())
-                                            server.BroadcastOrderChange(packageData.OrderID.Value, EnumData.OrderChangeStatus.提交至待出貨區);
+                                            server.BroadcastOrderEvent(packageData.OrderID.Value, EnumData.OrderChangeStatus.提交至待出貨區);
                                 }
                                 catch (Exception e)
                                 {

@@ -988,7 +988,7 @@ namespace QDLogistics.Controllers
                 result.data = new { fileName = new string[] { "Label.pdf" }, filePath = new string[] { Path.Combine(basePath, package.FilePath, "Label.pdf") }, amount = new int[] { 1 }, printerName = package.Method.PrinterName };
 
                 using (Hubs.ServerHub server = new Hubs.ServerHub())
-                    server.BroadcastOrderChange(package.OrderID.Value, EnumData.OrderChangeStatus.已完成出貨);
+                    server.BroadcastOrderEvent(package.OrderID.Value, EnumData.OrderChangeStatus.已完成出貨);
 
                 MyHelp.Log("Orders", package.OrderID, string.Format("訂單【{0}】出貨完成", package.OrderID));
             }
@@ -1535,7 +1535,7 @@ namespace QDLogistics.Controllers
                             }
                             else
                             {
-                                foreach (var serial in SerialNumbers.GetAll().Where(s => s.OrderID.Value.Equals(newPackage.OrderID.Value)))
+                                foreach (var serial in SerialNumbers.GetAll().Where(s => s.OrderID.Value.Equals(newOrder.OrderID)).ToList())
                                 {
                                     SerialNumbers.Delete(serial);
                                 }

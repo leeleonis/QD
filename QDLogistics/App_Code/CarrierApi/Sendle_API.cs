@@ -49,7 +49,6 @@ namespace CarrierApi.Sendle
                     contact = new Contact()
                     {
                         name = string.Join(" ", new string[] { address.FirstName, address.MiddleInitial, address.LastName }),
-                        email = address.EmailAddress,
                         phone = address.PhoneNumber,
                         company = address.CompanyName
                     },

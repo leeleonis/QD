@@ -453,7 +453,7 @@ namespace QDLogistics.Controllers
 
             List<Packages> packageList = Packages.GetAll().Where(p => p.IsEnable == true && packageIDs.Contains(p.ID.ToString())).ToList();
 
-            foreach (Packages package in packageList.Where(p => p.ProcessStatus != (int)EnumData.ProcessStatus.已出貨))
+            foreach (Packages package in packageList)
             {
                 ThreadTask threadTask = new ThreadTask(string.Format("待出貨區 - 取消訂單【{0}】至訂單管理區", package.OrderID));
 
@@ -467,6 +467,16 @@ namespace QDLogistics.Controllers
 
                         try
                         {
+                            if (package.ProcessStatus.Equals((int)EnumData.ProcessStatus.已出貨))
+                            {
+                                CaseLog caseLog = new CaseLog((HttpSessionStateBase)Session);
+                                caseLog.OrderInit(package);
+                                CaseEvent caseEvent = caseLog.ReturnPackage();
+
+                                using (Hubs.ServerHub server = new Hubs.ServerHub())
+                                    server.BroadcastOrderEvent(package.OrderID.Value, caseEvent.ID, EnumData.OrderChangeStatus.包裏回收);
+                            }
+
                             Carriers carrier = package.Method.Carriers;
                             if (carrier != null)
                             {
@@ -494,13 +504,6 @@ namespace QDLogistics.Controllers
 
                             if (!string.IsNullOrEmpty(package.TagNo))
                             {
-                                if (!string.IsNullOrEmpty(package.BoxID))
-                                {
-                                    CaseLog caseLog = new CaseLog((HttpSessionStateBase)Session);
-                                    caseLog.OrderInit(package);
-                                    caseLog.CreateSerialError();
-                                }
-
                                 package.Label.IsEnable = false;
                                 package.TagNo = package.BoxID = null;
                             }
@@ -522,9 +525,6 @@ namespace QDLogistics.Controllers
 
                             if (db.SerialNumbers.AsNoTracking().Any(s => s.OrderID.Value.Equals(package.OrderID.Value)))
                             {
-                                using (Hubs.ServerHub server = new Hubs.ServerHub())
-                                    server.BroadcastProductError(package.OrderID.Value, null, EnumData.OrderChangeStatus.產品異常);
-
                                 var serialList = package.Items.Where(i => i.IsEnable.Value).SelectMany(i => i.SerialNumbers).ToList();
 
                                 MyHelp.Log("Orders", package.OrderID, string.Format("訂單【{0}】移除 Serial Number - {1}", package.OrderID, string.Join("、", serialList.Select(s => s.SerialNumber))), (HttpSessionStateBase)Session);
@@ -537,7 +537,7 @@ namespace QDLogistics.Controllers
                             }
 
                             using (Hubs.ServerHub server = new Hubs.ServerHub())
-                                server.BroadcastOrderChange(package.OrderID.Value, EnumData.OrderChangeStatus.取消出貨);
+                                server.BroadcastOrderEvent(package.OrderID.Value, EnumData.OrderChangeStatus.取消出貨);
 
                             MyHelp.Log("Orders", package.OrderID, "取消訂單出貨", (HttpSessionStateBase)Session);
                         }
@@ -934,7 +934,7 @@ namespace QDLogistics.Controllers
                 }
 
                 using (Hubs.ServerHub server = new Hubs.ServerHub())
-                    server.BroadcastOrderChange(package.OrderID.Value, EnumData.OrderChangeStatus.已完成出貨);
+                    server.BroadcastOrderEvent(package.OrderID.Value, EnumData.OrderChangeStatus.已完成出貨);
 
                 MyHelp.Log("Packages", package.ID, string.Format("訂單【{0}】出貨完成", package.OrderID));
             }
@@ -1139,7 +1139,7 @@ namespace QDLogistics.Controllers
                         DisplayName = data.itemCount == 1 ? data.item.DisplayName : "Multi",
                         OrderQtyTotal = data.items.Sum(i => i.Qty),
                         ShippingCountry = data.address.CountryName,
-                        ShippingMethod = method.ContainsKey(data.package.ShippingMethod.Value) ? method[data.package.ShippingMethod.Value] : data.order.ShippingCarrier,
+                        ShippingMethod = data.package.ShippingMethod.HasValue && method.ContainsKey(data.package.ShippingMethod.Value) ? method[data.package.ShippingMethod.Value] : data.order.ShippingCarrier,
                         Export = Enum.GetName(typeof(EnumData.Export), data.package.Export != null ? data.package.Export : 0),
                         ExportMethod = Enum.GetName(typeof(EnumData.ExportMethod), data.package.ExportMethod != null ? data.package.ExportMethod : 0),
                         StatusCode = Enum.GetName(typeof(OrderStatusCode), data.order.StatusCode),
@@ -1148,8 +1148,8 @@ namespace QDLogistics.Controllers
                         PickUpDate = data.package.PickUpDate != null && !data.package.PickUpDate.Equals(DateTime.MinValue) ? TimeZoneConvert.InitDateTime(data.package.PickUpDate.Value, EnumData.TimeZone.UTC).ConvertDateTime(EnumData.TimeZone.TST).ToString("MM/dd/yyyy<br />hh:mm tt") : "",
                         TrackingNumber = data.package.TrackingNumber,
                         DeliveryStatus = data.package.DeliveryNote,
-                        DispatchTime = data.payment != null ? formatTime(data.package.PickUpDate, TimeZoneConvert.InitDateTime(data.payment.AuditDate.Value, EnumData.TimeZone.EST).Utc) : "",
-                        TransitTime = formatTime(data.package.DeliveryDate, data.package.PickUpDate),
+                        DispatchTime = data.payment != null ? FormatTime(data.package.PickUpDate, TimeZoneConvert.InitDateTime(data.payment.AuditDate.Value, EnumData.TimeZone.EST).Utc) : "",
+                        TransitTime = FormatTime(data.package.DeliveryDate, data.package.PickUpDate),
                         RedirectWarehouse = warehouses[data.item.ReturnedToWarehouseID.Value],
                         RMA = data.package.RMAId,
                         Download = !string.IsNullOrEmpty(data.package.FilePath) ? "FileUploads/" + string.Join("", data.package.FilePath.Skip(data.package.FilePath.IndexOf("export"))) : ""
@@ -1164,7 +1164,7 @@ namespace QDLogistics.Controllers
             return Json(new { total = total, rows = dataList }, JsonRequestBehavior.AllowGet);
         }
 
-        private string formatTime(DateTime? dateTime1, DateTime? dateTime2)
+        private string FormatTime(DateTime? dateTime1, DateTime? dateTime2)
         {
             string format = "";
 

@@ -36,13 +36,12 @@ namespace QDLogistics.Controllers
             IRepository<Orders> Orders = new GenericRepository<Orders>(db);
             SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
 
-            int OrderID = 5484750;
+            int OrderID = 5528779;
             var order = Orders.Get(OrderID);
             if (SCWS.Is_login)
             {
                 var SC_order = SCWS.Get_OrderStatus(OrderID);
                 var SC_order2 = SCWS.Get_OrderData(OrderID);
-                var SC_PO = SCWS.Get_PurchaseOrder(order.Packages.First(p => p.IsEnable.Value).POId.Value);
             }
         }
 
@@ -248,11 +247,11 @@ namespace QDLogistics.Controllers
             return View();
         }
 
-        private void Hub_Push()
+        public void Hub_Push()
         {
             using (Hubs.ServerHub server = new Hubs.ServerHub())
             {
-                server.BroadcastOrderChange(123, EnumData.OrderChangeStatus.提交至待出貨區);
+                server.BroadcastOrderEvent(123, 456, EnumData.OrderChangeStatus.包裏回收);
             }
         }
 
@@ -262,6 +261,16 @@ namespace QDLogistics.Controllers
             {
                 return Json(server.GetAllClinet(), JsonRequestBehavior.AllowGet);
             }
+        }
+
+        public void Winit_Test(int OrderID)
+        {
+            Packages package = db.Packages.First(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID));
+
+            SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
+            ShipProcess ship = new ShipProcess(SCWS);
+            ship.Init(package);
+            var result = ship.Dispatch();
         }
 
         private void Check_Winit(int OrderID)
@@ -457,13 +466,12 @@ namespace QDLogistics.Controllers
             }
         }
 
-        private void Get_Warehouse()
+        public void Get_PurchaseOrder()
         {
             SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
 
-            var SC_Warehouse = SCWS.Get_Warehouses();
-            var SC_Warehouse2 = SCWS.Get_Warehouses2();
-            var SC_Warehouse3 = SCWS.Get_Warehouses3();
+            int POID = 19679;
+            var PO1 = SCWS.Get_PurchaseOrder(POID);
         }
 
         private void BingMap_Test()

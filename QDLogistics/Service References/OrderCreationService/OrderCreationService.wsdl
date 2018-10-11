@@ -549,6 +549,8 @@
           <s:element minOccurs="1" maxOccurs="1" name="Invoice_PrintShippedOnDate" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="NewEggDotComEnableIntlListings" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="BuyDotComIncludeLeadTimeInventoryFeed" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="TaxJarCalculateTax" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="eBayDoNotReviseNonUSListings" type="s:boolean" />
         </s:sequence>
       </s:complexType>
       <s:simpleType name="WebsiteProductViewURLValueTypeType">
@@ -1325,6 +1327,7 @@
           <s:enumeration value="HomeDepot" />
           <s:enumeration value="GrouponGateway" />
           <s:enumeration value="Cdiscount" />
+          <s:enumeration value="GoogleExpress" />
         </s:restriction>
       </s:simpleType>
       <s:simpleType name="CreditCardType">
@@ -1478,6 +1481,7 @@
           <s:enumeration value="Cdiscount" />
           <s:enumeration value="GrouponGateway" />
           <s:enumeration value="SBN" />
+          <s:enumeration value="GoogleExpress" />
         </s:restriction>
       </s:simpleType>
       <s:simpleType name="OrderShippingStatus">
@@ -1737,6 +1741,7 @@
           <s:enumeration value="ASN_Tracking_Upload" />
           <s:enumeration value="TaxJar_Create_Customer" />
           <s:enumeration value="TaxJar_Update_Customer" />
+          <s:enumeration value="TrackingDownload" />
         </s:restriction>
       </s:simpleType>
       <s:element name="Orders_AddTransactionFileRecordResponse">
@@ -2535,6 +2540,7 @@
           <s:element minOccurs="1" maxOccurs="1" name="WalmartAPIBuyBoxPrice" type="s:decimal" />
           <s:element minOccurs="1" maxOccurs="1" name="WalmartAPIBuyBoxPriceShipping" type="s:decimal" />
           <s:element minOccurs="1" maxOccurs="1" name="HasProposition65Warning" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="Proposition65WarningMessage" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="WalmartAPIPricingEffectiveDateFrom" type="s:dateTime" />
           <s:element minOccurs="1" maxOccurs="1" name="WalmartAPIPricingEffectiveDateTo" type="s:dateTime" />
           <s:element minOccurs="1" maxOccurs="1" name="PriceFallDisabledOn" type="s:dateTime" />
@@ -2625,7 +2631,7 @@
           <s:element minOccurs="1" maxOccurs="1" name="HouzzProductId" type="s:long" />
           <s:element minOccurs="0" maxOccurs="1" name="HouzzMerchantSKU" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="HouzzTitle" type="s:string" />
-          <s:element minOccurs="1" maxOccurs="1" name="HouzzCategoryId" type="s:long" />
+          <s:element minOccurs="0" maxOccurs="1" name="HouzzCategoryId" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="HouzzPrice" type="s:decimal" />
           <s:element minOccurs="1" maxOccurs="1" name="HouzzSafetyQuantity" type="s:int" />
           <s:element minOccurs="0" maxOccurs="1" name="HouzzStatusCondition" type="s:string" />
@@ -3761,6 +3767,27 @@
           <s:element minOccurs="1" maxOccurs="1" name="DisconnectFromInventoryJet" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="DisconnectFromInventoryGroupOnGoods" type="s:boolean" />
           <s:element minOccurs="0" maxOccurs="1" name="TaxJarProductTaxCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ReverbDescriptionTemplateId" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="PricefallLeadTimeUseDefault" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="HouzzDefaultQtyEnabled" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="HouzzDefaultQty" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="HouzzDefaultQtyUseDefault" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="JETSafetyWarning" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MatrixNSimplePrimaryDimension" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MatrixNSimpleSortColumn1Name" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MatrixNSimpleSortColumn2Name" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="MatrixNSimpleSortColumn3Name" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="GoogleExpressEnabled" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="GoogleExpressTitle" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="GoogleExpressMerchantSKU" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="GoogleExpressPrice" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="GoogleExpressPriceUseDefault" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="GoogleExpressSafetyQty" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="GoogleExpressSafetyQtyUseDefault" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="GoogleExpressActiveListingID" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="GoogleExpressDescription" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="GoogleExpressTaxonomyPath" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="DisconnectFromInventoryWalmart" type="s:boolean" />
         </s:sequence>
       </s:complexType>
       <s:simpleType name="MagentoProductVisibilityType">
@@ -4443,6 +4470,7 @@
           <s:element minOccurs="1" maxOccurs="1" name="CustomerShippingAccountBillReceiver" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="EnableIPBasedLoginFilter" type="s:boolean" />
           <s:element minOccurs="0" maxOccurs="1" name="TaxExemptType" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="Supervisor" type="s:int" />
         </s:sequence>
       </s:complexType>
       <s:simpleType name="OrderSearchDateRange">
@@ -5094,6 +5122,7 @@
           <s:enumeration value="Reject" />
           <s:enumeration value="Exchange" />
           <s:enumeration value="Repair" />
+          <s:enumeration value="No_Action_Needed" />
         </s:restriction>
       </s:simpleType>
       <s:element name="RMAItem_UpdateResponse">
@@ -6104,6 +6133,7 @@
           <s:enumeration value="HomeDepot" />
           <s:enumeration value="GrouponGateway" />
           <s:enumeration value="Cdiscount" />
+          <s:enumeration value="GoogleExpress" />
         </s:restriction>
       </s:simpleType>
       <s:simpleType name="CreditCardType">
@@ -6462,6 +6492,7 @@
           <s:enumeration value="Second_Day" />
           <s:enumeration value="Wish_Express" />
           <s:enumeration value="SBN" />
+          <s:enumeration value="GoogleExpress" />
         </s:restriction>
       </s:simpleType>
       <s:simpleType name="OrderCreationSourceApplicationType">
@@ -6532,6 +6563,7 @@
           <s:enumeration value="Innotrac" />
           <s:enumeration value="IngramMicro" />
           <s:enumeration value="TechData" />
+          <s:enumeration value="Overstock" />
           <s:enumeration value="Custom" />
         </s:restriction>
       </s:simpleType>
@@ -7103,6 +7135,7 @@
           <s:enumeration value="Cdiscount" />
           <s:enumeration value="GrouponGateway" />
           <s:enumeration value="SBN" />
+          <s:enumeration value="GoogleExpress" />
         </s:restriction>
       </s:simpleType>
       <s:complexType name="ArrayOfOrderNote">

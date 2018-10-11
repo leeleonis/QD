@@ -92,14 +92,14 @@ namespace QDLogistics.Commons
         {
             if (!CaseExit(caseType)) return CreateEvent(orderData.OrderID, packageData.ID, packageData.TagNo, caseType);
 
-            return packageData.CaseEvent.First(c => c.LabelID.Equals(packageData.TagNo) && c.Type.Equals((byte)caseType));
+            return packageData.CaseEvent.First(c => c.PackageID.Equals(packageData.ID) && c.Type.Equals((byte)caseType));
         }
 
         public bool CaseExit(EnumData.CaseEventType caseType)
         {
             if (packageData == null) throw new Exception("未設定訂單!");
 
-            return packageData.CaseEvent.Where(c => c.LabelID.Equals(packageData.TagNo) && c.Type.Equals((byte)caseType)).Any();
+            return packageData.CaseEvent.Where(c => c.PackageID.Equals(packageData.ID) && c.Type.Equals((byte)caseType)).Any();
         }
 
         public void SendTrackingMail(string directLine, List<DirectLineLabel> labelList)
@@ -284,7 +284,7 @@ namespace QDLogistics.Commons
                         MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】開始更新退貨倉", orderData.OrderID), Session);
 
                         if (SCWS == null) SCWS = new SC_WebService("tim@weypro.com", "timfromweypro");
-                        
+
                         var SC_order = SCWS.Get_OrderData(orderData.OrderID).Order;
                         SCWS.Update_PackageShippingStatus(SC_order.Packages.First(p => p.ID.Equals(packageData.ID)), packageData.TrackingNumber, carrier.Name);
                         var SC_items = SC_order.Items.Where(i => i.PackageID.Equals(packageData.ID)).ToArray();
@@ -384,7 +384,7 @@ namespace QDLogistics.Commons
 
                 foreach (Items item in packageData.Items.Where(i => i.IsEnable.Value).ToList())
                 {
-                    for(int i = 0; i<item.Qty; i++)
+                    for (int i = 0; i < item.Qty; i++)
                     {
                         RefundLabelSerial.Create(new SerialNumberForRefundLabel()
                         {
@@ -764,7 +764,7 @@ namespace QDLogistics.Commons
             return eventData;
         }
 
-        public void CreateSerialError()
+        public CaseEvent ReturnPackage()
         {
             if (packageData == null) throw new Exception("未設定訂單!");
 
@@ -772,9 +772,9 @@ namespace QDLogistics.Commons
 
             try
             {
-                MyHelp.Log("CaseEvent", orderData.OrderID, "建立訂單 Serial Number Error", Session);
+                MyHelp.Log("CaseEvent", orderData.OrderID, "回收已出貨訂單包裏", Session);
 
-                CaseEvent eventData = GetCaseEvent(EnumData.CaseEventType.SerialError);
+                return GetCaseEvent(EnumData.CaseEventType.ReturnPackage);
             }
             catch (Exception e)
             {
@@ -783,6 +783,33 @@ namespace QDLogistics.Commons
                 MyHelp.Log("CaseEvent", orderData.OrderID, errorMsg, Session);
 
                 throw new Exception(errorMsg);
+            }
+        }
+
+        public void ReturnPackageResponse(byte request)
+        {
+            if (packageData == null) throw new Exception("未設定訂單!");
+
+            if (CaseEvent == null) CaseEvent = new GenericRepository<CaseEvent>(db);
+            if (Packages == null) Packages = new GenericRepository<Packages>(db);
+
+            CaseEvent eventData = GetCaseEvent(EnumData.CaseEventType.ReturnPackage);
+            try
+            {
+                eventData.Request = request;
+                eventData.Response_at = DateTime.UtcNow;
+                eventData.Status = (byte)EnumData.CaseEventStatus.Close;
+
+                CaseEvent.Update(eventData, eventData.ID);
+                CaseEvent.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                eventData.Status = (byte)EnumData.CaseEventStatus.Error;
+                CaseEvent.Update(eventData, eventData.ID);
+                CaseEvent.SaveChanges();
+
+                MyHelp.Log("CaseEvent", orderData.OrderID, e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message, Session);
             }
         }
 

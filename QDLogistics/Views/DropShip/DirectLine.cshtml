@@ -220,7 +220,7 @@
                     {
                         field: "OrderID", title: "Order ID<br />訂單號碼", width: 100, align: "center", sortable: true,
                         formatter: function (value, row, index) {
-                            if (!isEmpty(value)) {
+                            if (isEmpty(row.IsFilter)) {
                                 return value;
                             } else {
                                 return "<input type='text' class='form-control s-orderID' value='" + (!isEmpty(filterValue['OrderID']) ? filterValue['OrderID'] : '') + "'>";
@@ -229,10 +229,10 @@
                     }, {
                         field: "POId", title: "PO#", width: 100, align: "center", sortable: true,
                         formatter: function (value, row, index) {
-                            if (!isEmpty(value)) {
+                            if (isEmpty(row.IsFilter)) {
                                 return value;
                             } else {
-                                return "<input type='text' class='form-control s-orderID' value='" + (!isEmpty(filterValue['POId']) ? filterValue['POId'] : '') + "'>";
+                                return "<input type='text' class='form-control s-poId' value='" + (!isEmpty(filterValue['POId']) ? filterValue['POId'] : '') + "'>";
                             }
                         }
                     }
@@ -247,16 +247,7 @@
                     { field: "StatusCode", title: "Status<br />訂單狀態", width: 120, align: "center", sortable: false },
                     { field: "Comment", title: "Comment<br />出貨備註", width: 200, align: "center", sortable: false },
                     { field: "SupplierComment", title: "Supplier Comment", width: 200, align: "center", sortable: false },
-                    {
-                        field: "SerialNumber", title: "Serial Number<br />產品序號", width: 180, align: "center", sortable: false,
-                        formatter: function (value, row, index) {
-                            if (value != 'Multi') {
-                                if (!isEmpty(row.PackageID)) return "<input type='text' class='form-control input-sm' id='SerialNumber-" + row.PackageID + "' data-id='" + row.ItemID + "' value='" + value + "' onchange='changeSerial(" + row.PackageID + ")'>";
-                            } else {
-                                return value;
-                            }
-                        }
-                    },
+                    { field: "SerialNumber", title: "Serial Number<br />產品序號", width: 180, align: "center", sortable: false },
                     { field: "TagNo", title: "Tag No<br />標籤號碼", width: 180, align: "center", sortable: false },
                     {
                         field: "POInvoice", title: "Invoice#", width: 150, align: "center", sortable: false,
@@ -271,7 +262,7 @@
                     }
                 ]],
                 rowStyler: function (index, row) {
-                    if (isEmpty(row.OrderID)) return { class: 'filterColumn' }
+                    if (!isEmpty(row.IsFilter)) return { class: 'filterColumn' }
                 },
                 onLoadSuccess: function (data) {
                     $dataGrid.datagrid('uncheckAll');
@@ -404,6 +395,7 @@
 
         function setFilterColumn(filterValue) {
             return {
+                IsFilter: true,
                 ItemCount: 1,
                 OrderID: "",
                 POId: "",

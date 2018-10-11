@@ -328,8 +328,8 @@ namespace QDLogistics.Controllers
                                 jObjects.Add(new JObject()
                                 {
                                     { "OrderID", oData.order.OrderID },
-                                    { "PO#", oData.package.POId.Value },
-                                    { "Invoice#", !string.IsNullOrEmpty(oData.package.POInvoice) ? oData.package.POInvoice : "" },
+                                    { "PO#", oData.package.POId??0 },
+                                    { "Invoice#", oData.package?.POInvoice },
                                     { "ProductID", oData.item.ProductID },
                                     { "DisplayName", skuName[oData.item.ProductID] },
                                     { "Qty", 1 },

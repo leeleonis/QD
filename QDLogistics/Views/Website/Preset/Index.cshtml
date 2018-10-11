@@ -228,7 +228,6 @@
                 },
                 "rowCallback": function (nRow, data, index) {
                     responsiveHelper_dt_basic.createExpandIcon(nRow);
-                    $(nRow).on('change', '#warehouse-' + data.id, function () { getMethodOption(data.id, $(this).val()); });
                 },
                 "drawCallback": function (oSettings) {
                     responsiveHelper_dt_basic.respond();
@@ -296,8 +295,8 @@
                 case '4': //Warehouse & Shipping Method
                 case '6': //Warehouse & First Mile
                     var warehouseID = !isEmpty(row.warehouse) && row.warehouse != 0 ? row.warehouse.toString() : Object.keys(warehouseList)[0].toString();
-                    html += "<select class='form-control' id='warehouse-" + id + "'>" + setSelectOption(warehouseList, warehouseID) + "</select>";
-                    html += "<select class='form-control' id='methodID-" + id + "'></select>"
+                    html += "<select class='form-control' id='warehouse-" + id + "' onchange='getMethodOption(" + id + ", $(this).val());'>" + setSelectOption(warehouseList, warehouseID) + "</select>";
+                    html += "<select class='form-control' id='methodID-" + id + "'></select>";
                     getMethodOption(id, warehouseID, !isEmpty(row.shippingMethod) ? row.shippingMethod.toString() : '');
                     break;
             }
@@ -334,12 +333,12 @@
                 SourceID: checkValue($('#channel-' + id).val(), true),
                 Amount: checkValue($('#amount-' + id).val(), true),
                 AmountType: checkValue($('#amountType-' + id).val(), true),
-                ShippingMethod: checkValue($('#method-' + id).val(), false),
+                ShippingMethod: checkValue($('.DTFC_Cloned #methodID-' + id).val(), false),
                 Sku: checkValue($('#sku-' + id).val(), false),
                 Weight: checkValue($('#weight-' + id).val(), true),
                 WeightType: checkValue($('#weightType-' + id).val(), true),
-                WarehouseID: checkValue($('#warehouse-' + id).val(), true),
-                MethodID: checkValue($('#methodID-' + id).val(), true)
+                WarehouseID: checkValue($('.DTFC_Cloned #warehouse-' + id).val(), true),
+                MethodID: checkValue($('.DTFC_Cloned #methodID-' + id).val(), true)
             };
             ajaxData(url, 'post', data).done(function (response) {
                 if (response['status']) {

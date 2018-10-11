@@ -79,7 +79,7 @@ namespace QDLogistics.Commons
 
             if (isDropShip)
             {
-                result = DropShip();
+                result = new ShipResult(true); //DropShip();
 
                 if (!result.Status) return result;
             }
@@ -349,7 +349,7 @@ namespace QDLogistics.Commons
         {
             try
             {
-                int CompanyID = SCWS.Get_CurrentCompanyID();
+                int CompanyID = order.CompanyID.Value; // SCWS.Get_CurrentCompanyID();
                 POVendor VendorData = SCWS.Get_Vendor_All(CompanyID).FirstOrDefault(v => v.DisplayName.Equals(warehouse.Name));
 
                 Purchase newPurchase = SCWS.Create_PurchaseOrder(new Purchase()
@@ -373,7 +373,8 @@ namespace QDLogistics.Commons
                     {
                         PurchaseID = newPurchase.ID,
                         ProductID = item.ProductID,
-                        ProductName = item.DisplayName,
+                        ProductName = item.Skus.ProductName,
+                        UPC = item.Skus.UPC,
                         QtyOrdered = item.Qty.Value,
                         QtyReceived = 0,
                         QtyReceivedToDate = 0,

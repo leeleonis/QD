@@ -502,10 +502,7 @@ namespace QDLogistics.Controllers
             }
             catch (Exception e)
             {
-                if (reTry <= 2)
-                    UpdatePurchaseOrder(package, reTry + 1);
-                else
-                    throw e;
+                throw e;
             }
         }
 

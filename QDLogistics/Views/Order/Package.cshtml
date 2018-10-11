@@ -193,12 +193,12 @@
                 conn.server.register('@ViewData["adminName"]');
                 ProductSerialData.Get_Data();
             });
-
+            
             conn.client.refreshOrderPickUp = function (response) {
                 var data = $.parseJSON(response)
-                if (data.Status == 4) {
-                    var msg = '訂單【' + data.OrderID + '】' + (!isEmpty(data.ProductID) ? ' - ' + data.ProductID : '') + '發現異常，請確認是否取出!';
-                    if (confirm(msg)) { }
+                if (data.Status == 5) {
+                    var msg = '訂單【' + data.OrderID + '】回收包裏，請確認是否取出!';
+                    ajaxData('@Url.Action("Receive", "CaseEvent")', 'get', { caseID: data.CaseID, type:5, request: confirm(msg) });
                 } else {
                     ProductSerialData.Update_OrderList(data);
                 }

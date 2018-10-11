@@ -43,7 +43,7 @@ namespace QDLogistics.Commons
             }
             catch(Exception e)
             {
-                MyHelp.Log("Items", itemData.ID, string.Format("訂單【0】- {1} 發現異常 - {2}", itemData.OrderID, itemData.ProductID, e.Message));
+                MyHelp.Log("Items", itemData.ID, string.Format("訂單【{0}】- {1} 發現異常 - {2}", itemData.OrderID, itemData.ProductID, e.Message));
                 checkResult = false;
             }
 

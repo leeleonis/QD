@@ -24,9 +24,15 @@ namespace QDLogistics.Hubs
             _apiServer = apiServer;
         }
 
-        public void BroadcastOrderChange(int OrderID, EnumData.OrderChangeStatus Status)
+        public void BroadcastOrderEvent(int OrderID, EnumData.OrderChangeStatus Status)
         {
             string message = Newtonsoft.Json.JsonConvert.SerializeObject(new { OrderID, Status });
+            _apiServer.BroadcastToAll(message);
+        }
+
+        public void BroadcastOrderEvent(int OrderID, int CaseID, EnumData.OrderChangeStatus Status)
+        {
+            string message = Newtonsoft.Json.JsonConvert.SerializeObject(new { OrderID, CaseID, Status });
             _apiServer.BroadcastToAll(message);
         }
 

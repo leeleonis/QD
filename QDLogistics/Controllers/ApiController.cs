@@ -552,7 +552,7 @@ namespace QDLogistics.Controllers
                 }
 
                 using (Hubs.ServerHub server = new Hubs.ServerHub())
-                    server.BroadcastOrderChange(package.OrderID.Value, EnumData.OrderChangeStatus.已完成出貨);
+                    server.BroadcastOrderEvent(package.OrderID.Value, EnumData.OrderChangeStatus.已完成出貨);
 
                 MyHelp.Log("Packages", package.ID, string.Format("訂單【{0}】出貨完成", package.OrderID), Session);
             }

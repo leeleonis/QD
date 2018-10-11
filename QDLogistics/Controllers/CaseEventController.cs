@@ -166,6 +166,10 @@ namespace QDLogistics.Controllers
                                     Label.SaveChanges();
                                 }
                                 break;
+
+                            case (byte)EnumData.CaseEventType.ReturnPackage:
+                                CaseLog.ReturnPackageResponse(receive.Request);
+                                break;
                         }
                     }
 
