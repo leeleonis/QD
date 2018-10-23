@@ -34,7 +34,7 @@ namespace CarrierApi.Sendle
             Addresses address = package.Orders.Addresses;
 
             DateTime pickup_date = new TimeZoneConvert().ConvertDateTime(QDLogistics.Commons.EnumData.TimeZone.AEST);
-            decimal weight = package.Items.Where(i => i.IsEnable.Value).Sum(i => (i.Qty.Value * (decimal)i.Skus.Weight) / 1000);
+            decimal weight = package.Items.Where(i => i.IsEnable.Value).Sum(i => (i.Qty.Value * (decimal)i.Skus.ShippingWeight) / 1000);
 
             OrderRequest request = new OrderRequest()
             {

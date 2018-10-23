@@ -100,7 +100,7 @@ namespace DirectLineApi.IDS
                     buyerDistrict = address.CountryCode.Equals("US") ? "" : "E",
                     buyerState = !string.IsNullOrEmpty(address.StateName) ? address.StateName : "",
                     buyerZip = address.PostalCode,
-                    weight = itemList.Sum(i => i.Qty.Value * i.Skus.Weight),
+                    weight = itemList.Sum(i => i.Qty.Value * i.Skus.ShippingWeight),
                     quantity = itemList.Sum(i => i.Qty.Value),
                     cost = (float)itemList.Sum(i => i.Qty.Value * i.DLDeclaredValue),
                     remarks = !string.IsNullOrEmpty(package.SupplierComment) ? package.SupplierComment.Trim() : ""

@@ -145,7 +145,7 @@
           <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="OrderID" Type="int" Nullable="false" />
           <Property Name="PackageID" Type="int" Nullable="false" />
-          <Property Name="LabelID" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="LabelID" Type="nvarchar" MaxLength="50" />
           <Property Name="NewLabelID" Type="nvarchar" MaxLength="50" />
           <Property Name="MethodID" Type="int" Nullable="false" />
           <Property Name="Type" Type="tinyint" Nullable="false" />
@@ -536,6 +536,7 @@
           <Property Name="ExportMethod" Type="tinyint" />
           <Property Name="PurchaseInvoice" Type="nvarchar" MaxLength="150" />
           <Property Name="Weight" Type="int" Nullable="false" />
+          <Property Name="ShippingWeight" Type="int" Nullable="false" />
         </EntityType>
         <EntityType Name="TaskLog">
           <Key>
@@ -1420,6 +1421,7 @@
           <NavigationProperty Name="ParentSku" Relationship="QDLogisticsModel.FK_Skus_Skus" FromRole="Skus1" ToRole="Skus" />
           <Property Name="PurchaseInvoice" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
           <Property Name="Weight" Type="Int32" Nullable="false" />
+          <Property Name="ShippingWeight" Type="Int32" Nullable="false" />
         </EntityType>
         <EntityType Name="Warehouses">
           <Key>
@@ -2002,7 +2004,7 @@
           <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="OrderID" Type="Int32" Nullable="false" />
           <Property Name="PackageID" Type="Int32" Nullable="false" />
-          <Property Name="LabelID" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="LabelID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="NewLabelID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="MethodID" Type="Int32" Nullable="false" />
           <Property Name="Type" Type="Byte" Nullable="false" />
@@ -2358,6 +2360,7 @@
           <EntitySetMapping Name="Skus">
             <EntityTypeMapping TypeName="QDLogisticsModel.Skus">
               <MappingFragment StoreEntitySet="Skus">
+                <ScalarProperty Name="ShippingWeight" ColumnName="ShippingWeight" />
                 <ScalarProperty Name="Weight" ColumnName="Weight" />
                 <ScalarProperty Name="PurchaseInvoice" ColumnName="PurchaseInvoice" />
                 <ScalarProperty Name="Origin" ColumnName="Origin" />

@@ -670,7 +670,7 @@ namespace QDLogistics.Commons
 
             try
             {
-                MyHelp.Log("CaseEvent", orderData.OrderID, "開始寄送Direct Line Resend Shipment通知", Session);
+                MyHelp.Log("CaseEvent", newPackage.OrderID.Value, "開始寄送DirectLine Resend Shipment通知", Session);
 
                 CaseEvent eventData = GetCaseEvent(EnumData.CaseEventType.ResendShipment);
                 eventData.NewLabelID = newPackage.TagNo;
@@ -835,7 +835,8 @@ namespace QDLogistics.Commons
             }
             catch (Exception e)
             {
-                throw new Exception("建立Case失敗!");
+                string msg = e.InnerException != null && string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+                throw new Exception("建立Case失敗! - " + msg);
             }
         }
 

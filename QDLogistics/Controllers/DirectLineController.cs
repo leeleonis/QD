@@ -417,7 +417,7 @@ namespace QDLogistics.Controllers
                     WarehouseFrom = warehouseName.ContainsKey(data.WarehouseFrom) ? warehouseName[data.WarehouseFrom] : "",
                     WarehouseTO = warehouseName.ContainsKey(data.WarehouseTo) ? warehouseName[data.WarehouseTo] : "",
                     BoxQty = data.BoxNo,
-                    TotalWeight = itemGroup.Any(i => i.Key.Equals(data.BoxID)) ? itemGroup[data.BoxID].Sum(i => i.Qty * ((float)i.Skus.Weight / 1000)) : 0,
+                    TotalWeight = itemGroup.Any(i => i.Key.Equals(data.BoxID)) ? itemGroup[data.BoxID].Sum(i => i.Qty * ((float)i.Skus.ShippingWeight / 1000)) : 0,
                     data.WITID,
                     Carrier = carrierName.ContainsKey(data.FirstMileMethod) ? carrierName[data.FirstMileMethod] : "",
                     Tracking = data.TrackingNumber ?? "",
@@ -467,7 +467,7 @@ namespace QDLogistics.Controllers
                     ProductName = data.itemCount == 1 ? SkuName[data.item.ProductID] : "Multi",
                     SentQty = data.itemCount,
                     ReceivedQty = 0,
-                    Weight = data.items.Sum(i => i.Skus.Weight * (float)i.Qty.Value / 1000),
+                    Weight = data.items.Sum(i => i.Skus.ShippingWeight * (float)i.Qty.Value / 1000),
                     data.order.OrderID,
                     Serial = data.item.SerialNumbers.Any() ? (data.itemCount == 1 ? data.item.SerialNumbers.First().SerialNumber : "Multi") : "找不到",
                     Tracking = data.package.TrackingNumber,
@@ -817,7 +817,7 @@ namespace QDLogistics.Controllers
                 .Select(data => data.pick.SetTagNo(data.package.TrackingNumber ?? data.package.TagNo).SetNote(data.package.Comment).SetInBox(data.method.InBox))
                 .Join(ItemFilter, pick => pick.ItemID.Value, i => i.ID, (pick, i) => new { item = i, pick })
                 .Join(SkuFilter, data => data.pick.ProductID, sku => sku.Sku, (data, sku) => new { data.pick, data.item, sku })
-                .Select(p => p.pick.SetDeclaredValue(p.item.DeclaredValue).SetBattery(p.sku.Battery ?? false).SetWeight(p.sku.Weight))
+                .Select(p => p.pick.SetDeclaredValue(p.item.DeclaredValue).SetBattery(p.sku.Battery ?? false).SetWeight(p.sku.ShippingWeight))
                 .GroupBy(pick => pick.ProductID).ToDictionary(group => group.Key.ToString(), group => group.ToDictionary(p => p.ItemID.Value.ToString()));
 
             string[] productIDs = productList.Select(p => p.Key).ToArray(); ;
@@ -882,7 +882,7 @@ namespace QDLogistics.Controllers
                                 data.package.Label.Note,
                                 data.package.Method.InBox,
                                 data.item.DeclaredValue,
-                                data.item.Skus.Weight,
+                                Weight = data.item.Skus.ShippingWeight,
                                 IsBattery = data.item.Skus.Battery ?? false,
                             });
                         }
@@ -1140,22 +1140,27 @@ namespace QDLogistics.Controllers
                     {
                         if (label.Status.Equals((byte)EnumData.LabelStatus.正常))
                         {
-                            if (directLine.Abbreviation.Equals("ECOF"))
+                            //if (directLine.Abbreviation.Equals("ECOF"))
+                            //{
+                            //    ThreadTask SyncTask = new ThreadTask(string.Format("Direct Line 訂單【{0}】SC更新", package.OrderID));
+                            //    SyncTask.AddWork(factory.StartNew(() =>
+                            //    {
+                            //        SyncTask.Start();
+                            //        SyncProcess sync = new SyncProcess(Session);
+                            //        return sync.Update_Tracking(package);
+                            //    }));
+                            //}
+                            //else
+                            //{
+                            //    foreach (Items item in package.Items.Where(i => i.IsEnable.Value).ToList())
+                            //    {
+                            //        if (item.SerialNumbers.Any()) SCWS.Update_ItemSerialNumber(item.ID, item.SerialNumbers.Select(s => s.SerialNumber).ToArray());
+                            //    }
+                            //}
+
+                            foreach (Items item in package.Items.Where(i => i.IsEnable.Value).ToList())
                             {
-                                ThreadTask SyncTask = new ThreadTask(string.Format("Direct Line 訂單【{0}】SC更新", package.OrderID));
-                                SyncTask.AddWork(factory.StartNew(() =>
-                                {
-                                    SyncTask.Start();
-                                    SyncProcess sync = new SyncProcess(Session);
-                                    return sync.Update_Tracking(package);
-                                }));
-                            }
-                            else
-                            {
-                                foreach (Items item in package.Items.Where(i => i.IsEnable.Value).ToList())
-                                {
-                                    if (item.SerialNumbers.Any()) SCWS.Update_ItemSerialNumber(item.ID, item.SerialNumbers.Select(s => s.SerialNumber).ToArray());
-                                }
+                                if (item.SerialNumbers.Any()) SCWS.Update_ItemSerialNumber(item.ID, item.SerialNumbers.Select(s => s.SerialNumber).ToArray());
                             }
 
                             package.ProcessStatus = (int)EnumData.ProcessStatus.已出貨;
@@ -1288,7 +1293,8 @@ namespace QDLogistics.Controllers
             {
                 case "WaitingOrder":
                 case "BoxOrder":
-                    package = db.Packages.AsNoTracking().FirstOrDefault(p => p.IsEnable.Value && p.ID.Equals(int.Parse(TargetID)));
+                    int packageID = int.Parse(TargetID);
+                    package = db.Packages.AsNoTracking().FirstOrDefault(p => p.IsEnable.Value && p.ID.Equals(packageID));
                     break;
 
                 case "CancelLabel":

@@ -680,12 +680,12 @@ namespace QDLogistics.Commons
                     sheet.GetRow(rowIndex).GetCell(5).SetCellValue(item.Skus.ProductType.HSCode);
                     sheet.GetRow(rowIndex).GetCell(8).SetCellValue(item.Qty.Value);
                     sheet.GetRow(rowIndex).GetCell(9).SetCellValue("pieces");
-                    sheet.GetRow(rowIndex).GetCell(10).SetCellValue(item.Qty.Value * ((double)item.Skus.Weight / 1000) + "kg");
+                    sheet.GetRow(rowIndex).GetCell(10).SetCellValue(item.Qty.Value * ((double)item.Skus.ShippingWeight / 1000) + "kg");
                     sheet.GetRow(rowIndex).GetCell(11).SetCellValue(item.DeclaredValue.ToString("N"));
                     sheet.GetRow(rowIndex++).GetCell(16).SetCellValue((item.DeclaredValue * item.Qty.Value).ToString("N"));
                 }
                 sheet.GetRow(47).GetCell(3).SetCellValue(1);
-                sheet.GetRow(47).GetCell(10).SetCellValue(package.Items.Where(i => i.IsEnable == true).Sum(i => i.Qty.Value * ((double)i.Skus.Weight / 1000)) + "kg");
+                sheet.GetRow(47).GetCell(10).SetCellValue(package.Items.Where(i => i.IsEnable == true).Sum(i => i.Qty.Value * ((double)i.Skus.ShippingWeight / 1000)) + "kg");
                 sheet.GetRow(47).GetCell(11).SetCellValue(Enum.GetName(typeof(OrderService.CurrencyCodeType2), package.Orders.OrderCurrencyCode.Value));
                 sheet.GetRow(47).GetCell(16).SetCellValue(package.Items.Where(i => i.IsEnable == true).Sum(i => i.Qty.Value * i.DeclaredValue).ToString("N"));
                 sheet.GetRow(57).GetCell(9).SetCellValue(package.ShipDate.Value.ToString("yyyy-MM-dd"));
@@ -758,7 +758,7 @@ namespace QDLogistics.Commons
                     sheet.GetRow(rowIndex).GetCell(5).SetCellValue(sku.ProductType.HSCode);
                     sheet.GetRow(rowIndex).GetCell(8).SetCellValue(item.Qty.Value);
                     sheet.GetRow(rowIndex).GetCell(9).SetCellValue("pieces");
-                    sheet.GetRow(rowIndex).GetCell(10).SetCellValue((item.Qty.Value * (double)sku.Weight / 1000) + "kg");
+                    sheet.GetRow(rowIndex).GetCell(10).SetCellValue((item.Qty.Value * (double)sku.ShippingWeight / 1000) + "kg");
                     sheet.GetRow(rowIndex).GetCell(11).SetCellValue(item.DeclaredValue.ToString("N"));
                     sheet.GetRow(rowIndex).GetCell(16).SetCellValue((item.Qty.Value * item.DeclaredValue).ToString("N"));
                     sheet.GetRow(rowIndex++).HeightInPoints = (productName.Length / 20 + 1) * sheet.DefaultRowHeight / 20;
@@ -773,7 +773,7 @@ namespace QDLogistics.Commons
                 var pictuer = drawing.CreatePicture(anchor, picIndex);
 
                 sheet.GetRow(rowIndex).GetCell(3).SetCellValue(1);
-                sheet.GetRow(rowIndex).GetCell(10).SetCellValue(itemList.Sum(i => i.Qty.Value * ((double)i.Skus.Weight / 1000)) + "kg");
+                sheet.GetRow(rowIndex).GetCell(10).SetCellValue(itemList.Sum(i => i.Qty.Value * ((double)i.Skus.ShippingWeight / 1000)) + "kg");
                 sheet.GetRow(rowIndex).GetCell(11).SetCellValue(currency);
                 sheet.GetRow(rowIndex).GetCell(16).SetCellValue(itemList.Sum(i => i.Qty.Value * i.DeclaredValue).ToString("N"));
                 sheet.GetRow(rowIndex + 10).GetCell(9).SetCellValue(boxList[0].Create_at.ToString("yyyy-MM-dd"));

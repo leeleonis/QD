@@ -1092,7 +1092,7 @@ namespace QDLogistics.Controllers
                                                     FedEx_sheet.GetRow(rowIndex).GetCell(5).SetCellValue(item.Skus.ProductType.HSCode);
                                                     FedEx_sheet.GetRow(rowIndex).GetCell(8).SetCellValue(item.Qty.Value);
                                                     FedEx_sheet.GetRow(rowIndex).GetCell(9).SetCellValue("pieces");
-                                                    FedEx_sheet.GetRow(rowIndex).GetCell(10).SetCellValue(item.Qty * ((double)item.Skus.Weight / 1000) + "kg");
+                                                    FedEx_sheet.GetRow(rowIndex).GetCell(10).SetCellValue(item.Qty * ((double)item.Skus.ShippingWeight / 1000) + "kg");
                                                     FedEx_sheet.GetRow(rowIndex).GetCell(11).SetCellValue(item.DeclaredValue.ToString("N"));
                                                     FedEx_sheet.GetRow(rowIndex).GetCell(16).SetCellValue((item.DeclaredValue * item.Qty.Value).ToString("N"));
                                                     FedEx_sheet.GetRow(rowIndex).HeightInPoints = (productName.Length / 30 + 1) * FedEx_sheet.DefaultRowHeight / 20;

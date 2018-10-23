@@ -32,109 +32,6 @@ namespace CarrierApi.FedEx
             api_meterNumber = Api.ApiMeter;
         }
 
-        public ShipmentReply Validate(Packages package)
-        {
-            ValidateShipmentRequest request = new ValidateShipmentRequest();
-
-            request.WebAuthenticationDetail = new QDLogistics.FedExShipService.WebAuthenticationDetail();
-            request.WebAuthenticationDetail.UserCredential = new QDLogistics.FedExShipService.WebAuthenticationCredential();
-            request.WebAuthenticationDetail.UserCredential.Key = api_key;
-            request.WebAuthenticationDetail.UserCredential.Password = api_password;
-
-            request.ClientDetail = new QDLogistics.FedExShipService.ClientDetail();
-            request.ClientDetail.AccountNumber = api_accountNumber;
-            request.ClientDetail.MeterNumber = api_meterNumber;
-
-            request.TransactionDetail = new QDLogistics.FedExShipService.TransactionDetail();
-            request.TransactionDetail.CustomerTransactionId = "*** Validate Shipment Request ***";
-
-            request.RequestedShipment = new RequestedShipment()
-            {
-                ShipTimestamp = new DateTime(),
-                DropoffType = DropoffType.REGULAR_PICKUP,
-                ServiceType = (QDLogistics.FedExShipService.ServiceType)package.Method.MethodType,
-                PackagingType = (QDLogistics.FedExShipService.PackagingType)package.Method.BoxType,
-                Shipper = _shipperInit(),
-                ShippingChargesPayment = new Payment() { PaymentType = PaymentType.SENDER, Payor = new Payor() { ResponsibleParty = _shipperInit() } },
-                LabelSpecification = new LabelSpecification()
-                {
-                    LabelFormatType = LabelFormatType.COMMON2D,
-                    ImageType = ShippingDocumentImageType.PDF,
-                    LabelStockType = LabelStockType.STOCK_4X675_LEADING_DOC_TAB
-                },
-                PackageCount = "1"
-            };
-
-            Addresses address = package.Orders.Addresses;
-            request.RequestedShipment.Recipient = new Party()
-            {
-                Contact = new QDLogistics.FedExShipService.Contact()
-                {
-                    PersonName = string.Join(" ", new string[] { address.FirstName, address.MiddleInitial, address.LastName }),
-                    CompanyName = address.CompanyName,
-                    PhoneNumber = address.PhoneNumber,
-                },
-                Address = new QDLogistics.FedExShipService.Address()
-                {
-                    StreetLines = new string[] { address.StreetLine1, address.StreetLine2 },
-                    City = address.City,
-                    StateOrProvinceCode = address.StateCode,
-                    PostalCode = address.PostalCode,
-                    CountryName = address.CountryName,
-                    CountryCode = address.CountryCode
-                }
-            };
-
-            string currency = Enum.GetName(typeof(QDLogistics.OrderService.CurrencyCodeType2), package.Orders.OrderCurrencyCode.Value);
-            QDLogistics.FedExShipService.Money customsValue = new QDLogistics.FedExShipService.Money() { Currency = currency, Amount = package.DeclaredTotal };
-            QDLogistics.FedExShipService.Commodity commodity = new QDLogistics.FedExShipService.Commodity
-            {
-                NumberOfPieces = "1",
-                Description = string.Join(", ", package.Items.Select(i => i.Skus.ProductType.ProductTypeName).Distinct().ToArray()),
-                Weight = new QDLogistics.FedExShipService.Weight()
-                {
-                    Units = QDLogistics.FedExShipService.WeightUnits.KG,
-                    Value = package.Items.Where(i => i.IsEnable.Equals(true)).Sum(i => i.Qty.Value * ((decimal)i.Skus.Weight / 1000))
-                },
-                Quantity = 1,
-                QuantityUnits = "EA",
-                UnitPrice = customsValue,
-                CustomsValue = customsValue
-            };
-
-            request.RequestedShipment.CustomsClearanceDetail = new CustomsClearanceDetail()
-            {
-                DutiesPayment = new Payment() { PaymentType = PaymentType.RECIPIENT },
-                DocumentContent = InternationalDocumentContentType.DOCUMENTS_ONLY,
-                CustomsValue = customsValue,
-                Commodities = new QDLogistics.FedExShipService.Commodity[] { commodity }
-            };
-
-            request.RequestedShipment.RequestedPackageLineItems = new RequestedPackageLineItem[] {
-                new RequestedPackageLineItem()
-                {
-                    SequenceNumber = "1",
-                    InsuredValue = customsValue,
-                    Weight = commodity.Weight
-                }
-            };
-
-            ShipPortTypeClient client = new ShipPortTypeClient();
-            ShipmentReply reply;
-
-            try
-            {
-                reply = client.validateShipment(request);
-            }
-            catch (Exception e)
-            {
-                reply = new ShipmentReply();
-                reply.Notifications = new QDLogistics.FedExShipService.Notification[] { new QDLogistics.FedExShipService.Notification() { Message = e.Message } };
-            }
-
-            return reply;
-        }
-
         public ProcessShipmentReply Create(Packages package)
         {
             ProcessShipmentRequest request = _shipmentInit();
@@ -182,8 +79,8 @@ namespace CarrierApi.FedEx
                 CountryOfManufacture = "CN",
                 Weight = new QDLogistics.FedExShipService.Weight()
                 {
-                    Units = QDLogistics.FedExShipService.WeightUnits.KG,
-                    Value = package.Items.Where(i => i.IsEnable.Equals(true)).Sum(i => i.Qty.Value * ((decimal)i.Skus.Weight / 1000))
+                    Units = request.RequestedShipment.Shipper.Address.CountryCode.Equals("US") ? QDLogistics.FedExShipService.WeightUnits.LB : QDLogistics.FedExShipService.WeightUnits.KG,
+                    Value = package.Items.Where(i => i.IsEnable.Equals(true)).Sum(i => i.Qty.Value * ((decimal)i.Skus.ShippingWeight / (request.RequestedShipment.Shipper.Address.CountryCode.Equals("US") ? 453 : 1000)))
                 },
                 Quantity = 1,
                 QuantityUnits = "EA",
@@ -314,8 +211,8 @@ namespace CarrierApi.FedEx
                     CountryOfManufacture = "CN",
                     Weight = new QDLogistics.FedExShipService.Weight()
                     {
-                        Units = QDLogistics.FedExShipService.WeightUnits.KG,
-                        Value = itemList.Sum(i => i.Qty.Value * ((decimal)i.Skus.Weight / 1000))
+                        Units = request.RequestedShipment.Shipper.Address.CountryCode.Equals("US") ? QDLogistics.FedExShipService.WeightUnits.LB : QDLogistics.FedExShipService.WeightUnits.KG,
+                        Value = itemList.Sum(i => i.Qty.Value * ((decimal)i.Skus.ShippingWeight / (request.RequestedShipment.Shipper.Address.CountryCode.Equals("US") ? 453 : 1000)))
                     },
                     Quantity = 1,
                     QuantityUnits = "EA",
@@ -343,7 +240,7 @@ namespace CarrierApi.FedEx
 
             request.RequestedShipment.TotalWeight = new QDLogistics.FedExShipService.Weight()
             {
-                Units = QDLogistics.FedExShipService.WeightUnits.KG,
+                Units = request.RequestedShipment.Shipper.Address.CountryCode.Equals("US") ? QDLogistics.FedExShipService.WeightUnits.LB : QDLogistics.FedExShipService.WeightUnits.KG,
                 Value = commodityList.Select(c => c.Weight).Sum(w => w.Value)
             };
 
@@ -358,7 +255,7 @@ namespace CarrierApi.FedEx
             request.RequestedShipment.RequestedPackageLineItems = new RequestedPackageLineItem[1];
 
             request.RequestedShipment.LabelSpecification = new LabelSpecification()
-            {                
+            {
                 LabelOrder = LabelOrderType.SHIPPING_LABEL_FIRST,
                 LabelFormatType = LabelFormatType.COMMON2D,
                 ImageType = ShippingDocumentImageType.ZPLII,

@@ -1858,7 +1858,8 @@ namespace QDLogistics.Controllers
                     Export = sku.Export,
                     ExportMethod = sku.ExportMethod,
                     PurchaseInvoice = !string.IsNullOrEmpty(sku.PurchaseInvoice) ? sku.PurchaseInvoice : "",
-                    Weight = sku.Weight
+                    Weight = sku.Weight,
+                    sku.ShippingWeight
                 }));
             }
 
@@ -1881,6 +1882,7 @@ namespace QDLogistics.Controllers
                     sku.ExportMethod = sData.ExportMethod;
                     sku.PurchaseInvoice = sData.PurchaseInvoice;
                     sku.Weight = sData.Weight;
+                    sku.ShippingWeight = sData.ShippingWeight;
                     Skus.Update(sku);
                 }
 

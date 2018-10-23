@@ -37,6 +37,7 @@ namespace QDLogistics.Models
         public Nullable<byte> ExportMethod { get; set; }
         public string PurchaseInvoice { get; set; }
         public int Weight { get; set; }
+        public int ShippingWeight { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<BundleItems> BundleItems { get; set; }

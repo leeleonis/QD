@@ -36,7 +36,7 @@ namespace QDLogistics.Controllers
             IRepository<Orders> Orders = new GenericRepository<Orders>(db);
             SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
 
-            int OrderID = 5528779;
+            int OrderID = 5531477;
             var order = Orders.Get(OrderID);
             if (SCWS.Is_login)
             {
@@ -133,7 +133,7 @@ namespace QDLogistics.Controllers
             }
         }
 
-        private void CheckFedEx(int OrderID)
+        public void CheckFedEx(int OrderID)
         {
             IRepository<Orders> Orders = new GenericRepository<Orders>(db);
             Orders order = Orders.Get(OrderID);
@@ -410,14 +410,14 @@ namespace QDLogistics.Controllers
                     sheet.GetRow(rowIndex).GetCell(5).SetCellValue(item.Skus.ProductType.HSCode);
                     sheet.GetRow(rowIndex).GetCell(8).SetCellValue(item.Qty.Value);
                     sheet.GetRow(rowIndex).GetCell(9).SetCellValue("pieces");
-                    sheet.GetRow(rowIndex).GetCell(10).SetCellValue(item.Qty * ((double)item.Skus.Weight / 1000) + "kg");
+                    sheet.GetRow(rowIndex).GetCell(10).SetCellValue(item.Qty * ((double)item.Skus.ShippingWeight / 1000) + "kg");
                     sheet.GetRow(rowIndex).GetCell(11).SetCellValue(item.DeclaredValue.ToString("N"));
                     sheet.GetRow(rowIndex).GetCell(16).SetCellValue((item.DeclaredValue * item.Qty.Value).ToString("N"));
                     sheet.GetRow(rowIndex).HeightInPoints = (productName.Length / 30 + 1) * sheet.DefaultRowHeight / 20;
                     sheet.GetRow(rowIndex++).RowStyle.VerticalAlignment = VerticalAlignment.Center;
                 }
                 sheet.GetRow(47).GetCell(3).SetCellValue(1);
-                sheet.GetRow(47).GetCell(10).SetCellValue(package.Items.Where(i => i.IsEnable == true).Sum(i => i.Qty.Value * ((double)i.Skus.Weight / 1000)) + "kg");
+                sheet.GetRow(47).GetCell(10).SetCellValue(package.Items.Where(i => i.IsEnable == true).Sum(i => i.Qty.Value * ((double)i.Skus.ShippingWeight / 1000)) + "kg");
                 sheet.GetRow(47).GetCell(11).SetCellValue(Enum.GetName(typeof(OrderService.CurrencyCodeType2), package.Orders.OrderCurrencyCode.Value));
                 sheet.GetRow(47).GetCell(16).SetCellValue(package.Items.Where(i => i.IsEnable == true).Sum(i => i.Qty.Value * i.DeclaredValue).ToString("N"));
                 sheet.GetRow(57).GetCell(9).SetCellValue(date.ToString("yyyy-MM-dd"));

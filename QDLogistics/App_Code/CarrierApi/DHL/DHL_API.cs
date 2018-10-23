@@ -151,6 +151,18 @@ namespace CarrierApi.DHL
                 DutyAccountNumber = api_account
             };
 
+            shipment.Shipper = new Shipper()
+            {
+                ShipperID = api_account,
+                CompanyName = "Zhi You Wan LTD",
+                AddressLine = new string[] { "No.51, Sec.3 Jianguo N. Rd.,", "South Dist.," },
+                City = "Taichung City",
+                PostalCode = "403",
+                CountryCode = "TW",
+                CountryName = "Taiwan",
+                Contact = new Contact() { PersonName = "Huai Wei Ho", PhoneNumber = "0423718118" }
+            };
+
             Addresses address = package.Orders.Addresses;
             Contact contact = new Contact()
             {
@@ -170,12 +182,15 @@ namespace CarrierApi.DHL
                 Contact = contact
             };
 
+            decimal weight = shipment.Shipper.CountryCode.Equals("US") ? 453 : 1000;
+            WeightUnit weightUnit = shipment.Shipper.CountryCode.Equals("US") ? WeightUnit.L : WeightUnit.K;
+
             List<Piece> pieceList = new List<Piece>();
             pieceList.Add(new Piece()
             {
                 PackageType = PackageType.YP,
                 PackageTypeSpecified = true,
-                Weight = package.Items.Sum(i => i.Qty.Value * ((decimal)i.Skus.Weight / 1000)),
+                Weight = package.Items.Sum(i => i.Qty.Value * ((decimal)i.Skus.ShippingWeight / weight)),
                 WeightSpecified = true,
                 PieceContents = package.Items.First(i => i.IsEnable.Equals(true)).Skus.ProductType.ProductTypeName
             });
@@ -186,7 +201,7 @@ namespace CarrierApi.DHL
                 NumberOfPieces = pieceList.Count().ToString(),
                 Pieces = pieceList.ToArray(),
                 Weight = pieceList.Sum(p => p.Weight),
-                WeightUnit = WeightUnit.K,
+                WeightUnit = weightUnit,
                 GlobalProductCode = "P",
                 LocalProductCode = "P",
                 Date = today,
@@ -209,18 +224,6 @@ namespace CarrierApi.DHL
                 DeclaredCurrency = currency,
                 TermsOfTrade = TermsOfTrade.DDP,
                 TermsOfTradeSpecified = true
-            };
-
-            shipment.Shipper = new Shipper()
-            {
-                ShipperID = api_account,
-                CompanyName = "Zhi You Wan LTD",
-                AddressLine = new string[] { "No.51, Sec.3 Jianguo N. Rd.,", "South Dist.," },
-                City = "Taichung City",
-                PostalCode = "403",
-                CountryCode = "TW",
-                CountryName = "Taiwan",
-                Contact = new Contact() { PersonName = "Huai Wei Ho", PhoneNumber = "0423718118" }
             };
 
             shipment.SpecialService = new SpecialService[] { new SpecialService() {
@@ -251,8 +254,8 @@ namespace CarrierApi.DHL
                     QuantityUnit = QuantityUnit.PCS,
                     Description = i.Skus.ProductType.ProductTypeName,
                     Value = (float)i.DeclaredValue,
-                    Weight = new ExportLineItemWeight() { Weight = (decimal)i.Skus.Weight / 1000, WeightUnit = WeightUnit.K },
-                    GrossWeight = new ExportLineItemGrossWeight() { Weight = (decimal)i.Skus.Weight / 1000, WeightSpecified = true, WeightUnit = WeightUnit.K, WeightUnitSpecified = true },
+                    Weight = new ExportLineItemWeight() { Weight = (decimal)i.Skus.ShippingWeight / weight, WeightUnit = weightUnit },
+                    GrossWeight = new ExportLineItemGrossWeight() { Weight = (decimal)i.Skus.ShippingWeight / weight, WeightSpecified = true, WeightUnit = weightUnit, WeightUnitSpecified = true },
                     ManufactureCountryCode = i.Skus.Origin
                 }).ToArray()
             };
@@ -291,6 +294,18 @@ namespace CarrierApi.DHL
                 DutyAccountNumber = api_account
             };
 
+            shipment.Shipper = new Shipper()
+            {
+                ShipperID = api_account,
+                CompanyName = "Zhi You Wan LTD",
+                AddressLine = new string[] { "No.51, Sec.3 Jianguo N. Rd.,", "South Dist.," },
+                City = "Taichung City",
+                PostalCode = "403",
+                CountryCode = "TW",
+                CountryName = "Taiwan",
+                Contact = new Contact() { PersonName = "Huai Wei Ho", PhoneNumber = "0423718118" }
+            };
+
             Contact contact = new Contact()
             {
                 PersonName = directLine.ContactName,
@@ -309,13 +324,16 @@ namespace CarrierApi.DHL
                 Contact = contact
             };
 
+            decimal weight = shipment.Shipper.CountryCode.Equals("US") ? 453 : 1000;
+            WeightUnit weightUnit = shipment.Shipper.CountryCode.Equals("US") ? WeightUnit.L : WeightUnit.K;
+
             List<Items> itemList = box.Packages.Where(p => p.IsEnable.Value).SelectMany(p => p.Items.Where(i => i.IsEnable.Value)).ToList();
             List<Piece> pieceList = new List<Piece>();
             pieceList.Add(new Piece()
             {
                 PackageType = PackageType.YP,
                 PackageTypeSpecified = true,
-                Weight = itemList.Sum(i => i.Qty.Value * ((decimal)i.Skus.Weight / 1000)),
+                Weight = itemList.Sum(i => i.Qty.Value * ((decimal)i.Skus.ShippingWeight / weight)),
                 WeightSpecified = true,
                 PieceContents = itemList.First().Skus.ProductType.ProductTypeName
             });
@@ -325,7 +343,7 @@ namespace CarrierApi.DHL
                 NumberOfPieces = pieceList.Count().ToString(),
                 Pieces = pieceList.ToArray(),
                 Weight = pieceList.Sum(p => p.Weight),
-                WeightUnit = WeightUnit.K,
+                WeightUnit = weightUnit,
                 GlobalProductCode = "P",
                 LocalProductCode = "P",
                 Date = today,
@@ -348,18 +366,6 @@ namespace CarrierApi.DHL
                 DeclaredCurrency = shipment.ShipmentDetails.CurrencyCode,
                 TermsOfTrade = TermsOfTrade.DDP,
                 TermsOfTradeSpecified = true
-            };
-
-            shipment.Shipper = new Shipper()
-            {
-                ShipperID = api_account,
-                CompanyName = "Zhi You Wan LTD",
-                AddressLine = new string[] { "No.51, Sec.3 Jianguo N. Rd.,", "South Dist.," },
-                City = "Taichung City",
-                PostalCode = "403",
-                CountryCode = "TW",
-                CountryName = "Taiwan",
-                Contact = new Contact() { PersonName = "Huai Wei Ho", PhoneNumber = "0423718118" }
             };
 
             shipment.SpecialService = new SpecialService[] { new SpecialService() {
@@ -390,8 +396,8 @@ namespace CarrierApi.DHL
                     QuantityUnit = QuantityUnit.PCS,
                     Description = i.Skus.ProductName,
                     Value = (float)i.UnitPrice.Value,
-                    Weight = new ExportLineItemWeight() { Weight = (decimal)i.Skus.Weight / 1000, WeightUnit = WeightUnit.K },
-                    GrossWeight = new ExportLineItemGrossWeight() { Weight = (decimal)i.Skus.Weight / 1000, WeightSpecified = true, WeightUnit = WeightUnit.K, WeightUnitSpecified = true },
+                    Weight = new ExportLineItemWeight() { Weight = (decimal)i.Skus.ShippingWeight / weight, WeightUnit = weightUnit },
+                    GrossWeight = new ExportLineItemGrossWeight() { Weight = (decimal)i.Skus.ShippingWeight / weight, WeightSpecified = true, WeightUnit = weightUnit, WeightUnitSpecified = true },
                     ManufactureCountryCode = i.Skus.Origin
                 }).ToArray()
             };

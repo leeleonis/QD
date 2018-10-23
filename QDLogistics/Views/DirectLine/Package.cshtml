@@ -371,11 +371,12 @@
         }
 
         var ProductSerialData = function () {
-            var isInit = false, needSerial, orderChangeList = [], boxOrderList = { rows: [] };
+            var isInit = false, isSaving = false, needSerial, orderChangeList = [], boxOrderList = { rows: [] };
             var groupList, productList, serialList, fileList;
             var gb_OrderID, gb_PackageID;
 
-            var init = function (){
+            var init = function () {
+                isInit = false;
                 var url = '@Url.Action("getOrderSerialData", "directLine")';
                 ajaxUrl(url, 'get', { type: $typeSelect.val(), firstMile: $methodSelect.val(), methodID: $typeMethodSelect.val() }).done(function (response) {
                     if(response['status']){
@@ -462,13 +463,14 @@
                             pData = notPicked[i];
                             order = groupList[typeList[type]][pData.OrderID]
 
-                            if (!isEmpty(order) && checkPicked(pData, order, serialNumber)) {
-                                $pickupTable.datagrid('loadData', { rows: [] });
+                            if (!isEmpty(order)) {
+                                if (checkPicked(pData, order, serialNumber)) {
+                                    $pickupTable.datagrid('loadData', { rows: [] });
 
-                                $boxTable.datagrid('loadData', boxOrderList);
-                                $boxTable.datagrid('scrollTo', boxOrderList.rows.length - 1);
-
-                                return error("");
+                                    $boxTable.datagrid('loadData', boxOrderList);
+                                    $boxTable.datagrid('scrollTo', boxOrderList.rows.length - 1);
+                                }
+                                return;
                             }
                         }
                     }
@@ -476,46 +478,45 @@
             };
 
             function checkPicked(pData, order, serialNumber) {
-                if (!isEmpty(order)) {
-                    if (!checkDeclaredValue(order[pData.PackageID])) {
-                        return error("此訂單已超過總價值!");
-                    }
-
-                    var product = order[pData.PackageID][pData.ItemID];
-
-                    if (needSerial) {
-                        error("產品需要輸入序號!");
-                    } else {
-                        pData.QtyPicked = product.data.QtyPicked += 1;
-                        pData.IsPicked = product.data.IsPicked = (product.data.QtyPicked == product.data.Qty);
-
-                        if (!isEmpty(serialNumber)) {
-                            product.serial.push(serialNumber);
-                            if ($.inArray(serialNumber, serialList[product.data.ProductID].used) == -1) {
-                                serialList[product.data.ProductID].used.push(serialNumber);
-                            }
-                        }
-                    }
-
-                    if (isEmpty(gb_OrderID) || isEmpty(gb_PackageID)) orderLocked(pData.OrderID, pData.PackageID);
-
-                    if (product.data.IsPicked) {
-                        var needPick = Object.keys(order[pData.PackageID]).map(itemID => order[pData.PackageID][itemID]).filter(product => !product.data.IsPicked);
-
-                        if (needPick.length == 0) {
-                            if (!findOrderChange(pData.OrderID)) {
-                                updatePicked(pData, order, false);
-                                joinBoxList(order[pData.PackageID]);
-                            }
-
-                            if (orderChangeList.length != 0) init();
-
-                            return true;
-                        }
-                    }
-                    showList(order[pData.PackageID]);
+                if (!checkDeclaredValue(order[pData.PackageID])) {
+                    return error("此訂單已超過總價值!");
                 }
-                return false;
+
+                var product = order[pData.PackageID][pData.ItemID];
+
+                if (needSerial) {
+                    return error("產品需要輸入序號!");
+                } else {
+                    pData.QtyPicked = product.data.QtyPicked += 1;
+                    pData.IsPicked = product.data.IsPicked = (product.data.QtyPicked == product.data.Qty);
+
+                    if (!isEmpty(serialNumber)) {
+                        product.serial.push(serialNumber);
+                        if ($.inArray(serialNumber, serialList[product.data.ProductID].used) == -1) {
+                            serialList[product.data.ProductID].used.push(serialNumber);
+                        }
+                    }
+                }
+
+                if (isEmpty(gb_OrderID) || isEmpty(gb_PackageID)) orderLocked(pData.OrderID, pData.PackageID);
+
+                if (product.data.IsPicked) {
+                    var needPick = Object.keys(order[pData.PackageID]).map(itemID => order[pData.PackageID][itemID]).filter(product => !product.data.IsPicked);
+
+                    if (needPick.length == 0) {
+                        if (!findOrderChange(pData.OrderID)) {
+                            updatePicked(pData, order, false);
+                            joinBoxList(order[pData.PackageID]);
+                        }
+
+                        if (orderChangeList.length != 0) init();
+
+                        return true;
+                    }
+                }
+                showList(order[pData.PackageID]);
+
+                return error("");
             }
 
             function checkDeclaredValue(itemList) {
@@ -680,6 +681,8 @@
             function error(message){
                 $("#message-error").html(message);
                 $serialInput.textbox('clear');
+
+                return false;
             }
 
             return {
@@ -735,6 +738,9 @@
                     orderChangeList.push(order);
                 },
                 Save_box: function () {
+                    if (isSaving) return alert('工作執行中，請稍候!');
+
+                    isSaving = true;
                     var url = '@Url.Action("saveBox", "directLine")';
                     ajaxUrl(url, 'post', { boxID: $('#text-boxID').text(), boxNo: parseInt($('#input-boxNo').val()) }).done(function (response) {
                         if (response.status) {
@@ -784,6 +790,7 @@
                         } else {
                             alert(response.message);
                         }
+                        isSaving = false;
                     });
                 }
             };

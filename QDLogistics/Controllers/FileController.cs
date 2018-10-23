@@ -250,6 +250,7 @@ namespace QDLogistics.Controllers
                         jo.Add("ExportMethod", sku.ExportMethod.Value);
                         jo.Add("PurchaseInvoice", sku.PurchaseInvoice);
                         jo.Add("Weight", sku.Weight);
+                        jo.Add("ShippingWeight", sku.ShippingWeight);
                         jObjects.Add(jo);
                     }
                     break;
@@ -274,7 +275,7 @@ namespace QDLogistics.Controllers
                             {
                                 JObject jo = new JObject();
                                 jo.Add("OrderID", oData.order.OrderID);
-                                jo.Add("PO#", oData.package.POId.Value);
+                                jo.Add("PO#", oData.package.POId??0);
                                 jo.Add("Invoice#", !string.IsNullOrEmpty(oData.package.POInvoice) ? oData.package.POInvoice : "");
                                 jo.Add("ProductID", oData.item.ProductID);
                                 jo.Add("DisplayName", oData.item.DisplayName);
@@ -869,6 +870,7 @@ namespace QDLogistics.Controllers
             excelFile.AddMapping<Skus>(s => s.ExportMethod, "ExportMethod");
             excelFile.AddMapping<Skus>(s => s.PurchaseInvoice, "PurchaseInvoice");
             excelFile.AddMapping<Skus>(s => s.Weight, "Weight");
+            excelFile.AddMapping<Skus>(s => s.ShippingWeight, "ShippingWeight");
             var excelContent = excelFile.Worksheet<Skus>("品號");
 
             int errorCount = 0;
@@ -885,6 +887,8 @@ namespace QDLogistics.Controllers
                 sku.Export = row.Export;
                 sku.ExportMethod = row.ExportMethod;
                 sku.PurchaseInvoice = row.PurchaseInvoice;
+                sku.Weight = row.Weight;
+                sku.ShippingWeight = row.ShippingWeight;
 
                 //if (string.IsNullOrWhiteSpace(row.Sku)) errorMessage.Append("Sku - 不可空白.");
 

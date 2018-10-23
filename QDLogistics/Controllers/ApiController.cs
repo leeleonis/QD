@@ -213,7 +213,7 @@ namespace QDLogistics.Controllers
                     UPC = SkuList[p.item.ProductID].UPC,
                     SkuList[p.item.ProductID].ProductName,
                     Qty = p.item.Qty,
-                    Weight = SkuList[p.item.ProductID].Weight,
+                    Weight = SkuList[p.item.ProductID].ShippingWeight,
                     ShippingMethod = MethodList[p.package.ShippingMethod.Value],
                     Country = p.order.ShippingCountry,
                     Export = Enum.GetName(typeof(EnumData.Export), p.package.Export),
@@ -621,7 +621,7 @@ namespace QDLogistics.Controllers
 
         private void ResetShippedData(Packages package, List<PickProduct> picked, string[] serialArray)
         {
-            MyHelp.Log("", null, string.Format("訂單【{0}】出貨狀態重置", package.OrderID));
+            MyHelp.Log("Orders", package.OrderID.Value, string.Format("訂單【{0}】出貨狀態重置", package.OrderID));
 
             foreach (PickProduct data in picked)
             {

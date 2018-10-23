@@ -6891,8 +6891,6 @@
     <Content Include="Views\Shared\_Scripts.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="App_Code\CarrierApi\DHLService.cs" />
-    <Compile Include="App_Code\CarrierApi\DHL_API.cs" />
     <Compile Include="App_Code\CarrierApi\FedEx_API.cs" />
     <Compile Include="App_Code\CarrierApi\Winit_API.cs" />
     <Compile Include="App_Code\CarrierApi\Winit\Resfun.cs" />

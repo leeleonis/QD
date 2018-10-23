@@ -154,7 +154,7 @@
                                                             <td>@item.ProductID</td>
                                                             <td>@item.Skus.UPC</td>
                                                             <td>@item.Skus.ProductName</td>
-                                                            <td>@(item.Qty * 0.5)</td>
+                                                            <td>@(item.Qty * item.Skus.ShippingWeight / (decimal) 1000)</td>
                                                             <td>@package.Method.Name</td>
                                                             <td>@package.Orders.ShippingCountry</td>
                                                             <td>@Enum.GetName(typeof(EnumData.Export), package.Export)</td>
@@ -193,7 +193,7 @@
                 conn.server.register('@ViewData["adminName"]');
                 ProductSerialData.Get_Data();
             });
-            
+
             conn.client.refreshOrderPickUp = function (response) {
                 var data = $.parseJSON(response)
                 if (data.Status == 5) {
@@ -211,11 +211,11 @@
             $syncBtn.click(function () {
                 if(isSync) return alert('目前尚有工作在執行中');
 
+                isSync = true;
                 var url = "@Url.Action("checkPurchaseItem", "orderSync")";
                 ajaxData(url, 'get', {}).done(function (response) {
                     if(response['status']) {
                         taskID = response['taskID'];
-                        isSync = true;
 
                         url = "@Url.Action("checkTaskStatus", "orderSync")";
                         ajaxData(url, 'get', { id: taskID }).done(function (response) {
@@ -312,7 +312,8 @@
             var groupList, productList, serialList, fileList;
             var gb_OrderID, gb_PackageID;
 
-            var init = function (){
+            var init = function () {
+                isInit = false;
                 var url = '@Url.Action("getSerialData", "ajax")';
                 ajaxData(url, 'get', {methodID: $methodSelect.val()}).done(function(response){
                     if(response['status']){
@@ -331,6 +332,7 @@
             var checkSerial = function(serial){
                 var productId, order, serialNumber;
 
+                error('');
                 if(!ProductSerialData.Is_Init()) return alert("尚未預載資料!");
 
                 if (isEmpty(serial)) return error('不可為空!');
