@@ -399,7 +399,7 @@ namespace QDLogistics.Commons
             CarrierAPI api = carrier.CarrierAPI;
 
             package.ShippingServiceCode = carrier.Name;
-            if(api != null)
+            if (api != null)
             {
                 switch (api.Type)
                 {
@@ -667,6 +667,8 @@ namespace QDLogistics.Commons
                     sheet.GetRow(rowIndex++).GetCell(5).SetCellValue(cityArea);
                 if (!string.IsNullOrWhiteSpace(address.CountryName))
                     sheet.GetRow(rowIndex).GetCell(5).SetCellValue(address.CountryName);
+                if (address.CountryCode.Equals("RU"))
+                    sheet.GetRow(rowIndex + 1).GetCell(5).SetCellValue(address.EmailAddress);
 
                 sheet.GetRow(17).GetCell(1).SetCellValue("Taiwan");
                 sheet.GetRow(21).GetCell(1).SetCellValue(address.CountryName);

@@ -76,6 +76,7 @@ namespace QDLogistics.Commons
                 List<Orders> orderList = Orders.GetAll(true).Where(o => SC_OrderStateInfoList.Select(info => info.ID).ToArray().Contains(o.OrderID)).ToList();
                 List<Order> SC_Orders = new List<Order>();
                 List<int> presetList = new List<int>();
+                int[] dropshipWarehouse = db.Warehouses.Where(w => w.IsEnable.Value && w.WarehouseType.Value.Equals((int)WarehouseTypeType.DropShip)).Select(w => w.ID).ToArray();
 
                 List<OrderSerialNumber> SC_SerialNumbers = new List<OrderSerialNumber>();
 
@@ -113,9 +114,12 @@ namespace QDLogistics.Commons
                             }
                         }
 
-                        if (Packages.GetAll(true).Any(p => p.IsEnable.Equals(true) && p.OrderID.Equals(orderStateInfo.ID) && !p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨)))
+                        if (db.Packages.AsNoTracking().Any(p => p.IsEnable.Value && p.OrderID.Value.Equals(orderStateInfo.ID) && !p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨)))
                         {
-                            SC_SerialNumbers.AddRange(order.Serials);
+                            if (db.Items.AsNoTracking().Any(i => i.IsEnable.Value && i.OrderID.Value.Equals(orderStateInfo.ID) && !(dropshipWarehouse.Contains(i.ShipFromWarehouseID.Value) && i.SerialNumbers.Any())))
+                            {
+                                SC_SerialNumbers.AddRange(order.Serials);
+                            }
                         }
                     }
                 }
@@ -123,19 +127,24 @@ namespace QDLogistics.Commons
 
                 List<Orders> orderDatas = orderList.Where(o => SC_Orders.Select(order => order.ID).Contains(o.OrderID)).ToList();
                 Check_Order(orderDatas, SC_Orders);
+                Orders.SaveChanges();
 
                 List<Payments> paymentDatas = orderDatas.SelectMany(o => o.Payments.Where(p => p.IsEnable.Equals(true))).ToList();
                 Check_Payment(paymentDatas, SC_Orders.SelectMany(o => o.Payments).ToList());
+                Orders.SaveChanges();
 
                 List<Packages> packageDatas = orderDatas.SelectMany(o => o.Packages.Where(p => p.IsEnable.Equals(true))).ToList();
                 Check_Package(packageDatas, SC_Orders.SelectMany(o => o.Packages).ToList());
+                Orders.SaveChanges();
 
                 List<Items> itemDatas = packageDatas.SelectMany(p => p.Items.Where(i => i.IsEnable.Equals(true))).ToList();
                 Check_Item(itemDatas, SC_Orders.SelectMany(o => o.Items).ToList());
+                Orders.SaveChanges();
 
-                int[] OrderIDs = packageDatas.Where(p => !p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨)).Select(p => p.OrderID.Value).ToArray();
+                int[] OrderIDs = packageDatas.Where(p => !p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨)).SelectMany(p => p.Items.Where(i => !dropshipWarehouse.Contains(i.ShipFromWarehouseID.Value))).Select(i => i.OrderID.Value).ToArray();
                 List<SerialNumbers> serialNumberDatas = SerialNumbers.GetAll().Where(serial => OrderIDs.Contains(serial.OrderID.Value)).ToList();
                 Check_Serial(serialNumberDatas, SC_SerialNumbers);
+                Orders.SaveChanges();
 
                 foreach (OrderStateInfo orderStateInfo in SC_OrderStateInfoList.Where(o => o.DropShipStatus != DropShipStatusType1.None))
                 {
@@ -185,7 +194,7 @@ namespace QDLogistics.Commons
             try
             {
                 MyHelp.Log("Orders", OrderID, "訂單資料同步開始", Session);
-                                
+
                 if (!SCWS.Is_login) throw new Exception("SC is not logged in!");
 
                 OrderStateInfo orderStateInfo = SCWS.Get_OrderStatus(OrderID);
@@ -194,7 +203,7 @@ namespace QDLogistics.Commons
 
                 orderData = Orders.Get(OrderID);
 
-                if(orderData == null)
+                if (orderData == null)
                 {
                     Addresses address = new Addresses() { IsEnable = true };
                     Addresses.Create(address);
@@ -221,11 +230,14 @@ namespace QDLogistics.Commons
 
                     Check_Item(orderData.Packages.Where(p => p.IsEnable.Equals(true)).SelectMany(p => p.Items.Where(i => i.IsEnable.Equals(true))).ToList(), orderDetail.Items.ToList());
 
-                    if (!orderData.Packages.First(p => p.IsEnable.Equals(true)).ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨))
+                    if (orderData.Packages.All(p => p.IsEnable.Value && !p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨)))
                     {
-                        OrderSerialNumber[] SC_SerialNumbers = SCWS.Get_OrderItem_Serial(OrderID);
-                        List<SerialNumbers> serialNumberDatas = SerialNumbers.GetAll().Where(serial => serial.OrderID == OrderID).ToList();
-                        Check_Serial(serialNumberDatas, SC_SerialNumbers.ToList());
+                        if (orderData.Packages.SelectMany(p => p.Items.Select(i => i.ShipWarehouses)).All(w => !w.WarehouseType.Equals(WarehouseTypeType.DropShip)))
+                        {
+                            OrderSerialNumber[] SC_SerialNumbers = SCWS.Get_OrderItem_Serial(OrderID);
+                            List<SerialNumbers> serialNumberDatas = orderData.Packages.Where(p => p.IsEnable.Value).SelectMany(p => p.Items.Where(i => i.IsEnable.Value).SelectMany(i => i.SerialNumbers)).ToList();
+                            Check_Serial(serialNumberDatas, SC_SerialNumbers.ToList());
+                        }
                     }
                 }
                 else
@@ -410,21 +422,21 @@ namespace QDLogistics.Commons
             List<SerialNumbers> serialNumberList = SC_SerialNumbers.Select(serial => DataProcess.SetSerialNumberData(new SerialNumbers() { }, serial)).ToList();
 
             // New serialNumber data
-            IEnumerable<SerialNumbers> newSerialNumber = serialNumberList.Except(serialNumberDatas);
+            var newSerialNumber = serialNumberList.Except(serialNumberDatas).ToList();
             foreach (SerialNumbers serialNumber in newSerialNumber)
             {
                 SerialNumbers.Create(serialNumber);
             }
 
             // Old serialNumber data
-            IEnumerable<SerialNumbers> oldSerialNumber = serialNumberDatas.Except(serialNumberList);
+            var oldSerialNumber = serialNumberDatas.Except(serialNumberList).ToList();
             foreach (SerialNumbers serialNumber in oldSerialNumber)
             {
                 SerialNumbers.Delete(serialNumber);
             }
 
             // Update serialNumber data
-            IEnumerable<SerialNumbers> updateSerialNumber = serialNumberDatas.Except(oldSerialNumber).Except(serialNumberList, new SerialNumberComparer());
+            var updateSerialNumber = serialNumberDatas.Except(oldSerialNumber).Except(serialNumberList, new SerialNumberComparer()).ToList();
             foreach (SerialNumbers serialNumber in updateSerialNumber)
             {
                 SerialNumbers.Update(DataProcess.SetSerialNumberData(serialNumber, SC_SerialNumbers.First(s => s.SerialNumber == serialNumber.SerialNumber && s.OrderItemID == serialNumber.OrderItemID)));
@@ -463,9 +475,12 @@ namespace QDLogistics.Commons
                     MyHelp.Log("Packages", package.ID, string.Format("訂單【{0}】SC完成出貨", package.OrderID), Session);
                 }
 
-                foreach (Items item in package.Items.Where(i => i.IsEnable.Equals(true)).ToList())
+                if (!package.Items.First(i => i.IsEnable.Value).ShipWarehouses.WarehouseType.Value.Equals((int)WarehouseTypeType.DropShip))
                 {
-                    if (item.SerialNumbers.Any()) SCWS.Update_ItemSerialNumber(item.ID, item.SerialNumbers.Select(s => s.SerialNumber).ToArray());
+                    foreach (Items item in package.Items.Where(i => i.IsEnable.Equals(true)).ToList())
+                    {
+                        if (item.SerialNumbers.Any()) SCWS.Update_ItemSerialNumber(item.ID, item.SerialNumbers.Select(s => s.SerialNumber).ToArray());
+                    }
                 }
 
                 Message = Sync_Order(package.OrderID.Value);
@@ -663,7 +678,7 @@ namespace QDLogistics.Commons
                     warehouse.IsEnable = false;
                     Warehouses.Update(warehouse, warehouse.ID);
                 }
-                
+
                 IEnumerable<Warehouses> updateWarehouse = warehouseData.Except(oldWarehouse).Except(WarehouseList, new WarehouseComparer());
                 foreach (Warehouses warehouse in updateWarehouse)
                 {

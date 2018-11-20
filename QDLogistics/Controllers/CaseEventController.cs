@@ -52,6 +52,10 @@ namespace QDLogistics.Controllers
                             break;
 
                         case (byte)EnumData.CaseEventType.ChangeShippingMethod:
+                            DirectLineLabel label = db.DirectLineLabel.Find(package.TagNo);
+                            label.Status = (byte)EnumData.LabelStatus.完成;
+                            db.Entry(label).State = System.Data.Entity.EntityState.Modified;
+
                             CaseLog.SendChangeShippingMethodMail(methodID);
                             break;
                     }
@@ -121,14 +125,9 @@ namespace QDLogistics.Controllers
                                 eventData = CaseLog.ChangeShippingMethodResponse(receive.Request);
                                 if (eventData.Request.Equals((byte)EnumData.CaseEventRequest.Successful) && eventData.Status.Equals((byte)EnumData.CaseEventStatus.Close))
                                 {
-                                    DirectLineLabel label = db.DirectLineLabel.AsNoTracking().First(l => l.IsEnable && l.LabelID.Equals(eventData.LabelID));
-                                    label.LabelID = eventData.NewLabelID;
-
-                                    package = db.Packages.AsNoTracking().First(p => p.ID.Equals(eventData.PackageID));
+                                    package = db.Packages.Find(eventData.PackageID);
                                     if (!string.IsNullOrEmpty(package.TrackingNumber))
                                     {
-                                        label.Status = (byte)EnumData.LabelStatus.完成;
-
                                         ThreadTask threadTask = new ThreadTask(string.Format("Direct Line 訂單【{0}】SC更新", package.OrderID));
                                         threadTask.AddWork(factory.StartNew(() =>
                                         {
@@ -137,9 +136,6 @@ namespace QDLogistics.Controllers
                                             return sync.Update_Tracking(package);
                                         }));
                                     }
-
-                                    Label.Update(label, label.LabelID);
-                                    Label.SaveChanges();
                                 }
                                 break;
 

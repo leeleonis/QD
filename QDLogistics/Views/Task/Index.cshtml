@@ -75,6 +75,7 @@
                 </div>
                 <div class="table-cell col-lg-2 hidden-md">
                     <div class="action-button col-xs-12">
+                        <button type="button" class="btn btn-default btn-sm btn-block" id="btn-syncDays" data-href="@Url.Action("checkOrder", "orderSync", new { day = 14 })"><span>14天資料同步<br />Sync 14 Days</span></button>
                         <button type="button" class="btn btn-default btn-lg btn-block" id="btn-auto">停止/開啟自動更新</button>
                     </div>
                 </div>
@@ -97,13 +98,25 @@
         var pager, pageSize = 100;
         var selected = false;
         var $dataGrid;
-        var refresh = 0, auto = false, $autoBtn = $('#btn-auto'), $searchBtn = $('#btn-search');
+        var refresh = 0, auto = false, $syncDaysBtn = $("#btn-syncDays"), $autoBtn = $('#btn-auto'), $searchBtn = $('#btn-search');
 
         $(function () {
             dataInit();
 
             $searchBtn.click(function () {
                 $dataGrid.datagrid('reload');
+            });
+
+            $syncDaysBtn.click(function () {
+                if (confirm('確定要執行?')) {
+                    $.ajax({
+                        url: $(this).data("href"),
+                        dataType: "json",
+                        success: function (response) {
+                            alert(response['message']);
+                        }
+                    });
+                }
             });
 
             $autoBtn.click(function () {
@@ -123,7 +136,7 @@
                 url: "@Url.Action("TaskSchedulerData", "ajax")",
                 queryParams: {},
                 width: "100%",
-                height: window.screen.availHeight - 310,
+                //height: window.screen.availHeight - 310,
                 singleSelect: true,
                 columns: [[
                     { field: "ID", title: "工作 ID<br />Job ID", width: "7%", align: "center", sortable: false },

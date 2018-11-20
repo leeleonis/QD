@@ -1066,82 +1066,86 @@ namespace QDLogistics.Controllers
 
                                     try
                                     {
-                                        List<Tuple<Stream, string>> FedExFile = new List<Tuple<Stream, string>>();
-                                        foreach (Packages package in groupList[serviceCode])
+                                        int skip = 0, take = 8, max = groupList[serviceCode].Count();
+
+                                        do
                                         {
-                                            filePath = string.Join("", package.FilePath.Skip(package.FilePath.IndexOf("export")));
-
-                                            decimal declaredTotal = package.DeclaredTotal;
-                                            List<Items> itemList = package.Items.Where(i => i.IsEnable.Value).ToList();
-                                            int lastItemID = itemList.Last().ID;
-
-                                            using (FileStream fsIn = new FileStream(Path.Combine(basePath, filePath, "Invoice.xls"), FileMode.Open))
-                                            {
-                                                HSSFWorkbook FedEx_workbook = new HSSFWorkbook(fsIn);
-                                                fsIn.Close();
-
-                                                ISheet FedEx_sheet = FedEx_workbook.GetSheetAt(0);
-
-                                                int rowIndex = 24;
-                                                foreach (Items item in itemList)
-                                                {
-                                                    Country country = MyHelp.GetCountries().FirstOrDefault(c => c.ID == item.Skus.Origin);
-                                                    FedEx_sheet.GetRow(rowIndex).GetCell(1).SetCellValue(country.OriginName);
-                                                    string productName = item.Skus.ProductType.ProductTypeName + " - " + item.Skus.ProductName;
-                                                    FedEx_sheet.GetRow(rowIndex).GetCell(4).SetCellValue(productName);
-                                                    FedEx_sheet.GetRow(rowIndex).GetCell(5).SetCellValue(item.Skus.ProductType.HSCode);
-                                                    FedEx_sheet.GetRow(rowIndex).GetCell(8).SetCellValue(item.Qty.Value);
-                                                    FedEx_sheet.GetRow(rowIndex).GetCell(9).SetCellValue("pieces");
-                                                    FedEx_sheet.GetRow(rowIndex).GetCell(10).SetCellValue(item.Qty * ((double)item.Skus.ShippingWeight / 1000) + "kg");
-                                                    FedEx_sheet.GetRow(rowIndex).GetCell(11).SetCellValue(item.DeclaredValue.ToString("N"));
-                                                    FedEx_sheet.GetRow(rowIndex).GetCell(16).SetCellValue((item.DeclaredValue * item.Qty.Value).ToString("N"));
-                                                    FedEx_sheet.GetRow(rowIndex).HeightInPoints = (productName.Length / 30 + 1) * FedEx_sheet.DefaultRowHeight / 20;
-                                                    FedEx_sheet.GetRow(rowIndex++).RowStyle.VerticalAlignment = VerticalAlignment.Center;
-                                                }
-
-                                                using (FileStream fsOut = new FileStream(Path.Combine(basePath, filePath, "Invoice2.xls"), FileMode.Create))
-                                                {
-                                                    FedEx_workbook.Write(fsOut);
-                                                    fsOut.Close();
-                                                }
-                                            }
-
-                                            var memoryStream = new MemoryStream();
+                                            List<Tuple<Stream, string>> FedExFile = new List<Tuple<Stream, string>>();
+                                            MemoryStream memoryStream = new MemoryStream();
 
                                             using (var file = new ZipFile())
                                             {
-                                                file.AddFile(Path.Combine(basePath, filePath, "Invoice2.xls"), "");
-                                                file.AddFile(Path.Combine(basePath, filePath, "CheckList.xlsx"), "");
-                                                file.AddFile(Path.Combine(basePath, "sample", "Fedex_Recognizances.pdf"), "");
+                                                foreach (Packages package in groupList[serviceCode].Skip(skip).Take(take))
+                                                {
+                                                    filePath = string.Join("", package.FilePath.Skip(package.FilePath.IndexOf("export")));
 
+                                                    decimal declaredTotal = package.DeclaredTotal;
+                                                    List<Items> itemList = package.Items.Where(i => i.IsEnable.Value).ToList();
+
+                                                    using (FileStream fsIn = new FileStream(Path.Combine(basePath, filePath, "Invoice.xls"), FileMode.Open))
+                                                    {
+                                                        HSSFWorkbook FedEx_workbook = new HSSFWorkbook(fsIn);
+                                                        fsIn.Close();
+
+                                                        ISheet FedEx_sheet = FedEx_workbook.GetSheetAt(0);
+
+                                                        int rowIndex = 24;
+                                                        foreach (Items item in itemList)
+                                                        {
+                                                            Country country = MyHelp.GetCountries().FirstOrDefault(c => c.ID == item.Skus.Origin);
+                                                            FedEx_sheet.GetRow(rowIndex).GetCell(1).SetCellValue(country.OriginName);
+                                                            string productName = item.Skus.ProductType.ProductTypeName + " - " + item.Skus.ProductName;
+                                                            FedEx_sheet.GetRow(rowIndex).GetCell(4).SetCellValue(productName);
+                                                            FedEx_sheet.GetRow(rowIndex).GetCell(5).SetCellValue(item.Skus.ProductType.HSCode);
+                                                            FedEx_sheet.GetRow(rowIndex).GetCell(8).SetCellValue(item.Qty.Value);
+                                                            FedEx_sheet.GetRow(rowIndex).GetCell(9).SetCellValue("pieces");
+                                                            FedEx_sheet.GetRow(rowIndex).GetCell(10).SetCellValue(item.Qty * ((double)item.Skus.ShippingWeight / 1000) + "kg");
+                                                            FedEx_sheet.GetRow(rowIndex).GetCell(11).SetCellValue(item.DeclaredValue.ToString("N"));
+                                                            FedEx_sheet.GetRow(rowIndex).GetCell(16).SetCellValue((item.DeclaredValue * item.Qty.Value).ToString("N"));
+                                                            FedEx_sheet.GetRow(rowIndex).HeightInPoints = (productName.Length / 30 + 1) * FedEx_sheet.DefaultRowHeight / 20;
+                                                            FedEx_sheet.GetRow(rowIndex++).RowStyle.VerticalAlignment = VerticalAlignment.Center;
+                                                        }
+
+                                                        using (FileStream fsOut = new FileStream(Path.Combine(basePath, filePath, "Invoice2.xls"), FileMode.Create))
+                                                        {
+                                                            FedEx_workbook.Write(fsOut);
+                                                            fsOut.Close();
+                                                        }
+                                                    }
+
+                                                    file.AddFile(Path.Combine(basePath, filePath, "Invoice2.xls"), package.TrackingNumber);
+                                                    file.AddFile(Path.Combine(basePath, filePath, "CheckList.xlsx"), package.TrackingNumber);
+                                                    file.AddFile(Path.Combine(basePath, "sample", "Fedex_Recognizances.pdf"), package.TrackingNumber);
+                                                }
                                                 file.Save(memoryStream);
                                             }
-
                                             memoryStream.Seek(0, SeekOrigin.Begin);
-                                            FedExFile.Add(new Tuple<Stream, string>(memoryStream, package.TrackingNumber + ".zip"));
-                                        }
+                                            FedExFile.Add(new Tuple<Stream, string>(memoryStream, "Data.zip"));
 
-                                        receiveMails = new string[] { "edd@fedex.com" };
-                                        //receiveMails = new string[] { "qd.tuko@hotmail.com" };
-                                        mailTitle = string.Format("至優網 {0} 第{1}批 {2}筆提單 正式出口報關資料", now.ToString("yyyy-MM-dd"), DateTime.Compare(now, noon.AddHours(3)) <= 0 ? "1" : "2", groupList[serviceCode].Count());
+                                            receiveMails = new string[] { "edd@fedex.com" };
+                                            //receiveMails = new string[] { "qd.tuko@hotmail.com" };
+                                            mailTitle = string.Format("至優網 {0} 第{1}批 [{2}-{3}]筆提單 正式出口報關資料", now.ToString("yyyy-MM-dd"), DateTime.Compare(now, noon.AddHours(3)) <= 0 ? "1" : "2", skip + 1, (skip + take > max ? max : skip + take));
 
-                                        bool FedEx_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, "", true, null, FedExFile, false);
+                                            bool FedEx_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, "", true, null, FedExFile, false);
 
-                                        if (FedEx_Status)
-                                        {
-                                            MyHelp.Log("PickProduct", null, mailTitle);
-                                            foreach (PickProduct pick in pickList.Where(pick => groupList[serviceCode].Select(p => p.ID).ToArray().Contains(pick.PackageID.Value)).ToList())
+                                            if (FedEx_Status)
                                             {
-                                                pick.IsMail = true;
-                                                PickProduct.Update(pick, pick.ID);
+                                                MyHelp.Log("PickProduct", null, mailTitle);
+                                                foreach (PickProduct pick in pickList.Where(pick => groupList[serviceCode].Skip(skip).Take(take).Select(p => p.ID).ToArray().Contains(pick.PackageID.Value)).ToList())
+                                                {
+                                                    pick.IsMail = true;
+                                                    PickProduct.Update(pick, pick.ID);
+                                                }
+
+                                                PickProduct.SaveChanges();
+                                            }
+                                            else
+                                            {
+                                                MyHelp.Log("PickProduct", null, string.Format("{0} 寄送失敗", mailTitle));
                                             }
 
-                                            PickProduct.SaveChanges();
-                                        }
-                                        else
-                                        {
-                                            MyHelp.Log("PickProduct", null, string.Format("{0} 寄送失敗", mailTitle));
-                                        }
+                                            skip += take;
+                                        } while (skip < max);
                                     }
                                     catch (Exception e)
                                     {
