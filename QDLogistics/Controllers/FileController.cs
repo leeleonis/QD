@@ -572,12 +572,22 @@ namespace QDLogistics.Controllers
 
                                                 foreach (var row in excelContent.Where(row => row["OrderID"].Equals(item.OrderID) && row["ProductID"].Equals(item.ProductID) && !row["Serial"].Equals(null)).ToList())
                                                 {
+                                                    string serialNumber;
+                                                    try
+                                                    {
+                                                        serialNumber = Convert.ToDecimal(row["Serial"].Value).ToString();
+                                                    }
+                                                    catch
+                                                    {
+                                                        serialNumber = row["Serial"].Value.ToString();
+                                                    }
+
                                                     SerialNumbers.Create(new SerialNumbers()
                                                     {
                                                         OrderID = item.OrderID,
                                                         OrderItemID = item.ID,
                                                         ProductID = item.ProductID,
-                                                        SerialNumber = row["Serial"].ToString()
+                                                        SerialNumber = serialNumber
                                                     });
                                                 }
                                             }
@@ -721,12 +731,21 @@ namespace QDLogistics.Controllers
 
                                                 foreach (var row in excelContent.Where(row => row["OrderID"].Equals(item.OrderID) && row["ProductID"].Equals(item.ProductID) && !row["Serial"].Equals(null)).ToList())
                                                 {
+                                                    string serialNumber;
+                                                    try
+                                                    {
+                                                        serialNumber = Convert.ToDecimal(row["Serial"].Value).ToString();
+                                                    }catch
+                                                    {
+                                                        serialNumber = row["Serial"].Value.ToString();
+                                                    }
+
                                                     SerialNumbers.Create(new SerialNumbers()
                                                     {
                                                         OrderID = item.OrderID,
                                                         OrderItemID = item.ID,
                                                         ProductID = item.ProductID,
-                                                        SerialNumber = row["Serial"].ToString()
+                                                        SerialNumber = serialNumber
                                                     });
                                                 }
                                             }

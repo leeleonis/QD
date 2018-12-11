@@ -1,0 +1,12 @@
+ActionName : 直發商訂單【5547929】更新失敗
+Message : 輸入字串格式不正確。
+StackTrace : 於 System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   於 System.Number.ParseDecimal(String value, NumberStyles options, NumberFormatInfo numfmt)
+   於 System.Convert.ToDecimal(String value, IFormatProvider provider)
+   於 System.String.System.IConvertible.ToDecimal(IFormatProvider provider)
+   於 System.Convert.ToDecimal(Object value)
+   於 QDLogistics.Controllers.Import.<>c__DisplayClass13_0.<CheckDropshipDLImportData>b__0() 於 C:\QD Project\Order Shipping System\QDLogistics\Controllers\FileController.cs: 行 728
+Date : 2018/12/5 上午 10:57:33
+
+-----------------------------------------------------------------------------
+

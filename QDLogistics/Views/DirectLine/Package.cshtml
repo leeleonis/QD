@@ -166,6 +166,12 @@
                     var msg = '訂單【' + data.OrderID + '】回收包裏，請確認是否取出!';
                     ajaxData('@Url.Action("Receive", "CaseEvent")', 'get', { caseID: data.CaseID, type:5, request: confirm(msg) });
                 } else {
+                    if (data.Status == 1) {
+                        var check = boxOrderList.rows.filter(order => order.OrderID == data.OrderID);
+                        if (check.length > 0) {
+                            confirm('訂單【' + data.OrderID + '】已取消出貨，請確認是否取出!');
+                        }
+                    }
                     ProductSerialData.Update_OrderList(data);
                 }
             };

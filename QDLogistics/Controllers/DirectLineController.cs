@@ -1322,11 +1322,12 @@ namespace QDLogistics.Controllers
 
                         case "BoxOrder":
                         case "CancelLabel":
+                            SerialNumberForRefundLabel[] SerialRefund = db.SerialNumberForRefundLabel.AsNoTracking().Where(f => f.oldOrderID.Equals(package.OrderID.Value)).ToArray();
                             for (int i = 0; i < item.Qty; i++)
                             {
-                                SerialNumbers serial = item.SerialNumbers.Skip(i).FirstOrDefault();
+                                string serial = SerialRefund.Where(s => s.Sku.Equals(item.SKU)).Skip(i).FirstOrDefault().SerialNumber ?? "";
 
-                                productList.Add(new string[] { item.ProductID, item.Skus.ProductName, (serial != null ? serial.SerialNumber : "") });
+                                productList.Add(new string[] { item.ProductID, item.Skus.ProductName, serial });
                             }
                             break;
                     }

@@ -475,12 +475,9 @@ namespace QDLogistics.Commons
                     MyHelp.Log("Packages", package.ID, string.Format("訂單【{0}】SC完成出貨", package.OrderID), Session);
                 }
 
-                if (!package.Items.First(i => i.IsEnable.Value).ShipWarehouses.WarehouseType.Value.Equals((int)WarehouseTypeType.DropShip))
+                foreach (Items item in package.Items.Where(i => i.IsEnable.Equals(true)).ToList())
                 {
-                    foreach (Items item in package.Items.Where(i => i.IsEnable.Equals(true)).ToList())
-                    {
-                        if (item.SerialNumbers.Any()) SCWS.Update_ItemSerialNumber(item.ID, item.SerialNumbers.Select(s => s.SerialNumber).ToArray());
-                    }
+                    if (item.SerialNumbers.Any()) SCWS.Update_ItemSerialNumber(item.ID, item.SerialNumbers.Select(s => s.SerialNumber).ToArray());
                 }
 
                 Message = Sync_Order(package.OrderID.Value);
