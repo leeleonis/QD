@@ -394,7 +394,7 @@ namespace CarrierApi.DHL
                     LineNumber = (lineNo++).ToString(),
                     Quantity = i.Qty.ToString(),
                     QuantityUnit = QuantityUnit.PCS,
-                    Description = i.Skus.ProductName,
+                    Description = i.Skus.ProductType.ProductTypeName + " - " + i.Skus.ProductName,
                     Value = (float)i.UnitPrice.Value,
                     Weight = new ExportLineItemWeight() { Weight = (decimal)i.Skus.ShippingWeight / weight, WeightUnit = weightUnit },
                     GrossWeight = new ExportLineItemGrossWeight() { Weight = (decimal)i.Skus.ShippingWeight / weight, WeightSpecified = true, WeightUnit = weightUnit, WeightUnitSpecified = true },

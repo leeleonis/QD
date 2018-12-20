@@ -30,18 +30,18 @@
 
                                 <label class="col-xs-4 col-md-1 control-label">Payment From</label>
                                 <div class="col-xs-8 col-md-3">
-                                    <input class="form-control input-sm datepicker" type="text" id="search-paymentDateFrom" data-dateformat="yy-mm-dd" placeholder="選擇日期">
+                                    <input class="form-control input-sm datepicker" type="text" id="date-dateFrom" data-dateformat="yy-mm-dd" placeholder="選擇日期">
                                 </div>
 
                                 <label class="col-xs-4 col-md-1 control-label">Pick Up From</label>
                                 <div class="col-xs-8 col-md-3">
-                                    <input class="form-control input-sm datepicker" type="text" id="search-pickUpDateFrom" data-dateformat="yy-mm-dd" placeholder="選擇日期">
+                                    <input class="form-control input-sm datepicker" type="text" id="date-pickUpDateFrom" data-dateformat="yy-mm-dd" placeholder="選擇日期">
                                 </div>
                             </div>
                             <div class="col-xs-12 no-padding">
                                 <label class="col-xs-4 col-md-1 control-label">Channel</label>
                                 <div class="col-xs-8 col-md-3">
-                                    <select class="form-control input-sm" id="search-channel" style="margin-top: 4px;">
+                                    <select class="form-control input-sm" id="select-channel" style="margin-top: 4px;">
                                         <option value="">全部</option>
                                         @foreach (int source in Enum.GetValues(typeof(OrderSource)))
                                         {
@@ -52,12 +52,12 @@
 
                                 <label class="col-xs-4 col-md-1 control-label">Payment To</label>
                                 <div class="col-xs-8 col-md-3">
-                                    <input class="form-control input-sm datepicker" type="text" id="search-paymentDateTo" data-dateformat="yy-mm-dd" placeholder="選擇日期">
+                                    <input class="form-control input-sm datepicker" type="text" id="date-dateTo" data-dateformat="yy-mm-dd" placeholder="選擇日期">
                                 </div>
 
                                 <label class="col-xs-4 col-md-1 control-label">Pick Up To</label>
                                 <div class="col-xs-8 col-md-3">
-                                    <input class="form-control input-sm datepicker" type="text" id="search-pickUpDateTo" data-dateformat="yy-mm-dd" placeholder="選擇日期">
+                                    <input class="form-control input-sm datepicker" type="text" id="date-pickUpDateTo" data-dateformat="yy-mm-dd" placeholder="選擇日期">
                                 </div>
                             </div>
                         </div>
@@ -131,10 +131,6 @@
         var $dataGrid;
         var $searchBtn = $('#btn-search'), $returnBtn = $("#btn-return"), $rmaBtn = $("#btn-rma"), $syncDaysBtn = $("#btn-syncDays"), $downloadBtn = $('#btn-download'), $exportBtn = $("#btn-export");
         var $reasonDialog = $('#dialog-reason'), $reasonSelect = $('#select-reason'), $reasonSubmit = $('#submit-reason');
-        var $orderIDSearch = $("#search-orderID"), $userIDSearch = $("#search-userID"), $sourceIDSearch = $("#search-sourceID"), $itemSearch = $("#search-item"),
-            $countrySearch = $("#search-country"), $warehouseSearch = $("#search-warehouse"), $channelSearch = $("#search-channel"), $trackingSearch = $("#search-tracking"),
-            $paymentDateFromSearch = $("#search-paymentDateFrom"), $paymentDateToSearch = $("#search-paymentDateTo"),
-            $pickUpDateFromSearch = $("#search-pickUpDateFrom"), $pickUpDateToSearch = $("#search-pickUpDateTo");
 
         $(function () {
             var data = {
@@ -153,6 +149,7 @@
             if (!isEmpty(urlParam('OrderID'))) filterValue['OrderID'] = urlParam('OrderID');
 
             $searchBtn.click(function () {
+                filterValue = getFilterData();
                 $dataGrid.datagrid("clearChecked");
                 $dataGrid.datagrid('reload');
             });
@@ -369,6 +366,7 @@
                     }
                 },
                 onBeforeLoad: function (param) {
+                    console.log(filterValue);
                     Object.keys(filterValue).forEach(function (key) {
                         if (!isEmpty(filterValue[key])) param[key] = filterValue[key];
                     });

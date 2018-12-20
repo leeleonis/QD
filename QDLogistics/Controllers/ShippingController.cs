@@ -366,7 +366,7 @@ namespace QDLogistics.Controllers
                                 List<deliveryWayData> deliveryWay = new List<deliveryWayData>();
                                 foreach (var warehouse in winit.warehouseIDs)
                                 {
-                                    deliveryWay.AddRange(winit.getDeliveryWay(warehouse.Value).data.ToObject<deliveryWayData[]>());
+                                    deliveryWay.AddRange(winit.GetDeliveryWay(warehouse.Value).data.ToObject<deliveryWayData[]>());
                                 }
 
                                 var Winit_shippingMethod = deliveryWay.OrderBy(w => w.deliveryID).Select(w => new { text = w.deliveryWay, value = int.Parse(w.deliveryID) }).Distinct().ToList();

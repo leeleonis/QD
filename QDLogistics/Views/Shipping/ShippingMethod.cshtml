@@ -41,7 +41,7 @@
 
         function dataInit() {
             $dataGrid = $("#DataGrid").datagrid({
-                title: "運送方式 列表",
+                title: "運輸方式 Shipping Methods",
                 url: "@Url.Action("shippingMethodData", "ajax")",
                 queryParams: {
                 },
@@ -54,22 +54,22 @@
                             return setCheckBox(index, this.field, value);
                         }
                     }, {
-                        field: "Name", title: "Name<br />運輸方式名稱", width: "20%", align: "center", sortable: false,
+                        field: "Name", title: "Shipping Method<br />運輸方式", width: "20%", align: "center", sortable: false,
                         formatter: function (value, row, index) {
                             return "<input type='text' class='form-control input-sm' id='Name-" + index + "' value='" + value + "' onchange='onSelect(" + index + ")'>";
                         }
                     }, {
-                        field: "CarrierID", title: "Carrier<br />運輸商", width: "13%", align: "center", sortable: false,
+                        field: "CarrierID", title: "Carrier & API<br />運輸商 & API", width: "13%", align: "center", sortable: false,
                         formatter: function (value, row, index) {
                             return "<select class='form-control input-sm' id='CarrierID-" + index + "' onchange='onCarrierSelect(" + index + ")'>" + getSelectOption(CarrierOption, value) + "</select>";
                         }
                     }, {
-                        field: "MethodType", title: "Method Type<br />運輸類型", width: "25%", align: "center", sortable: false,
+                        field: "MethodType", title: "Carrier Shipping Code<br />運輸商運輸代碼", width: "25%", align: "center", sortable: false,
                         formatter: function (value, row, index) {
                             return "<select class='form-control input-sm' id='MethodType-" + index + "' onchange='onSelect(" + index + ")'>" + getSelectOption(MethodType[row.CarrierType], value) + "</select>";
                         }
                     }, {
-                        field: "BoxType", title: "Box Type<br />貨物類型", width: "15%", align: "center", sortable: false,
+                        field: "BoxType", title: "Carrier Package Code<br />運輸商包裝代碼", width: "15%", align: "center", sortable: false,
                         formatter: function (value, row, index) {
                             return "<select class='form-control input-sm' id='BoxType-" + index + "' onchange='onSelect(" + index + ")'>" + getSelectOption(BoxTypeOption[row.CarrierType], value) + "</select>";
                         }

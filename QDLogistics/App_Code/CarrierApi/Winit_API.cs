@@ -166,7 +166,7 @@ namespace CarrierApi.Winit
             return Resfun.funresult(request, api_url);
         }
 
-        public Received getWarehouses()
+        public Received GetWarehouses()
         {
             queryWarehouse request = _RequestInit<queryWarehouse>("queryWarehouse", JsonConvert.SerializeObject(new { }));
             request.data = new { };
@@ -176,7 +176,7 @@ namespace CarrierApi.Winit
             return result;
         }
 
-        public Received getDeliveryWay(string warehouseID)
+        public Received GetDeliveryWay(string warehouseID)
         {
             object data = new { warehouseID = warehouseID };
 

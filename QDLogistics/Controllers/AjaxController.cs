@@ -120,7 +120,8 @@ namespace QDLogistics.Controllers
             }
             if (!filter.DateTo.Equals(new DateTime()))
             {
-                DateTime dateTo = new DateTime(filter.DateTo.Year, filter.DateTo.Month, filter.DateTo.Day + 1, 0, 0, 0);
+                filter.DateTo.AddDays(1);
+                DateTime dateTo = new DateTime(filter.DateTo.Year, filter.DateTo.Month, filter.DateTo.Day, 0, 0, 0);
                 dateTo = new TimeZoneConvert(dateTo, MyHelp.GetTimeZone((int)Session["TimeZone"])).ConvertDateTime(EnumData.TimeZone.EST);
                 PaymentFilter = PaymentFilter.Where(p => DateTime.Compare(p.AuditDate.Value, dateTo) < 0);
             }
@@ -385,7 +386,8 @@ namespace QDLogistics.Controllers
             }
             if (!filter.DateTo.Equals(new DateTime()))
             {
-                DateTime dateTo = new DateTime(filter.DateTo.Year, filter.DateTo.Month, filter.DateTo.Day + 1, 0, 0, 0);
+                filter.DateTo.AddDays(1);
+                DateTime dateTo = new DateTime(filter.DateTo.Year, filter.DateTo.Month, filter.DateTo.Day, 0, 0, 0);
                 dateTo = new TimeZoneConvert(dateTo, MyHelp.GetTimeZone((int)Session["TimeZone"])).ConvertDateTime(EnumData.TimeZone.EST);
                 PaymentFilter = PaymentFilter.Where(p => DateTime.Compare(p.AuditDate.Value, dateTo) < 0);
             }
@@ -1083,7 +1085,8 @@ namespace QDLogistics.Controllers
                 }
                 if (!filter.DateTo.Equals(new DateTime()))
                 {
-                    DateTime dateTo = new DateTime(filter.DateTo.Year, filter.DateTo.Month, filter.DateTo.Day + 1, 0, 0, 0);
+                    filter.DateTo.AddDays(1);
+                    DateTime dateTo = new DateTime(filter.DateTo.Year, filter.DateTo.Month, filter.DateTo.Day, 0, 0, 0);
                     dateTo = new TimeZoneConvert(dateTo, MyHelp.GetTimeZone((int)Session["TimeZone"])).ConvertDateTime(EnumData.TimeZone.EST);
                     PaymentFilter = PaymentFilter.Where(p => DateTime.Compare(p.AuditDate.Value, dateTo) < 0);
                 }
@@ -1422,7 +1425,7 @@ namespace QDLogistics.Controllers
         {
             Winit_API winit = new Winit_API();
 
-            Received result = winit.getWarehouses();
+            Received result = winit.GetWarehouses();
             warehouseData[] warehouseList = result.data.ToObject<warehouseData[]>();
             var WinitWarehouse = warehouseList.Select(w => new { text = w.warehouseName, value = w.warehouseID }).ToList();
             WinitWarehouse.Insert(0, new { text = "無", value = "0" });
@@ -2017,7 +2020,8 @@ namespace QDLogistics.Controllers
             }
             if (!filter.DateTo.Equals(new DateTime()))
             {
-                DateTime dateTo = new DateTime(filter.DateTo.Year, filter.DateTo.Month, filter.DateTo.Day + 1, 0, 0, 0);
+                filter.DateTo.AddDays(1);
+                DateTime dateTo = new DateTime(filter.DateTo.Year, filter.DateTo.Month, filter.DateTo.Day, 0, 0, 0);
                 dateTo = new TimeZoneConvert(dateTo, MyHelp.GetTimeZone((int)Session["TimeZone"])).Utc;
                 results = results.Where(task => DateTime.Compare(task.CreateDate.Value, dateTo) < 0);
             }
