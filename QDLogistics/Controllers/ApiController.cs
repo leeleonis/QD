@@ -11,6 +11,7 @@ using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Validation;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Hosting;
@@ -614,6 +615,62 @@ namespace QDLogistics.Controllers
                     MyHelp.ErrorLog(e, string.Format("更新訂單【{0}】資料至SC失敗", package.OrderID), package.OrderID.ToString());
                     result.Error(string.Format("更新訂單【{0}】資料至SC失敗，錯誤：", package.OrderID) + errorMessage);
                 }
+
+                try
+                {
+                    List<dynamic> data = null;
+                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://internal.qd.com.tw:8080/Ajax/ShipmentByOrder");
+                    request.ContentType = "application/json";
+                    request.Method = "post";
+                    //request.ProtocolVersion = HttpVersion.Version10;
+
+                    foreach (Items item in package.Items.Where(i => i.IsEnable.Value))
+                    {
+                        if (item.SerialNumbers.Any())
+                        {
+                            data.AddRange(item.SerialNumbers.Select(s => new
+                            {
+                                OrderID = s.OrderID.Value,
+                                SkuNo = s.ProductID,
+                                SerialsNo = s.SerialNumber,
+                                QTY = 1
+                            }));
+                        }
+                        else
+                        {
+                            data.Add(new
+                            {
+                                OrderID = item.OrderID.Value,
+                                SkuNo = item.ProductID,
+                                SerialsNo = "",
+                                QTY = item.Qty.Value
+                            });
+                        }
+                    }
+
+                    if (data != null)
+                    {
+                        using (StreamWriter streamWriter = new StreamWriter(request.GetRequestStream()))
+                        {
+                            streamWriter.Write(JsonConvert.SerializeObject(data));
+                            streamWriter.Flush();
+                        }
+
+                        HttpWebResponse httpResponse = (HttpWebResponse)request.GetResponse();
+                        using (StreamReader streamReader = new StreamReader(httpResponse.GetResponseStream()))
+                        {
+                            ApiResult postResult = JsonConvert.DeserializeObject<ApiResult>(streamReader.ReadToEnd());
+                            if (!postResult.status) throw new Exception(postResult.message);
+                            MyHelp.Log("Orders", package.OrderID, string.Format("訂單【{0}】傳送出貨資料至測試系統", package.OrderID), Session);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    string errorMsg = string.Format("傳送出貨資料至測試系統失敗，請通知處理人員：{0}", e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
+                    MyHelp.ErrorLog(e, string.Format("訂單【{0}】{1}", package.OrderID, errorMsg), package.OrderID.ToString());
+                    result.Error(string.Format("訂單【{0}】{1}", package.OrderID, errorMsg));
+                }
             }
 
             return Json(result, JsonRequestBehavior.AllowGet);
@@ -698,6 +755,22 @@ namespace QDLogistics.Controllers
             }
 
             return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
+        public int GetSkuInventoryQTY(string Sku, int WarehouseID)
+        {
+            string packageSelect = string.Format("SELECT * FROM Packages WHERE IsEnable = 1 AND ProcessStatus = {0}", (byte)EnumData.ProcessStatus.待出貨);
+            string orderSelect = string.Format("SELECT * FROM Orders WHERE StatusCode = {0}", (int)OrderStatusCode.InProcess);
+            string itemSelect = string.Format("SELECT * FROM Items WHERE IsEnable = 1 AND ProductID = {0} ShipFromWarehouseID = {1}", Sku, WarehouseID);
+
+            var methodList = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable).ToList();
+
+            ObjectContext context = new ObjectContext("name=QDLogisticsEntities");
+            var ProductList = context.ExecuteStoreQuery<Packages>(packageSelect).ToList().Join(methodList, p => p.ShippingMethod, m => m.ID, (p, m) => p)
+                .Join(context.ExecuteStoreQuery<Orders>(orderSelect).ToList(), p => p.OrderID, o => o.OrderID, (package, order) => new { order, package })
+                .Join(context.ExecuteStoreQuery<Items>(itemSelect).ToList(), op => op.package.ID, i => i.PackageID, (op, item) => new { op.order, op.package, item }).Distinct().ToList();
+
+            return ProductList.Sum(p => p.item.Qty.Value);
         }
 
         private string[] GetMethod(string CarrierData)

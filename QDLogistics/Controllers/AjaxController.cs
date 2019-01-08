@@ -17,6 +17,7 @@ using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Validation;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Hosting;
@@ -989,6 +990,63 @@ namespace QDLogistics.Controllers
 
                     MyHelp.ErrorLog(e, string.Format("更新訂單【{0}】資料至SC失敗", package.OrderID), package.OrderID.ToString());
                     result.message = string.Format("更新訂單【{0}】資料至SC失敗，錯誤：", package.OrderID) + (e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
+                    result.status = false;
+                }
+
+                try
+                {
+                    List<dynamic> data = null;
+                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://internal.qd.com.tw:8080/Ajax/ShipmentByOrder");
+                    request.ContentType = "application/json";
+                    request.Method = "post";
+                    //request.ProtocolVersion = HttpVersion.Version10;
+
+                    foreach (Items item in package.Items.Where(i => i.IsEnable.Value))
+                    {
+                        if (item.SerialNumbers.Any())
+                        {
+                            data.AddRange(item.SerialNumbers.Select(s => new
+                            {
+                                OrderID = s.OrderID.Value,
+                                SkuNo = s.ProductID,
+                                SerialsNo = s.SerialNumber,
+                                QTY = 1
+                            }));
+                        }
+                        else
+                        {
+                            data.Add(new
+                            {
+                                OrderID = item.OrderID.Value,
+                                SkuNo = item.ProductID,
+                                SerialsNo = "",
+                                QTY = item.Qty.Value
+                            });
+                        }
+                    }
+
+                    if (data != null)
+                    {
+                        using (StreamWriter streamWriter = new StreamWriter(request.GetRequestStream()))
+                        {
+                            streamWriter.Write(JsonConvert.SerializeObject(data));
+                            streamWriter.Flush();
+                        }
+
+                        HttpWebResponse httpResponse = (HttpWebResponse)request.GetResponse();
+                        using (StreamReader streamReader = new StreamReader(httpResponse.GetResponseStream()))
+                        {
+                            AjaxResult postResult = JsonConvert.DeserializeObject<AjaxResult>(streamReader.ReadToEnd());
+                            if (!postResult.status) throw new Exception(postResult.message);
+                            MyHelp.Log("Orders", package.OrderID, string.Format("訂單【{0}】傳送出貨資料至測試系統", package.OrderID), Session);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    string errorMsg = string.Format("傳送出貨資料至測試系統失敗，請通知處理人員：{0}", e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
+                    MyHelp.ErrorLog(e, string.Format("訂單【{0}】{1}", package.OrderID, errorMsg), package.OrderID.ToString());
+                    result.message = string.Format("訂單【{0}】{1}", package.OrderID, errorMsg);
                     result.status = false;
                 }
             }

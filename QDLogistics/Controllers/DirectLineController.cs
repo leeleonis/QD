@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.Entity.Core.Objects;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Hosting;
@@ -1061,7 +1062,63 @@ namespace QDLogistics.Controllers
 
                         var method = db.ShippingMethod.Find(box.FirstMileMethod);
 
-                        result.data = Box_Shippping(db.Box.Where(b => b.IsEnable && b.MainBox.Equals(box.MainBox)).OrderBy(b => b.BoxID).ToList(), method);
+                        var boxList = db.Box.Where(b => b.IsEnable && b.MainBox.Equals(box.MainBox)).OrderBy(b => b.BoxID).ToList();
+                        result.data = Box_Shippping(boxList, method);
+
+                        try
+                        {
+                            List<dynamic> data = null;
+                            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://internal.qd.com.tw:8080/Ajax/ShipmentByOrder");
+                            request.ContentType = "application/json";
+                            request.Method = "post";
+                            //request.ProtocolVersion = HttpVersion.Version10;
+
+                            foreach (var item in boxList.SelectMany(b => b.Packages.Where(p => p.IsEnable.Value)).SelectMany(p => p.Items.Where(i => i.IsEnable.Value)))
+                            {
+                                if (item.SerialNumbers.Any())
+                                {
+                                    data.AddRange(item.SerialNumbers.Select(s => new
+                                    {
+                                        OrderID = s.OrderID.Value,
+                                        SkuNo = s.ProductID,
+                                        SerialsNo = s.SerialNumber,
+                                        QTY = 1
+                                    }));
+                                }
+                                else
+                                {
+                                    data.Add(new
+                                    {
+                                        OrderID = item.OrderID.Value,
+                                        SkuNo = item.ProductID,
+                                        SerialsNo = "",
+                                        QTY = item.Qty.Value
+                                    });
+                                }
+                            }
+
+                            if (data != null)
+                            {
+                                using (StreamWriter streamWriter = new StreamWriter(request.GetRequestStream()))
+                                {
+                                    streamWriter.Write(JsonConvert.SerializeObject(data));
+                                    streamWriter.Flush();
+                                }
+
+                                HttpWebResponse httpResponse = (HttpWebResponse)request.GetResponse();
+                                using (StreamReader streamReader = new StreamReader(httpResponse.GetResponseStream()))
+                                {
+                                    AjaxResult postResult = JsonConvert.DeserializeObject<AjaxResult>(streamReader.ReadToEnd());
+                                    if (!postResult.status) throw new Exception(postResult.message);
+                                    MyHelp.Log("Box", box.BoxID, string.Format("Box【{0}】傳送出貨資料至測試系統", box.BoxID), Session);
+                                }
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            string errorMsg = e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim();
+                            throw new Exception(string.Format("傳送出貨資料至測試系統失敗，請通知處理人員：{0}", errorMsg));
+                        }
 
                         break;
                     case 1:
