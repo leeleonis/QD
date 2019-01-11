@@ -757,20 +757,15 @@ namespace QDLogistics.Controllers
             return Json(result, JsonRequestBehavior.AllowGet);
         }
 
-        public int GetSkuInventoryQTY(string Sku, int WarehouseID)
+        public ActionResult GetSkuInventoryQTY(string[] Skus, int[] WarehouseIDs)
         {
-            string packageSelect = string.Format("SELECT * FROM Packages WHERE IsEnable = 1 AND ProcessStatus = {0}", (byte)EnumData.ProcessStatus.待出貨);
-            string orderSelect = string.Format("SELECT * FROM Orders WHERE StatusCode = {0}", (int)OrderStatusCode.InProcess);
-            string itemSelect = string.Format("SELECT * FROM Items WHERE IsEnable = 1 AND ProductID = {0} ShipFromWarehouseID = {1}", Sku, WarehouseID);
+            var ItemFilter = db.Items.AsNoTracking().Where(i => i.IsEnable.Value && i.Packages.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨) && i.Orders.StatusCode.Value.Equals((int)OrderStatusCode.InProcess));
+            if (Skus != null && Skus.Any()) ItemFilter = ItemFilter.Where(i => Skus.Contains(i.ProductID));
+            if (WarehouseIDs != null && WarehouseIDs.Any()) ItemFilter = ItemFilter.Where(i => WarehouseIDs.Contains(i.ShipFromWarehouseID.Value));
 
-            var methodList = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable).ToList();
+            var result = ItemFilter.GroupBy(i => i.ShipFromWarehouseID.Value, i => new { SKU = i.ProductID, QTY = i.Qty.Value }, (SCID, item) => item.GroupBy(i => i.SKU, i => i.QTY, (SKU, QTY) => new { SCID, SKU, QTY = QTY.Sum()})).SelectMany(g => g).ToList();
 
-            ObjectContext context = new ObjectContext("name=QDLogisticsEntities");
-            var ProductList = context.ExecuteStoreQuery<Packages>(packageSelect).ToList().Join(methodList, p => p.ShippingMethod, m => m.ID, (p, m) => p)
-                .Join(context.ExecuteStoreQuery<Orders>(orderSelect).ToList(), p => p.OrderID, o => o.OrderID, (package, order) => new { order, package })
-                .Join(context.ExecuteStoreQuery<Items>(itemSelect).ToList(), op => op.package.ID, i => i.PackageID, (op, item) => new { op.order, op.package, item }).Distinct().ToList();
-
-            return ProductList.Sum(p => p.item.Qty.Value);
+            return Json(result, JsonRequestBehavior.AllowGet);
         }
 
         private string[] GetMethod(string CarrierData)
