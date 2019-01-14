@@ -995,7 +995,7 @@ namespace QDLogistics.Controllers
 
                 try
                 {
-                    List<dynamic> data = null;
+                    List<dynamic> data = new List<dynamic>();
                     HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://internal.qd.com.tw:8080/Ajax/ShipmentByOrder");
                     request.ContentType = "application/json";
                     request.Method = "post";
@@ -1011,7 +1011,7 @@ namespace QDLogistics.Controllers
                                 SkuNo = s.ProductID,
                                 SerialsNo = s.SerialNumber,
                                 QTY = 1
-                            }));
+                            }).ToList());
                         }
                         else
                         {
@@ -1045,9 +1045,8 @@ namespace QDLogistics.Controllers
                 catch (Exception e)
                 {
                     string errorMsg = string.Format("傳送出貨資料至測試系統失敗，請通知處理人員：{0}", e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
-                    MyHelp.ErrorLog(e, string.Format("訂單【{0}】{1}", package.OrderID, errorMsg), package.OrderID.ToString());
-                    result.message = string.Format("訂單【{0}】{1}", package.OrderID, errorMsg);
-                    result.status = false;
+                    MyHelp.Log("Inventory", package.OrderID, string.Format("訂單【{0}】{1}", package.OrderID, errorMsg), Session);
+                    //result.Error(string.Format("訂單【{0}】{1}", package.OrderID, errorMsg));
                 }
             }
 

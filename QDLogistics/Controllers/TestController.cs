@@ -13,6 +13,7 @@ using CarrierApi.Winit;
 using DirectLineApi.IDS;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
+using Newtonsoft.Json;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
 using QDLogistics.Commons;
@@ -133,7 +134,7 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public void CheckFedEx(int OrderID)
+        private void CheckFedEx(int OrderID)
         {
             IRepository<Orders> Orders = new GenericRepository<Orders>(db);
             Orders order = Orders.Get(OrderID);
@@ -247,7 +248,7 @@ namespace QDLogistics.Controllers
             return View();
         }
 
-        public void Hub_Push()
+        private void Hub_Push()
         {
             using (Hubs.ServerHub server = new Hubs.ServerHub())
             {
@@ -263,7 +264,7 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public void Winit_Test(int OrderID)
+        private void Winit_Test(int OrderID)
         {
             Packages package = db.Packages.First(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID));
 
@@ -354,7 +355,7 @@ namespace QDLogistics.Controllers
             db.SaveChanges();
         }
 
-        public void Excel_Test(int OrderID)
+        private void Excel_Test(int OrderID)
         {
             Packages package = db.Packages.AsNoTracking().First(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID));
             DateTime date = package.ShipDate.Value;
@@ -466,7 +467,7 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public void Get_PurchaseOrder()
+        private void Get_PurchaseOrder()
         {
             SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
 
@@ -507,7 +508,7 @@ namespace QDLogistics.Controllers
 
         }
 
-        public void Sendle_Test(int OrderID)
+        private void Sendle_Test(int OrderID)
         {
             var packageList = db.Box.Where(b => b.BoxID.Contains("ECOF-")).SelectMany(b => b.Packages.Where(p => p.IsEnable.Value)).ToList();
             foreach(var package in packageList)
@@ -531,7 +532,7 @@ namespace QDLogistics.Controllers
             //var cancel = Sendle.Cancel(result.order_id);
         }
 
-        public void Track_Test(string BoxID)
+        private void Track_Test(string BoxID)
         {
             Box box = db.Box.Find(BoxID);
             CarrierAPI api = db.ShippingMethod.Find(box.FirstMileMethod).Carriers.CarrierAPI;
@@ -539,7 +540,7 @@ namespace QDLogistics.Controllers
             var result = track.Track(box, api);
         }
 
-        public void StarTrack_Test(int OrderID)
+        private void StarTrack_Test(int OrderID)
         {
             Packages package = db.Packages.First(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID));
 
@@ -547,6 +548,62 @@ namespace QDLogistics.Controllers
             ShipProcess ship = new ShipProcess(SCWS);
             ship.Init(package);
             var result = ship.Dispatch();
+        }
+
+        public void SendSerial_Test(int OrderID)
+        {
+            try
+            {
+                List<dynamic> data = new List<dynamic>();
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://internal.qd.com.tw:8080/Ajax/ShipmentByOrder");
+                request.ContentType = "application/json";
+                request.Method = "post";
+                //request.ProtocolVersion = HttpVersion.Version10;
+
+                foreach (Items item in db.Items.Where(i => i.IsEnable.Value && i.OrderID.Value.Equals(OrderID)))
+                {
+                    if (item.SerialNumbers.Any())
+                    {
+                        data.AddRange(item.SerialNumbers.Select(s => new
+                        {
+                            OrderID = s.OrderID.Value,
+                            SkuNo = s.ProductID,
+                            SerialsNo = s.SerialNumber,
+                            QTY = 1
+                        }).ToList());
+                    }
+                    else
+                    {
+                        data.Add(new
+                        {
+                            OrderID = item.OrderID.Value,
+                            SkuNo = item.ProductID,
+                            SerialsNo = "",
+                            QTY = item.Qty.Value
+                        });
+                    }
+                }
+
+                if (data != null)
+                {
+                    using (StreamWriter streamWriter = new StreamWriter(request.GetRequestStream()))
+                    {
+                        streamWriter.Write(JsonConvert.SerializeObject(data));
+                        streamWriter.Flush();
+                    }
+
+                    HttpWebResponse httpResponse = (HttpWebResponse)request.GetResponse();
+                    using (StreamReader streamReader = new StreamReader(httpResponse.GetResponseStream()))
+                    {
+                        string result = streamReader.ReadToEnd();
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                string errorMsg = string.Format("傳送出貨資料至測試系統失敗，請通知處理人員：{0}", e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
+                
+            }
         }
     }
 }

@@ -618,7 +618,7 @@ namespace QDLogistics.Controllers
 
                 try
                 {
-                    List<dynamic> data = null;
+                    List<dynamic> data = new List<dynamic>();
                     HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://internal.qd.com.tw:8080/Ajax/ShipmentByOrder");
                     request.ContentType = "application/json";
                     request.Method = "post";
@@ -634,7 +634,7 @@ namespace QDLogistics.Controllers
                                 SkuNo = s.ProductID,
                                 SerialsNo = s.SerialNumber,
                                 QTY = 1
-                            }));
+                            }).ToList());
                         }
                         else
                         {
@@ -661,15 +661,15 @@ namespace QDLogistics.Controllers
                         {
                             ApiResult postResult = JsonConvert.DeserializeObject<ApiResult>(streamReader.ReadToEnd());
                             if (!postResult.status) throw new Exception(postResult.message);
-                            MyHelp.Log("Orders", package.OrderID, string.Format("訂單【{0}】傳送出貨資料至測試系統", package.OrderID), Session);
+                            MyHelp.Log("Inventory", package.OrderID, string.Format("訂單【{0}】傳送出貨資料至測試系統", package.OrderID), Session);
                         }
                     }
                 }
                 catch (Exception e)
                 {
                     string errorMsg = string.Format("傳送出貨資料至測試系統失敗，請通知處理人員：{0}", e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
-                    MyHelp.ErrorLog(e, string.Format("訂單【{0}】{1}", package.OrderID, errorMsg), package.OrderID.ToString());
-                    result.Error(string.Format("訂單【{0}】{1}", package.OrderID, errorMsg));
+                    MyHelp.Log("Inventory", package.OrderID, string.Format("訂單【{0}】{1}", package.OrderID, errorMsg), Session);
+                    //result.Error(string.Format("訂單【{0}】{1}", package.OrderID, errorMsg));
                 }
             }
 
@@ -759,7 +759,7 @@ namespace QDLogistics.Controllers
 
         public ActionResult GetSkuInventoryQTY(string[] Skus, int[] WarehouseIDs)
         {
-            var ItemFilter = db.Items.AsNoTracking().Where(i => i.IsEnable.Value && i.Packages.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨) && i.Orders.StatusCode.Value.Equals((int)OrderStatusCode.InProcess));
+            var ItemFilter = db.Items.AsNoTracking().Where(i => i.IsEnable.Value && !i.Packages.ProcessStatus.Equals((byte)EnumData.ProcessStatus.已出貨) && i.Orders.StatusCode.Value.Equals((int)OrderStatusCode.InProcess) && i.Orders.PaymentStatus.Value.Equals((int)OrderPaymentStatus2.Charged));
             if (Skus != null && Skus.Any()) ItemFilter = ItemFilter.Where(i => Skus.Contains(i.ProductID));
             if (WarehouseIDs != null && WarehouseIDs.Any()) ItemFilter = ItemFilter.Where(i => WarehouseIDs.Contains(i.ShipFromWarehouseID.Value));
 

@@ -1067,7 +1067,7 @@ namespace QDLogistics.Controllers
 
                         try
                         {
-                            List<dynamic> data = null;
+                            List<dynamic> data = new List<dynamic>();
                             HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://internal.qd.com.tw:8080/Ajax/ShipmentByOrder");
                             request.ContentType = "application/json";
                             request.Method = "post";
@@ -1083,7 +1083,7 @@ namespace QDLogistics.Controllers
                                         SkuNo = s.ProductID,
                                         SerialsNo = s.SerialNumber,
                                         QTY = 1
-                                    }));
+                                    }).ToList());
                                 }
                                 else
                                 {
@@ -1110,14 +1110,14 @@ namespace QDLogistics.Controllers
                                 {
                                     AjaxResult postResult = JsonConvert.DeserializeObject<AjaxResult>(streamReader.ReadToEnd());
                                     if (!postResult.status) throw new Exception(postResult.message);
-                                    MyHelp.Log("Box", box.BoxID, string.Format("Box【{0}】傳送出貨資料至測試系統", box.BoxID), Session);
+                                    MyHelp.Log("Inventory", box.BoxID, string.Format("Box【{0}】傳送出貨資料至測試系統", box.BoxID), Session);
                                 }
                             }
                         }
                         catch (Exception e)
                         {
                             string errorMsg = e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim();
-                            throw new Exception(string.Format("傳送出貨資料至測試系統失敗，請通知處理人員：{0}", errorMsg));
+                            MyHelp.Log("Inventory", box.BoxID, string.Format("傳送出貨資料至測試系統失敗，請通知處理人員：{0}", errorMsg), Session);
                         }
 
                         break;
