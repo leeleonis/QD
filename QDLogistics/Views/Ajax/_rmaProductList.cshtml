@@ -1,7 +1,7 @@
 ﻿@using QDLogistics.Models;
-@{ Packages package = ViewBag.package; }
+@model QDLogistics.Models.Packages
 @{
-    foreach (Items item in package.Items.Where(i => i.IsEnable == true).ToList())
+    foreach (Items item in Model.Items.Where(i => i.IsEnable.Value).ToList())
     {
         <tr>
             <td>
@@ -13,8 +13,9 @@
                 }
             </td>
             <td>@item.ProductID</td>
+            <td>@item.Skus.ProductName</td>
             <td>@item.Qty</td>
-            <td>
+            <td class="no-padding">
                 @if (item.KitItemCount == 0)
                 {
                     <label class="input">
@@ -26,7 +27,7 @@
 
         if (item.KitItemCount != 0)
         {
-            foreach (BundleItems BundleItem in item.BundleItems.Where(b => b.IsEnable == true).ToList())
+            foreach (BundleItems BundleItem in item.BundleItems.Where(b => b.IsEnable.Value).ToList())
             {
                 <tr>
                     <td>
@@ -35,8 +36,9 @@
                         </label>
                     </td>
                     <td>@BundleItem.ProductID</td>
+                    <td>@BundleItem.Skus.ProductName</td>
                     <td>@BundleItem.Qty</td>
-                    <td>
+                    <td class="no-padding">
                         <label class="input">
                             <input type="text" class="input-sm" data-max="@BundleItem.Qty" value="1">
                         </label>

@@ -75,29 +75,35 @@
                                 <thead>
                                     <tr>
                                         <th width="20"></th>
-                                        <th class="text-center">品號</th>
-                                        <th width="15%" class="text-center">數量</th>
-                                        <th width="15%" class="text-center">回收</th>
+                                        <th width="15%" class="text-center">SKU</th>
+                                        <th class="text-center">Product Name</th>
+                                        <th width="10%" class="text-center">Order QTY</th>
+                                        <th width="10%" class="text-center">Return QTY</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
                             </table>
                         </div>
                         <div style="padding:0 5px;">
-                            <div class="input-group col-sm-12">
-                                <textarea class="form-control" id="text-description" rows="3" placeholder="Description"></textarea>
-                            </div>
-                            <div class="input-group col-sm-6 col-sm-offset-6" style="padding:5px 0;">
+                            <div class="col-sm-6" style="padding:0 5px 5px 0;">
                                 <select class="form-control" id="select-reason">
-                                    <option value="">請選擇原因</option>
+                                    <option value="">Choose Reason</option>
                                     @foreach (var reason in EnumData.Get_RMA_Reason_List())
                                     {
                                         <option value="@reason.Key">@reason.Value</option>
                                     }
                                 </select>
-                                <div class="input-group-btn">
-                                    <button class="btn btn-primary" type="button" id="submit-reason">送出</button>
-                                </div>
+                            </div>
+                            <div class="col-sm-6" style="padding:0 0 5px 0;">
+                                <select class="form-control" id="select-warehouse">
+                                    <option value=""> Choose Warehouse</option>
+                                </select>
+                            </div>
+                            <div class="input-group col-sm-12">
+                                <textarea class="form-control" id="text-description" rows="3" placeholder="Description"></textarea>
+                            </div>
+                            <div class="input-group col-sm-12 text-right" style="padding:5px 0">
+                                <button class="btn btn-primary" type="button" id="submit-reason">送出</button>
                             </div>
                         </div>
                     </div>
@@ -130,7 +136,7 @@
         var selected = false;
         var $dataGrid;
         var $searchBtn = $('#btn-search'), $returnBtn = $("#btn-return"), $rmaBtn = $("#btn-rma"), $syncDaysBtn = $("#btn-syncDays"), $downloadBtn = $('#btn-download'), $exportBtn = $("#btn-export");
-        var $reasonDialog = $('#dialog-reason'), $reasonSelect = $('#select-reason'), $reasonSubmit = $('#submit-reason');
+        var $reasonDialog = $('#dialog-reason'), $warehouseSelect = $('#select-warehouse'), $reasonSelect = $('#select-reason'), $reasonSubmit = $('#submit-reason');
 
         $(function () {
             var data = {
@@ -181,9 +187,10 @@
                     url: '@Url.Action("orderProductList", "ajax")',
                     type: 'get',
                     data: { PackageID: rows[0].PackageID, type: 'rma', index: 0 },
-                    dataType: 'html',
-                    success: function (html) {
-                        $reasonDialog.find('table tbody').html(html);
+                    dataType: 'json',
+                    success: function (response) {
+                        $reasonDialog.find('table tbody').html(response.table);
+                        $warehouseSelect.html($warehouseSelect.find('option:eq(0)').remove()).append(response.warehouse);
                         $reasonDialog.window('open');
                     }
                 });
@@ -198,7 +205,10 @@
 
             $reasonSubmit.click(function () {
                 var itemData = [];
+                var warehouseID = $warehouseSelect.val();
                 var reasonID = $reasonSelect.val();
+
+                if (isEmpty(warehouseID) || isEmpty(reasonID)) return alert('尚未選擇退貨倉或者原因!');
 
                 $reasonDialog.find(':checkbox:checked').each(function (index, element) {
                     var $qty = $reasonDialog.find(':text:eq(' + index + ')');
@@ -206,14 +216,12 @@
                 });
 
                 if (itemData.length == 0) return alert('請先選擇產品!');
-
-                if (isEmpty(reasonID)) return alert('請先選擇原因!');
-
+                
                 if (confirm("確定送出?")) {
                     return $.ajax({
                         url: '@Url.Action("createRMA", "ajax")',
                         type: 'post',
-                        data: { itemData: itemData, reasonID: parseInt(reasonID), description: $("#text-description").val() },
+                        data: { itemData, warehouseID, reasonID, description: $("#text-description").val() },
                         dataType: 'json',
                         success: function (response) {
                             if (response['status']) {

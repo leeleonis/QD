@@ -739,6 +739,19 @@ namespace QDLogistics.Controllers
             TaskFactory factory = System.Web.HttpContext.Current.Application.Get("TaskFactory") as TaskFactory;
             ThreadTask threadTask = new ThreadTask(string.Format("Direct Line訂單 - 更新訂單【{0}】訂單狀態至SC", order.OrderID));
 
+            try
+            {
+                using (StockKeepingUnit Stock = new StockKeepingUnit())
+                {
+                    Stock.RecordOrderSkuStatement(order.OrderID, Enum.GetName(typeof(OrderStatusCode), StatusCode));
+                }
+            }
+            catch (Exception e)
+            {
+                string errorMsg = string.Format("傳送訂單狀態至測試系統失敗，請通知處理人員：{0}", e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
+                MyHelp.Log("SkuStatement", order.OrderID, string.Format("訂單【{0}】{1}", order.OrderID, errorMsg), Session);
+            }
+
             lock (factory)
             {
                 threadTask.AddWork(factory.StartNew(Session =>

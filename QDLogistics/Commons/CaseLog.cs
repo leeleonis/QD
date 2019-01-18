@@ -300,6 +300,19 @@ namespace QDLogistics.Commons
                         Items.SaveChanges();
                         SCWS.Update_OrderStatus(orderData.OrderID, (int)OrderStatusCode.Canceled);
 
+                        try
+                        {
+                            using (StockKeepingUnit Stock = new StockKeepingUnit())
+                            {
+                                Stock.RecordOrderSkuStatement(orderData.OrderID, OrderStatusCode.Canceled.ToString());
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            string errorMsg = string.Format("傳送訂單狀態至測試系統失敗，請通知處理人員：{0}", e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
+                            MyHelp.Log("SkuStatement", orderData.OrderID, string.Format("訂單【{0}】{1}", orderData.OrderID, errorMsg), Session);
+                        }
+
                         MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】 完成更新退貨倉", orderData.OrderID), Session);
                     }
                     catch (Exception e)

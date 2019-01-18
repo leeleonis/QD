@@ -165,10 +165,23 @@ namespace QDLogistics.Commons
                     using (OrderPreset preset = new OrderPreset(Session))
                     {
                         preset.Factory = this.Factory;
-                        foreach (int OrderID in presetList)
+                        using (StockKeepingUnit Stock = new StockKeepingUnit())
                         {
-                            preset.Init(OrderID);
-                            preset.Save();
+                            foreach (int OrderID in presetList)
+                            {
+                                preset.Init(OrderID);
+                                preset.Save();
+
+                                try
+                                {
+                                    Stock.RecordOrderSkuStatement(OrderID, "New");
+                                }
+                                catch (Exception e)
+                                {
+                                    string errorMsg = string.Format("傳送訂單狀態至測試系統失敗，請通知處理人員：{0}", e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
+                                    MyHelp.Log("SkuStatement", OrderID, string.Format("訂單【{0}】{1}", OrderID, errorMsg), Session);
+                                }
+                            }
                         }
                     }
                 }

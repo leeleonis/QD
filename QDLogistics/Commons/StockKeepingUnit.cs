@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Web;
+using Newtonsoft.Json;
 using QDLogistics.Models;
 
 namespace QDLogistics.Commons
@@ -41,7 +44,7 @@ namespace QDLogistics.Commons
 
                 if (itemReceive != null && itemReceive.IsRequireSerialScan && !itemData.Qty.Equals(itemData.SerialNumbers.Count())) throw new Exception("Serial Number 數量不合!");
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 MyHelp.Log("Items", itemData.ID, string.Format("訂單【{0}】- {1} 發現異常 - {2}", itemData.OrderID, itemData.ProductID, e.Message));
                 checkResult = false;
@@ -49,7 +52,51 @@ namespace QDLogistics.Commons
 
             return checkResult;
         }
-        
+
+        public void RecordOrderSkuStatement(int OrderID, string State)
+        {
+            Orders order = db.Orders.Find(OrderID);
+            DateTime Date = State.Equals("New") ? order.Payments.FirstOrDefault()?.AuditDate?.ToUniversalTime() ?? order.TimeOfOrder.Value.ToUniversalTime() : DateTime.UtcNow;
+            var data = order.Items.Where(i => i.IsEnable.Value).Select(i => new
+            {
+                OrderID,
+                SCID = i.ShipFromWarehouseID,
+                SkuNo = i.ProductID,
+                i.Qty,
+                State,
+                Date
+            }).ToList();
+
+            Response response = Request("Ajax/OrderLogList", data);
+            if (!response.status) throw new Exception(response.message);
+        }
+
+        private Response Request(string url, dynamic data, string method = "post")
+        {
+            Response response = new Response();
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://internal.qd.com.tw:8080/" + url);
+            request.ContentType = "application/json";
+            request.Method = "post";
+            //request.ProtocolVersion = HttpVersion.Version10;
+
+            if (data.Any())
+            {
+                using (StreamWriter streamWriter = new StreamWriter(request.GetRequestStream()))
+                {
+                    streamWriter.Write(JsonConvert.SerializeObject(data));
+                    streamWriter.Flush();
+                }
+
+                HttpWebResponse httpResponse = (HttpWebResponse)request.GetResponse();
+                using (StreamReader streamReader = new StreamReader(httpResponse.GetResponseStream()))
+                {
+                    response = JsonConvert.DeserializeObject<Response>(streamReader.ReadToEnd());
+                }
+            }
+
+            return response;
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
@@ -84,5 +131,17 @@ namespace QDLogistics.Commons
             // GC.SuppressFinalize(this);
         }
         #endregion
+
+        public class Response
+        {
+            public bool status { get; set; }
+            public string message { get; set; }
+
+            public Response()
+            {
+                this.status = true;
+                this.message = null;
+            }
+        }
     }
 }

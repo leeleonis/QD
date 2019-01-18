@@ -265,6 +265,19 @@ namespace QDLogistics.Controllers
             TaskFactory factory = System.Web.HttpContext.Current.Application.Get("TaskFactory") as TaskFactory;
             ThreadTask threadTask = new ThreadTask(string.Format("訂單管理區 - 更新訂單【{0}】訂單狀態至SC", order.OrderID));
 
+            try
+            {
+                using (StockKeepingUnit Stock = new StockKeepingUnit())
+                {
+                    Stock.RecordOrderSkuStatement(order.OrderID, Enum.GetName(typeof(OrderStatusCode), StatusCode));
+                }
+            }
+            catch (Exception e)
+            {
+                string errorMsg = string.Format("傳送訂單狀態至測試系統失敗，請通知處理人員：{0}", e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
+                MyHelp.Log("SkuStatement", order.OrderID, string.Format("訂單【{0}】{1}", order.OrderID, errorMsg), Session);
+            }
+
             lock (factory)
             {
                 threadTask.AddWork(factory.StartNew(Session =>
@@ -1038,7 +1051,7 @@ namespace QDLogistics.Controllers
                         {
                             AjaxResult postResult = JsonConvert.DeserializeObject<AjaxResult>(streamReader.ReadToEnd());
                             if (!postResult.status) throw new Exception(postResult.message);
-                            MyHelp.Log("Orders", package.OrderID, string.Format("訂單【{0}】傳送出貨資料至測試系統", package.OrderID), Session);
+                            MyHelp.Log("Inventory", package.OrderID, string.Format("訂單【{0}】傳送出貨資料至測試系統", package.OrderID), Session);
                         }
                     }
                 }
@@ -1242,20 +1255,17 @@ namespace QDLogistics.Controllers
 
         [CheckSession]
         [HttpPost]
-        public ActionResult CreateRMA(List<Dictionary<string, int>> itemData, int reasonID, string description)
+        public ActionResult CreateRMA(List<Dictionary<string, int>> itemData, int warehouseID, int reasonID, string description)
         {
             AjaxResult result = new AjaxResult();
 
             if (itemData.Any())
             {
-                Packages = new GenericRepository<Packages>(db);
-                Items = new GenericRepository<Items>(db);
-                IRepository<BundleItems> BundleItems = new GenericRepository<BundleItems>(db);
-
-                int[] itemIDs = itemData.Select(id => id["itemID"]).ToArray();
-                List<Items> itemList = Items.GetAll(true).Where(i => itemIDs.Contains(i.ID)).ToList();
-                List<BundleItems> bundleItemList = BundleItems.GetAll(true).Where(i => itemIDs.Contains(i.ID)).ToList();
-                Packages package = Packages.Get(itemList.Any() ? itemList.First().PackageID.Value : bundleItemList.First().PackageID.Value);
+                int? RMAID = null;
+                int[] itemIDs = itemData.SelectMany(id => id.Values).ToArray();
+                List<Items> itemList = db.Items.Where(i => itemIDs.Contains(i.ID)).ToList();
+                List<BundleItems> bundleItemList = db.BundleItems.Where(i => itemIDs.Contains(i.ID)).ToList();
+                Packages package = itemList.Any() ? itemList.First().Packages : db.Packages.Find(bundleItemList.First().PackageID.Value);
                 int OrderID = package.OrderID.Value;
 
                 TaskFactory factory = System.Web.HttpContext.Current.Application.Get("TaskFactory") as TaskFactory;
@@ -1280,7 +1290,7 @@ namespace QDLogistics.Controllers
                                 order.OrderCreationSourceApplication = OrderCreationSourceApplicationType.PointOfSale;
                                 if (SCWS.Update_Order(order))
                                 {
-                                    int RMAId = SCWS.Create_RMA(OrderID);
+                                    RMAID = SCWS.Create_RMA(OrderID);
 
                                     if (reasonID == 16)
                                     {
@@ -1311,7 +1321,7 @@ namespace QDLogistics.Controllers
                                     {
                                         foreach (Items item in itemList)
                                         {
-                                            SCWS.Create_RMA_Item(item.OrderID.Value, item.ID, RMAId, itemData.First(i => i["itemID"] == item.ID)["qty"], reasonID, description);
+                                            SCWS.Create_RMA_Item(OrderID, item.ID, RMAID.Value, itemData.First(i => i["itemID"] == item.ID)["qty"], reasonID, description);
                                         }
                                     }
 
@@ -1319,11 +1329,11 @@ namespace QDLogistics.Controllers
                                     {
                                         foreach (BundleItems bundleItem in bundleItemList)
                                         {
-                                            SCWS.Create_RMA_Item(bundleItem.OrderID.Value, bundleItem.OrderItemId.Value, RMAId, itemData.First(i => i["itemID"] == bundleItem.ID)["qty"], reasonID, description, bundleItem.ProductID);
+                                            SCWS.Create_RMA_Item(OrderID, bundleItem.OrderItemId.Value, RMAID.Value, itemData.First(i => i["itemID"] == bundleItem.ID)["qty"], reasonID, description, bundleItem.ProductID);
                                         }
                                     }
 
-                                    package.RMAId = RMAId;
+                                    package.RMAId = RMAID;
                                     Packages.Update(package, package.ID);
                                     Packages.SaveChanges();
 
@@ -1348,6 +1358,54 @@ namespace QDLogistics.Controllers
                         return error;
                     }, HttpContext.Session));
                 }
+
+                if (RMAID.HasValue)
+                {
+                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://internal.qd.com.tw:8080/Ajax/ShipmentByOrder");
+                    request.ContentType = "application/json";
+                    request.Method = "post";
+
+                    try
+                    {
+                        var data = new
+                        {
+                            OrderID,
+                            RMAID,
+                            ReturnWarhouse = warehouseID,
+                            Reason = EnumData.Get_RMA_Reason_List()[reasonID],
+                            Note = description,
+                            ProductList = new List<dynamic>()
+                        };
+
+                        if (itemList.Any())
+                        {
+                            data.ProductList.AddRange(itemList.Select(item => new { SkuNo = item.ProductID, QTY = itemData.First(i => i["itemID"].Equals(item.ID))["qty"] }).ToList());
+                        }
+                        if (bundleItemList.Any())
+                        {
+                            data.ProductList.AddRange(bundleItemList.Select(bundle => new { SkuNo = bundle.ProductID, QTY = itemData.First(i => i["itemID"].Equals(bundle.ID))["qty"] }).ToList());
+                        }
+
+                        using (StreamWriter streamWriter = new StreamWriter(request.GetRequestStream()))
+                        {
+                            streamWriter.Write(JsonConvert.SerializeObject(data));
+                            streamWriter.Flush();
+                        }
+
+                        HttpWebResponse httpResponse = (HttpWebResponse)request.GetResponse();
+                        using (StreamReader streamReader = new StreamReader(httpResponse.GetResponseStream()))
+                        {
+                            AjaxResult postResult = JsonConvert.DeserializeObject<AjaxResult>(streamReader.ReadToEnd());
+                            if (!postResult.status) throw new Exception(postResult.message);
+                            MyHelp.Log("RMAInventory", package.OrderID, string.Format("訂單【{0}】傳送RMA資料至測試系統", package.OrderID), Session);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        string errorMsg = string.Format("傳送RMA資料至測試系統失敗，請通知處理人員：{0}", e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
+                        MyHelp.Log("RMAInventory", package.OrderID, string.Format("訂單【{0}】{1}", package.OrderID, errorMsg), Session);
+                    }
+                }
             }
             else
             {
@@ -1361,16 +1419,23 @@ namespace QDLogistics.Controllers
         [CheckSession]
         public ActionResult OrderProductList(int PackageID, string Type, string Index)
         {
-            Packages = new GenericRepository<Packages>(db);
-
-            Packages package = Packages.Get(PackageID);
+            Packages package = db.Packages.Find(PackageID);
 
             if (package != null)
             {
-                ViewBag.Index = Index;
-                ViewBag.package = package;
+                if (Type.Equals("rma"))
+                {
+                    var warehouseID = package.Items.First(i => i.IsEnable.Value).ShipFromWarehouseID.Value;
+                    var warehosueList = db.Warehouses.Where(w => w.IsEnable.Value && (w.Name.ToLower().Contains("rma") || w.ID.Equals(warehouseID))).OrderBy(w => w.Name).ToList();
+                    return Json(new { table = MyHelp.RenderViewToString(ControllerContext, "_rmaProductList", package), warehouse = string.Join("", warehosueList.Select(w => string.Format("<option value='{0}'>{1}</option>", w.ID, w.Name))) }, JsonRequestBehavior.AllowGet);
+                }
+                else
+                {
+                    ViewBag.Index = Index;
+                    ViewBag.package = package;
 
-                return PartialView("_" + Type + "ProductList");
+                    return PartialView("_" + Type + "ProductList");
+                }
             }
 
             return new EmptyResult();
