@@ -473,10 +473,9 @@ public class Country
 
 public class TimeZoneConvert
 {
-    private DateTime UtcDateTime;
     private TimeZoneInfo TimeZoneInfo;
 
-    public DateTime Utc { get { return UtcDateTime; } }
+    public DateTime Utc { get; private set; }
 
     private Dictionary<string, EnumData.TimeZone> TimeZoneList = new Dictionary<string, EnumData.TimeZone>()
     { { "USD", EnumData.TimeZone.PST }, { "GBP", EnumData.TimeZone.GMT }, { "AUD", EnumData.TimeZone.AEST }, { "JPY", EnumData.TimeZone.JST } };
@@ -503,7 +502,7 @@ public class TimeZoneConvert
         originDateTime = DateTime.SpecifyKind(originDateTime, DateTimeKind.Unspecified);
         string timeZoneId = GetTimeZoneId(originTimeZone);
         TimeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-        UtcDateTime = TimeZoneInfo.ConvertTimeToUtc(originDateTime, TimeZoneInfo);
+        Utc = TimeZoneInfo.ConvertTimeToUtc(originDateTime, TimeZoneInfo);
 
         return this;
     }

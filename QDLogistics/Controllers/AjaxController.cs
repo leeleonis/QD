@@ -958,8 +958,9 @@ namespace QDLogistics.Controllers
             {
                 ResetShippedData(package, picked, serial);
 
-                MyHelp.ErrorLog(e, string.Format("訂單【{0}】出貨失敗", package.OrderID), package.OrderID.ToString());
-                result.message = string.Format("訂單【{0}】出貨失敗，錯誤：", package.OrderID) + (e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
+                string errorMsg = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message.Trim() : e.Message.Trim();
+                MyHelp.ErrorLog(e, string.Format("訂單【{0}】出貨失敗，錯誤：{1}", package.OrderID, errorMsg), package.OrderID.ToString());
+                result.message = string.Format("訂單【{0}】出貨失敗，錯誤：{1}", package.OrderID, errorMsg);
                 result.status = false;
             }
 
@@ -1069,7 +1070,7 @@ namespace QDLogistics.Controllers
         [CheckSession]
         private void ResetShippedData(Packages package, List<PickProduct> picked, Dictionary<string, string[]> serial)
         {
-            MyHelp.Log("OrderID", package.OrderID, string.Format("訂單【{0}】出貨狀態重置", package.OrderID));
+            MyHelp.Log("Orders", package.OrderID, string.Format("訂單【{0}】出貨狀態重置", package.OrderID));
 
             foreach (PickProduct data in picked)
             {

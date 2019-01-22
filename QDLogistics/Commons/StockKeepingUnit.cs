@@ -56,22 +56,28 @@ namespace QDLogistics.Commons
         public void RecordOrderSkuStatement(int OrderID, string State)
         {
             Orders order = db.Orders.Find(OrderID);
-            DateTime Date = State.Equals("New") ? order.Payments.FirstOrDefault()?.AuditDate?.ToUniversalTime() ?? order.TimeOfOrder.Value.ToUniversalTime() : DateTime.UtcNow;
-            var data = order.Items.Where(i => i.IsEnable.Value).Select(i => new
+            DateTime Date = State.Equals("New") ? new TimeZoneConvert(order.Payments.FirstOrDefault()?.AuditDate ?? order.TimeOfOrder.Value, EnumData.TimeZone.EST).Utc : DateTime.UtcNow;
+
+            MyHelp.Log("SkuStatement", OrderID, string.Format("State: {0}, Date: {1}", State, OrderID, Date.ToString()));
+
+            List<dynamic> data = new List<dynamic>();
+            data.AddRange(order.Items.Where(i => i.IsEnable.Value).Select(i => new
             {
                 OrderID,
-                SCID = i.ShipFromWarehouseID,
+                SCID = i.ShipFromWarehouseID.Value,
                 SkuNo = i.ProductID,
-                i.Qty,
+                Qty = i.Qty.Value,
                 State,
-                Date
-            }).ToList();
+                Date = Date.ToString("yyyy-MM-dd HH:mm:tt")
+            }).ToList());
+
+            if (!data.Any()) throw new Exception("沒有找到任何資料");
 
             Response response = Request("Ajax/OrderLogList", data);
             if (!response.status) throw new Exception(response.message);
         }
 
-        private Response Request(string url, dynamic data, string method = "post")
+        private Response Request(string url, List<dynamic> data, string method = "post")
         {
             Response response = new Response();
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://internal.qd.com.tw:8080/" + url);
@@ -83,6 +89,7 @@ namespace QDLogistics.Commons
             {
                 using (StreamWriter streamWriter = new StreamWriter(request.GetRequestStream()))
                 {
+                    var json = JsonConvert.SerializeObject(data);
                     streamWriter.Write(JsonConvert.SerializeObject(data));
                     streamWriter.Flush();
                 }

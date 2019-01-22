@@ -554,50 +554,9 @@ namespace QDLogistics.Controllers
         {
             try
             {
-                List<dynamic> data = new List<dynamic>();
-                HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://internal.qd.com.tw:8080/Ajax/ShipmentByOrder");
-                request.ContentType = "application/json";
-                request.Method = "post";
-                //request.ProtocolVersion = HttpVersion.Version10;
-
-                foreach (Items item in db.Items.Where(i => i.IsEnable.Value && i.OrderID.Value.Equals(OrderID)))
-                {
-                    if (item.SerialNumbers.Any())
-                    {
-                        data.AddRange(item.SerialNumbers.Select(s => new
-                        {
-                            OrderID = s.OrderID.Value,
-                            SkuNo = s.ProductID,
-                            SerialsNo = s.SerialNumber,
-                            QTY = 1
-                        }).ToList());
-                    }
-                    else
-                    {
-                        data.Add(new
-                        {
-                            OrderID = item.OrderID.Value,
-                            SkuNo = item.ProductID,
-                            SerialsNo = "",
-                            QTY = item.Qty.Value
-                        });
-                    }
-                }
-
-                if (data != null)
-                {
-                    using (StreamWriter streamWriter = new StreamWriter(request.GetRequestStream()))
-                    {
-                        streamWriter.Write(JsonConvert.SerializeObject(data));
-                        streamWriter.Flush();
-                    }
-
-                    HttpWebResponse httpResponse = (HttpWebResponse)request.GetResponse();
-                    using (StreamReader streamReader = new StreamReader(httpResponse.GetResponseStream()))
-                    {
-                        string result = streamReader.ReadToEnd();
-                    }
-                }
+                Orders order = db.Orders.Find(OrderID);
+                StockKeepingUnit stock = new StockKeepingUnit();
+                stock.RecordOrderSkuStatement(OrderID, Enum.GetName(typeof(OrderService.OrderStatusCode), order.StatusCode.Value));
             }
             catch (Exception e)
             {
