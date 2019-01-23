@@ -958,8 +958,8 @@ namespace QDLogistics.Controllers
             {
                 ResetShippedData(package, picked, serial);
 
+                MyHelp.ErrorLog(e, string.Format("訂單【{0}】出貨失敗", package.OrderID), package.OrderID.ToString());
                 string errorMsg = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message.Trim() : e.Message.Trim();
-                MyHelp.ErrorLog(e, string.Format("訂單【{0}】出貨失敗，錯誤：{1}", package.OrderID, errorMsg), package.OrderID.ToString());
                 result.message = string.Format("訂單【{0}】出貨失敗，錯誤：{1}", package.OrderID, errorMsg);
                 result.status = false;
             }

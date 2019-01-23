@@ -1,0 +1,7 @@
+ActionName : 訂單【5567514】出貨失敗
+Message : 訂單【5567514】無法出貨因為並非InProcess的狀態
+StackTrace : at QDLogistics.Controllers.AjaxController.UpdatePicked(List`1 picked, Dictionary`2 serial) in C:\QD Project\Order Shipping System\QDLogistics\Controllers\AjaxController.cs:line 0
+Date : 1/22/2019 4:23:28 PM
+
+-----------------------------------------------------------------------------
+

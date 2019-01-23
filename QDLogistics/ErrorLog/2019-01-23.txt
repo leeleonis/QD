@@ -1,0 +1,16 @@
+ActionName : 同步1天訂單資料失敗
+Message : Thread was being aborted.
+StackTrace : at SellerCloud_WebService.SC_WebService.Login_test() in C:\QD Project\Order Shipping System\QDLogistics\App_Code\SC_WebService.cs:line 80
+   at SellerCloud_WebService.SC_WebService.get_Is_login() in C:\QD Project\Order Shipping System\QDLogistics\App_Code\SC_WebService.cs:line 42
+   at QDLogistics.Commons.SyncProcess.Sync_Orders(Int32 day) in C:\QD Project\Order Shipping System\QDLogistics\Commons\SyncProcess.cs:line 68
+Date : 1/23/2019 10:34:32 AM
+
+-----------------------------------------------------------------------------
+
+ActionName : 訂單包裹【5567995】更新失敗: #serials 864188042023158
+Message : Object reference not set to an instance of an object.
+StackTrace : at QDLogistics.Commons.SyncProcess.Update_Tracking(Packages package) in C:\QD Project\Order Shipping System\QDLogistics\Commons\SyncProcess.cs:line 482
+Date : 1/23/2019 4:53:50 PM
+
+-----------------------------------------------------------------------------
+

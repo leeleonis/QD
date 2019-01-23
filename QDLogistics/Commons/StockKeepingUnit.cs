@@ -56,11 +56,16 @@ namespace QDLogistics.Commons
         public void RecordOrderSkuStatement(int OrderID, string State)
         {
             Orders order = db.Orders.Find(OrderID);
-            DateTime Date = State.Equals("New") ? new TimeZoneConvert(order.Payments.FirstOrDefault()?.AuditDate ?? order.TimeOfOrder.Value, EnumData.TimeZone.EST).Utc : DateTime.UtcNow;
+            DateTime Date = DateTime.UtcNow;
+            if (State.Equals("New"))
+            {
+                var convertDate = new TimeZoneConvert(order.Payments.FirstOrDefault()?.AuditDate ?? order.TimeOfOrder.Value, EnumData.TimeZone.EST);
+                Date = convertDate.Utc;
+            }
 
-            MyHelp.Log("SkuStatement", OrderID, string.Format("State: {0}, Date: {1}", State, OrderID, Date.ToString()));
+            MyHelp.Log("SkuStatement", OrderID, string.Format("State: {0}, Date: {1}", State, Date.ToString("yyyy-MM-dd HH:mm:ss")));
 
-            List<dynamic> data = new List<dynamic>();
+            List <dynamic> data = new List<dynamic>();
             data.AddRange(order.Items.Where(i => i.IsEnable.Value).Select(i => new
             {
                 OrderID,
@@ -68,7 +73,7 @@ namespace QDLogistics.Commons
                 SkuNo = i.ProductID,
                 Qty = i.Qty.Value,
                 State,
-                Date = Date.ToString("yyyy-MM-dd HH:mm:tt")
+                Date = Date.ToString("yyyy-MM-dd HH:mm:ss")
             }).ToList());
 
             if (!data.Any()) throw new Exception("沒有找到任何資料");
