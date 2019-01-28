@@ -476,6 +476,7 @@ public class TimeZoneConvert
     private TimeZoneInfo TimeZoneInfo;
 
     public DateTime Utc { get; private set; }
+    public double TimeStamp { get { return (Utc.Subtract(new DateTime(1970, 1, 1, 0, 0, 0))).TotalSeconds; } }
 
     private Dictionary<string, EnumData.TimeZone> TimeZoneList = new Dictionary<string, EnumData.TimeZone>()
     { { "USD", EnumData.TimeZone.PST }, { "GBP", EnumData.TimeZone.GMT }, { "AUD", EnumData.TimeZone.AEST }, { "JPY", EnumData.TimeZone.JST } };

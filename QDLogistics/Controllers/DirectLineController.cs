@@ -1391,9 +1391,15 @@ namespace QDLogistics.Controllers
                             break;
 
                         case "BoxOrder":
+                            for (int i= 0; i <item.Qty.Value; i++)
+                            {
+                                productList.Add(new string[] { item.ProductID, item.Skus.ProductName, item.SerialNumbers.Skip(i).Any() ? item.SerialNumbers.Skip(i).First().SerialNumber : "" });
+                            }
+                            break;
+
                         case "CancelLabel":
                             SerialNumberForRefundLabel[] SerialRefund = db.SerialNumberForRefundLabel.AsNoTracking().Where(f => f.oldOrderID.Equals(package.OrderID.Value)).ToArray();
-                            for (int i = 0; i < item.Qty; i++)
+                            for (int i = 0; i < item.Qty.Value; i++)
                             {
                                 string serial = SerialRefund.Where(s => s.Sku.Equals(item.SKU)).Skip(i).FirstOrDefault().SerialNumber ?? "";
 

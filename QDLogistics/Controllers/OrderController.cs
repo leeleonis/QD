@@ -559,8 +559,12 @@ namespace QDLogistics.Controllers
 
                             if (trackList.Any())
                             {
-                                var dataList = Orders.GetAll(true).Where(o => trackList.Any(track => track.sellerOrderNo.Equals(o.OrderID.ToString()))).ToList()
-                                    .Join(Packages.GetAll(true).Where(p => p.IsEnable == true && p.DeliveryStatus != (int)DeliveryStatusType.Delivered).ToList(), o => o.OrderID, p => p.OrderID, (o, p) => new { order = o, package = p }).ToList();
+                                string[] OrderIDs = trackList.Select(track => track.sellerOrderNo).ToArray();
+                                var WinitShippingMethod = db.CarrierAPI.AsNoTracking().Where(api => api.IsEnable && api.Type.Value.Equals((byte)EnumData.CarrierType.Winit))
+                                    .SelectMany(api => api.Carriers.Where(c => c.IsEnable)).SelectMany(c => c.ShippingMethod.Where(s => s.IsEnable)).Select(s => s.ID).Distinct().ToArray();
+                                var OrderFilter = db.Orders.AsNoTracking().Where(o => OrderIDs.Contains(o.OrderID.ToString()));
+                                var PackageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.DeliveryStatus.Value.Equals((int)DeliveryStatusType.Delivered) && WinitShippingMethod.Contains(p.ShippingMethod.Value));
+                                var dataList = OrderFilter.ToList().Join(PackageFilter.ToList(), o => o.OrderID, p => p.OrderID.Value, (order, package) => new { order, package }).ToList();
 
                                 if (dataList.Any())
                                 {

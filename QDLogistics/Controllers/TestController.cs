@@ -11,9 +11,7 @@ using CarrierApi.FedEx;
 using CarrierApi.Sendle;
 using CarrierApi.Winit;
 using DirectLineApi.IDS;
-using iTextSharp.text;
-using iTextSharp.text.pdf;
-using Newtonsoft.Json;
+using QDLogistics.DirectLineApi.ShippingEasy;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
 using QDLogistics.Commons;
@@ -274,11 +272,11 @@ namespace QDLogistics.Controllers
             var result = ship.Dispatch();
         }
 
-        private void Check_Winit(int OrderID)
+        private void Check_Winit()
         {
             using (Winit_API winitAPI = new Winit_API())
             {
-                Received result = winitAPI.Order(OrderID);
+
             }
         }
 
@@ -563,6 +561,14 @@ namespace QDLogistics.Controllers
                 string errorMsg = string.Format("傳送出貨資料至測試系統失敗，請通知處理人員：{0}", e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
                 
             }
+        }
+
+        public void ShippingEasy_Test(int OrderID)
+        {
+            Packages package = db.Packages.First(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID));
+
+            SE_API SE_Api = new SE_API();
+            var response = SE_Api.CreateOrder(package);
         }
     }
 }
