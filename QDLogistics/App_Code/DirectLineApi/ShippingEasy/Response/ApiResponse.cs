@@ -9,7 +9,7 @@ namespace ShippingEasy.Responses
         /// <summary>
         /// The unparsed response from the remote server
         /// </summary>
-        public DirectLineApi.ShippingEasy.HttpResponse HttpResponse { get; set; }
+        public HttpResponse HttpResponse { get; set; }
 
         /// <summary>
         /// Indiciates if request was successful

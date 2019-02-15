@@ -361,7 +361,7 @@ namespace SellerCloud_WebService
 
         public bool Receive_RMA_Item(int RMAID, int RMAItemID, string ProductID, int QtyToReceive, int WarehouseID, string SerialsList, string DestinationBinName = "", int QtyReturnedDoNotCount = 0)
         {
-            return PO_SellerCloud.RMA_ReceiveItem_New2(PO_AuthHeader, RMAID, RMAItemID, ProductID, QtyToReceive, DestinationBinName, WarehouseID, SerialsList, QtyReturnedDoNotCount, DateTime.Now.AddDays(30), "");
+            return PO_SellerCloud.RMA_ReceiveItem_New2(PO_AuthHeader, RMAID, RMAItemID, ProductID, QtyToReceive, DestinationBinName, WarehouseID, SerialsList, QtyReturnedDoNotCount);
         }
 
         /***** 採購單 *****/

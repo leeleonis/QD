@@ -568,7 +568,11 @@ namespace QDLogistics.Controllers
             Packages package = db.Packages.First(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID));
 
             SE_API SE_Api = new SE_API();
-            var response = SE_Api.CreateOrder(package);
+            var CreateResponse = SE_Api.CreateOrder(package);
+
+            string externalOrderIdentifier = string.Format("{0}-{1}", package.OrderID, Convert.ToInt32(package.ShipDate.Value.Subtract(new DateTime(1970, 1, 1)).TotalSeconds));
+            var SearchResponse = SE_Api.GetOrderByID(externalOrderIdentifier);
+            var CancelResponse = SE_Api.CancelOrder(externalOrderIdentifier);
         }
     }
 }

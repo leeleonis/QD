@@ -126,8 +126,9 @@ namespace QDLogistics.Commons
             ShippingMethod method = db.ShippingMethod.Find(boxList.First().FirstMileMethod);
             DirectLine directLine = db.DirectLine.Find(boxList.First().DirectLine);
             CarrierAPI api = method.Carriers.CarrierAPI;
+            string[] IDS = new string[] { "IDS", "IDS (US)" };
 
-            string currency = directLine.Abbreviation.Equals("IDS") ? "USD" : Enum.GetName(typeof(OrderService.CurrencyCodeType2), boxList[0].Packages.First(p => p.IsEnable.Value).Orders.OrderCurrencyCode.Value);
+            string currency = IDS.Contains(directLine.Abbreviation) ? "USD" : Enum.GetName(typeof(OrderService.CurrencyCodeType2), boxList[0].Packages.First(p => p.IsEnable.Value).Orders.OrderCurrencyCode.Value);
 
             string basePath, filePath;
             try

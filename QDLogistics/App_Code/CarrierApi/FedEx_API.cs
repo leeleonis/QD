@@ -196,7 +196,8 @@ namespace CarrierApi.FedEx
             };
 
             int NumberOfPieces = 1;
-            string currency = directLine.Abbreviation.Equals("IDS") ? "USD" : Enum.GetName(typeof(QDLogistics.OrderService.CurrencyCodeType2), boxList[0].Packages.First(p => p.IsEnable.Value).Orders.OrderCurrencyCode.Value);
+            string[] IDS = new string[] { "IDS", "IDS (US)" };
+            string currency = IDS.Contains(directLine.Abbreviation) ? "USD" : Enum.GetName(typeof(QDLogistics.OrderService.CurrencyCodeType2), boxList[0].Packages.First(p => p.IsEnable.Value).Orders.OrderCurrencyCode.Value);
             //string currency = Enum.GetName(typeof(QDLogistics.OrderService.CurrencyCodeType2), box.Packages.First(p => p.IsEnable.Value).Orders.OrderCurrencyCode.Value);
             var commodityList = new List<QDLogistics.FedExShipService.Commodity>();
             var itemLineList = new List<RequestedPackageLineItem>();

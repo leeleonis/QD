@@ -61710,7 +61710,7 @@ namespace QDLogistics.PurchaseOrderService {
         public RMA_ReceiveItem_New2Request() {
         }
         
-        public RMA_ReceiveItem_New2Request(QDLogistics.PurchaseOrderService.AuthHeader AuthHeader, int RMAId, int RMAItemID, string ProductID, int QtyToReceive, string DestinationBinName, int WarehouseID, string SerialsList, int QtyReturnedDoNotCount, System.DateTime ExpiryDate, string LotNumber) {
+        public RMA_ReceiveItem_New2Request(QDLogistics.PurchaseOrderService.AuthHeader AuthHeader, int RMAId, int RMAItemID, string ProductID, int QtyToReceive, string DestinationBinName, int WarehouseID, string SerialsList, int QtyReturnedDoNotCount) {
             this.AuthHeader = AuthHeader;
             this.RMAId = RMAId;
             this.RMAItemID = RMAItemID;
@@ -61720,8 +61720,6 @@ namespace QDLogistics.PurchaseOrderService {
             this.WarehouseID = WarehouseID;
             this.SerialsList = SerialsList;
             this.QtyReturnedDoNotCount = QtyReturnedDoNotCount;
-            this.ExpiryDate = ExpiryDate;
-            this.LotNumber = LotNumber;
         }
     }
     
@@ -68722,7 +68720,7 @@ namespace QDLogistics.PurchaseOrderService {
             return base.Channel.RMA_ReceiveItem_New2(request);
         }
         
-        public bool RMA_ReceiveItem_New2(QDLogistics.PurchaseOrderService.AuthHeader AuthHeader, int RMAId, int RMAItemID, string ProductID, int QtyToReceive, string DestinationBinName, int WarehouseID, string SerialsList, int QtyReturnedDoNotCount, System.DateTime ExpiryDate, string LotNumber) {
+        public bool RMA_ReceiveItem_New2(QDLogistics.PurchaseOrderService.AuthHeader AuthHeader, int RMAId, int RMAItemID, string ProductID, int QtyToReceive, string DestinationBinName, int WarehouseID, string SerialsList, int QtyReturnedDoNotCount) {
             QDLogistics.PurchaseOrderService.RMA_ReceiveItem_New2Request inValue = new QDLogistics.PurchaseOrderService.RMA_ReceiveItem_New2Request();
             inValue.AuthHeader = AuthHeader;
             inValue.RMAId = RMAId;
@@ -68733,8 +68731,6 @@ namespace QDLogistics.PurchaseOrderService {
             inValue.WarehouseID = WarehouseID;
             inValue.SerialsList = SerialsList;
             inValue.QtyReturnedDoNotCount = QtyReturnedDoNotCount;
-            inValue.ExpiryDate = ExpiryDate;
-            inValue.LotNumber = LotNumber;
             QDLogistics.PurchaseOrderService.RMA_ReceiveItem_New2Response retVal = ((QDLogistics.PurchaseOrderService.POServicesSoap)(this)).RMA_ReceiveItem_New2(inValue);
             return retVal.RMA_ReceiveItem_New2Result;
         }

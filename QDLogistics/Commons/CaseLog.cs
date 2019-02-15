@@ -128,6 +128,7 @@ namespace QDLogistics.Commons
                 switch (directLine)
                 {
                     case "IDS":
+                    case "IDS (US)":
                         receiveMails = MailList["IDS"];
                         //receiveMails = new string[] { "qd.tuko@hotmail.com" };
                         mailTitle = string.Format("TW018 - {0} Orders Awaiting Dispatch", labelList.Count());
@@ -190,6 +191,7 @@ namespace QDLogistics.Commons
                 switch (directLine.Abbreviation)
                 {
                     case "IDS":
+                    case "IDS (US)":
                         receiveMails = MailList["IDS"];
                         //receiveMails = new string[] { "qd.tuko@hotmail.com" };
                         mailTitle = string.Format("TW018 - Cancel Shipment Request for {0} (in {1} tracking {2})", packageData.TagNo, packageData.Method.Carriers.Name, packageData.TrackingNumber);
@@ -445,6 +447,7 @@ namespace QDLogistics.Commons
                 switch (directLine.Abbreviation)
                 {
                     case "IDS":
+                    case "IDS (US)":
                         receiveMails = MailList["IDS"];
                         //receiveMails = new string[] { "qd.tuko@hotmail.com" };
 
@@ -527,6 +530,7 @@ namespace QDLogistics.Commons
                 switch (directLine.Abbreviation)
                 {
                     case "IDS":
+                    case "IDS (US)":
                         receiveMails = MailList["IDS"];
                         //receiveMails = new string[] { "qd.tuko@hotmail.com" };
 
@@ -585,6 +589,7 @@ namespace QDLogistics.Commons
                 switch (directLine)
                 {
                     case "IDS":
+                    case "IDS (US)":
                         IDS_Api = new IDS_API(method.Carriers.CarrierAPI);
                         CreateOrderResponse IDS_Result = IDS_Api.CreateOrder(packageData, method);
 
@@ -698,6 +703,7 @@ namespace QDLogistics.Commons
                 switch (directLine.Abbreviation)
                 {
                     case "IDS":
+                    case "IDS (US)":
                         receiveMails = MailList["IDS"];
                         //receiveMails = new string[] { "qd.tuko@hotmail.com" };
 
@@ -869,6 +875,7 @@ namespace QDLogistics.Commons
                 switch (directLine.Abbreviation)
                 {
                     case "IDS":
+                    case "IDS (US)":
                         IDS_Api = new IDS_API();
                         var IDS_Result = IDS_Api.GetTrackingNumber(packageData);
                         if (IDS_Result.trackingnumber.Any(t => t.First().Equals(packageData.OrderID.ToString())))
@@ -899,6 +906,7 @@ namespace QDLogistics.Commons
             switch (directLine)
             {
                 case "IDS":
+                case "IDS (US)":
                     string HK_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Successful }, { "returnWarehouseID", 163 } });
                     string UK_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Successful }, { "returnWarehouseID", 215 } });
                     failed_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Failed } });
@@ -932,6 +940,7 @@ namespace QDLogistics.Commons
             switch (directLine)
             {
                 case "IDS":
+                case "IDS (US)":
                     string investigating_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Investigating } });
                     string inTransit_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.InTransit } });
                     string lost_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Lost } });
@@ -955,6 +964,7 @@ namespace QDLogistics.Commons
             switch (directLine)
             {
                 case "IDS":
+                case "IDS (US)":
                     confirm_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Successful } });
                     faild_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Failed } });
                     mailBody = "Hi All<br /><br />The shipping method for {0} needs to change from {1}. The new code is {2}. <br /><br />";
@@ -989,6 +999,7 @@ namespace QDLogistics.Commons
             switch (directLine)
             {
                 case "IDS":
+                case "IDS (US)":
                     successful_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Successful } });
                     mailBody = "Hello<br /><br />Order ({0}) confirmed cancelled on {1} requires reship with new # {2}.<br /><br />";
                     mailBody += "Please click <a href='{3}' target='_bland'>here</a> to confirm the change.<br /><br />";

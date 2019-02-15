@@ -387,18 +387,20 @@
                 onUncheckAll: onUncheckAll,
                 view: detailview,
                 detailFormatter: function (index, row) {
-                    return '<div id="order-' + index + '"></div>';
+                    return '<div id="itemList"></div>';
                 },
                 onExpandRow: function (index, row) {
                     if (row.ItemCount == 1) {
                         $dataGrid.datagrid("collapseRow", index);
                     } else {
-                        $("#order-" + index).panel({
+                        var $itemList = $("div#itemList:eq(" + index + ")");
+
+                        $itemList.panel({
                             border: false,
                             cache: false,
-                            href: "@Html.Raw(Url.Action("orderProductList", "ajax", new { PackageID = "_id_", Type = "shipped", Index = "_index_" }))".replace("_id_", row.PackageID).replace("_index_", index),
+                            href: "@Html.Raw(Url.Action("orderProductList", "ajax", new { PackageID = "_id_", Type = "shipped"}))".replace("_id_", row.PackageID),
                             onLoad: function (response) {
-                                $("#datagrid-row-r1-1-" + index).next("tr").find(".datagrid-row-detail").html($("#order-" + index).find("table:hidden").remove().removeClass("hidden"));
+                                $("#datagrid-row-r1-1-" + index).next("tr").find(".datagrid-row-detail").html($itemList.find("table.hidden").remove().removeClass("hidden"));
                             }
                         });
 

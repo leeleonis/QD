@@ -770,6 +770,7 @@ namespace QDLogistics.Controllers
                 switch (directLine.Abbreviation)
                 {
                     case "IDS":
+                    case "IDS (US)":
                         MyHelp.Log("PickProduct", null, "寄送IDS出貨通知");
 
                         receiveMails = new string[] { "gloria.chiu@contin-global.com", "cherry.chen@contin-global.com", "TWCS@contin-global.com", "contincs@gmail.com", "shipping_qd@hotmail.com" };
