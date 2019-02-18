@@ -11,12 +11,12 @@ using CarrierApi.FedEx;
 using CarrierApi.Sendle;
 using CarrierApi.Winit;
 using DirectLineApi.IDS;
-using QDLogistics.DirectLineApi.ShippingEasy;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
 using QDLogistics.Commons;
 using QDLogistics.Models;
 using QDLogistics.Models.Repositiry;
+using QDLogistics.OrderService;
 using SellerCloud_WebService;
 
 namespace QDLogistics.Controllers
@@ -32,15 +32,30 @@ namespace QDLogistics.Controllers
 
         public void Index()
         {
-            IRepository<Orders> Orders = new GenericRepository<Orders>(db);
             SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
 
-            int OrderID = 5531477;
-            var order = Orders.Get(OrderID);
+            int OrderID = 5575671;
+            var order = db.Orders.Find(OrderID);
+            var package = order.Packages.First(p => p.IsEnable.Value);
             if (SCWS.Is_login)
             {
-                var SC_order = SCWS.Get_OrderStatus(OrderID);
-                var SC_order2 = SCWS.Get_OrderData(OrderID);
+                OrderService.OrderData orderData = SCWS.Get_OrderData(OrderID);
+                Order SC_order = orderData.Order;
+                Package SC_package = SC_order.Packages.First(p => p.ID.Equals(package.ID));
+
+                string carrier = package.Method.Carriers != null ? package.Method.Carriers.Name : "";
+                var weight = SC_package.Weight;
+                var stationID_1 = SC_package.StationID;
+                var fee = SC_package.FinalShippingFee;
+                //SCWS.Update_PackageShippingStatus(SC_package, (package.UploadTracking ? package.TrackingNumber : ""), carrier);
+
+                if (db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.OrderID.Value.Equals(package.OrderID.Value)).All(p => p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.已出貨)))
+                {
+                    var stationID_2 = SC_order.StationID;
+                    var location = SC_order.ShippingLocationID;
+                    //SCWS.Update_OrderShippingStatus(SC_order, carrier);
+                    MyHelp.Log("Packages", package.ID, string.Format("訂單【{0}】SC完成出貨", package.OrderID), Session);
+                }
             }
         }
 
@@ -548,31 +563,21 @@ namespace QDLogistics.Controllers
             var result = ship.Dispatch();
         }
 
-        public void SendSerial_Test(int OrderID)
+        public void SkuData_Test(int OrderID)
         {
             try
             {
-                Orders order = db.Orders.Find(OrderID);
-                StockKeepingUnit stock = new StockKeepingUnit();
-                stock.RecordOrderSkuStatement(OrderID, Enum.GetName(typeof(OrderService.OrderStatusCode), order.StatusCode.Value));
+                using (StockKeepingUnit stock = new StockKeepingUnit())
+                {
+                    var IDs = db.Items.Where(i => i.OrderID.Value.Equals(OrderID)).Select(i => i.ProductID).Distinct().ToArray();
+                    var response = stock.GetSkuData(IDs);
+                }
             }
             catch (Exception e)
             {
                 string errorMsg = string.Format("傳送出貨資料至測試系統失敗，請通知處理人員：{0}", e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
                 
             }
-        }
-
-        public void ShippingEasy_Test(int OrderID)
-        {
-            Packages package = db.Packages.First(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID));
-
-            SE_API SE_Api = new SE_API();
-            var CreateResponse = SE_Api.CreateOrder(package);
-
-            string externalOrderIdentifier = string.Format("{0}-{1}", package.OrderID, Convert.ToInt32(package.ShipDate.Value.Subtract(new DateTime(1970, 1, 1)).TotalSeconds));
-            var SearchResponse = SE_Api.GetOrderByID(externalOrderIdentifier);
-            var CancelResponse = SE_Api.CancelOrder(externalOrderIdentifier);
         }
     }
 }

@@ -65,7 +65,7 @@ namespace QDLogistics.Commons
 
             MyHelp.Log("SkuStatement", OrderID, string.Format("State: {0}, Date: {1}", State, Date.ToString("yyyy-MM-dd HH:mm:ss")));
 
-            List <dynamic> data = new List<dynamic>();
+            List<dynamic> data = new List<dynamic>();
             data.AddRange(order.Items.Where(i => i.IsEnable.Value).Select(i => new
             {
                 OrderID,
@@ -78,19 +78,26 @@ namespace QDLogistics.Commons
 
             if (!data.Any()) throw new Exception("沒有找到任何資料");
 
-            Response response = Request("Ajax/OrderLogList", data);
+            Response<object> response = Request<object>("Ajax/OrderLogList", "post", data);
             if (!response.status) throw new Exception(response.message);
         }
 
-        private Response Request(string url, List<dynamic> data, string method = "post")
+        public List<SkuData> GetSkuData(string[] IDs)
         {
-            Response response = new Response();
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://internal.qd.com.tw:8080/" + url);
-            request.ContentType = "application/json";
-            request.Method = "post";
-            //request.ProtocolVersion = HttpVersion.Version10;
+            Response<List<SkuData>> response = Request<List<SkuData>>("Ajax/GetSkuData", "post", new { IDs });
 
-            if (data.Any())
+            return response.data;
+        }
+
+        private Response<T> Request<T>(string url, string method = "post", object data = null) where T : new()
+        {
+            Response<T> response = new Response<T>();
+            request.ContentType = "application/json";
+            request.Method = method;
+            request.ProtocolVersion = HttpVersion.Version10;
+
+            if (data != null)
             {
                 using (StreamWriter streamWriter = new StreamWriter(request.GetRequestStream()))
                 {
@@ -102,7 +109,7 @@ namespace QDLogistics.Commons
                 HttpWebResponse httpResponse = (HttpWebResponse)request.GetResponse();
                 using (StreamReader streamReader = new StreamReader(httpResponse.GetResponseStream()))
                 {
-                    response = JsonConvert.DeserializeObject<Response>(streamReader.ReadToEnd());
+                    response = JsonConvert.DeserializeObject<Response<T>>(streamReader.ReadToEnd());
                 }
             }
 
@@ -144,16 +151,25 @@ namespace QDLogistics.Commons
         }
         #endregion
 
-        public class Response
+        public class Response<T>
         {
             public bool status { get; set; }
             public string message { get; set; }
+            public T data { get; set; }
 
             public Response()
             {
                 this.status = true;
                 this.message = null;
             }
+        }
+
+        public class SkuData
+        {
+            public string Sku { get; set; }
+            public string Name { get; set; }
+            public int Weight { get; set; }
+            public string HSCode { get; set; }
         }
     }
 }

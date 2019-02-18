@@ -9,6 +9,7 @@ using System.Web;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
 using Newtonsoft.Json;
+using QDLogistics.Commons;
 using QDLogistics.Models;
 
 namespace CarrierApi.Sendle
@@ -33,8 +34,15 @@ namespace CarrierApi.Sendle
         {
             Addresses address = package.Orders.Addresses;
 
+            List<StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
+            using (StockKeepingUnit stock = new StockKeepingUnit())
+            {
+                var IDs = package.Items.Where(i => i.IsEnable.Value).Select(i => i.ProductID).ToArray();
+                SkuData = stock.GetSkuData(IDs);
+            }
+
             DateTime pickup_date = new TimeZoneConvert().ConvertDateTime(QDLogistics.Commons.EnumData.TimeZone.AEST);
-            decimal weight = package.Items.Where(i => i.IsEnable.Value).Sum(i => (i.Qty.Value * (decimal)i.Skus.ShippingWeight) / 1000);
+            decimal weight = package.Items.Where(i => i.IsEnable.Value).Sum(i => (i.Qty.Value * (decimal)(SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight)) / 1000);
 
             OrderRequest request = new OrderRequest()
             {

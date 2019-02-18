@@ -833,8 +833,16 @@ namespace QDLogistics.Controllers
                 .Join(SkuFilter, data => data.pick.ProductID, sku => sku.Sku, (data, sku) => new { data.pick, data.item, sku })
                 .Select(p => p.pick.SetDeclaredValue(p.item.DeclaredValue).SetBattery(p.sku.Battery ?? false).SetWeight(p.sku.ShippingWeight))
                 .GroupBy(pick => pick.ProductID).ToDictionary(group => group.Key.ToString(), group => group.ToDictionary(p => p.ItemID.Value.ToString()));
-
-            string[] productIDs = productList.Select(p => p.Key).ToArray(); ;
+            ;
+            string[] productIDs = productList.Select(p => p.Key).ToArray();
+            using (StockKeepingUnit stock = new StockKeepingUnit())
+            {
+                List<StockKeepingUnit.SkuData> SkuData = stock.GetSkuData(productIDs);
+                foreach (var group in productList)
+                    if (SkuData.Any(s => s.Sku.Equals(group.Key)))
+                        foreach (var pick in group.Value.Select(p => p.Value))
+                            pick.SetWeight(SkuData.First(s => s.Sku.Equals(pick.ProductID)).Weight);
+            }
             List<SerialNumbers> itemSerials = db.SerialNumbers.AsNoTracking().Where(s => productIDs.Contains(s.ProductID)).ToList();
             List<PurchaseItemReceive> purchaseItemSerial = db.PurchaseItemReceive.AsNoTracking().Where(s => productIDs.Contains(s.ProductID)).ToList();
             var serialList = productIDs.ToDictionary(p => p, p => new
@@ -1391,7 +1399,7 @@ namespace QDLogistics.Controllers
                             break;
 
                         case "BoxOrder":
-                            for (int i= 0; i <item.Qty.Value; i++)
+                            for (int i = 0; i < item.Qty.Value; i++)
                             {
                                 productList.Add(new string[] { item.ProductID, item.Skus.ProductName, item.SerialNumbers.Skip(i).Any() ? item.SerialNumbers.Skip(i).First().SerialNumber : "" });
                             }

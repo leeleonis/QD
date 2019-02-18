@@ -1086,6 +1086,13 @@ namespace QDLogistics.Controllers
                                                     decimal declaredTotal = package.DeclaredTotal;
                                                     List<Items> itemList = package.Items.Where(i => i.IsEnable.Value).ToList();
 
+                                                    List<StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
+                                                    using (StockKeepingUnit stock = new StockKeepingUnit())
+                                                    {
+                                                        var IDs = itemList.Where(i => i.IsEnable.Value).Select(i => i.ProductID).ToArray();
+                                                        SkuData = stock.GetSkuData(IDs);
+                                                    }
+
                                                     using (FileStream fsIn = new FileStream(Path.Combine(basePath, filePath, "Invoice.xls"), FileMode.Open))
                                                     {
                                                         HSSFWorkbook FedEx_workbook = new HSSFWorkbook(fsIn);
@@ -1100,10 +1107,10 @@ namespace QDLogistics.Controllers
                                                             FedEx_sheet.GetRow(rowIndex).GetCell(1).SetCellValue(country.OriginName);
                                                             string productName = item.Skus.ProductType.ProductTypeName + " - " + item.Skus.ProductName;
                                                             FedEx_sheet.GetRow(rowIndex).GetCell(4).SetCellValue(productName);
-                                                            FedEx_sheet.GetRow(rowIndex).GetCell(5).SetCellValue(item.Skus.ProductType.HSCode);
+                                                            FedEx_sheet.GetRow(rowIndex).GetCell(5).SetCellValue((SkuData.Any(s => s.Sku.Equals(item.ProductID)) ? SkuData.First(s => s.Sku.Equals(item.ProductID)).HSCode : item.Skus.ProductType.HSCode));
                                                             FedEx_sheet.GetRow(rowIndex).GetCell(8).SetCellValue(item.Qty.Value);
                                                             FedEx_sheet.GetRow(rowIndex).GetCell(9).SetCellValue("pieces");
-                                                            FedEx_sheet.GetRow(rowIndex).GetCell(10).SetCellValue(item.Qty * ((double)item.Skus.ShippingWeight / 1000) + "kg");
+                                                            FedEx_sheet.GetRow(rowIndex).GetCell(10).SetCellValue(item.Qty * ((double)(SkuData.Any(s => s.Sku.Equals(item.ProductID)) ? SkuData.First(s => s.Sku.Equals(item.ProductID)).Weight : item.Skus.ShippingWeight) / 1000) + "kg");
                                                             FedEx_sheet.GetRow(rowIndex).GetCell(11).SetCellValue(item.DeclaredValue.ToString("N"));
                                                             FedEx_sheet.GetRow(rowIndex).GetCell(16).SetCellValue((item.DeclaredValue * item.Qty.Value).ToString("N"));
                                                             FedEx_sheet.GetRow(rowIndex).HeightInPoints = (productName.Length / 30 + 1) * FedEx_sheet.DefaultRowHeight / 20;

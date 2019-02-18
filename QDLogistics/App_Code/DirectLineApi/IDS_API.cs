@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using Newtonsoft.Json;
+using QDLogistics.Commons;
 using QDLogistics.Models;
 
 namespace DirectLineApi.IDS
@@ -86,6 +87,13 @@ namespace DirectLineApi.IDS
                     }
                 }
 
+                List<StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
+                using (StockKeepingUnit stock = new StockKeepingUnit())
+                {
+                    var IDs = package.Items.Where(i => i.IsEnable.Value).Select(i => i.ProductID).ToArray();
+                    SkuData = stock.GetSkuData(IDs);
+                }
+
                 orderList.Add(new OrderData()
                 {
                     salesRecordNumber = order.OrderID.ToString(),
@@ -100,7 +108,7 @@ namespace DirectLineApi.IDS
                     buyerDistrict = address.CountryCode.Equals("US") ? "" : "E",
                     buyerState = !string.IsNullOrEmpty(address.StateName) ? address.StateName : "",
                     buyerZip = address.PostalCode,
-                    weight = itemList.Sum(i => i.Qty.Value * i.Skus.ShippingWeight),
+                    weight = itemList.Sum(i => i.Qty.Value * (SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight)),
                     quantity = itemList.Sum(i => i.Qty.Value),
                     cost = (float)itemList.Sum(i => i.Qty.Value * i.DLDeclaredValue),
                     remarks = !string.IsNullOrEmpty(package.SupplierComment) ? package.SupplierComment.Trim() : ""

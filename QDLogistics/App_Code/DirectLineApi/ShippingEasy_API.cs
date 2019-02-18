@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using DirectLineApi.ShippingEasy;
 using QDLogistics.Models;
 using ShippingEasy.Request;
@@ -13,23 +15,23 @@ namespace QDLogistics.DirectLineApi.ShippingEasy
         private readonly string apiSecret = "da2be296c1e7adfb2e66592c40d7371843da6ee3885ebb501f365e2d2bdc8ba2";
 
         // from Settings > Stores
-        private readonly string storeApiKey = "";
+        private readonly string storeApiKey = "b5e3710124b3ae026c48f40e094476f9";
 
-        private readonly string baseUrl = "https://app.shippingeasy.com/";
+        private Client client;
 
         public SE_API()
         {
-
+            client = new Client(apiKey, apiSecret);
         }
 
         public OrderQueryResponse GetOrderByID(string ID)
         {
             OrderQuery query = new OrderQuery()
             {
-                OrderNumber = ID
+                OrderNumber = ID,
+                Status = "shipped,ready_for_shipment"
             };
 
-            var client = new Client(apiKey, apiSecret);
             return client.GetOrders(query);
         }
 
@@ -40,55 +42,50 @@ namespace QDLogistics.DirectLineApi.ShippingEasy
                 LastUpdated = new DateTimeOffset(DateTime.UtcNow.AddDays(1 - days))
             };
 
-            var client = new Client(apiKey, apiSecret);
             return client.GetOrders(query);
         }
 
         public CreateOrderResponse CreateOrder(Packages package)
         {
             DateTimeOffset now = new DateTimeOffset(DateTime.Now);
+            Addresses address = package.Orders.Addresses;
+
+            var recipient = new Recipient
+            {
+                Company = address.CompanyName,
+                FirstName = address.FirstName,
+                LastName = address.LastName,
+                Address = address.StreetLine1,
+                Address2 = address.StreetLine2,
+                City = address.City,
+                State = address.StateName,
+                Country = address.CountryName,
+                PostalCode = address.PostalCode,
+                PhoneNumber = address.PhoneNumber,
+                Email = address.EmailAddress,
+                LineItems = package.Items.Where(i => i.IsEnable.Value).Select(i => new LineItem()
+                {
+                    Sku = i.ProductID,
+                    ItemName = i.Skus.ProductName,
+                    Quantity = i.Qty
+                }).ToArray()
+            };
 
             Order order = new Order()
             {
-                ExternalOrderIdentifier = string.Format("{0}-{1}", package.OrderID, Convert.ToInt32(package.ShipDate.Value.Subtract(new DateTime(1970, 1,1)).TotalSeconds)),
-                OrderedAt = now
+                ExternalOrderIdentifier = string.Format("{0}-{1}", package.OrderID, Convert.ToInt32(package.ShipDate.Value.Subtract(new DateTime(1970, 1, 1)).TotalSeconds)),
+                OrderedAt = now,
+                Recipients = new List<Recipient>() { recipient },
+                Notes = string.Format("Order # {0}", package.OrderID),
+                UpdatedAt = now
             };
 
-            var client = new Client(apiKey, apiSecret);
             return client.CreateOrder(storeApiKey, order);
         }
 
-        //public OrderData CreateOrder(Packages package)
-        //{
-        //    Addresses address = package.Orders.Addresses;
-
-        //    var recipient = new RecipientData
-        //    {
-        //        first_name = address.FirstName,
-        //        last_name = address.LastName,
-        //        phone_number = address.PhoneNumber,
-        //        email = address.EmailAddress,
-        //        address = address.StreetLine1,
-        //        address2 = address.StreetLine1,
-        //        postal_code = address.PostalCode,
-        //        city = address.City,
-        //        state = address.StateName,
-        //        country = address.CountryName
-        //    };
-
-        //    Order orderData = new Order()
-        //    {
-        //        ExternalOrderIdentifier = string.Format("{0}-{1}", package.OrderID.ToString(), Convert.ToInt32(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds)),
-        //        OrderedAt = DateTime.UtcNow,
-        //        Recipients = { recipient }
-        //    };
-
-        //    return client.CreateOrder(storeApiKey, orderData);
-        //}
-
-        //public void CancelOrder(int tracking)
-        //{
-        //    return client.GetOrders();
-        //}
+        public CancelOrderResponse CancelOrder(string ID)
+        {
+            return client.CancelOrder(storeApiKey, ID);
+        }
     }
 }

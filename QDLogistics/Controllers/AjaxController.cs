@@ -1984,7 +1984,7 @@ namespace QDLogistics.Controllers
                     Export = sku.Export,
                     ExportMethod = sku.ExportMethod,
                     PurchaseInvoice = !string.IsNullOrEmpty(sku.PurchaseInvoice) ? sku.PurchaseInvoice : "",
-                    Weight = sku.Weight,
+                    sku.Weight,
                     sku.ShippingWeight
                 }));
             }
