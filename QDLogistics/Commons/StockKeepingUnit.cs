@@ -84,7 +84,6 @@ namespace QDLogistics.Commons
 
         public List<SkuData> GetSkuData(string[] IDs)
         {
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://internal.qd.com.tw:8080/" + url);
             Response<List<SkuData>> response = Request<List<SkuData>>("Ajax/GetSkuData", "post", new { IDs });
 
             return response.data;
@@ -93,6 +92,7 @@ namespace QDLogistics.Commons
         private Response<T> Request<T>(string url, string method = "post", object data = null) where T : new()
         {
             Response<T> response = new Response<T>();
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://internal.qd.com.tw:8080/" + url);
             request.ContentType = "application/json";
             request.Method = method;
             request.ProtocolVersion = HttpVersion.Version10;

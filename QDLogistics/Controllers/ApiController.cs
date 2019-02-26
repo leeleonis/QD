@@ -498,7 +498,7 @@ namespace QDLogistics.Controllers
                 if (!package.Orders.StatusCode.Equals((int)OrderStatusCode.InProcess)) throw new Exception(string.Format("訂單【{0}】無法出貨因為並非InProcess的狀態", package.OrderID));
                 if (!package.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨)) throw new Exception(string.Format("訂單【{0}】無法出貨因為並非待出貨的狀態", package.OrderID));
 
-                MyHelp.Log("Package", package.ID, string.Format("訂單【{0}】開始更新", package.OrderID), Session);
+                MyHelp.Log("Orders", package.OrderID, string.Format("訂單【{0}】開始更新", package.OrderID), Session);
 
                 DateTime PickUpDate = new TimeZoneConvert().Utc;
 
@@ -770,6 +770,27 @@ namespace QDLogistics.Controllers
             if (WarehouseIDs != null && WarehouseIDs.Any()) ItemFilter = ItemFilter.Where(i => WarehouseIDs.Contains(i.ShipFromWarehouseID.Value));
 
             var result = ItemFilter.GroupBy(i => i.ShipFromWarehouseID.Value, i => new { SKU = i.ProductID, QTY = i.Qty.Value }, (SCID, item) => item.GroupBy(i => i.SKU, i => i.QTY, (SKU, QTY) => new { SCID, SKU, QTY = QTY.Sum()})).SelectMany(g => g).ToList();
+
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
+        public ActionResult GetOrderItemData(int? OrderID, string SourceID, string UserID)
+        {
+            var OrderFilter = db.Orders.AsNoTracking().Where(o => o.StatusCode.Value.Equals((int)OrderStatusCode.Completed));
+            if (OrderID.HasValue) OrderFilter = OrderFilter.Where(o => o.OrderID.Equals(OrderID.Value));
+            if(!string.IsNullOrEmpty(SourceID)) OrderFilter = OrderFilter.Where(o => (o.OrderSource.Value.Equals(1) && o.eBaySalesRecordNumber.Equals(SourceID)) || (o.OrderSource.Value.Equals(4) && o.OrderSourceOrderId.Equals(SourceID)));
+            if (!string.IsNullOrEmpty(UserID)) OrderFilter = OrderFilter.Where(o => o.eBayUserID.Equals(UserID));
+
+            var result = OrderFilter.Select(o => new
+            {
+                o.OrderID,
+                o.OrderSource,
+                o.OrderSourceOrderId,
+                o.CompanyID,
+                o.Addresses.CountryCode,
+                Items = o.Items.Where(i => i.IsEnable.Value).Select(i => new { SKU = i.ProductID, QTY = i.Qty.Value, Serials = i.SerialNumbers.ToList() }).ToList(),
+                WarehouseID = o.Items.First(i => i.IsEnable.Value).ShipFromWarehouseID
+            }).ToList();
 
             return Json(result, JsonRequestBehavior.AllowGet);
         }

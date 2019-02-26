@@ -400,6 +400,13 @@ namespace QDLogistics.Controllers
                     .GroupJoin(db.Items.AsNoTracking().Where(i => i.IsEnable.Value), p => p.ID, i => i.PackageID, (p, i) => new { package = p, items = i.ToList() })
                     .GroupBy(data => data.package.BoxID).ToDictionary(group => group.Key, group => group.SelectMany(data => data.items).ToList());
 
+                List<StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
+                using (StockKeepingUnit stock = new StockKeepingUnit())
+                {
+                    var IDs = itemGroup.SelectMany(g => g.Value).Select(i => i.ProductID).ToArray();
+                    SkuData = stock.GetSkuData(IDs);
+                }
+
                 Dictionary<int, string> warehouseName = db.Warehouses.AsNoTracking().Where(w => w.IsEnable.Value && w.IsSellable.Value).ToDictionary(w => w.ID, w => w.Name);
 
                 int[] methodIDs = results.Select(m => m.FirstMileMethod).ToArray();
@@ -418,7 +425,7 @@ namespace QDLogistics.Controllers
                     WarehouseFrom = warehouseName.ContainsKey(data.WarehouseFrom) ? warehouseName[data.WarehouseFrom] : "",
                     WarehouseTO = warehouseName.ContainsKey(data.WarehouseTo) ? warehouseName[data.WarehouseTo] : "",
                     BoxQty = data.BoxNo,
-                    TotalWeight = itemGroup.Any(i => i.Key.Equals(data.BoxID)) ? itemGroup[data.BoxID].Sum(i => i.Qty * ((float)i.Skus.ShippingWeight / 1000)) : 0,
+                    TotalWeight = itemGroup.Any(i => i.Key.Equals(data.BoxID)) ? itemGroup[data.BoxID].Sum(i => i.Qty * ((float)(SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight) / 1000)) : 0,
                     data.WITID,
                     Carrier = carrierName.ContainsKey(data.FirstMileMethod) ? carrierName[data.FirstMileMethod] : "",
                     Tracking = data.TrackingNumber ?? "",

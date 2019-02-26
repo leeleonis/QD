@@ -222,7 +222,7 @@
             });
 
             $CarrierSelect.change(function () {
-                var carrierName = $CarrierSelect.find('option:selected').html();
+                var carrierName = $CarrierSelect.find('option:selected').data('type');
                 $MethodSelect.html(getSelectOption(MethodType[carrierName]));
                 $BoxSelect.html(getSelectOption(BoxType[carrierName]));
             });
