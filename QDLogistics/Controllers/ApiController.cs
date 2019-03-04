@@ -776,19 +776,19 @@ namespace QDLogistics.Controllers
 
         public ActionResult GetOrderItemData(int? OrderID, string SourceID, string UserID)
         {
-            var OrderFilter = db.Orders.AsNoTracking().Where(o => o.StatusCode.Value.Equals((int)OrderStatusCode.Completed));
+            var OrderFilter = db.Orders.Include("Items").AsNoTracking().Where(o => o.StatusCode.Value.Equals((int)OrderStatusCode.Completed));
             if (OrderID.HasValue) OrderFilter = OrderFilter.Where(o => o.OrderID.Equals(OrderID.Value));
             if(!string.IsNullOrEmpty(SourceID)) OrderFilter = OrderFilter.Where(o => (o.OrderSource.Value.Equals(1) && o.eBaySalesRecordNumber.Equals(SourceID)) || (o.OrderSource.Value.Equals(4) && o.OrderSourceOrderId.Equals(SourceID)));
             if (!string.IsNullOrEmpty(UserID)) OrderFilter = OrderFilter.Where(o => o.eBayUserID.Equals(UserID));
 
-            var result = OrderFilter.Select(o => new
+            var result = OrderFilter.ToList().Select(o => new
             {
                 o.OrderID,
                 o.OrderSource,
                 o.OrderSourceOrderId,
                 o.CompanyID,
                 o.Addresses.CountryCode,
-                Items = o.Items.Where(i => i.IsEnable.Value).Select(i => new { SKU = i.ProductID, QTY = i.Qty.Value, Serials = i.SerialNumbers.ToList() }).ToList(),
+                Items = o.Items.Where(i => i.IsEnable.Value).Select(i => new { SKU = i.ProductID, QTY = i.Qty.Value, Serials = i.SerialNumbers.Select(s => s.SerialNumber).ToList() }).ToList(),
                 WarehouseID = o.Items.First(i => i.IsEnable.Value).ShipFromWarehouseID
             }).ToList();
 

@@ -173,6 +173,7 @@ namespace QDLogistics.Controllers
                     DeclaredTotal = data.package.DeclaredTotal != 0 ? data.package.DeclaredTotal.ToString("N") : "",
                     DLDeclaredTotal = !data.package.DLDeclaredTotal.Equals(0) ? data.package.DLDeclaredTotal.ToString("N") : "",
                     OrderCurrencyCode = data.order.OrderCurrencyCode,
+                    DLCurrency = data.package.DLCurrency,
                     AvailableQty = 1,
                     ShippingServiceSelected = data.order.ShippingServiceSelected,
                     MethodID = !data.package.ShippingMethod.HasValue ? (carrierOfService.ContainsKey(data.order.ShippingServiceSelected) ? carrierOfService[data.order.ShippingServiceSelected] : 9) : data.package.ShippingMethod,
@@ -224,6 +225,7 @@ namespace QDLogistics.Controllers
                     // update package data
                     package.DeclaredTotal = oData.DeclaredTotal.Value;
                     package.DLDeclaredTotal = oData.DLDeclaredTotal.Value;
+                    package.DLCurrency = oData.DLCurrency.Value;
                     package.ShippingMethod = oData.MethodID.Value;
                     package.FirstMile = oData.FirstMile.Value;
                     package.Export = oData.Export.Value;

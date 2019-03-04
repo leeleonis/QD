@@ -216,7 +216,7 @@ namespace CarrierApi.FedEx
                 List<StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
                 using (StockKeepingUnit stock = new StockKeepingUnit())
                 {
-                    var IDs = itemList.Where(i => i.IsEnable.Value).Select(i => i.ProductID).ToArray();
+                    var IDs = itemList.Where(i => i.IsEnable.Value).Select(i => i.ProductID).Distinct().ToArray();
                     SkuData = stock.GetSkuData(IDs);
                 }
 

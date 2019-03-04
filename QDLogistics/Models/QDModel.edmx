@@ -327,6 +327,7 @@
           <Property Name="ProcessBack" Type="bit" Nullable="false" />
           <Property Name="DeclaredTotal" Type="decimal" Precision="18" Scale="2" Nullable="false" />
           <Property Name="DLDeclaredTotal" Type="decimal" Precision="18" Scale="2" Nullable="false" />
+          <Property Name="DLCurrency" Type="int" Nullable="false" />
           <Property Name="Qty" Type="int" />
           <Property Name="ShipDate" Type="datetime2" Precision="7" />
           <Property Name="ShippingMethodName" Type="nvarchar" MaxLength="150" />
@@ -2053,6 +2054,7 @@
           <Property Name="ProcessBack" Type="Boolean" Nullable="false" />
           <Property Name="DeclaredTotal" Type="Decimal" Nullable="false" Precision="18" Scale="2" />
           <Property Name="DLDeclaredTotal" Type="Decimal" Nullable="false" Precision="18" Scale="2" />
+          <Property Name="DLCurrency" Type="Int32" Nullable="false" />
           <Property Name="Qty" Type="Int32" />
           <Property Name="ShipDate" Type="DateTime" Precision="7" />
           <Property Name="ShippingMethodName" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
@@ -2742,6 +2744,7 @@
           <EntitySetMapping Name="Packages">
             <EntityTypeMapping TypeName="QDLogisticsModel.Packages">
               <MappingFragment StoreEntitySet="Packages">
+                <ScalarProperty Name="DLCurrency" ColumnName="DLCurrency" />
                 <ScalarProperty Name="Height" ColumnName="Height" />
                 <ScalarProperty Name="Width" ColumnName="Width" />
                 <ScalarProperty Name="Length" ColumnName="Length" />

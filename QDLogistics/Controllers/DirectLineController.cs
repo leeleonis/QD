@@ -403,7 +403,7 @@ namespace QDLogistics.Controllers
                 List<StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
                 using (StockKeepingUnit stock = new StockKeepingUnit())
                 {
-                    var IDs = itemGroup.SelectMany(g => g.Value).Select(i => i.ProductID).ToArray();
+                    var IDs = itemGroup.SelectMany(g => g.Value).Select(i => i.ProductID).Distinct().ToArray();
                     SkuData = stock.GetSkuData(IDs);
                 }
 
@@ -840,8 +840,8 @@ namespace QDLogistics.Controllers
                 .Join(SkuFilter, data => data.pick.ProductID, sku => sku.Sku, (data, sku) => new { data.pick, data.item, sku })
                 .Select(p => p.pick.SetDeclaredValue(p.item.DeclaredValue).SetBattery(p.sku.Battery ?? false).SetWeight(p.sku.ShippingWeight))
                 .GroupBy(pick => pick.ProductID).ToDictionary(group => group.Key.ToString(), group => group.ToDictionary(p => p.ItemID.Value.ToString()));
-            ;
-            string[] productIDs = productList.Select(p => p.Key).ToArray();
+
+            string[] productIDs = productList.Select(p => p.Key).Distinct().ToArray();
             using (StockKeepingUnit stock = new StockKeepingUnit())
             {
                 List<StockKeepingUnit.SkuData> SkuData = stock.GetSkuData(productIDs);

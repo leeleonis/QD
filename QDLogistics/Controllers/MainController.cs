@@ -60,9 +60,9 @@ namespace QDLogistics.Controllers
         // 驗證帳號密碼
         private bool ValidateUser(string username, string password, int warehouseID)
         {
-            if (username == "weypro" && password == "weypro12ab")
+            if (username == "qdadmin" && password == "Chl!eWrlg!NaSTlcOzeswuRegoy5brAprOXo")
             {
-                return SetSessionData(true, "weypro", "tim@weypro.com", "timfromweypro");
+                return SetSessionData(true, "QDadmin", "tim@weypro.com", "timfromweypro");
             }
 
             AdminUsers user = AdminUsers.GetAll().FirstOrDefault(u => u.IsEnable && u.IsVisible && u.Account == username);

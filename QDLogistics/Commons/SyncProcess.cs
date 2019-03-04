@@ -477,10 +477,14 @@ namespace QDLogistics.Commons
 
                 OrderData orderData = SCWS.Get_OrderData(package.OrderID.Value);
                 Order SC_order = orderData.Order;
-                Package SC_package = SC_order.Packages.First(p => p.ID == package.ID);
+                MyHelp.Log("Packages", package.ID, "Get SC Order Data", Session);
+                Package SC_package = SC_order.Packages.First(p => p.ID.Equals(package.ID));
+                MyHelp.Log("Packages", package.ID, "Get SC Package Data", Session);
 
                 string carrier = package.Method.Carriers != null ? package.Method.Carriers.Name : "";
+                MyHelp.Log("Packages", package.ID, "Get Carrier Name: " + carrier, Session);
                 SCWS.Update_PackageShippingStatus(SC_package, (package.UploadTracking ? package.TrackingNumber : ""), carrier);
+                MyHelp.Log("Packages", package.ID, "Update Package Shipping Status", Session);
 
                 if (db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.OrderID.Value.Equals(package.OrderID.Value)).All(p => p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.已出貨)))
                 {
@@ -488,10 +492,12 @@ namespace QDLogistics.Commons
                     MyHelp.Log("Packages", package.ID, string.Format("訂單【{0}】SC完成出貨", package.OrderID), Session);
                 }
 
-                foreach (Items item in package.Items.Where(i => i.IsEnable.Equals(true)).ToList())
+                foreach (Items item in package.Items.Where(i => i.IsEnable.Value).ToList())
                 {
                     if (item.SerialNumbers.Any()) SCWS.Update_ItemSerialNumber(item.ID, item.SerialNumbers.Select(s => s.SerialNumber).ToArray());
                 }
+
+                MyHelp.Log("Packages", package.ID, "Upload Items Serial", Session);
 
                 Message = Sync_Order(package.OrderID.Value);
             }

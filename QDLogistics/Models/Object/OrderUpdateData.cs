@@ -13,6 +13,7 @@ namespace QDLogistics.Models.Object
         public Nullable<decimal> DeclaredTotal { get; set; }
         public Nullable<decimal> DLDeclaredTotal { get; set; }
         public Nullable<int> OrderCurrencyCode { get; set; }
+        public Nullable<int> DLCurrency { get; set; }
         public Nullable<int> ShipWarehouse { get; set; }
         public Nullable<int> MethodID { get; set; }
         public Nullable<int> FirstMile { get; set; }

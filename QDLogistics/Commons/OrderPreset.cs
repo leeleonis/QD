@@ -69,6 +69,7 @@ namespace QDLogistics.Commons
                     item.DeclaredValue = item.DLDeclaredValue = item.UnitPrice.Value;
                     Items.Update(item, item.ID);
                 }
+                package.DLCurrency = Order.OrderCurrencyCode.Value;
                 package.ShippingMethod = MethodOfService.ContainsKey(Order.ShippingServiceSelected) ? MethodOfService[Order.ShippingServiceSelected] : 9;
                 package.FirstMile = 35;
                 package.Export = itemList.Min(i => methodOfSku.ContainsKey(i.ProductID) ? methodOfSku[i.ProductID]["export"] : 0);

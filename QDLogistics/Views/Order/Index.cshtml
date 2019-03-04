@@ -457,6 +457,11 @@
                             return "<select class='form-control input-sm' id='OrderCurrencyCode' onchange='onDataChange(" + row.PackageID + ")'>" + getSelectOption(orderColumOption.currencyCode, value) + "</select>";
                         }
                     }, {
+                        field: "DLCurrency", title: "DL Currency<br />DL 幣別", width: 80, align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            return "<select class='form-control input-sm' id='DLCurrency' onchange='onDataChange(" + row.PackageID + ")'>" + getSelectOption(orderColumOption.currencyCode, value) + "</select>";
+                        }
+                    }, {
                         field: "ShipWarehouse", title: "Warehouse<br />出貨倉", width: 150, align: "center", sortable: false,
                         formatter: function (value, row, index) {
                             return "<select class='form-control input-sm' id='ShipWarehouse' onchange='onDataChange(" + row.PackageID + ", true)'>" + getSelectOption(orderColumOption.warehouse, value) + "</select>";
@@ -718,6 +723,7 @@
                 DeclaredTotal: $("input#DeclaredTotal:eq(" + index + ")").val().replace(',', ''),
                 DLDeclaredTotal: $("input#DLDeclaredTotal:eq(" + index + ")").val().replace(',', ''),
                 OrderCurrencyCode: $("select#OrderCurrencyCode:eq(" + index + ")").val(),
+                DLCurrency: $("select#DLCurrency:eq(" + index + ")").val(),
                 ShipWarehouse: $("select#ShipWarehouse:eq(" + index + ")").val(),
                 MethodID: $("select#MethodID:eq(" + index + ")").val(),
                 FirstMile: $("select#FirstMile:eq(" + index + ")").val(),
