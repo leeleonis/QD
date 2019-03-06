@@ -100,10 +100,76 @@ namespace QDLogistics.Commons
                 { CaseEventType.UpdateShipment, "Update Shipment" },
                 { CaseEventType.ChangeShippingMethod, "Change Shipping Method" },
                 { CaseEventType.ResendShipment, "Resend Shipment" },
-                {  CaseEventType.ReturnPackage, "Return Package" }
+                { CaseEventType.ReturnPackage, "Return Package" }
             };
         }
         public enum CaseEventRequest { None, Successful, Investigating, InTransit, Lost, Failed }
         public enum CaseEventStatus { Open, Locked, Close, Error }
+
+        public static string StateAbbreviationExpand(string abbr)
+        {
+            Dictionary<string, string> states = new Dictionary<string, string>
+            {
+                { "AL", "Alabama" },
+                { "AK", "Alaska" },
+                { "AZ", "Arizona" },
+                { "AR", "Arkansas" },
+                { "CA", "California" },
+                { "CO", "Colorado" },
+                { "CT", "Connecticut" },
+                { "DE", "Delaware" },
+                { "DC", "District of Columbia" },
+                { "FL", "Florida" },
+                { "GA", "Georgia" },
+                { "HI", "Hawaii" },
+                { "ID", "Idaho" },
+                { "IL", "Illinois" },
+                { "IN", "Indiana" },
+                { "IA", "Iowa" },
+                { "KS", "Kansas" },
+                { "KY", "Kentucky" },
+                { "LA", "Louisiana" },
+                { "ME", "Maine" },
+                { "MD", "Maryland" },
+                { "MA", "Massachusetts" },
+                { "MI", "Michigan" },
+                { "MN", "Minnesota" },
+                { "MS", "Mississippi" },
+                { "MO", "Missouri" },
+                { "MT", "Montana" },
+                { "NE", "Nebraska" },
+                { "NV", "Nevada" },
+                { "NH", "New Hampshire" },
+                { "NJ", "New Jersey" },
+                { "NM", "New Mexico" },
+                { "NY", "New York" },
+                { "NC", "North Carolina" },
+                { "ND", "North Dakota" },
+                { "OH", "Ohio" },
+                { "OK", "Oklahoma" },
+                { "OR", "Oregon" },
+                { "PA", "Pennsylvania" },
+                { "RI", "Rhode Island" },
+                { "SC", "South Carolina" },
+                { "SD", "South Dakota" },
+                { "TN", "Tennessee" },
+                { "TX", "Texas" },
+                { "UT", "Utah" },
+                { "VT", "Vermont" },
+                { "VA", "Virginia" },
+                { "WA", "Washington" },
+                { "WV", "West Virginia" },
+                { "WI", "Wisconsin" },
+                { "WY", "Wyoming" }
+            };
+
+            if (states.ContainsKey(abbr))
+                return (states[abbr]);
+
+            if (states.Any(a => a.Value.ToLower().Equals(abbr.ToLower())))
+                return states.First(a => a.Value.ToLower().Equals(abbr.ToLower())).Key;
+
+            return abbr;
+        }
     }
 }

@@ -1904,7 +1904,8 @@ namespace QDLogistics.Controllers
             if (pickList.Any())
             {
                 string basePath = HostingEnvironment.MapPath("~/FileUploads");
-                string filePath;
+                string filePath = Path.Combine(basePath, "export", "box", boxList[0].Create_at.ToString("yyyy/MM/dd"), boxList[0].MainBox);
+                if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
 
                 string sendMail = "dispatch-qd@hotmail.com";
                 string mailTitle;
@@ -1917,13 +1918,16 @@ namespace QDLogistics.Controllers
                 {
                     case "IDS":
                     case "IDS (US)":
-                        MyHelp.Log("PickProduct", null, "寄送IDS出貨通知");
+                        MyHelp.Log("PickProduct", null, string.Format("寄送{0}出貨通知", directLine.Abbreviation));
 
                         receiveMails = new string[] { "gloria.chiu@contin-global.com", "cherry.chen@contin-global.com", "TWCS@contin-global.com", "contincs@gmail.com", "shipping_qd@hotmail.com" };
+                        if (directLine.Abbreviation.Equals("IDS (US)"))
+                            receiveMails = new string[] { "anita.chou@contin-global.com", "jennifer.siew@contin-global.com", "twcs@contin-global.com" };
+
                         mailTitle = string.Format("To IDS Peter and Cherry - 1 parcels-sent out via {0} under tracking {1}", method.Carriers.Name, trackingNumber);
                         mailBody = string.Format("{0}<br /><br />Box 1 will send out via {1} under tracking no {2}", string.Join("<br />", boxList[0].DirectLineLabel.Where(l => l.IsEnable).Select(l => l.LabelID)), method.Carriers.Name, trackingNumber);
 
-                        List<Tuple<Stream, string>> IDSFile = new List<Tuple<Stream, string>>();
+                        List<Tuple<Stream, string>> IDSFile2 = new List<Tuple<Stream, string>>();
                         using (var file = new ZipFile())
                         {
                             var memoryStream = new MemoryStream();
@@ -1938,10 +1942,14 @@ namespace QDLogistics.Controllers
                             }
                             file.Save(memoryStream);
                             memoryStream.Seek(0, SeekOrigin.Begin);
-                            IDSFile.Add(new Tuple<Stream, string>(memoryStream, "Labels.zip"));
+                            IDSFile2.Add(new Tuple<Stream, string>(memoryStream, "Labels.zip"));
                         }
 
-                        bool IDS_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, null, IDSFile, false);
+                        string[] IDSFile1 = null;
+                        if (directLine.Abbreviation.Equals("IDS (US)"))
+                            IDSFile1 = new string[] { Path.Combine(filePath, "DL-IDS.xlsx") };
+
+                        bool IDS_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, IDSFile1, IDSFile2, false);
                         if (IDS_Status)
                         {
                             MyHelp.Log("PickProduct", null, mailTitle);

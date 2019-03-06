@@ -307,6 +307,15 @@ namespace QDLogistics.Commons
             List<Items> itemList = package.Items.Where(i => i.IsEnable.Equals(true)).ToList();
 
             int zipCode;
+            List<StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
+            if (!preset.Weight.Equals(0))
+            {
+                using (StockKeepingUnit stock = new StockKeepingUnit())
+                {
+                    var IDs = itemList.Select(i => i.ProductID).ToArray();
+                    SkuData = stock.GetSkuData(IDs);
+                }
+            }
 
             bool total = preset.Total.Equals(0) || Compare(preset.TotalType, preset.Total, itemList.Sum(i => i.Qty * i.UnitPrice).Value);
             bool country = string.IsNullOrEmpty(preset.Country) || preset.Country.Equals(Order.Addresses.CountryCode);
@@ -318,7 +327,7 @@ namespace QDLogistics.Commons
             bool qty = preset.Amount.Equals(0) || Compare(preset.AmountType, preset.Amount, itemList.Sum(i => i.Qty).Value);
             bool method = string.IsNullOrEmpty(preset.ShippingMethod) || preset.ShippingMethod.Equals(Order.ShippingServiceSelected);
             bool sku = string.IsNullOrEmpty(preset.Sku) || itemList.Any(i => i.ProductID.Substring(i.ProductID.Length - preset.Sku.Length).Equals(preset.Sku));
-            bool weight = preset.Weight.Equals(0) || Compare(preset.WeightType, preset.Weight, itemList.Sum(i => i.Qty * i.Skus.ShippingWeight).Value);
+            bool weight = preset.Weight.Equals(0) || Compare(preset.WeightType, preset.Weight, itemList.Sum(i => i.Qty * (SkuData.Any(s => s.Sku.Equals(i)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight)).Value);
 
             return total && country && state && zipCodeFrom && zipCodeTo && company && source && method && sku && weight;
         }

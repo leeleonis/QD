@@ -875,6 +875,7 @@
     <Content Include="FileUploads\sample\Fedex_CheckList.xlsx" />
     <Content Include="FileUploads\sample\Fedex_Recognizances.pdf" />
     <Content Include="FileUploads\sample\Invoice-2.xls" />
+    <Content Include="FileUploads\sample\DL-IDS.xlsx" />
     <None Include="Properties\PublishProfiles\dmlogistic - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\dmlogistic - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\QD - Deploy.pubxml" />

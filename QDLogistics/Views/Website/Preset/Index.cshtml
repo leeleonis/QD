@@ -264,8 +264,9 @@
             return "<div class='input-group'>" + dataType + "<input type='text' class='form-control' id='" + id + "' value='" + value + "'><div class='input-group-btn'>" + button + dropdown + "</div></div>";
         }
 
-        function changeType(id, type, option) {
-            $('#' + id).val(type).siblings('.input-group-addon').html(option);
+        function changeType(id, type, option, hasClass) {
+            var $input = !isEmpty(hasClass) ? $('.DTFC_Cloned #' + id) : $('#' + id);
+            $input.val(type).siblings('.input-group-addon').html(option);
         }
 
         function setBoxHtml(type, id, row) {
@@ -287,7 +288,7 @@
                     var button = "<button type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'><span class='caret'></span></button>";
                     var dropdown = "<ul class='dropdown-menu pull-right' role='menu'>";
                     $.each(typeArray, function (i, t) {
-                        dropdown += "<li><a href='javascript:void(0);' onclick='changeType(\"valueType-" + id + "\", " + i + ", \"" + t + "\");'>" + t + "</a></li>";
+                        dropdown += "<li><a href='javascript:void(0);' onclick='changeType(\"valueType-" + id + "\", " + i + ", \"" + t + "\", true);'>" + t + "</a></li>";
                     });
                     dropdown += '</ul>';
                     html += "<div class='input-group'><div class='input-group-btn'>" + button + dropdown + "</div><input class='form-control' id='value-" + id + "' type='text' value='" + value + "'>" + dataType + "</div>";

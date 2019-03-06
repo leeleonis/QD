@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
+using NPOI.XSSF.UserModel;
 using QDLogistics.Commons;
 using QDLogistics.Models;
 using QDLogistics.Models.Repositiry;
@@ -395,7 +396,142 @@ public static class MyHelp
         }
     }
 
+    public static void CopyRow(ref XSSFSheet worksheet, int sourceRowNum, int destinationRowNum, bool IsCoverRow = false, bool IsRemoveSrcRow = false, bool copyRowHeight = true, bool resetOriginalRowHeight = true)
+    {
+        XSSFRow newRow = worksheet.GetRow(destinationRowNum) as XSSFRow;
+        XSSFRow sourceRow = worksheet.GetRow(sourceRowNum) as XSSFRow;
+        XSSFCell oldCell, newCell;
+        int i;
+
+        if (newRow == null)
+            newRow = worksheet.CreateRow(destinationRowNum) as XSSFRow;
+        else
+        {
+            if (!IsCoverRow)
+                ShiftRows(ref worksheet, destinationRowNum, worksheet.LastRowNum, 1);
+        }
+
+        // Loop through source columns to add to new row
+        for (i = 0; i < sourceRow.LastCellNum; i++)
+        {
+            // Grab a copy of the old/new cell
+            oldCell = sourceRow.GetCell(i) as XSSFCell;
+            newCell = newRow.GetCell(i) as XSSFCell;
+
+            if (newCell == null)
+                newCell = newRow.CreateCell(i) as XSSFCell;
+
+            // If the old cell is null jump to next cell
+            if (oldCell == null)
+            {
+                newCell = null;
+                continue;
+            }
+
+            // Copy style from old cell and apply to new cell
+            newCell.CellStyle = oldCell.CellStyle;
+
+            // If there is a cell comment, copy
+            if (newCell.CellComment != null) newCell.CellComment = oldCell.CellComment;
+
+            // If there is a cell hyperlink, copy
+            if (oldCell.Hyperlink != null) newCell.Hyperlink = oldCell.Hyperlink;
+
+            // Set the cell data value
+            switch (oldCell.CellType)
+            {
+                case CellType.Blank:
+                    newCell.SetCellValue(oldCell.StringCellValue);
+                    break;
+                case CellType.Boolean:
+                    newCell.SetCellValue(oldCell.BooleanCellValue);
+                    break;
+                case CellType.Error:
+                    newCell.SetCellErrorValue(oldCell.ErrorCellValue);
+                    break;
+                case CellType.Formula:
+                    newCell.CellFormula = oldCell.CellFormula;
+                    break;
+                case CellType.Numeric:
+                    newCell.SetCellValue(oldCell.NumericCellValue);
+                    break;
+                case CellType.String:
+                    newCell.SetCellValue(oldCell.RichStringCellValue);
+                    break;
+                case CellType.Unknown:
+                    newCell.SetCellValue(oldCell.StringCellValue);
+                    break;
+            }
+        }
+
+        // If there are are any merged regions in the source row, copy to new row
+        List<NPOI.SS.Util.CellRangeAddress> cellRangeList = new List<NPOI.SS.Util.CellRangeAddress>();
+        NPOI.SS.Util.CellRangeAddress cellRangeAddress = null, newCellRangeAddress = null;
+        for (i = 0; i < worksheet.NumMergedRegions; i++)
+        {
+            cellRangeAddress = worksheet.GetMergedRegion(i);
+
+            if (cellRangeAddress.FirstRow == sourceRow.RowNum)
+                cellRangeList.Add(cellRangeAddress);
+        }
+
+        if (cellRangeList.Any())
+        {
+            foreach (var cellRange in cellRangeList)
+            {
+                newCellRangeAddress = new NPOI.SS.Util.CellRangeAddress(newRow.RowNum, (newRow.RowNum + (cellRange.LastRow - cellRange.FirstRow)), cellRange.FirstColumn, cellRange.LastColumn);
+                worksheet.AddMergedRegion(newCellRangeAddress);
+            }
+        }
+
+        //複製行高到新列
+        if (copyRowHeight)
+            newRow.Height = sourceRow.Height;
+        //重製原始列行高
+        if (resetOriginalRowHeight)
+            sourceRow.Height = worksheet.DefaultRowHeight;
+        //清掉原列
+        if (IsRemoveSrcRow == true)
+        {
+            worksheet.RemoveRow(sourceRow);
+
+            bool next = true;
+            do
+            {
+                next = false;
+                for (i = 0; i < worksheet.NumMergedRegions; i++)
+                {
+                    if (worksheet.GetMergedRegion(i).FirstRow == sourceRow.RowNum)
+                    {
+                        worksheet.RemoveMergedRegion(i);
+                        next = true;
+                    }
+                }
+            } while (next);
+        }
+    }
+
     public static void ShiftRows(ref HSSFSheet sheet, int startrow, int endrow, int n, bool copyRowHeight = true, bool resetOriginalRowHeight = true)
+    {
+        if (n == 0) return;
+
+        int i;
+
+        if (n > 0)
+        {
+            for (i = endrow; i >= startrow; i--)
+                if (sheet.GetRow(i) != null)
+                    CopyRow(ref sheet, i, i + n, true, true, copyRowHeight, resetOriginalRowHeight);
+        }
+        else
+        {
+            for (i = startrow; i <= endrow; i++)
+                if (sheet.GetRow(i) != null)
+                    CopyRow(ref sheet, i, i + n, true, true, copyRowHeight, resetOriginalRowHeight);
+        }
+    }
+
+    public static void ShiftRows(ref XSSFSheet sheet, int startrow, int endrow, int n, bool copyRowHeight = true, bool resetOriginalRowHeight = true)
     {
         if (n == 0) return;
 

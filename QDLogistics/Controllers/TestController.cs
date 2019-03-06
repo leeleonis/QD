@@ -12,6 +12,7 @@ using CarrierApi.Sendle;
 using CarrierApi.Winit;
 using DirectLineApi.IDS;
 using NPOI.HSSF.UserModel;
+using NPOI.XSSF.UserModel;
 using NPOI.SS.UserModel;
 using QDLogistics.Commons;
 using QDLogistics.Models;
@@ -360,12 +361,60 @@ namespace QDLogistics.Controllers
             }
         }
 
-        private void Box_Test(string boxID)
+        public void Box_Test(string boxID)
         {
             SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
             ShipProcess shipProcess = new ShipProcess(SCWS);
-            ShipResult boxResult = shipProcess.Dispatch(db.Box.Where(b => b.IsEnable && b.MainBox.Equals(boxID)).OrderBy(b => b.Create_at).ToList());
-            db.SaveChanges();
+
+            var boxList = db.Box.Where(b => b.IsEnable && b.MainBox.Equals(boxID)).OrderBy(b => b.Create_at).ToList();
+
+            var basePath = HostingEnvironment.MapPath("~/FileUploads");
+            var filePath = Path.Combine(basePath, "export", "box", boxList[0].Create_at.ToString("yyyy/MM/dd"), boxList[0].MainBox);
+            if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
+
+            var FileData = new { fileName = "DirectLine.xlsx", samplePath = Path.Combine(basePath, "sample", "DL-IDS.xlsx") };
+            using (FileStream fsIn = new FileStream(FileData.samplePath, FileMode.Open))
+            {
+                XSSFWorkbook workbook = new XSSFWorkbook(fsIn);
+                fsIn.Close();
+
+                XSSFSheet sheet = (XSSFSheet)workbook.GetSheetAt(0);
+
+                List<Items> itemList = boxList.SelectMany(b => b.Packages.Where(p => p.IsEnable.Value)).SelectMany(p => p.Items.Where(i => i.IsEnable.Value)).ToList();
+                if (itemList.Count() > 1)
+                {
+                    int insertRow = 3, add = itemList.Count() - 1;
+                    MyHelp.ShiftRows(ref sheet, insertRow, sheet.LastRowNum, add);
+
+                    for (int row = insertRow; row < insertRow + add; row++)
+                    {
+                        MyHelp.CopyRow(ref sheet, insertRow - 1, row, true, false, true, false);
+                    }
+                }
+
+                int rowIndex = 2, No = 1;
+                foreach (var item in itemList)
+                {
+                    sheet.GetRow(rowIndex).GetCell(0).SetCellValue(No++);
+                    sheet.GetRow(rowIndex).GetCell(1).SetCellValue(item.Packages.TagNo);
+                    sheet.GetRow(rowIndex).GetCell(2).SetCellValue(item.ProductID);
+                    sheet.GetRow(rowIndex).GetCell(3).SetCellValue("reqular");
+                    sheet.GetRow(rowIndex).GetCell(4).SetCellValue(item.Packages.Method.Name.Contains("FCS") ? 450 : (item.Packages.Method.Name.Contains("PMS") ? 600 : item.Skus.Weight));
+                    sheet.GetRow(rowIndex).GetCell(5).SetCellValue("10*10*5 CM");
+                    sheet.GetRow(rowIndex).GetCell(6).SetCellValue("FeDex");
+                    sheet.GetRow(rowIndex).GetCell(7).SetCellValue("123456");
+                    sheet.GetRow(rowIndex).GetCell(8).SetCellValue(item.Qty.Value);
+                    sheet.GetRow(rowIndex).GetCell(10).SetCellValue(item.DLDeclaredValue.ToString());
+                    sheet.GetRow(rowIndex++).GetCell(11).SetCellValue(item.OrderID.Value);
+                }
+
+                using (FileStream fsOut = new FileStream(Path.Combine(filePath, FileData.fileName), FileMode.Create))
+                {
+                    workbook.Write(fsOut);
+
+                    fsOut.Close();
+                }
+            }
         }
 
         private void Excel_Test(int OrderID)
@@ -578,6 +627,12 @@ namespace QDLogistics.Controllers
                 string errorMsg = string.Format("傳送出貨資料至測試系統失敗，請通知處理人員：{0}", e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
                 
             }
+        }
+
+        public void Easy()
+        {
+            var result = EnumData.StateAbbreviationExpand("new ersey");
+
         }
     }
 }
