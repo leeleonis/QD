@@ -27,11 +27,20 @@ namespace WorkSchedule
 
         private static void CheckTimer(object source, ElapsedEventArgs e)
         {
-            Console.WriteLine("Event worked at: " + DateTime.UtcNow.ToString());
+            DateTime now = DateTime.UtcNow;
+            int hour = now.Hour;
+            int min = now.Minute;
 
-            if (DateTime.UtcNow.Minute.Equals(0) || DateTime.UtcNow.Minute.Equals(30))
+            Console.WriteLine("Event worked at: " + now.ToString());
+
+            if (min.Equals(0) || min.Equals(30))
             {
                 RequestJob("DirectLine/CheckBoxStatus", null);
+            }
+
+            if((hour.Equals(3) || hour.Equals(8)) && min.Equals(30))
+            {
+                RequestJob("DirectLine/SendWaitingOrder", new Dictionary<string, object>() { { "DL", "IDS" } });
             }
         }
 

@@ -839,7 +839,7 @@ namespace QDLogistics.Commons
                     sheet.GetRow(rowIndex).GetCell(4).SetCellValue(item.Packages.Method.Name.Contains("FCS") ? 450 : (item.Packages.Method.Name.Contains("PMS") ? 600 : item.Skus.Weight));
                     sheet.GetRow(rowIndex).GetCell(5).SetCellValue("10*10*5 CM");
                     sheet.GetRow(rowIndex).GetCell(6).SetCellValue("FeDex");
-                    sheet.GetRow(rowIndex).GetCell(7).SetCellValue("123456");
+                    sheet.GetRow(rowIndex).GetCell(7).SetCellValue(tracking);
                     sheet.GetRow(rowIndex).GetCell(8).SetCellValue(item.Qty.Value);
                     sheet.GetRow(rowIndex).GetCell(10).SetCellValue(item.DLDeclaredValue.ToString());
                     sheet.GetRow(rowIndex++).GetCell(11).SetCellValue(item.OrderID.Value);

@@ -631,8 +631,7 @@ namespace QDLogistics.Controllers
 
         public void Easy()
         {
-            var result = EnumData.StateAbbreviationExpand("new ersey");
-
+            var result = EnumData.StateAbbreviationExpand("FLORIDA");
         }
     }
 }

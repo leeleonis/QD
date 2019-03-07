@@ -106,7 +106,7 @@ namespace DirectLineApi.IDS
                     buyerCity = address.City.Trim(),
                     buyerCountry = address.CountryName.Trim(),
                     buyerDistrict = address.CountryCode.Equals("US") ? "" : "E",
-                    buyerState = !string.IsNullOrEmpty(address.StateName) ? (address.CountryCode.Equals("US") && address.StateCode.Length > 2 ? EnumData.StateAbbreviationExpand(address.StateName.Trim()) : address.StateName.Trim()) : "",
+                    buyerState = !string.IsNullOrEmpty(address.StateName) ? (address.CountryCode.Equals("US") && address.StateName.Length > 2 ? EnumData.StateAbbreviationExpand(address.StateName.Trim()) : address.StateName.Trim()) : "",
                     buyerZip = address.CountryCode.Equals("US") ? address.PostalCode.Split('-').First() : address.PostalCode.Trim(),
                     weight = itemList.Sum(i => i.Qty.Value * (SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight)),
                     quantity = itemList.Sum(i => i.Qty.Value),

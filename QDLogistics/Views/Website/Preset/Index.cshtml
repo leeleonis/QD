@@ -54,8 +54,8 @@
                                             <th width="30" class="text-center">啟用</th>
                                             <th width="30" class="text-center">提交</th>
                                             <th width="50" class="text-center">優先權</th>
-                                            <th width="200" class="text-center">類型</th>
-                                            <th width="200" class="text-center">數值</th>
+                                            <th width="200" class="text-center">Action - 類型</th>
+                                            <th width="200" class="text-center">Action - 數值</th>
                                             <th width="150" class="text-center">Order value</th>
                                             <th width="120" class="text-center">Delivery country</th>
                                             <th width="100" class="text-center">State</th>
@@ -334,7 +334,7 @@
                 SourceID: checkValue($('#channel-' + id).val(), true),
                 Amount: checkValue($('#amount-' + id).val(), true),
                 AmountType: checkValue($('#amountType-' + id).val(), true),
-                ShippingMethod: checkValue($('.DTFC_Cloned #methodID-' + id).val(), false),
+                ShippingMethod: checkValue($('#method-' + id).val(), false),
                 Sku: checkValue($('#sku-' + id).val(), false),
                 Weight: checkValue($('#weight-' + id).val(), true),
                 WeightType: checkValue($('#weightType-' + id).val(), true),
