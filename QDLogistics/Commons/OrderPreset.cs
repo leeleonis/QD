@@ -327,7 +327,7 @@ namespace QDLogistics.Commons
             bool qty = preset.Amount.Equals(0) || Compare(preset.AmountType, preset.Amount, itemList.Sum(i => i.Qty).Value);
             bool method = string.IsNullOrEmpty(preset.ShippingMethod) || preset.ShippingMethod.Equals(Order.ShippingServiceSelected);
             bool sku = string.IsNullOrEmpty(preset.Sku) || itemList.Any(i => i.ProductID.Substring(i.ProductID.Length - preset.Sku.Length).Equals(preset.Sku));
-            bool weight = preset.Weight.Equals(0) || Compare(preset.WeightType, preset.Weight, itemList.Sum(i => i.Qty * (SkuData.Any(s => s.Sku.Equals(i)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight)).Value);
+            bool weight = preset.Weight.Equals(0) || Compare(preset.WeightType, preset.Weight, itemList.Sum(i => i.Qty * (SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight)).Value);
 
             return total && country && state && zipCodeFrom && zipCodeTo && company && source && method && sku && weight;
         }

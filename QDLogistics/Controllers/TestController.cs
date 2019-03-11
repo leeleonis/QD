@@ -245,7 +245,7 @@ namespace QDLogistics.Controllers
             }
         }
 
-        private void Preset_Test(int OrderID)
+        public void Preset_Test(int OrderID)
         {
             using (IRepository<Orders> Orders = new GenericRepository<Orders>(db))
             {
