@@ -677,7 +677,9 @@ namespace QDLogistics.Controllers
                                 var statusList = new List<byte>() { (byte)EnumData.DirectLineStatus.已到貨, (byte)EnumData.DirectLineStatus.延誤後抵達 };
                                 foreach (DirectLineLabel label in labelList)
                                 {
-                                    Packages package = label.Packages.First();
+                                    Packages package = label.Packages.FirstOrDefault(p => p.IsEnable.Value);
+
+                                    if (package == null) throw new Exception(string.Format("Label-{0} not find package!", label.PackageID));
 
                                     Order orderData = SCWS.Get_OrderData(package.OrderID.Value).Order;
 

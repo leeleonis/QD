@@ -1991,12 +1991,12 @@ namespace QDLogistics.Controllers
                                                 sheet.GetRow(rowIndex).GetCell(1).SetCellValue(item.Packages.TagNo);
                                                 sheet.GetRow(rowIndex).GetCell(2).SetCellValue(item.ProductID);
                                                 sheet.GetRow(rowIndex).GetCell(3).SetCellValue("reqular");
-                                                sheet.GetRow(rowIndex).GetCell(4).SetCellValue(SkuData.Any(s => s.Sku.Equals(item.ProductID)) ? SkuData.First(s => s.Sku.Equals(item.ProductID)).Weight : item.Skus.ShippingWeight);
+                                                sheet.GetRow(rowIndex).GetCell(4).SetCellValue((SkuData.Any(s => s.Sku.Equals(item.ProductID)) ? SkuData.First(s => s.Sku.Equals(item.ProductID)).Weight : item.Skus.ShippingWeight) * item.Qty.Value);
                                                 sheet.GetRow(rowIndex).GetCell(5).SetCellValue("10*10*5 CM");
                                                 sheet.GetRow(rowIndex).GetCell(6).SetCellValue("FeDex");
                                                 sheet.GetRow(rowIndex).GetCell(7).SetCellValue("will update");
                                                 sheet.GetRow(rowIndex).GetCell(8).SetCellValue(item.Qty.Value);
-                                                sheet.GetRow(rowIndex).GetCell(10).SetCellValue(item.DLDeclaredValue.ToString());
+                                                sheet.GetRow(rowIndex).GetCell(10).SetCellValue((double)item.DLDeclaredValue * item.Qty.Value);
                                                 sheet.GetRow(rowIndex++).GetCell(11).SetCellValue(item.OrderID.Value);
                                             }
 
@@ -2099,7 +2099,7 @@ namespace QDLogistics.Controllers
 
                         string[] IDSFile1 = null;
                         if (directLine.Abbreviation.Equals("IDS (US)"))
-                            IDSFile1 = new string[] { Path.Combine(filePath, "DL-IDS.xlsx") };
+                            IDSFile1 = new string[] { Path.Combine(filePath, "DirectLine.xlsx") };
 
                         bool IDS_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, IDSFile1, IDSFile2, false);
                         if (IDS_Status)

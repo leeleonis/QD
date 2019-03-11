@@ -392,6 +392,14 @@ namespace QDLogistics.Controllers
                     }
                 }
 
+                List<StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
+                using (StockKeepingUnit stock = new StockKeepingUnit())
+                {
+                    var IDs = itemList.Select(i => i.ProductID).Distinct().ToArray();
+                    SkuData = stock.GetSkuData(IDs);
+                }
+
+
                 int rowIndex = 2, No = 1;
                 foreach (var item in itemList)
                 {
@@ -399,12 +407,12 @@ namespace QDLogistics.Controllers
                     sheet.GetRow(rowIndex).GetCell(1).SetCellValue(item.Packages.TagNo);
                     sheet.GetRow(rowIndex).GetCell(2).SetCellValue(item.ProductID);
                     sheet.GetRow(rowIndex).GetCell(3).SetCellValue("reqular");
-                    sheet.GetRow(rowIndex).GetCell(4).SetCellValue(item.Packages.Method.Name.Contains("FCS") ? 450 : (item.Packages.Method.Name.Contains("PMS") ? 600 : item.Skus.Weight));
+                    sheet.GetRow(rowIndex).GetCell(4).SetCellValue((SkuData.Any(s => s.Sku.Equals(item.ProductID)) ? SkuData.First(s => s.Sku.Equals(item.ProductID)).Weight : item.Skus.ShippingWeight) * item.Qty.Value);
                     sheet.GetRow(rowIndex).GetCell(5).SetCellValue("10*10*5 CM");
                     sheet.GetRow(rowIndex).GetCell(6).SetCellValue("FeDex");
-                    sheet.GetRow(rowIndex).GetCell(7).SetCellValue("123456");
+                    sheet.GetRow(rowIndex).GetCell(7).SetCellValue(boxList[0].TrackingNumber);
                     sheet.GetRow(rowIndex).GetCell(8).SetCellValue(item.Qty.Value);
-                    sheet.GetRow(rowIndex).GetCell(10).SetCellValue(item.DLDeclaredValue.ToString());
+                    sheet.GetRow(rowIndex).GetCell(10).SetCellValue((double)item.DLDeclaredValue * item.Qty.Value);
                     sheet.GetRow(rowIndex++).GetCell(11).SetCellValue(item.OrderID.Value);
                 }
 
