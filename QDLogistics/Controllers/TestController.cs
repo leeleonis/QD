@@ -401,19 +401,40 @@ namespace QDLogistics.Controllers
 
 
                 int rowIndex = 2, No = 1;
-                foreach (var item in itemList)
+                foreach (var itemGroup in itemList.GroupBy(i => i.OrderID.Value))
                 {
-                    sheet.GetRow(rowIndex).GetCell(0).SetCellValue(No++);
-                    sheet.GetRow(rowIndex).GetCell(1).SetCellValue(item.Packages.TagNo);
-                    sheet.GetRow(rowIndex).GetCell(2).SetCellValue(item.ProductID);
-                    sheet.GetRow(rowIndex).GetCell(3).SetCellValue("reqular");
-                    sheet.GetRow(rowIndex).GetCell(4).SetCellValue((SkuData.Any(s => s.Sku.Equals(item.ProductID)) ? SkuData.First(s => s.Sku.Equals(item.ProductID)).Weight : item.Skus.ShippingWeight) * item.Qty.Value);
-                    sheet.GetRow(rowIndex).GetCell(5).SetCellValue("10*10*5 CM");
-                    sheet.GetRow(rowIndex).GetCell(6).SetCellValue("FeDex");
-                    sheet.GetRow(rowIndex).GetCell(7).SetCellValue(boxList[0].TrackingNumber);
-                    sheet.GetRow(rowIndex).GetCell(8).SetCellValue(item.Qty.Value);
-                    sheet.GetRow(rowIndex).GetCell(10).SetCellValue((double)item.DLDeclaredValue * item.Qty.Value);
-                    sheet.GetRow(rowIndex++).GetCell(11).SetCellValue(item.OrderID.Value);
+                    if (itemGroup.Count() > 1)
+                    {
+                        var count = itemGroup.Count() - 1;
+                        sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(rowIndex, rowIndex + count, 0, 0));
+                        sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(rowIndex, rowIndex + count, 1, 1));
+                        sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(rowIndex, rowIndex + count, 3, 3));
+                        sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(rowIndex, rowIndex + count, 4, 4));
+                        sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(rowIndex, rowIndex + count, 5, 5));
+                        sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(rowIndex, rowIndex + count, 6, 6));
+                        sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(rowIndex, rowIndex + count, 7, 7));
+                        sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(rowIndex, rowIndex + count, 8, 8));
+                        sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(rowIndex, rowIndex + count, 10, 10));
+                        sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(rowIndex, rowIndex + count, 11, 11));
+                    }
+
+                    foreach (var item in itemGroup)
+                    {
+                        if (item.ID == itemGroup.First().ID)
+                        {
+                            sheet.GetRow(rowIndex).GetCell(0).SetCellValue(No++);
+                            sheet.GetRow(rowIndex).GetCell(1).SetCellValue(item.Packages.TagNo);
+                            sheet.GetRow(rowIndex).GetCell(3).SetCellValue("reqular");
+                            sheet.GetRow(rowIndex).GetCell(4).SetCellValue(itemGroup.Sum(i => (SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight) * i.Qty.Value));
+                            sheet.GetRow(rowIndex).GetCell(5).SetCellValue("10*10*5 CM");
+                            sheet.GetRow(rowIndex).GetCell(6).SetCellValue("FeDex");
+                            sheet.GetRow(rowIndex).GetCell(7).SetCellValue(boxList[0].TrackingNumber);
+                            sheet.GetRow(rowIndex).GetCell(8).SetCellValue(itemGroup.Sum(i => i.Qty.Value));
+                            sheet.GetRow(rowIndex).GetCell(10).SetCellValue(itemGroup.Sum(i => (double)i.DLDeclaredValue * i.Qty.Value));
+                            sheet.GetRow(rowIndex).GetCell(11).SetCellValue(item.OrderID.Value);
+                        }
+                        sheet.GetRow(rowIndex++).GetCell(2).SetCellValue(item.ProductID);
+                    }
                 }
 
                 using (FileStream fsOut = new FileStream(Path.Combine(filePath, FileData.fileName), FileMode.Create))
@@ -581,7 +602,7 @@ namespace QDLogistics.Controllers
         private void Sendle_Test(int OrderID)
         {
             var packageList = db.Box.Where(b => b.BoxID.Contains("ECOF-")).SelectMany(b => b.Packages.Where(p => p.IsEnable.Value)).ToList();
-            foreach(var package in packageList)
+            foreach (var package in packageList)
             {
                 Sendle_API Sendle = new Sendle_API(package.Method.Carriers.CarrierAPI);
                 var order = Sendle.Order(package.TagNo);
@@ -633,7 +654,7 @@ namespace QDLogistics.Controllers
             catch (Exception e)
             {
                 string errorMsg = string.Format("傳送出貨資料至測試系統失敗，請通知處理人員：{0}", e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
-                
+
             }
         }
 

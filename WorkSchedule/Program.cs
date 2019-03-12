@@ -11,6 +11,7 @@ namespace WorkSchedule
     class Program
     {
         private static readonly string Host = "http://localhost/";
+        private static readonly string PO_Host = "http://localhost:8080/";
 
         static void Main(string[] args)
         {
@@ -35,16 +36,21 @@ namespace WorkSchedule
 
             if (min.Equals(0) || min.Equals(30))
             {
-                RequestJob("DirectLine/CheckBoxStatus", null);
+                RequestJob(Host, "DirectLine/CheckBoxStatus", null);
             }
 
             if((hour.Equals(3) || hour.Equals(8)) && min.Equals(30))
             {
-                RequestJob("DirectLine/SendWaitingOrder", new Dictionary<string, object>() { { "DL", "IDS" } });
+                RequestJob(Host, "DirectLine/SendWaitingOrder", new Dictionary<string, object>() { { "DL", "IDS" } });
+            }
+
+            if (hour.Equals(15) || min.Equals(0))
+            {
+                RequestJob(PO_Host, "Test/DoSkuSync", null);
             }
         }
 
-        private static void RequestJob(string url, Dictionary<string, object> parameters)
+        private static void RequestJob(string host, string url, Dictionary<string, object> parameters)
         {
             string queryString = "";
             if (parameters != null && parameters.Any())
@@ -52,7 +58,7 @@ namespace WorkSchedule
                 queryString = "?" + string.Join("&", parameters.Select(p => p.Key + "=" + p.Value.ToString()).ToArray());
             }
 
-            WebRequest request = WebRequest.Create(Host + url + queryString);
+            WebRequest request = WebRequest.Create(host + url + queryString);
 
             Console.WriteLine(request.RequestUri);
 
