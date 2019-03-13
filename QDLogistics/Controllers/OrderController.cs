@@ -618,7 +618,7 @@ namespace QDLogistics.Controllers
 
                                         foreach (int packageID in uploadTracking)
                                         {
-                                            error.Add(Sync.Update_Tracking(Packages.Get(packageID)));
+                                            error.Add(Sync.Update_Tracking(db.Packages.Find(packageID)));
                                         }
 
                                         if (error.Any(e => !string.IsNullOrEmpty(e)))

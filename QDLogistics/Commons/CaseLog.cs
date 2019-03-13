@@ -909,13 +909,15 @@ namespace QDLogistics.Commons
                 case "IDS (US)":
                     string HK_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Successful }, { "returnWarehouseID", 163 } });
                     string UK_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Successful }, { "returnWarehouseID", 215 } });
+                    string US_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Successful }, { "returnWarehouseID", 234 } });
                     failed_link = AddQueryString(receiveUrl, new Dictionary<string, object>() { { "request", (byte)EnumData.CaseEventRequest.Failed } });
                     mailBody = "Hi All<br /><br />Please cancel the shipment for {0} and keep it in inventory.<br /><br />";
                     mailBody += "If you have successfully cancelled in Hong Kong, click <a href='{1}' target='_bland'>here</a>.<br /><br />";
                     mailBody += "If you have successfully cancelled in the UK, click <a href='{2}' target='_bland'>here</a>.<br /><br />";
-                    mailBody += "If you have failed to cancel, click <a href='{3}' target='_bland'>here</a>.<br /><br />";
+                    mailBody += "If you have successfully cancelled in the US, click <a href='{3}' target='_bland'>here</a>.<br /><br />";
+                    mailBody += "If you have failed to cancel, click <a href='{4}' target='_bland'>here</a>.<br /><br />";
                     mailBody += "You can only click on either of the links above ONCE.Please make sure to choose correctly.<br /><br />Please email us if the above sitaution doesn't apply.<br /><br />Regards<br /><br />QD Shipping";
-                    mailBody = string.Format(mailBody, eventData.LabelID, HK_link, UK_link, failed_link);
+                    mailBody = string.Format(mailBody, eventData.LabelID, HK_link, UK_link, US_link, failed_link);
                     break;
                 case "ECOF":
                     string labelID = string.Format("{0}-{1}-{2}", packageData.Items.First(i => i.IsEnable.Value).ProductID, packageData.OrderID, packageData.TrackingNumber);

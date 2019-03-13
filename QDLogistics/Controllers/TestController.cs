@@ -33,31 +33,33 @@ namespace QDLogistics.Controllers
 
         public void Index()
         {
-            SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
+            var package = db.Packages.Find(691393);
+            string carrier = package.Method.Carriers != null ? package.Method.Carriers.Name : "";
+            //SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
 
-            int OrderID = 5575671;
-            var order = db.Orders.Find(OrderID);
-            var package = order.Packages.First(p => p.IsEnable.Value);
-            if (SCWS.Is_login)
-            {
-                OrderService.OrderData orderData = SCWS.Get_OrderData(OrderID);
-                Order SC_order = orderData.Order;
-                Package SC_package = SC_order.Packages.First(p => p.ID.Equals(package.ID));
+            //int OrderID = 5575671;
+            //var order = db.Orders.Find(OrderID);
+            //var package = order.Packages.First(p => p.IsEnable.Value);
+            //if (SCWS.Is_login)
+            //{
+            //    OrderService.OrderData orderData = SCWS.Get_OrderData(OrderID);
+            //    Order SC_order = orderData.Order;
+            //    Package SC_package = SC_order.Packages.First(p => p.ID.Equals(package.ID));
 
-                string carrier = package.Method.Carriers != null ? package.Method.Carriers.Name : "";
-                var weight = SC_package.Weight;
-                var stationID_1 = SC_package.StationID;
-                var fee = SC_package.FinalShippingFee;
-                //SCWS.Update_PackageShippingStatus(SC_package, (package.UploadTracking ? package.TrackingNumber : ""), carrier);
+            //    string carrier = package.Method.Carriers != null ? package.Method.Carriers.Name : "";
+            //    var weight = SC_package.Weight;
+            //    var stationID_1 = SC_package.StationID;
+            //    var fee = SC_package.FinalShippingFee;
+            //    //SCWS.Update_PackageShippingStatus(SC_package, (package.UploadTracking ? package.TrackingNumber : ""), carrier);
 
-                if (db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.OrderID.Value.Equals(package.OrderID.Value)).All(p => p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.已出貨)))
-                {
-                    var stationID_2 = SC_order.StationID;
-                    var location = SC_order.ShippingLocationID;
-                    //SCWS.Update_OrderShippingStatus(SC_order, carrier);
-                    MyHelp.Log("Packages", package.ID, string.Format("訂單【{0}】SC完成出貨", package.OrderID), Session);
-                }
-            }
+            //    if (db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.OrderID.Value.Equals(package.OrderID.Value)).All(p => p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.已出貨)))
+            //    {
+            //        var stationID_2 = SC_order.StationID;
+            //        var location = SC_order.ShippingLocationID;
+            //        //SCWS.Update_OrderShippingStatus(SC_order, carrier);
+            //        MyHelp.Log("Packages", package.ID, string.Format("訂單【{0}】SC完成出貨", package.OrderID), Session);
+            //    }
+            //}
         }
 
         private void CheckDHL(int OrderID)
@@ -399,10 +401,18 @@ namespace QDLogistics.Controllers
                     SkuData = stock.GetSkuData(IDs);
                 }
 
+                IDS_API IDS = new IDS_API(itemList[0].Packages.Method.Carriers.CarrierAPI);
 
                 int rowIndex = 2, No = 1;
-                foreach (var itemGroup in itemList.GroupBy(i => i.OrderID.Value))
+                foreach (var itemGroup in itemList.GroupBy(i => i.PackageID.Value))
                 {
+                    var boxPackage = db.Packages.Find(itemGroup.Key);
+                    var IDS_Result = IDS.GetTrackingNumber(boxPackage);
+                    if (IDS_Result.trackingnumber.Any(t => t.First().Equals(boxPackage.OrderID.ToString())))
+                    {
+                        boxPackage.TrackingNumber = IDS_Result.trackingnumber.Last(t => t.First().Equals(boxPackage.OrderID.ToString()))[1];
+                    }
+
                     if (itemGroup.Count() > 1)
                     {
                         var count = itemGroup.Count() - 1;
@@ -414,6 +424,7 @@ namespace QDLogistics.Controllers
                         sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(rowIndex, rowIndex + count, 6, 6));
                         sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(rowIndex, rowIndex + count, 7, 7));
                         sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(rowIndex, rowIndex + count, 8, 8));
+                        sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(rowIndex, rowIndex + count, 9, 9));
                         sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(rowIndex, rowIndex + count, 10, 10));
                         sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(rowIndex, rowIndex + count, 11, 11));
                     }
@@ -423,18 +434,21 @@ namespace QDLogistics.Controllers
                         if (item.ID == itemGroup.First().ID)
                         {
                             sheet.GetRow(rowIndex).GetCell(0).SetCellValue(No++);
-                            sheet.GetRow(rowIndex).GetCell(1).SetCellValue(item.Packages.TagNo);
+                            sheet.GetRow(rowIndex).GetCell(1).SetCellValue(boxPackage.TagNo);
                             sheet.GetRow(rowIndex).GetCell(3).SetCellValue("reqular");
                             sheet.GetRow(rowIndex).GetCell(4).SetCellValue(itemGroup.Sum(i => (SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight) * i.Qty.Value));
                             sheet.GetRow(rowIndex).GetCell(5).SetCellValue("10*10*5 CM");
                             sheet.GetRow(rowIndex).GetCell(6).SetCellValue("FeDex");
-                            sheet.GetRow(rowIndex).GetCell(7).SetCellValue(boxList[0].TrackingNumber);
+                            sheet.GetRow(rowIndex).GetCell(7).SetCellValue("123");
                             sheet.GetRow(rowIndex).GetCell(8).SetCellValue(itemGroup.Sum(i => i.Qty.Value));
+                            sheet.GetRow(rowIndex).GetCell(9).SetCellValue(boxPackage.TrackingNumber);
                             sheet.GetRow(rowIndex).GetCell(10).SetCellValue(itemGroup.Sum(i => (double)i.DLDeclaredValue * i.Qty.Value));
                             sheet.GetRow(rowIndex).GetCell(11).SetCellValue(item.OrderID.Value);
                         }
                         sheet.GetRow(rowIndex++).GetCell(2).SetCellValue(item.ProductID);
                     }
+
+                    db.SaveChanges();
                 }
 
                 using (FileStream fsOut = new FileStream(Path.Combine(filePath, FileData.fileName), FileMode.Create))

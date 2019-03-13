@@ -843,9 +843,9 @@ namespace QDLogistics.Commons
                 {
                     var boxPackage = db.Packages.Find(itemGroup.Key);
                     var IDS_Result = IDS.GetTrackingNumber(boxPackage);
-                    if (IDS_Result.trackingnumber.Any(t => t.First().Equals(package.OrderID.ToString())))
+                    if (IDS_Result.trackingnumber.Any(t => t.First().Equals(boxPackage.OrderID.ToString())))
                     {
-                        boxPackage.TrackingNumber = IDS_Result.trackingnumber.Last(t => t.First().Equals(package.OrderID.ToString()))[1];
+                        boxPackage.TrackingNumber = IDS_Result.trackingnumber.Last(t => t.First().Equals(boxPackage.OrderID.ToString()))[1];
                     }
 
                     if (itemGroup.Count() > 1)
@@ -869,7 +869,7 @@ namespace QDLogistics.Commons
                         if (item.ID == itemGroup.First().ID)
                         {
                             sheet.GetRow(rowIndex).GetCell(0).SetCellValue(No++);
-                            sheet.GetRow(rowIndex).GetCell(1).SetCellValue(item.Packages.TagNo);
+                            sheet.GetRow(rowIndex).GetCell(1).SetCellValue(boxPackage.TagNo);
                             sheet.GetRow(rowIndex).GetCell(3).SetCellValue("reqular");
                             sheet.GetRow(rowIndex).GetCell(4).SetCellValue(itemGroup.Sum(i => (SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight) * i.Qty.Value));
                             sheet.GetRow(rowIndex).GetCell(5).SetCellValue("10*10*5 CM");

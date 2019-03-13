@@ -986,7 +986,7 @@ namespace QDLogistics.Controllers
                             {
                                 HttpSessionStateBase Session = (HttpSessionStateBase)session;
                                 SyncProcess Sync = new SyncProcess(Session);
-                                error = Sync.Update_Tracking(Packages.Get(package.ID));
+                                error = Sync.Update_Tracking(db.Packages.Find(package.ID));
                             }
                             catch (Exception e)
                             {
