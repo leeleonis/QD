@@ -613,6 +613,12 @@ namespace QDLogistics.Controllers
             string[] productIDs = ProductList.Select(p => p.pick.ProductID).Distinct().ToArray();
             var productList = ProductList.Select(p => p.pick).GroupBy(p => p.ProductID).ToDictionary(group => group.Key.ToString(), group => group.ToDictionary(p => p.ItemID.ToString()));
 
+            List<StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
+            using (StockKeepingUnit stock = new StockKeepingUnit())
+            {
+                SkuData = stock.GetSkuData(productIDs);
+            }
+
             List<SerialNumbers> itemSerials = db.SerialNumbers.AsNoTracking().Where(s => productIDs.Contains(s.ProductID)).ToList();
             List<PurchaseItemReceive> purchaseItemSerial = db.PurchaseItemReceive.AsNoTracking().Where(s => productIDs.Contains(s.ProductID)).ToList();
             var serialList = productIDs.ToDictionary(p => p, p => new
@@ -629,7 +635,7 @@ namespace QDLogistics.Controllers
 
             var fileList = ProductList.Select(p => p.package).Distinct().ToDictionary(p => p.ID.ToString(), p => getFileData(p));
 
-            result.data = new { productList, groupList, serialList, fileList };
+            result.data = new { productList, groupList, serialList, fileList, SkuData };
 
             return Json(result, JsonRequestBehavior.AllowGet);
         }

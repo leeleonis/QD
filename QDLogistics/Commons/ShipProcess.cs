@@ -171,7 +171,7 @@ namespace QDLogistics.Commons
                         Box_CreateInvoice(boxList, directLine, basePath, filePath, currency);
 
                         if (directLine.Abbreviation.Equals("IDS (US)"))
-                            Box_CreateDirectLineExcel(boxList, boxList[0].TrackingNumber, basePath, filePath);
+                            Box_CreateDirectLineExcel(boxList, basePath, filePath);
 
                         /***** Recognizance Book *****/
                         var CheckList = new { fileName = "CheckList-{0}.xlsx", samplePath = Path.Combine(basePath, "sample", "Fedex_CheckList.xlsx") };
@@ -807,7 +807,7 @@ namespace QDLogistics.Commons
             }
         }
 
-        private void Box_CreateDirectLineExcel(List<Box> boxList, string tracking, string basePath, string filePath)
+        private void Box_CreateDirectLineExcel(List<Box> boxList, string basePath, string filePath)
         {
             var FileData = new { fileName = "DirectLine.xlsx", samplePath = Path.Combine(basePath, "sample", "DL-IDS.xlsx") };
             using (FileStream fsIn = new FileStream(FileData.samplePath, FileMode.Open))
@@ -874,7 +874,7 @@ namespace QDLogistics.Commons
                             sheet.GetRow(rowIndex).GetCell(4).SetCellValue(itemGroup.Sum(i => (SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight) * i.Qty.Value));
                             sheet.GetRow(rowIndex).GetCell(5).SetCellValue("10*10*5 CM");
                             sheet.GetRow(rowIndex).GetCell(6).SetCellValue("FeDex");
-                            sheet.GetRow(rowIndex).GetCell(7).SetCellValue(tracking);
+                            sheet.GetRow(rowIndex).GetCell(7).SetCellValue(boxPackage.Box.TrackingNumber);
                             sheet.GetRow(rowIndex).GetCell(8).SetCellValue(itemGroup.Sum(i => i.Qty.Value));
                             sheet.GetRow(rowIndex).GetCell(9).SetCellValue(boxPackage.TrackingNumber);
                             sheet.GetRow(rowIndex).GetCell(10).SetCellValue(itemGroup.Sum(i => (double)i.DLDeclaredValue * i.Qty.Value));

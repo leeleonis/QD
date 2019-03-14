@@ -674,6 +674,7 @@ namespace QDLogistics.Controllers
                                 List<DirectLineLabel> remindList = new List<DirectLineLabel>();
                                 DateTime today = new TimeZoneConvert().ConvertDateTime(EnumData.TimeZone.EST);
 
+                                var directLineList = db.DirectLine.AsNoTracking().Where(d => d.IsEnable).ToList();
                                 var statusList = new List<byte>() { (byte)EnumData.DirectLineStatus.已到貨, (byte)EnumData.DirectLineStatus.延誤後抵達 };
                                 foreach (DirectLineLabel label in labelList)
                                 {
@@ -712,33 +713,39 @@ namespace QDLogistics.Controllers
                                         if (paymentDate.DayOfWeek == DayOfWeek.Saturday) paymentDate = paymentDate.AddDays(2);
                                         if (paymentDate.DayOfWeek == DayOfWeek.Sunday) paymentDate = paymentDate.AddDays(1);
 
-                                        if (statusList.Contains(label.Box.ShippingStatus) && DateTime.Compare(today, paymentDate) > 0)
+                                        if (statusList.Contains(label.Box.ShippingStatus))
                                         {
                                             if (string.IsNullOrEmpty(package.TrackingNumber))
                                             {
-                                                if (today.Hour >= paymentDate.Hour && today.Hour <= paymentDate.Hour + 2) remindList.Add(label);
+                                                if(directLineList.Any(d => d.ID.Equals(label.Box.DirectLine) && !d.Abbreviation.Equals("IDS (US)") ) && DateTime.Compare(today, paymentDate) > 0)
+                                                {
+                                                    if (today.Hour >= paymentDate.Hour && today.Hour <= paymentDate.Hour + 2) remindList.Add(label);
+                                                }
                                             }
                                             else
                                             {
-                                                ThreadTask syncTask = new ThreadTask(string.Format("Direct Line 訂單【{0}】SC更新", package.OrderID));
-                                                syncTask.AddWork(factory.StartNew(() =>
+                                                if (directLineList.Any(d => d.ID.Equals(label.Box.DirectLine) && d.Abbreviation.Equals("IDS (US)")) || DateTime.Compare(today, paymentDate) > 0)
                                                 {
-                                                    syncTask.Start();
-                                                    SyncProcess sync = new SyncProcess(session);
-                                                    return sync.Update_Tracking(package);
-                                                }));
-
-                                                using (CaseLog CaseLog = new CaseLog(package, session, currentHttpContext))
-                                                {
-                                                    if (CaseLog.CaseExit(EnumData.CaseEventType.UpdateTracking))
+                                                    ThreadTask syncTask = new ThreadTask(string.Format("Direct Line 訂單【{0}】SC更新", package.OrderID));
+                                                    syncTask.AddWork(factory.StartNew(() =>
                                                     {
-                                                        CaseLog.TrackingResponse();
-                                                    }
-                                                }
+                                                        syncTask.Start();
+                                                        SyncProcess sync = new SyncProcess(session);
+                                                        return sync.Update_Tracking(package);
+                                                    }));
 
-                                                label.Status = (byte)EnumData.LabelStatus.完成;
-                                                Label.Update(label, label.LabelID);
-                                                Label.SaveChanges();
+                                                    using (CaseLog CaseLog = new CaseLog(package, session, currentHttpContext))
+                                                    {
+                                                        if (CaseLog.CaseExit(EnumData.CaseEventType.UpdateTracking))
+                                                        {
+                                                            CaseLog.TrackingResponse();
+                                                        }
+                                                    }
+
+                                                    label.Status = (byte)EnumData.LabelStatus.完成;
+                                                    Label.Update(label, label.LabelID);
+                                                    Label.SaveChanges();
+                                                }
                                             }
                                         }
                                     }
