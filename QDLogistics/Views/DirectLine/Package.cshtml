@@ -60,7 +60,7 @@
                 <div class="hidden">
                     <div id="win-pick" class="easyui-window" title="撿貨單" style="width:1400px;height:500px;padding:5px;"
                          data-options="iconCls:'icon-save',collapsible:false,minimizable:false,maximizable:false,closed:true,draggable:false,resizable:false,modal:true"></div>
-                    <div id="dialog-serial" class="easyui-dialog" title="請輸入產品序號/品號" data-options="iconCls:'icon-edit',closed:true,resizable:false,onBeforeClose:ProductSerialData.Refresh_Page" style="width:1400px;top:200px;">
+                    <div id="dialog-serial" class="easyui-dialog" title="請輸入產品序號/品號" data-options="iconCls:'icon-edit',closed:true,resizable:false,onBeforeClose:ProductSerialData.Refresh_Page" style="width:1400px;top:50px;">
                         <div class="col-sm-12" data-options="region:'north',border:false" style="text-align:right;padding:5px;">
                             <div class="col-sm-10" id="info-box" style="text-align:center; padding:0 5px 0 0;">
                             </div>
@@ -107,8 +107,36 @@
                             </table>
                         </div>
                         <div data-options="region:'south',border:false" style="text-align:right;padding:5px;">
-                            <span id="message-error" style="margin-right:5px;font-size:16px;color:red;vertical-align:middle;"></span>
-                            <input type="text" class="easyui-textbox" id="input-serial" style="width:300px;height:30px;" />
+                            <div class="col-sm-8" style="padding:0px;">
+                                <table class="table table-bordered" style="margin-bottom:5px;">
+                                    <tr>
+                                        <td rowspan="5"><img id="sku-img" height="150" /></td>
+                                        <td colspan="2"><span id="sku-name">&nbsp;</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><span id="width-mm"></span>&nbsp;mm</td>
+                                        <td><span id="width-inch"></span>&nbsp;inch</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span id="length-mm"></span>&nbsp;mm</td>
+                                        <td><span id="length-inch"></span>&nbsp;inch</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span id="height-mm"></span>&nbsp;mm</td>
+                                        <td><span id="height-inch"></span>&nbsp;inch</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span id="weight-g"></span>&nbsp;g</td>
+                                        <td><span id="weight-lb"></span>&nbsp;lb</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-sm-4" style="height:175px;">
+                                <div style="margin-bottom:5px; position: absolute; bottom:0px; right:0px;">
+                                    <span id="message-error" style="margin-right:5px;font-size:16px;color:red;vertical-align:middle;"></span>
+                                    <input type="text" class="easyui-textbox" id="input-serial" style="width:300px;height:30px;" />
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div id="dialog-order" class="easyui-dialog" title="請輸入訂單號碼" data-options="iconCls:'icon-edit',closed:true,draggable:false,resizable:false,onClose:function(){$orderInput.val('');}" style="width:300px;">
@@ -378,7 +406,7 @@
 
         var ProductSerialData = function () {
             var isInit = false, isSaving = false, needSerial, orderChangeList = [], boxOrderList = { rows: [] };
-            var groupList, productList, serialList, fileList;
+            var groupList, productList, serialList, fileList, SkuData;
             var gb_OrderID, gb_PackageID;
 
             var init = function () {
@@ -390,6 +418,7 @@
                         productList = response['data']['productList'];
                         serialList = response['data']['serialList'];
                         fileList = response['data']['fileList'];
+                        SkuData = response.data.SkuData;
                         groupList["Priority"] = {};
                     }
                     isInit = response['status'];
@@ -471,6 +500,7 @@
 
                             if (!isEmpty(order)) {
                                 if (checkPicked(pData, order, serialNumber)) {
+                                    showLogistic(pData.ProductID);
                                     $pickupTable.datagrid('loadData', { rows: [] });
 
                                     $boxTable.datagrid('loadData', boxOrderList);
@@ -486,6 +516,10 @@
             function checkPicked(pData, order, serialNumber) {
                 if (!checkDeclaredValue(order[pData.PackageID])) {
                     return error("此訂單已超過總價值!");
+                }
+
+                if (!checkWeight(order[pData.PackageID])) {
+                    return error("此訂單已超過總重量20KG!");
                 }
 
                 var product = order[pData.PackageID][pData.ItemID];
@@ -532,6 +566,15 @@
                 });
 
                 return maxTotal == 0 || maxTotal >= parseFloat($('#text-total').text()) + value;
+            }
+
+            function checkDeclaredValue(itemList) {
+                var value = 0, maxWeight = 20.5;
+                Object.keys(itemList).forEach(function (itemID) {
+                    value += itemList[itemID].data.Weight;
+                });
+
+                return maxWeight >= parseFloat($('#text-weight').text()) + value;
             }
 
             function findOrderChange(orderID){
@@ -656,6 +699,22 @@
                 }
 
                 $pickupTable.datagrid('loadData', data);
+            }
+
+            function showLogistic(sku) {
+                var data = SkuData.filter(data => data.Sku == sku);
+                if (data.length > 0) {
+                    $('#sku-img').attr('src', 'http://internal.qd.com.tw:8080/Uploads/' + data[0].ImagePath);
+                    $('#sku-name').html(data[0].Sku + '-' + data[0].Name);
+                    $('#width-mm').html(data[0].Width);
+                    $('#width-inch').html((data[0].Width * 0.0393700787).toFixed(2));
+                    $('#length-mm').html(data[0].Length);
+                    $('#length-inch').html((data[0].Length * 0.0393700787).toFixed(2));
+                    $('#height-mm').html(data[0].Height);
+                    $('#height-inch').html((data[0].Height * 0.0393700787).toFixed(2));
+                    $('#weight-g').html(data[0].Weight);
+                    $('#weight-lb').html((data[0].Weight * 0.00220462262).toFixed(2));
+                }
             }
 
             // 加入至已出貨訂單清單

@@ -837,9 +837,10 @@ namespace QDLogistics.Controllers
                 .GroupBy(pick => pick.ProductID).ToDictionary(group => group.Key.ToString(), group => group.ToDictionary(p => p.ItemID.Value.ToString()));
 
             string[] productIDs = productList.Select(p => p.Key).Distinct().ToArray();
+            List<StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
             using (StockKeepingUnit stock = new StockKeepingUnit())
             {
-                List<StockKeepingUnit.SkuData> SkuData = stock.GetSkuData(productIDs);
+                SkuData = stock.GetSkuData(productIDs);
                 foreach (var group in productList)
                     if (SkuData.Any(s => s.Sku.Equals(group.Key)))
                         foreach (var pick in group.Value.Select(p => p.Value))
@@ -859,7 +860,7 @@ namespace QDLogistics.Controllers
                 pp => new { data = pp, serial = itemSerials.Where(sn => sn.OrderItemID == pp.ItemID).Select(sn => sn.SerialNumber.Trim()).ToArray() })))
                 .GroupBy(o => o.Value.Sum(p => p.Value.Sum(pp => pp.Value.data.Qty)) > 1).ToDictionary(g => g.Key ? "Multiple" : "Single", g => g.ToDictionary(o => o.Key.ToString(), o => o.Value));
 
-            result.data = new { productList, groupList, serialList };
+            result.data = new { productList, groupList, serialList, SkuData };
 
             return Json(result, JsonRequestBehavior.AllowGet);
         }
@@ -883,15 +884,21 @@ namespace QDLogistics.Controllers
                     box = BoxManage.GetCurrentBox(directLine, warehouseID, firstMile);
                 }
 
-                List<Packages> packageList = box.Packages.Where(p => p.IsEnable.Value).ToList();
-
+                decimal totalValue = 0, totalWeight = 0;
+                List<StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
+                List<Packages> packageList = db.Box.Where(b => b.IsEnable && b.MainBox.Equals(box.MainBox)).SelectMany(b => b.Packages.Where(p => p.IsEnable.Value)).ToList();
                 if (packageList.Any())
                 {
                     List<OrderJoinData> dataList = packageList
                         .Join(db.Items.AsNoTracking().Where(i => i.IsEnable.Value), p => p.ID, i => i.PackageID, (p, i) => new OrderJoinData() { package = p, item = i })
                         .Join(db.PickProduct.AsNoTracking().Where(pick => pick.IsEnable), data => data.item.ID, pick => pick.ItemID, (data, pick) => new OrderJoinData(data) { pick = pick }).ToList();
 
-                    foreach (OrderJoinData data in dataList)
+                    using (StockKeepingUnit stock = new StockKeepingUnit())
+                    {
+                        SkuData = stock.GetSkuData(dataList.Select(data => data.item.ProductID).Distinct().ToArray());
+                    }
+
+                    foreach (OrderJoinData data in dataList.Where(data => data.package.BoxID.Equals(boxID)))
                     {
                         for (int i = 0; i < data.item.Qty; i++)
                         {
@@ -900,22 +907,30 @@ namespace QDLogistics.Controllers
                                 data.pick.OrderID,
                                 data.pick.PackageID,
                                 data.pick.ProductID,
-                                data.pick.ProductName,
-                                SerialNumber = data.item.SerialNumbers.Skip(i).Any() ? data.item.SerialNumbers.Skip(i).FirstOrDefault().SerialNumber : "",
+                                ProductName = SkuData.Any(s => s.Sku.Equals(data.pick.ProductID)) ? SkuData.First(s => s.Sku.Equals(data.pick.ProductID)).Name : data.pick.ProductName,
+                                data.item.SerialNumbers.Skip(i).FirstOrDefault()?.SerialNumber,
                                 data.package.TagNo,
                                 data.package.Label.Note,
                                 data.package.Method.InBox,
                                 data.item.DeclaredValue,
-                                Weight = data.item.Skus.ShippingWeight,
+                                Weight = SkuData.Any(s => s.Sku.Equals(data.pick.ProductID)) ? SkuData.First(s => s.Sku.Equals(data.pick.ProductID)).Weight : data.item.Skus.ShippingWeight,
                                 IsBattery = data.item.Skus.Battery ?? false,
                             });
                         }
                     }
+
+                    totalValue = dataList.Sum(data => data.package.DeclaredTotal);
+                    totalWeight = dataList.Sum(data => (SkuData.Any(s => s.Sku.Equals(data.pick.ProductID)) ? SkuData.First(s => s.Sku.Equals(data.pick.ProductID)).Weight : data.item.Skus.ShippingWeight) * data.pick.Qty.Value);
                 }
 
                 result.data = new
                 {
-                    info = MyHelp.RenderViewToString(ControllerContext, "Info_Box", box, new ViewDataDictionary() { { "directLine", directLine }, { "method", method } }),
+                    info = MyHelp.RenderViewToString(ControllerContext, "Info_Box", box, new ViewDataDictionary() {
+                        { "directLine", directLine },
+                        { "method", method },
+                        { "totalValue", totalValue },
+                        { "totalWeight", totalWeight / 1000 }
+                    }),
                     list = pickList
                 };
             }

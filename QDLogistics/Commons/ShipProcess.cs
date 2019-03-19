@@ -874,7 +874,7 @@ namespace QDLogistics.Commons
                             sheet.GetRow(rowIndex).GetCell(4).SetCellValue(itemGroup.Sum(i => (SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight) * i.Qty.Value));
                             sheet.GetRow(rowIndex).GetCell(5).SetCellValue("10*10*5 CM");
                             sheet.GetRow(rowIndex).GetCell(6).SetCellValue("FeDex");
-                            sheet.GetRow(rowIndex).GetCell(7).SetCellValue(boxPackage.Box.TrackingNumber);
+                            sheet.GetRow(rowIndex).GetCell(7).SetCellValue(boxList.First(b => b.BoxID.Equals(boxPackage.BoxID)).TrackingNumber);
                             sheet.GetRow(rowIndex).GetCell(8).SetCellValue(itemGroup.Sum(i => i.Qty.Value));
                             sheet.GetRow(rowIndex).GetCell(9).SetCellValue(boxPackage.TrackingNumber);
                             sheet.GetRow(rowIndex).GetCell(10).SetCellValue(itemGroup.Sum(i => (double)i.DLDeclaredValue * i.Qty.Value));

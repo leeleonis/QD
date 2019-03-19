@@ -44,7 +44,7 @@ namespace WorkSchedule
                 RequestJob(Host, "DirectLine/SendWaitingOrder", new Dictionary<string, object>() { { "DL", "IDS" } });
             }
 
-            if (hour.Equals(15) || min.Equals(0))
+            if (hour.Equals(15) && min.Equals(0))
             {
                 RequestJob(PO_Host, "Test/DoSkuSync", null);
             }
