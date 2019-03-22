@@ -209,18 +209,21 @@ namespace CarrierApi.FedEx
             //string currency = Enum.GetName(typeof(QDLogistics.OrderService.CurrencyCodeType2), box.Packages.First(p => p.IsEnable.Value).Orders.OrderCurrencyCode.Value);
             var commodityList = new List<QDLogistics.FedExShipService.Commodity>();
             var itemLineList = new List<RequestedPackageLineItem>();
+            QDLogistics.FedExShipService.Money customsValue;
+
+            List<StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
+            using (StockKeepingUnit stock = new StockKeepingUnit())
+            {
+                var allPackages = boxList.SelectMany(b => b.Packages.Where(p => p.IsEnable.Value)).ToList();
+                customsValue = new QDLogistics.FedExShipService.Money() { Currency = currency, Amount = allPackages.Sum(p => p.DeclaredTotal) };
+                var IDs = allPackages.SelectMany(p => p.Items.Where(i => i.IsEnable.Value)).Select(i => i.ProductID).Distinct().ToArray();
+                SkuData = stock.GetSkuData(IDs);
+            }
+
             foreach (Box box in boxList)
             {
                 List<Items> itemList = box.Packages.Where(p => p.IsEnable.Value).SelectMany(p => p.Items.Where(i => i.IsEnable.Value)).ToList();
 
-                List<StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
-                using (StockKeepingUnit stock = new StockKeepingUnit())
-                {
-                    var IDs = itemList.Where(i => i.IsEnable.Value).Select(i => i.ProductID).Distinct().ToArray();
-                    SkuData = stock.GetSkuData(IDs);
-                }
-
-                QDLogistics.FedExShipService.Money customsValue = new QDLogistics.FedExShipService.Money() { Currency = currency, Amount = box.Packages.Where(p => p.IsEnable.Value).Sum(p => p.DeclaredTotal) };
                 QDLogistics.FedExShipService.Commodity commodity = new QDLogistics.FedExShipService.Commodity
                 {
                     NumberOfPieces = boxList.Count().ToString(),
@@ -233,7 +236,7 @@ namespace CarrierApi.FedEx
                     },
                     Quantity = 1,
                     QuantityUnits = "EA",
-                    UnitPrice = customsValue,
+                    UnitPrice = new QDLogistics.FedExShipService.Money() { Currency = currency, Amount = box.Packages.Where(p => p.IsEnable.Value).Sum(p => p.DeclaredTotal) },
                     CustomsValue = customsValue,
                     QuantitySpecified = true
                 };

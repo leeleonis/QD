@@ -898,7 +898,7 @@ namespace QDLogistics.Controllers
                         SkuData = stock.GetSkuData(dataList.Select(data => data.item.ProductID).Distinct().ToArray());
                     }
 
-                    foreach (OrderJoinData data in dataList.Where(data => data.package.BoxID.Equals(boxID)))
+                    foreach (OrderJoinData data in dataList.Where(data => data.package.BoxID.Equals(box.BoxID)))
                     {
                         for (int i = 0; i < data.item.Qty; i++)
                         {
@@ -960,6 +960,11 @@ namespace QDLogistics.Controllers
                 if (package.ProcessStatus != (byte)EnumData.ProcessStatus.待出貨)
                 {
                     throw new Exception(string.Format("訂單【{0}】無法出貨因為並非待出貨的狀態", package.OrderID));
+                }
+
+                if (!package.Method.DirectLine.Equals(db.Box.Find(boxID).DirectLine))
+                {
+                    throw new Exception(string.Format("訂單【{0}】無法出貨因為並非相同的DL", package.OrderID));
                 }
 
                 int AdminId = 0;

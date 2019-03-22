@@ -568,13 +568,13 @@
                 return maxTotal == 0 || maxTotal >= parseFloat($('#text-total').text()) + value;
             }
 
-            function checkDeclaredValue(itemList) {
+            function checkWeight(itemList) {
                 var value = 0, maxWeight = 20.5;
                 Object.keys(itemList).forEach(function (itemID) {
                     value += itemList[itemID].data.Weight;
                 });
 
-                return maxWeight >= parseFloat($('#text-weight').text()) + value;
+                return maxWeight >= parseFloat($('#text-weight').text()) + value / 1000;
             }
 
             function findOrderChange(orderID){

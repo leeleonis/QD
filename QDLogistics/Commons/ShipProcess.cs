@@ -792,8 +792,8 @@ namespace QDLogistics.Commons
                 var anchor = new HSSFClientAnchor(400, 50, 500, 50, 4, rowIndex - 1, 6, rowIndex + 3);
                 var pictuer = drawing.CreatePicture(anchor, picIndex);
 
-                sheet.GetRow(rowIndex).GetCell(3).SetCellValue(1);
-                sheet.GetRow(rowIndex).GetCell(10).SetCellValue(itemList.Sum(i => i.Qty.Value * ((double)(SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight) / 1000)) + "kg");
+                sheet.GetRow(rowIndex).GetCell(3).SetCellValue(boxList.Count());
+                sheet.GetRow(rowIndex).GetCell(10).SetCellValue(itemList.Sum(i => i.Qty.Value * ((double)(SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight) / 1000)).ToString("#0.0") + "kg");
                 sheet.GetRow(rowIndex).GetCell(11).SetCellValue(currency);
                 sheet.GetRow(rowIndex).GetCell(16).SetCellValue(itemList.Sum(i => i.Qty.Value * i.DeclaredValue).ToString("N"));
                 sheet.GetRow(rowIndex + 10).GetCell(9).SetCellValue(boxList[0].Create_at.ToString("yyyy-MM-dd"));

@@ -158,14 +158,14 @@ namespace QDLogistics.Controllers
             TrackResult result = track.Track();
         }
 
-        private void FedEx_Test(int OrderID)
+        public void FedEx_Test(string BoxID)
         {
-            IRepository<Orders> Orders = new GenericRepository<Orders>(db);
-
-            Orders order = Orders.Get(OrderID);
-
-            FedEx_API FedEx = new FedEx_API(order.Packages.First(p => p.IsEnable.Equals(true)).Method.Carriers.CarrierAPI);
-            var result = FedEx.Create(order.Packages.First(p => p.IsEnable.Equals(true)));
+            var boxList = db.Box.Where(b => b.IsEnable && b.MainBox.Equals(BoxID)).ToList();
+            ShippingMethod method = db.ShippingMethod.Find(boxList.First().FirstMileMethod);
+            DirectLine directLine = db.DirectLine.Find(boxList.First().DirectLine);
+            CarrierAPI api = method.Carriers.CarrierAPI;
+            FedEx_API FedEx = new FedEx_API(api);
+            var result = FedEx.CreateBox(boxList, method, directLine);
 
             if (result.HighestSeverity.Equals(FedExShipService.NotificationSeverityType.SUCCESS))
             {
@@ -367,97 +367,8 @@ namespace QDLogistics.Controllers
         {
             SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
             ShipProcess shipProcess = new ShipProcess(SCWS);
-
             var boxList = db.Box.Where(b => b.IsEnable && b.MainBox.Equals(boxID)).OrderBy(b => b.Create_at).ToList();
-
-            var basePath = HostingEnvironment.MapPath("~/FileUploads");
-            var filePath = Path.Combine(basePath, "export", "box", boxList[0].Create_at.ToString("yyyy/MM/dd"), boxList[0].MainBox);
-            if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
-
-            var FileData = new { fileName = "DirectLine.xlsx", samplePath = Path.Combine(basePath, "sample", "DL-IDS.xlsx") };
-            using (FileStream fsIn = new FileStream(FileData.samplePath, FileMode.Open))
-            {
-                XSSFWorkbook workbook = new XSSFWorkbook(fsIn);
-                fsIn.Close();
-
-                XSSFSheet sheet = (XSSFSheet)workbook.GetSheetAt(0);
-
-                List<Items> itemList = boxList.SelectMany(b => b.Packages.Where(p => p.IsEnable.Value)).SelectMany(p => p.Items.Where(i => i.IsEnable.Value)).ToList();
-                if (itemList.Count() > 1)
-                {
-                    int insertRow = 3, add = itemList.Count() - 1;
-                    MyHelp.ShiftRows(ref sheet, insertRow, sheet.LastRowNum, add);
-
-                    for (int row = insertRow; row < insertRow + add; row++)
-                    {
-                        MyHelp.CopyRow(ref sheet, insertRow - 1, row, true, false, true, false);
-                    }
-                }
-
-                List<StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
-                using (StockKeepingUnit stock = new StockKeepingUnit())
-                {
-                    var IDs = itemList.Select(i => i.ProductID).Distinct().ToArray();
-                    SkuData = stock.GetSkuData(IDs);
-                }
-
-                IDS_API IDS = new IDS_API(itemList[0].Packages.Method.Carriers.CarrierAPI);
-
-                int rowIndex = 2, No = 1;
-                foreach (var itemGroup in itemList.GroupBy(i => i.PackageID.Value))
-                {
-                    var boxPackage = db.Packages.Find(itemGroup.Key);
-                    var IDS_Result = IDS.GetTrackingNumber(boxPackage);
-                    if (IDS_Result.trackingnumber.Any(t => t.First().Equals(boxPackage.OrderID.ToString())))
-                    {
-                        boxPackage.TrackingNumber = IDS_Result.trackingnumber.Last(t => t.First().Equals(boxPackage.OrderID.ToString()))[1];
-                    }
-
-                    if (itemGroup.Count() > 1)
-                    {
-                        var count = itemGroup.Count() - 1;
-                        sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(rowIndex, rowIndex + count, 0, 0));
-                        sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(rowIndex, rowIndex + count, 1, 1));
-                        sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(rowIndex, rowIndex + count, 3, 3));
-                        sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(rowIndex, rowIndex + count, 4, 4));
-                        sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(rowIndex, rowIndex + count, 5, 5));
-                        sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(rowIndex, rowIndex + count, 6, 6));
-                        sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(rowIndex, rowIndex + count, 7, 7));
-                        sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(rowIndex, rowIndex + count, 8, 8));
-                        sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(rowIndex, rowIndex + count, 9, 9));
-                        sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(rowIndex, rowIndex + count, 10, 10));
-                        sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(rowIndex, rowIndex + count, 11, 11));
-                    }
-
-                    foreach (var item in itemGroup)
-                    {
-                        if (item.ID == itemGroup.First().ID)
-                        {
-                            sheet.GetRow(rowIndex).GetCell(0).SetCellValue(No++);
-                            sheet.GetRow(rowIndex).GetCell(1).SetCellValue(boxPackage.TagNo);
-                            sheet.GetRow(rowIndex).GetCell(3).SetCellValue("reqular");
-                            sheet.GetRow(rowIndex).GetCell(4).SetCellValue(itemGroup.Sum(i => (SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight) * i.Qty.Value));
-                            sheet.GetRow(rowIndex).GetCell(5).SetCellValue("10*10*5 CM");
-                            sheet.GetRow(rowIndex).GetCell(6).SetCellValue("FeDex");
-                            sheet.GetRow(rowIndex).GetCell(7).SetCellValue("123");
-                            sheet.GetRow(rowIndex).GetCell(8).SetCellValue(itemGroup.Sum(i => i.Qty.Value));
-                            sheet.GetRow(rowIndex).GetCell(9).SetCellValue(boxPackage.TrackingNumber);
-                            sheet.GetRow(rowIndex).GetCell(10).SetCellValue(itemGroup.Sum(i => (double)i.DLDeclaredValue * i.Qty.Value));
-                            sheet.GetRow(rowIndex).GetCell(11).SetCellValue(item.OrderID.Value);
-                        }
-                        sheet.GetRow(rowIndex++).GetCell(2).SetCellValue(item.ProductID);
-                    }
-
-                    db.SaveChanges();
-                }
-
-                using (FileStream fsOut = new FileStream(Path.Combine(filePath, FileData.fileName), FileMode.Create))
-                {
-                    workbook.Write(fsOut);
-
-                    fsOut.Close();
-                }
-            }
+            ShipResult boxResult = shipProcess.Dispatch(boxList);
         }
 
         private void Excel_Test(int OrderID)
