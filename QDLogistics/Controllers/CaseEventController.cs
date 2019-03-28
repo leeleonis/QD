@@ -222,7 +222,7 @@ namespace QDLogistics.Controllers
                 if (!string.IsNullOrEmpty(filter.Sort) && filter.Sort.Equals("RequestDate"))
                     results = filter.Order.Equals("asc") ? results.OrderBy(c => c.Request_at).ToList() : results.OrderByDescending(c => c.Request_at).ToList();
 
-                Dictionary<int, string> DirectLine = db.DirectLine.ToDictionary(d => d.ID, d => d.Abbreviation);
+                Dictionary<int, string> DirectLine = db.DirectLine.Where(d => d.IsEnable).ToDictionary(d => d.ID, d => d.Abbreviation);
                 Dictionary<int, string> AdminName = db.AdminUsers.AsNoTracking().Where(u => u.IsEnable).ToDictionary(u => u.Id, u => u.Name);
 
                 dataList.AddRange(results.Skip(start).Take(length).Select(c => new

@@ -87,7 +87,7 @@ namespace CarrierApi.FedEx
                 CountryOfManufacture = "CN",
                 Weight = new QDLogistics.FedExShipService.Weight()
                 {
-                    Units = request.RequestedShipment.Shipper.Address.CountryCode.Equals("US") ? QDLogistics.FedExShipService.WeightUnits.LB : QDLogistics.FedExShipService.WeightUnits.KG,
+                    Units = address.CountryCode.Equals("US") ? QDLogistics.FedExShipService.WeightUnits.LB : QDLogistics.FedExShipService.WeightUnits.KG,
                     Value = package.Items.Where(i => i.IsEnable.Equals(true)).Sum(i => i.Qty.Value * ((decimal)(SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight) / (request.RequestedShipment.Shipper.Address.CountryCode.Equals("US") ? 453 : 1000)))
                 },
                 Quantity = 1,
@@ -99,7 +99,10 @@ namespace CarrierApi.FedEx
 
             request.RequestedShipment.CustomsClearanceDetail = new CustomsClearanceDetail()
             {
-                DutiesPayment = new Payment() { PaymentType = PaymentType.RECIPIENT },
+                DutiesPayment = new Payment() {
+                    PaymentType = address.CountryCode.Equals("US") && package.ShippingMethod.Equals(35) ? PaymentType.SENDER : PaymentType.RECIPIENT,
+                    Payor = address.CountryCode.Equals("US") && package.ShippingMethod.Equals(35) ? new Payor() { ResponsibleParty = _shipperInit() } : null
+                },
                 DocumentContent = InternationalDocumentContentType.DOCUMENTS_ONLY,
                 CustomsValue = customsValue,
                 Commodities = new QDLogistics.FedExShipService.Commodity[] { commodity },

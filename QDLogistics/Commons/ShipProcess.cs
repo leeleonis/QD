@@ -835,18 +835,11 @@ namespace QDLogistics.Commons
                     var IDs = itemList.Select(i => i.ProductID).Distinct().ToArray();
                     SkuData = stock.GetSkuData(IDs);
                 }
-
-                IDS_API IDS = new IDS_API(itemList[0].Packages.Method.Carriers.CarrierAPI);
-
+                
                 int rowIndex = 2, No = 1;
                 foreach (var itemGroup in itemList.GroupBy(i => i.PackageID.Value))
                 {
                     var boxPackage = db.Packages.Find(itemGroup.Key);
-                    var IDS_Result = IDS.GetTrackingNumber(boxPackage);
-                    if (IDS_Result.trackingnumber.Any(t => t.First().Equals(boxPackage.OrderID.ToString())))
-                    {
-                        boxPackage.TrackingNumber = IDS_Result.trackingnumber.Last(t => t.First().Equals(boxPackage.OrderID.ToString()))[1];
-                    }
 
                     if (itemGroup.Count() > 1)
                     {

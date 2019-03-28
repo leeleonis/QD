@@ -1240,16 +1240,28 @@ namespace QDLogistics.Controllers
                     {
                         if (label.Status.Equals((byte)EnumData.LabelStatus.正常))
                         {
-                            //if (directLine.Abbreviation.Equals("ECOF"))
-                            //{
-                            //    ThreadTask SyncTask = new ThreadTask(string.Format("Direct Line 訂單【{0}】SC更新", package.OrderID));
-                            //    SyncTask.AddWork(factory.StartNew(() =>
-                            //    {
-                            //        SyncTask.Start();
-                            //        SyncProcess sync = new SyncProcess(Session);
-                            //        return sync.Update_Tracking(package);
-                            //    }));
-                            //}
+                            if (directLine.Abbreviation.Equals("IDS (US)"))
+                            {
+                                var IDS = new DirectLineApi.IDS.IDS_API(package.Method.Carriers.CarrierAPI);
+                                var IDS_Result = IDS.GetTrackingNumber(package);
+                                if (IDS_Result.trackingnumber.Any(t => t.First().Equals(package.OrderID.ToString())))
+                                {
+                                    package.TrackingNumber = IDS_Result.trackingnumber.Last(t => t.First().Equals(package.OrderID.ToString()))[1];
+                                }
+
+                                //if (!string.IsNullOrEmpty(package.TrackingNumber))
+                                //{
+                                //    ThreadTask SyncTask = new ThreadTask(string.Format("Direct Line 訂單【{0}】SC更新", package.OrderID));
+                                //    SyncTask.AddWork(factory.StartNew(() =>
+                                //    {
+                                //        SyncTask.Start();
+                                //        SyncProcess sync = new SyncProcess(Session);
+                                //        return sync.Update_Tracking(package);
+                                //    }));
+
+                                //    label.Status = (byte)EnumData.LabelStatus.完成;
+                                //}
+                            }
                             //else
                             //{
                             //    foreach (Items item in package.Items.Where(i => i.IsEnable.Value).ToList())
@@ -1310,6 +1322,7 @@ namespace QDLogistics.Controllers
             db.SaveChanges();
 
             string boxID = boxList[0].MainBox;
+            boxList = db.Box.Where(b => b.IsEnable && b.MainBox.Equals(boxID)).OrderBy(b => b.Create_at).ToList();
             DateTime create_at = boxList[0].Create_at;
 
             MyHelp.Log("Box", boxID, string.Format("開始產出 Box【{0}】報關資料", boxID), Session);
@@ -1942,10 +1955,10 @@ namespace QDLogistics.Controllers
                         {
                             switch (DL)
                             {
-                                case "IDS":
+                                case "IDS US":
                                     DateTime now = DateTime.Now;
-                                    DateTime noon = new DateTime(now.Year, now.Month, now.Day, 11, 30, 0);
-                                    DateTime evening = new DateTime(now.Year, now.Month, now.Day, 16, 30, 0);
+                                    DateTime noon = new DateTime(now.Year, now.Month, now.Day, 11, 55, 0);
+                                    DateTime evening = new DateTime(now.Year, now.Month, now.Day, 16, 55, 0);
 
                                     var packageFilter = db.Packages.Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨));
 
@@ -2081,6 +2094,55 @@ namespace QDLogistics.Controllers
             return Json(result, JsonRequestBehavior.AllowGet);
         }
 
+        [HttpPost]
+        public ActionResult UploadFile(HttpPostedFileBase[] FileList)
+        {
+            AjaxResult result = new AjaxResult();
+            List<string> Msg = new List<string>();
+
+            try
+            {
+                if (FileList == null || !FileList.Any()) throw new Exception("沒有上傳檔案!");
+
+                foreach (var file in FileList.Where(f => f.ContentLength > 0))
+                {
+                    try
+                    {
+                        var fileExtension = Path.GetExtension(file.FileName);
+                        var fileName = Path.GetFileNameWithoutExtension(file.FileName);
+
+                        if (!fileExtension.ToLower().Equals(".pdf")) throw new Exception(string.Format("此 {0} 不是PDF!", fileName));
+
+                        var package = db.Packages.FirstOrDefault(p => p.TagNo.Equals(fileName));
+
+                        if (package == null) throw new Exception(string.Format("此 {0} 找不到訂單!", fileName));
+
+                        var filePath = Server.MapPath("~/Uploads/" + package.FilePath);
+                        if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
+
+                        var path = Path.Combine(filePath, "AirWaybill.pdf");
+                        file.SaveAs(path);
+                    }
+                    catch (Exception e)
+                    {
+                        Msg.Add(e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Msg.Add(e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message);
+            }
+
+            if (Msg.Any())
+            {
+                result.status = false;
+                result.message = string.Join("\n", Msg.ToArray());
+            }
+
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
         public void SendMailToCarrier(List<Box> boxList, ShippingMethod method, DirectLine directLine, bool reSend = false)
         {
             PickProduct = new GenericRepository<PickProduct>(db);
@@ -2089,8 +2151,12 @@ namespace QDLogistics.Controllers
             List<PickProduct> pickList = itemsList.Join(db.PickProduct.AsNoTracking().Where(p => p.IsEnable && p.IsPicked && (reSend || !p.IsMail)).ToList(), i => i.ID, pick => pick.ItemID, (i, pick) => pick).ToList();
             if (pickList.Any())
             {
+                string boxID = boxList[0].MainBox;
+                DateTime create_at = boxList[0].Create_at;
+                List<Packages> packageList = db.Packages.Where(p => pickList.Select(pick => pick.PackageID.Value).ToArray().Contains(p.ID)).ToList();
+
                 string basePath = HostingEnvironment.MapPath("~/FileUploads");
-                string filePath = Path.Combine(basePath, "export", "box", boxList[0].Create_at.ToString("yyyy/MM/dd"), boxList[0].MainBox);
+                string filePath = Path.Combine(basePath, "export", "box", create_at.ToString("yyyy/MM/dd"), boxID);
                 if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
 
                 string sendMail = "dispatch-qd@hotmail.com";
@@ -2106,18 +2172,31 @@ namespace QDLogistics.Controllers
                     case "IDS (US)":
                         MyHelp.Log("PickProduct", null, string.Format("寄送{0}出貨通知", directLine.Abbreviation));
 
-                        receiveMails = new string[] { "gloria.chiu@contin-global.com", "cherry.chen@contin-global.com", "TWCS@contin-global.com", "contincs@gmail.com", "shipping_qd@hotmail.com" };
+                        mailTitle = string.Format("To IDS Peter and Cherry - 1 parcels-sent out via {0} under tracking {1}", method.Carriers.Name, trackingNumber);
+
                         if (directLine.Abbreviation.Equals("IDS (US)"))
+                        {
                             receiveMails = new string[] { "anita.chou@contin-global.com", "jennifer.siew@contin-global.com", "twcs@contin-global.com" };
 
-                        mailTitle = string.Format("To IDS Peter and Cherry - 1 parcels-sent out via {0} under tracking {1}", method.Carriers.Name, trackingNumber);
-                        mailBody = string.Format("{0}<br /><br />Box 1 will send out via {1} under tracking no {2}", string.Join("<br />", boxList[0].DirectLineLabel.Where(l => l.IsEnable).Select(l => l.LabelID)), method.Carriers.Name, trackingNumber);
+                            var link = "http://internal.qd.com.tw/DirectLine/BoxConfirmed?BoxID=" + boxID;
+                            mailBody += string.Format("Please click the link {0} to confirm this bulk package.", string.Format("<a href='{0}' target='_bland'>{1}</a>", link, boxID));
+                        }
+                        else
+                        {
+                            receiveMails = new string[] { "gloria.chiu@contin-global.com", "cherry.chen@contin-global.com", "TWCS@contin-global.com", "contincs@gmail.com", "shipping_qd@hotmail.com" };
+
+                            foreach (var box in boxList)
+                            {
+                                var labelArray = box.DirectLineLabel.Where(l => l.IsEnable).Select(l => l.LabelID).ToArray();
+                                mailBody += string.Format("{0}<br /><br />the parcel was sent out via {1} under tracking {2}<br /><br />", labelArray, method.Carriers.Name, box.TrackingNumber);
+                            }
+                        }
 
                         List<Tuple<Stream, string>> IDSFile2 = new List<Tuple<Stream, string>>();
                         using (var file = new ZipFile())
                         {
                             var memoryStream = new MemoryStream();
-                            foreach (Packages package in boxList.SelectMany(b => b.Packages.Where(p => p.IsEnable.Value)).ToList())
+                            foreach (Packages package in packageList)
                             {
                                 string Label_File = Path.Combine(basePath, package.FilePath, string.Format("Label-{0}.pdf", package.OrderID));
                                 if (!System.IO.File.Exists(Label_File))
@@ -2149,7 +2228,6 @@ namespace QDLogistics.Controllers
                         MyHelp.Log("PickProduct", null, "寄送ECOF出貨通知");
 
                         receiveMails = new string[] { "customerservice@ecof.com.au", "sophia.wang@ecof.com.au", "Ada.chen@ecof.com.au", "mandy.liang@ecof.com.au" };
-                        var packageList = boxList.SelectMany(b => b.Packages.Where(p => p.IsEnable.Value)).ToList();
                         mailTitle = string.Format("DISPATCHED: {0} {1}, {2}pcs", method.Carriers.Name, trackingNumber, packageList.Count());
                         foreach (Box box in boxList)
                         {
@@ -2162,7 +2240,7 @@ namespace QDLogistics.Controllers
                         using (var file = new ZipFile())
                         {
                             var memoryStream = new MemoryStream();
-                            foreach (Packages package in boxList.SelectMany(b => b.Packages.Where(p => p.IsEnable.Value)).ToList())
+                            foreach (Packages package in packageList)
                             {
                                 string AWB_File = Path.Combine(basePath, package.FilePath, string.Format("{0}-{1}-{2}.pdf", package.Items.First(i => i.IsEnable.Value).ProductID, package.OrderID, package.TrackingNumber));
                                 if (!System.IO.File.Exists(AWB_File))
@@ -2188,8 +2266,6 @@ namespace QDLogistics.Controllers
                         break;
                 }
 
-                string boxID = boxList[0].MainBox;
-                DateTime create_at = boxList[0].Create_at;
                 switch (method.Carriers.CarrierAPI.Type)
                 {
                     case (byte)EnumData.CarrierType.DHL:
@@ -2317,6 +2393,49 @@ namespace QDLogistics.Controllers
                         break;
                 }
                 PickProduct.SaveChanges();
+            }
+        }
+
+        public void BoxConfirmed(string BoxID)
+        {
+            var boxList = db.Box.Where(b => b.IsEnable && b.MainBox.Equals(BoxID)).OrderBy(b => b.BoxID).ToList();
+            if (boxList.Any())
+            {
+                try
+                {
+                    SC_WebService SCWS = new SC_WebService("tim@weypro.com", "timfromweypro");
+                    TaskFactory factory = System.Web.HttpContext.Current.Application.Get("TaskFactory") as TaskFactory;
+
+                    if (!SCWS.Is_login) throw new Exception("SC is not login");
+
+                    foreach (var package in boxList.SelectMany(b => b.Packages.Where(p => p.IsEnable.Value)))
+                    {
+                        if (!string.IsNullOrEmpty(package.TrackingNumber))
+                        {
+                            ThreadTask SyncTask = new ThreadTask(string.Format("Direct Line 訂單【{0}】SC更新", package.OrderID));
+                            SyncTask.AddWork(factory.StartNew(() =>
+                            {
+                                SyncTask.Start();
+                                SyncProcess sync = new SyncProcess(Session);
+                                return sync.Update_Tracking(package);
+                            }));
+
+                            package.Label.Status = (byte)EnumData.LabelStatus.完成;
+                        }
+                    }
+
+                    db.SaveChanges();
+                    Response.Write("Success!");
+                }
+                catch(Exception e)
+                {
+                    MyHelp.Log("Box", BoxID, "Confirm error: " + e.Message);
+                    Response.Write("Error!");
+                }
+            }
+            else
+            {
+                Response.Write("Not find box " + BoxID);
             }
         }
 

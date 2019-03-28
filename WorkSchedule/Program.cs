@@ -39,7 +39,7 @@ namespace WorkSchedule
                 RequestJob(Host, "DirectLine/CheckBoxStatus", null);
             }
 
-            if((hour.Equals(3) || hour.Equals(8)) && min.Equals(30))
+            if((hour.Equals(3) || hour.Equals(8)) && min.Equals(55))
             {
                 RequestJob(Host, "DirectLine/SendWaitingOrder", new Dictionary<string, object>() { { "DL", "IDS" } });
             }

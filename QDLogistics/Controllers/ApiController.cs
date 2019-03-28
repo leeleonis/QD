@@ -774,25 +774,31 @@ namespace QDLogistics.Controllers
             return Json(result, JsonRequestBehavior.AllowGet);
         }
 
-        public ActionResult GetOrderItemData(int? OrderID, string SourceID, string UserID)
+        public ActionResult GetOrderItemData(int? OrderID, string SourceID, string UserID, byte? Status)
         {
-            var OrderFilter = db.Orders.Include("Items").AsNoTracking().Where(o => o.StatusCode.Value.Equals((int)OrderStatusCode.Completed));
-            if (OrderID.HasValue) OrderFilter = OrderFilter.Where(o => o.OrderID.Equals(OrderID.Value));
-            if(!string.IsNullOrEmpty(SourceID)) OrderFilter = OrderFilter.Where(o => (o.OrderSource.Value.Equals(1) && o.eBaySalesRecordNumber.Equals(SourceID)) || (o.OrderSource.Value.Equals(4) && o.OrderSourceOrderId.Equals(SourceID)));
-            if (!string.IsNullOrEmpty(UserID)) OrderFilter = OrderFilter.Where(o => o.eBayUserID.Equals(UserID));
-
-            var result = OrderFilter.ToList().Select(o => new
+            if(OrderID.HasValue || !string.IsNullOrEmpty(SourceID) || !string.IsNullOrEmpty(UserID) || Status.HasValue)
             {
-                o.OrderID,
-                o.OrderSource,
-                o.OrderSourceOrderId,
-                o.CompanyID,
-                o.Addresses.CountryCode,
-                Items = o.Items.Where(i => i.IsEnable.Value).Select(i => new { SKU = i.ProductID, QTY = i.Qty.Value, Serials = i.SerialNumbers.Select(s => s.SerialNumber).ToList() }).ToList(),
-                WarehouseID = o.Items.First(i => i.IsEnable.Value).ShipFromWarehouseID
-            }).ToList();
+                var OrderFilter = db.Orders.Include("Packages").Include("Items").AsNoTracking().Where(o => o.StatusCode.Value.Equals((int)OrderStatusCode.Completed));
+                if (OrderID.HasValue) OrderFilter = OrderFilter.Where(o => o.OrderID.Equals(OrderID.Value));
+                if (!string.IsNullOrEmpty(SourceID)) OrderFilter = OrderFilter.Where(o => (o.OrderSource.Value.Equals(1) && o.eBaySalesRecordNumber.Equals(SourceID)) || (o.OrderSource.Value.Equals(4) && o.OrderSourceOrderId.Equals(SourceID)));
+                if (!string.IsNullOrEmpty(UserID)) OrderFilter = OrderFilter.Where(o => o.eBayUserID.Equals(UserID));
+                if (Status.HasValue) OrderFilter = OrderFilter.Where(o => o.Packages.All(p => p.IsEnable.Value && p.ProcessStatus.Equals(Status.Value)));
 
-            return Json(result, JsonRequestBehavior.AllowGet);
+                var result = OrderFilter.ToList().Select(o => new
+                {
+                    o.OrderID,
+                    o.OrderSource,
+                    o.OrderSourceOrderId,
+                    o.CompanyID,
+                    o.Addresses.CountryCode,
+                    Items = o.Items.Where(i => i.IsEnable.Value).Select(i => new { SKU = i.ProductID, QTY = i.Qty.Value, Serials = i.SerialNumbers.Select(s => s.SerialNumber).ToList() }).ToList(),
+                    WarehouseID = o.Items.First(i => i.IsEnable.Value).ShipFromWarehouseID
+                }).ToList();
+
+                return Json(result, JsonRequestBehavior.AllowGet);
+            }
+
+            return Json(false);
         }
 
         private string[] GetMethod(string CarrierData)

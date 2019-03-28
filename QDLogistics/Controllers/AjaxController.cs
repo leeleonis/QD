@@ -2166,7 +2166,7 @@ namespace QDLogistics.Controllers
                 TimeZoneConvert DateTimeConvert = new TimeZoneConvert();
                 EnumData.TimeZone TimeZone = MyHelp.GetTimeZone((int)Session["TimeZone"]);
                 var admins = AdminUsers.GetAll(true).Where(user => results.Select(s => s.UpdateBy).Contains(user.Id)).ToDictionary(user => user.Id, user => user.Name);
-                admins = admins.Concat(new Dictionary<int, string> { { -1, "工作排程" }, { 0, "Weypro" } }).ToDictionary(x => x.Key, x => x.Value);
+                admins = admins.Concat(new Dictionary<int, string> { { -1, "工作排程" }, { 0, "QDAdmin" } }).ToDictionary(x => x.Key, x => x.Value);
 
                 dataList.AddRange(results.OrderByDescending(task => task.ID).Skip(start).Take(length).Select(task => new
                 {
