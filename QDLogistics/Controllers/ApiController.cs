@@ -791,7 +791,8 @@ namespace QDLogistics.Controllers
                     o.OrderSourceOrderId,
                     o.CompanyID,
                     o.Addresses.CountryCode,
-                    Items = o.Items.Where(i => i.IsEnable.Value).Select(i => new { SKU = i.ProductID, QTY = i.Qty.Value, Serials = i.SerialNumbers.Select(s => s.SerialNumber).ToList() }).ToList(),
+                    o.FinalShippingFee,
+                    Items = o.Items.Where(i => i.IsEnable.Value).Select(i => new { SKU = i.ProductID, QTY = i.Qty, i.UnitPrice, Serials = i.SerialNumbers.Select(s => s.SerialNumber).ToList() }).ToList(),
                     WarehouseID = o.Items.First(i => i.IsEnable.Value).ShipFromWarehouseID
                 }).ToList();
 
