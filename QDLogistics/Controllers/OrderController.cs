@@ -686,7 +686,7 @@ namespace QDLogistics.Controllers
 
                                     if (package.Orders.StatusCode.Value.Equals((int)orderData.StatusCode) && package.Orders.PaymentStatus.Value.Equals((int)orderData.PaymentStatus))
                                     {
-                                        if (directLineList.Any(d => d.ID.Equals(label.Box.DirectLine) && !d.Abbreviation.Equals("IDS (US)")))
+                                        if (directLineList.Any(d => d.ID.Equals(label.Box.DirectLine)))
                                         {
                                             if (string.IsNullOrEmpty(package.TrackingNumber))
                                             {
@@ -714,7 +714,24 @@ namespace QDLogistics.Controllers
                                             if (paymentDate.DayOfWeek == DayOfWeek.Saturday) paymentDate = paymentDate.AddDays(2);
                                             if (paymentDate.DayOfWeek == DayOfWeek.Sunday) paymentDate = paymentDate.AddDays(1);
 
-                                            if (statusList.Contains(label.Box.ShippingStatus) && DateTime.Compare(today, paymentDate) > 0)
+                                            if (directLineList.Any(d => d.ID.Equals(label.Box.DirectLine) && d.Abbreviation.Equals("IDS (US)")))
+                                            {
+                                                if (!string.IsNullOrEmpty(package.TrackingNumber))
+                                                {
+                                                    ThreadTask syncTask = new ThreadTask(string.Format("Direct Line 訂單【{0}】SC更新", package.OrderID));
+                                                    syncTask.AddWork(factory.StartNew(() =>
+                                                    {
+                                                        syncTask.Start();
+                                                        SyncProcess sync = new SyncProcess(session);
+                                                        return sync.Update_Tracking(package);
+                                                    }));
+
+                                                    label.Status = (byte)EnumData.LabelStatus.完成;
+                                                    Label.Update(label, label.LabelID);
+                                                    Label.SaveChanges();
+                                                }
+                                            }
+                                            else if (statusList.Contains(label.Box.ShippingStatus) && DateTime.Compare(today, paymentDate) > 0)
                                             {
                                                 if (string.IsNullOrEmpty(package.TrackingNumber))
                                                 {

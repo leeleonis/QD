@@ -166,7 +166,7 @@
         var $typeSelect = $('#select-type'), $typeMethodSelect = $('#select-typeMethod'), $methodSelect = $('#select-method'),
             $shipBtn = $("#btn-ship"), $pickWin = $('#win-pick'), $serialDialog = $('#dialog-serial'), $serialInput = $('#input-serial'),
             $orderDialog = $('#dialog-order'), $orderInput = $('#input-order'), $recycleDialog = $('#dialog-recycle'), $labelErrorMsg = $('#msg-labelError'), $labelInput = $('#input-label'),
-            $boxInfo = $('#info-box'), $pickupTable = $('#table-pickup'), $boxTable = $('#table-box');
+            $boxInfo = $('#info-box'), $pickupTable = $('#table-pickup'), $boxTable = $('#table-box'), $boxID;
 
         var isSync = false, taskID = null, now = undefined;
 
@@ -254,7 +254,9 @@
             });
 
             $shipBtn.click(function () {
-                if(!ProductSerialData.Is_Init()) return alert("尚未預載資料!");
+                if (!ProductSerialData.Is_Init()) return alert("尚未預載資料!");
+                $typeSelect.attr('disabled', 'disabled');
+                $methodSelect.attr('disabled', 'disabled');
 
                 ProductSerialData.Get_Box();
 
@@ -311,7 +313,7 @@
             $dataGrid = $("#DataGrid").datagrid({
                 title: "未出貨包裏 列表",
                 idField: "BoxID",
-                url: "@Url.Action("getBoxData", "directLine")",
+                url: "@Url.Action("GetBoxData", "DirectLine")",
                 queryParams: {
                     Status: 0
                 },
@@ -338,9 +340,16 @@
                     { field: "TotalWeight", title: "Total Weight", width: 80, align: "center", sortable: false },
                     { field: "WITID", title: "SC WIT ID", width: 150, align: "center", sortable: false },
                     { field: "Tracking", title: "Tracking", width: 150, align: "center", sortable: false },
-                    { field: "Status", title: "Status", width: 100, align: "center", sortable: false },
+                    { field: "Status", title: "Status", width: 80, align: "center", sortable: false },
                     { field: "Type", title: "Type", width: 150, align: "center", sortable: false },
-                    { field: "Note", title: "Notes", width: 250, align: "center", sortable: false }
+                    { field: "Note", title: "Notes", width: 250, align: "center", sortable: false },
+                    {
+                        field: "Action", title: "", width: 80, align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            return row.IsReserved ? "<button type='button' class='btn btn-default btn-sm' onClick='openBox(" + row.DirectLine + "," + row.Method + ",\"" + row.BoxID + "\")'>開啟保留</button>" : '';
+                        }
+                    }
+
                 ]],
                 onBeforeSelect: function () {
                     return false
@@ -359,6 +368,17 @@
                 afterPageTest: "頁，共 {pages} 頁",
                 displayMsg: "顯示 {from} 到 {to} 筆資料，共 {total} 筆資料"
             });
+        }
+
+        function openBox(type, method, boxID) {
+            $typeSelect.find("option[value='" + type + "']").attr('selected', true).trigger('change');
+            $methodSelect.find("option[value='" + method + "']").attr('selected', true).trigger('change');
+            ProductSerialData.Get_Box(boxID);
+
+            $typeSelect.attr('disabled', 'disabled');
+            $methodSelect.attr('disabled', 'disabled');
+            $serialDialog.dialog('open');
+            $serialInput.textbox('textbox').focus();
         }
 
         function printPickUpList() {
@@ -432,6 +452,22 @@
                 ajaxUrl(url, 'get', { firstMile: $methodSelect.val(), type: $typeSelect.val(), boxID:boxID }).done(function (response) {
                     if (response.status) {
                         $boxInfo.html(response.data.info);
+                        $boxID = $('#text-boxID');
+
+                        $("#btn-printLabel").click(function () { CheckLabel('Label'); });
+                        $("#btn-printAWB").click(function () { CheckLabel('AWB') });
+                        $("#btn-reserveBox").click(function () {
+                            var url = '@Url.Action("ReserveBox", "directLine")';
+                            ajaxUrl(url, 'post', { BoxID: $boxID.text() }).done(function (response) {
+                                if (response['status']) {
+                                    alert('已完成包留!');
+                                    ProductSerialData.Refresh_Page();
+                                } else {
+                                    alert(response['message']);
+                                }
+                            });
+                        });
+                        $("#btn-addPackage").click(function () { CheckLabel('Package') });
 
                         boxOrderList.rows = [];
                         if (response.data.list.length > 0) {
@@ -608,7 +644,7 @@
                 $('#text-weight').text(weight);
 
                 var url = '@Url.Action("orderPicked", "directLine")';
-                ajaxUrl(url, 'post', { boxID: $('#text-boxID').text(), picked: picked, serials: serials }).done(function(response){
+                ajaxUrl(url, 'post', { boxID: $boxID.text(), picked: picked, serials: serials }).done(function(response){
                     if (response['status']) {
                         if (retry) error('訂單【' + gb_OrderID + '】更新失敗，資料已重新寄送!');
                         print($.param(response.data, true));
@@ -750,6 +786,55 @@
                 return false;
             }
 
+            var CheckLabel = function (type) {
+                $recycleDialog.dialog('close');
+                $recycleDialog.dialog('open');
+                $labelInput.val('').focus().unbind("keypress");;
+                $labelInput.keypress(function (event) {
+                    if (event.keyCode == 13) {
+                        var labelID = $labelInput.val();
+                        if (isEmpty(labelID)) return alert('不可為空!');
+
+                        switch (type) {
+                            case "Label":
+                            case "AWB":
+                                var url = '@Url.Action("CheckLabel", "DirectLine")';
+                                ajaxUrl(url, 'post', { LabelID: $labelInput.val(), BoxID: $boxID.text(), Type: type }).done(function (response) {
+                                    if (response['status']) {
+                                        if (!isEmpty(response.message) && type == 'AWB') {
+                                            if (confirm(response.message)) {
+                                                MoveLabel(labelID, 'MoveOut');
+                                            }
+                                        } else {
+                                            print($.param({ fileName: response.data['fileName'], filePath: response.data['filePath'], amount: response.data['amount'], printerName: response.data['printerName'] }, true));
+                                        }
+                                    } else {
+                                        alert(response['message']);
+                                    }
+                                });
+                                break;
+                            case "Package":
+                                MoveLabel(labelID, 'MoveIn');
+                                break;
+                        }
+
+                        $labelInput.val('');
+                    }
+                });
+            };
+
+            var MoveLabel = function (labelID, action) {
+                var url = '@Url.Action("MoveLabel", "directLine")';
+                ajaxUrl(url, 'post', { LabelID: labelID, BoxID: $boxID.text(), Action: action }).done(function (response) {
+                    if (response['status']) {
+                        alert('Success!');
+                        ProductSerialData.Get_Box($boxID.text());
+                    } else {
+                        alert(response['message']);
+                    }
+                });
+            }
+
             return {
                 Is_Init: function(){
                     return isInit;
@@ -807,11 +892,11 @@
 
                     isSaving = true;
                     var url = '@Url.Action("saveBox", "directLine")';
-                    ajaxUrl(url, 'post', { boxID: $('#text-boxID').text(), boxNo: parseInt($('#input-boxNo').val()) }).done(function (response) {
+                    ajaxUrl(url, 'post', { boxID: $boxID.text(), boxNo: parseInt($('#input-boxNo').val()) }).done(function (response) {
                         if (response.status) {
                             if (!isEmpty(response.data.boxID)) {
                                 ProductSerialData.Get_Box(response.data.boxID);
-                            } else {                                
+                            } else {
                                 if (response.data.fileList.length > 0) {
                                     var file = response.data.fileList[0];
                                     print($.param({ fileName: file['fileName'], filePath: file['filePath'], amount: file['amount'], printerName: file['printerName'] }, true));
@@ -823,7 +908,7 @@
                                     var i = 0;
                                     $labelErrorMsg.html(errorList[i].ErrorMsg);
                                     $recycleDialog.dialog('open');
-                                    $labelInput.focus();
+                                    $labelInput.val('').focus().unbind("keypress");;
                                     $labelInput.keypress(function (event) {
                                         if (event.keyCode == 13) {
                                             if (isEmpty($labelInput.val())) return alert('不可為空!');

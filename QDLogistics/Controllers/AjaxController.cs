@@ -2126,7 +2126,7 @@ namespace QDLogistics.Controllers
                 }
             }
 
-            return Content(JsonConvert.SerializeObject(new { option = option }), "appllication/json");
+            return Content(JsonConvert.SerializeObject(new { option }), "appllication/json");
         }
 
         [CheckSession]

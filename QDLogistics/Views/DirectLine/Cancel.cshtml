@@ -62,7 +62,7 @@
         var $dispatchDialog = $('#dialog-dispatch'), $dataForm = $('#form-data'), $methodSelect = $('#select-method'), $submitBtn = $('#btn-submit');
 
         $(function () {
-            var data = { optionType: ['Warehouse'] };
+            var data = { optionType: ['Warehouse', 'Dispatch'] };
             ajaxUrl("@Url.Action("getSelectOption", "directLine")", 'post', data).done(function (response) {
                 if (response['status']) {
                     selectOption = response['data'];
@@ -123,6 +123,8 @@
                         formatter: function (value, row, index) {
                             if (!isEmpty(row.WarehouseName)) {
                                 return "<button type='button' class='btn btn-default btn-sm' onclick='dispatchLabel(\"" + row.LabelID + "\")' " + (row.IsUsed ? 'disabled' : '') + ">Dispatch</button>";
+                            } else {
+                                return value;
                             }
                         }
                     }
@@ -230,7 +232,8 @@
                 ProductName: $('.filterColumn .s-productName').val(),
                 SerialNumber: $('.filterColumn .s-serialNumber').val(),
                 WarehouseID: $('.filterColumn .s-warehouseID').val(),
-                CreateDate: $('.filterColumn .s-createDate').val()
+                CreateDate: $('.filterColumn .s-createDate').val(),
+                Dispatch: $('.filterColumn .s-dispatch').val()
             };
         }
 
@@ -246,7 +249,8 @@
                 ProductName: "<input type='text' class='form-control s-productName' value='" + (!isEmpty(filterValue['ProductName']) ? filterValue['ProductName'] : '') + "'>",
                 SerialNumber: "<input type='text' class='form-control s-serialNumber' value='" + (!isEmpty(filterValue['SerialNumber']) ? filterValue['SerialNumber'] : '') + "'>",
                 WarehouseID: "<select class='form-control s-warehouseID'><option value=''>全部</option>" + setSelectOption(selectOption['Warehouse'], filterValue['WarehouseID']) + "</select>",
-                CreateDate: "<input type='text' class='form-control datepicker s-createDate' value='" + (!isEmpty(filterValue['CreateDate']) ? filterValue['CreateDate'] : '') + "'>"
+                CreateDate: "<input type='text' class='form-control datepicker s-createDate' value='" + (!isEmpty(filterValue['CreateDate']) ? filterValue['CreateDate'] : '') + "'>",
+                Action: "<select class='form-control s-dispatch'><option value=''>全部</option>" + setSelectOption(selectOption['Dispatch'], filterValue['Dispatch']) + "</select>"
             };
         }
 

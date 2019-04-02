@@ -410,6 +410,7 @@ namespace QDLogistics.Controllers
                 var dd = results.FirstOrDefault(d => string.IsNullOrEmpty(d.BoxID));
                 dataList.AddRange(results.Select(data => new
                 {
+                    data.IsReserved,
                     data.BoxID,
                     data.SupplierBoxID,
                     CreateDate = timeZoneConvert.InitDateTime(data.Create_at, EnumData.TimeZone.UTC).ConvertDateTime(TimeZone).ToString("MM/dd/yyyy<br />hh:mm tt"),
@@ -418,6 +419,8 @@ namespace QDLogistics.Controllers
                     BoxQty = data.BoxNo,
                     TotalWeight = itemGroup.Any(i => i.Key.Equals(data.BoxID)) ? itemGroup[data.BoxID].Sum(i => i.Qty * ((float)(SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight) / 1000)) : 0,
                     data.WITID,
+                    data.DirectLine,
+                    Method = data.FirstMileMethod,
                     Carrier = carrierName.ContainsKey(data.FirstMileMethod) ? carrierName[data.FirstMileMethod] : "",
                     Tracking = data.TrackingNumber ?? "",
                     Status = Enum.GetName(typeof(EnumData.DirectLineStatus), data.ShippingStatus),
@@ -530,6 +533,7 @@ namespace QDLogistics.Controllers
                 DateTime dateTO = timeZoneConvert.Utc.AddDays(1);
                 LabelFilter = LabelFilter.Where(l => l.Create_at.CompareTo(dateFrom) >= 0 && l.Create_at.CompareTo(dateTO) < 0);
             }
+            if (filter.Dispatch.HasValue) LabelFilter = LabelFilter.Where(l => l.IsUsed.Equals(bool.Parse(filter.Dispatch.ToString())));
 
             string[] Skus = LabelFilter.Select(l => l.Sku).Distinct().ToArray();
             var SkuFilter = db.Skus.AsNoTracking().Where(s => s.IsEnable.Value && Skus.Contains(s.Sku));
@@ -632,6 +636,9 @@ namespace QDLogistics.Controllers
                             break;
                         case "DirectLineBoxType":
                             optionList.Add(type, Enum.GetValues(typeof(EnumData.DirectLineBoxType)).Cast<EnumData.DirectLineBoxType>().Select(t => new { text = EnumData.BoxTypeList()[t], value = (byte)t }).ToArray());
+                            break;
+                        case "Dispatch":
+                            optionList.Add(type, Enum.GetValues(typeof(EnumData.YesNo)).Cast<EnumData.YesNo>().Select(s => new { text = s.ToString().Equals("Yes") ? "Dispatch" : "Undispatch", value = (byte)s }).ToArray());
                             break;
                     }
                 }
@@ -1316,6 +1323,7 @@ namespace QDLogistics.Controllers
 
                 MyHelp.Log("Box", box.BoxID, string.Format("Box【{0}】儲存資料", box.BoxID), Session);
 
+                box.IsReserved = false;
                 box.ShippingStatus = (byte)EnumData.DirectLineStatus.運輸中;
                 db.Entry(box).State = System.Data.Entity.EntityState.Modified;
             }
@@ -2104,29 +2112,44 @@ namespace QDLogistics.Controllers
             {
                 if (FileList == null || !FileList.Any()) throw new Exception("沒有上傳檔案!");
 
-                foreach (var file in FileList.Where(f => f.ContentLength > 0))
+                TaskFactory Factory = System.Web.HttpContext.Current.Application.Get("TaskFactory") as TaskFactory;
+                ThreadTask threadTask = new ThreadTask(string.Format("上傳 {0} 筆 AirWaybill", FileList.Count(f => f.ContentLength > 0)));
+
+                lock (Factory)
                 {
-                    try
+                    threadTask.AddWork(Factory.StartNew(Session =>
                     {
-                        var fileExtension = Path.GetExtension(file.FileName);
-                        var fileName = Path.GetFileNameWithoutExtension(file.FileName);
+                        threadTask.Start();
+                        string message = "";
 
-                        if (!fileExtension.ToLower().Equals(".pdf")) throw new Exception(string.Format("此 {0} 不是PDF!", fileName));
+                        foreach (var file in FileList.Where(f => f.ContentLength > 0))
+                        {
+                            try
+                            {
+                                var fileExtension = Path.GetExtension(file.FileName);
+                                var fileName = Path.GetFileNameWithoutExtension(file.FileName);
 
-                        var package = db.Packages.FirstOrDefault(p => p.TagNo.Equals(fileName));
+                                if (!fileExtension.ToLower().Equals(".pdf")) throw new Exception(string.Format("此 {0} 不是PDF!", fileName));
 
-                        if (package == null) throw new Exception(string.Format("此 {0} 找不到訂單!", fileName));
+                                var package = db.Packages.FirstOrDefault(p => p.TagNo.Equals(fileName));
 
-                        var filePath = Server.MapPath("~/Uploads/" + package.FilePath);
-                        if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
+                                if (package == null) throw new Exception(string.Format("此 {0} 找不到訂單!", fileName));
 
-                        var path = Path.Combine(filePath, "AirWaybill.pdf");
-                        file.SaveAs(path);
-                    }
-                    catch (Exception e)
-                    {
-                        Msg.Add(e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message);
-                    }
+                                var filePath = Server.MapPath("~/FileUploads/" + package.FilePath);
+                                if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
+
+                                var path = Path.Combine(filePath, "AirWaybill.pdf");
+                                file.SaveAs(path);
+                            }
+                            catch (Exception e)
+                            {
+                                Msg.Add(e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message);
+                            }
+                        }
+
+                        message = string.Join(", ", Msg.ToArray());
+                        return message;
+                    }, Session));
                 }
             }
             catch (Exception e)
@@ -2143,6 +2166,122 @@ namespace QDLogistics.Controllers
             return Json(result, JsonRequestBehavior.AllowGet);
         }
 
+        [HttpPost]
+        public ActionResult ReserveBox(string BoxID)
+        {
+            AjaxResult result = new AjaxResult();
+
+            try
+            {
+                var boxData = db.Box.Find(BoxID);
+
+                if (boxData == null) throw new Exception("Not find Box");
+
+                foreach (var box in db.Box.Where(b => b.IsEnable && b.MainBox.Equals(boxData.MainBox)))
+                {
+                    box.IsReserved = true;
+                }
+
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                result.status = false;
+                result.message = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+            }
+
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpPost]
+        public ActionResult CheckLabel(string LabelID, string BoxID, string Type)
+        {
+            AjaxResult result = new AjaxResult();
+
+            try
+            {
+                var package = db.Packages.FirstOrDefault(p => p.TagNo.Equals(LabelID));
+
+                if (package == null) throw new Exception("找不到此標籤號碼!");
+                if (string.IsNullOrEmpty(package.BoxID) || !package.BoxID.Equals(BoxID)) throw new Exception(string.Format("此訂單【{0}】非 {1} 包裏!", package.OrderID, BoxID));
+
+                string basePath = HostingEnvironment.MapPath("~/FileUploads");
+
+                switch (Type)
+                {
+                    case "Label":
+                        result.data = new
+                        {
+                            fileName = new string[] { "Label.pdf" },
+                            filePath = new string[] { Path.Combine(basePath, package.FilePath, "Label.pdf") },
+                            amount = new int[] { 1 },
+                            printerName = package.Method.PrinterName
+                        };
+                        break;
+                    case "AWB":
+                        if (!System.IO.File.Exists(Path.Combine(basePath, package.FilePath, "AirWaybill.pdf")))
+                        {
+                            result.message = string.Format("訂單【{0}】沒有找到AWB，是否要將此包裏移出 {1} ?", package.OrderID, BoxID);
+                        }
+                        else
+                        {
+                            result.data = new
+                            {
+                                fileName = new string[] { "AirWaybill.pdf" },
+                                filePath = new string[] { Path.Combine(basePath, package.FilePath, "AirWaybill.pdf") },
+                                amount = new int[] { 1 },
+                                printerName = package.Method.PrinterName
+                            };
+                        }
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                result.status = false;
+                result.message = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+            }
+
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpPost]
+        public ActionResult MoveLabel(string LabelID, string BoxID, string Action)
+        {
+            AjaxResult result = new AjaxResult();
+
+            try
+            {
+                var package = db.Packages.FirstOrDefault(p => p.TagNo.Equals(LabelID));
+
+                if (package == null) throw new Exception("找不到此標籤號碼!");
+
+                switch (Action)
+                {
+                    case "MoveIn":
+                        package.BoxID = BoxID;
+                        package.Label.BoxID = BoxID;
+                        package.ProcessStatus = (byte)EnumData.ProcessStatus.待出貨;
+                        break;
+                    case "MoveOut":
+                        package.BoxID = null;
+                        package.Label.BoxID = null;
+                        package.ProcessStatus = (byte)EnumData.ProcessStatus.包貨;
+                        break;
+                }
+
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                result.status = false;
+                result.message = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+            }
+
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
+
         public void SendMailToCarrier(List<Box> boxList, ShippingMethod method, DirectLine directLine, bool reSend = false)
         {
             PickProduct = new GenericRepository<PickProduct>(db);
@@ -2153,7 +2292,8 @@ namespace QDLogistics.Controllers
             {
                 string boxID = boxList[0].MainBox;
                 DateTime create_at = boxList[0].Create_at;
-                List<Packages> packageList = db.Packages.Where(p => pickList.Select(pick => pick.PackageID.Value).ToArray().Contains(p.ID)).ToList();
+                var packageIDs = pickList.Select(pick => pick.PackageID.Value).Distinct().ToArray();
+                List<Packages> packageList = db.Packages.Where(p => packageIDs.Contains(p.ID)).ToList();
 
                 string basePath = HostingEnvironment.MapPath("~/FileUploads");
                 string filePath = Path.Combine(basePath, "export", "box", create_at.ToString("yyyy/MM/dd"), boxID);
@@ -2408,6 +2548,8 @@ namespace QDLogistics.Controllers
 
                     if (!SCWS.Is_login) throw new Exception("SC is not login");
 
+                    MyHelp.Log("Box", BoxID, BoxID + "Confirm!");
+
                     foreach (var package in boxList.SelectMany(b => b.Packages.Where(p => p.IsEnable.Value)))
                     {
                         if (!string.IsNullOrEmpty(package.TrackingNumber))
@@ -2427,7 +2569,7 @@ namespace QDLogistics.Controllers
                     db.SaveChanges();
                     Response.Write("Success!");
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     MyHelp.Log("Box", BoxID, "Confirm error: " + e.Message);
                     Response.Write("Error!");
@@ -2463,6 +2605,7 @@ namespace QDLogistics.Controllers
             private string SkuField { get; set; }
             private string ProductNameField { get; set; }
             private string SerialNumberField { get; set; }
+            private bool DispatchField { get; set; }
 
             public bool? IsUsed { get; set; }
             public string OrderID { get { return this.OrderIDField; } set { this.OrderIDField = !string.IsNullOrEmpty(value) ? value.Trim() : value; } }
@@ -2475,6 +2618,7 @@ namespace QDLogistics.Controllers
             public string SerialNumber { get { return this.SerialNumberField; } set { this.SerialNumberField = !string.IsNullOrEmpty(value) ? value.Trim() : value; } }
             public int? WarehouseID { get; set; }
             public DateTime? CreateDate { get; set; }
+            public bool? Dispatch { get { return this.DispatchField; } set { this.DispatchField = bool.Parse(value.ToString()); } }
 
             public string Sort { get; set; }
             public string Order { get; set; }

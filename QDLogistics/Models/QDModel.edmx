@@ -78,6 +78,7 @@
             <PropertyRef Name="BoxID" />
           </Key>
           <Property Name="IsEnable" Type="bit" Nullable="false" />
+          <Property Name="IsReserved" Type="bit" Nullable="false" />
           <Property Name="BoxID" Type="nvarchar" MaxLength="50" Nullable="false" />
           <Property Name="MainBox" Type="nvarchar" MaxLength="50" />
           <Property Name="SupplierBoxID" Type="nvarchar" MaxLength="50" />
@@ -1930,6 +1931,7 @@
             <PropertyRef Name="BoxID" />
           </Key>
           <Property Name="IsEnable" Type="Boolean" Nullable="false" />
+          <Property Name="IsReserved" Type="Boolean" Nullable="false" />
           <Property Name="BoxID" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="MainBox" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="SupplierBoxID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
@@ -2639,6 +2641,7 @@
           <EntitySetMapping Name="Box">
             <EntityTypeMapping TypeName="QDLogisticsModel.Box">
               <MappingFragment StoreEntitySet="Box">
+                <ScalarProperty Name="IsReserved" ColumnName="IsReserved" />
                 <ScalarProperty Name="DeliveryDate" ColumnName="DeliveryDate" />
                 <ScalarProperty Name="DeliveryNote" ColumnName="DeliveryNote" />
                 <ScalarProperty Name="PickUpDate" ColumnName="PickUpDate" />

@@ -26,6 +26,20 @@
         <td id="text-carrier">@method.Name</td>
         <td>Complete Boxes</td>
         <td><span id="text-currentNo">@Model.CurrentNo</span> of <span id="text-boxNo">@Model.BoxNo</span></td>
-        <td colspan="2"></td>
+        <td class="no-padding" colspan="2">
+            <button type="button" class="btn btn-default btn-sm" id="btn-printLabel">補印Label</button>
+            @if (Model.DirectLine.Equals(4))
+            {
+                <button type="button" class="btn btn-default btn-sm" id="btn-printAWB">補印AWB</button>
+                if (!Model.IsReserved)
+                {
+                    <button type="button" class="btn btn-default btn-sm" id="btn-reserveBox">保留Box</button>
+                }
+                else
+                {
+                    <button type="button" class="btn btn-default btn-sm" id="btn-addPackage">加入包裏</button>
+                }
+            }
+        </td>
     </tr>
 </table>

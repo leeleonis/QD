@@ -24,6 +24,7 @@ namespace QDLogistics.Models
         }
     
         public bool IsEnable { get; set; }
+        public bool IsReserved { get; set; }
         public string BoxID { get; set; }
         public string MainBox { get; set; }
         public string SupplierBoxID { get; set; }

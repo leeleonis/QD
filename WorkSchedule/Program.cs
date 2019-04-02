@@ -41,7 +41,7 @@ namespace WorkSchedule
 
             if((hour.Equals(3) || hour.Equals(8)) && min.Equals(55))
             {
-                RequestJob(Host, "DirectLine/SendWaitingOrder", new Dictionary<string, object>() { { "DL", "IDS" } });
+                RequestJob(Host, "DirectLine/SendWaitingOrder", new Dictionary<string, object>() { { "DL", "IDS US" } });
             }
 
             if (hour.Equals(15) && min.Equals(0))

@@ -890,6 +890,7 @@ namespace QDLogistics.Controllers
             excelFile.AddMapping<Skus>(s => s.PurchaseInvoice, "PurchaseInvoice");
             excelFile.AddMapping<Skus>(s => s.Weight, "Weight");
             excelFile.AddMapping<Skus>(s => s.ShippingWeight, "ShippingWeight");
+            excelFile.AddMapping<Skus>(s => s.UPC, "UPC");
             var excelContent = excelFile.Worksheet<Skus>("品號");
 
             int errorCount = 0;

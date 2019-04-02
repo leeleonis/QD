@@ -7,6 +7,7 @@ namespace QDLogistics.Commons
 {
     public static class EnumData
     {
+        public enum YesNo { No, Yes };
         public enum ProcessStatus { 訂單管理, 待出貨, 包貨, 已出貨, 鎖定中 };
         public static Dictionary<ProcessStatus, string> ProcessStatusList()
         {

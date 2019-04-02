@@ -29,14 +29,14 @@ namespace QDLogistics.Commons
         {
             MyHelp.Log("Box", null, string.Format("取得當前未出貨的{0} Box", directLine.Abbreviation), Session);
 
-            boxData = db.Box.Where(b => b.IsEnable && b.DirectLine.Equals(directLine.ID) && b.WarehouseFrom.Equals(warehouseID) && b.FirstMileMethod.Equals(methodID) && b.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.未發貨))
+            boxData = db.Box.Where(b => b.IsEnable && !b.IsReserved && b.DirectLine.Equals(directLine.ID) && b.WarehouseFrom.Equals(warehouseID) && b.FirstMileMethod.Equals(methodID) && b.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.未發貨))
                 .OrderByDescending(b => b.Create_at).FirstOrDefault();
             if (boxData == null)
             {
                 MyHelp.Log("Box", null, string.Format("開始建立【{0}】新Box", directLine.Abbreviation), Session);
 
                 string boxID = string.Format("{0}-{1}", directLine.Abbreviation, TimeZoneConvert.Utc.ToString("yyyyMMdd"));
-                int count = db.Box.AsNoTracking().Count(b => b.IsEnable && b.DirectLine.Equals(directLine.ID) && b.BoxID.Contains(boxID)) + 1;
+                int count = db.Box.AsNoTracking().Where(b => b.IsEnable && b.DirectLine.Equals(directLine.ID) && b.BoxID.Contains(boxID)).Select(b => b.MainBox).Distinct().Count() + 1;
                 byte[] Byte = BitConverter.GetBytes(count);
                 Byte[0] += 64;
                 boxData = new Box()
