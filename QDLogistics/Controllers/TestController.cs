@@ -583,9 +583,30 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public void Easy()
+        public void GetProductType()
         {
-            var result = EnumData.StateAbbreviationExpand("FLORIDA");
+            SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
+
+            foreach (var type in SCWS.Get_ProductType(163))
+            {
+                var productType = db.ProductType.Find(type.ID);
+                if(productType != null)
+                {
+                    productType.CompanyID = 163;
+                }
+                else
+                {
+                    db.ProductType.Add(new Models.ProductType()
+                    {
+                        IsEnable = true,
+                        ID = type.ID,
+                        CompanyID = 163,
+                        ProductTypeName = type.ProductTypeName
+                    });
+                }
+            }
+
+            db.SaveChanges();
         }
     }
 }

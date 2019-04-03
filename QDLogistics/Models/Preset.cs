@@ -42,6 +42,10 @@ namespace QDLogistics.Models
         public byte AmountType { get; set; }
         public string ShippingMethod { get; set; }
         public string Sku { get; set; }
+        public string Suffix { get; set; }
+        public int ProductType { get; set; }
+        public int Brand { get; set; }
+        public Nullable<bool> Battery { get; set; }
         public int Weight { get; set; }
         public byte WeightType { get; set; }
     }

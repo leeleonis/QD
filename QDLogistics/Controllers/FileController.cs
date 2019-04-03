@@ -909,6 +909,7 @@ namespace QDLogistics.Controllers
                 sku.PurchaseInvoice = row.PurchaseInvoice;
                 sku.Weight = row.Weight;
                 sku.ShippingWeight = row.ShippingWeight;
+                sku.UPC = row.UPC;
 
                 //if (string.IsNullOrWhiteSpace(row.Sku)) errorMessage.Append("Sku - 不可空白.");
 

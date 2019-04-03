@@ -95,10 +95,6 @@ namespace QDLogistics.Controllers.Website
 
         public ActionResult AjaxOption()
         {
-            IRepository<Companies> Companies = new GenericRepository<Companies>(db);
-            IRepository<Services> Services = new GenericRepository<Services>(db);
-            IRepository<Warehouses> Warehouses = new GenericRepository<Warehouses>(db);
-
             JsonResult result = new JsonResult();
             Dictionary<string, string> sourceList = new Dictionary<string, string>();
 
@@ -114,10 +110,13 @@ namespace QDLogistics.Controllers.Website
                 {
                     countryList = MyHelp.GetCountries().ToDictionary(c => c.ID, c => c.Name),
                     stateList = stateList.ToDictionary(s => s),
-                    companyList = Companies.GetAll(true).ToDictionary(c => c.ID.ToString(), c => c.CompanyName),
+                    companyList = db.Companies.AsNoTracking().ToDictionary(c => c.ID.ToString(), c => c.CompanyName),
                     sourceList,
-                    methodList = Services.GetAll(true).Where(s => s.IsEnable.Equals(true)).ToDictionary(s => s.ServiceCode, s => s.ServiceCode),
-                    warehouseList = Warehouses.GetAll(true).Where(w => w.IsEnable.Equals(true) && w.IsSellable.Equals(true)).OrderByDescending(w => w.IsDefault).OrderBy(w => w.ID).ToDictionary(w => w.ID.ToString(), w => w.Name)
+                    methodList = db.Services.AsNoTracking().Where(s => s.IsEnable.Value).ToDictionary(s => s.ServiceCode, s => s.ServiceCode),
+                    warehouseList = db.Warehouses.AsNoTracking().Where(w => w.IsEnable.Value && w.IsSellable.Value).OrderByDescending(w => w.IsDefault.Value).OrderBy(w => w.ID).ToDictionary(w => w.ID.ToString(), w => w.Name),
+                    productTypeList = db.ProductType.AsNoTracking().Where(t => t.IsEnable && t.CompanyID.Equals(163)).OrderBy(t => t.ProductTypeName).ToDictionary(t => t.ID.ToString(), t => t.ProductTypeName),
+                    brandList = db.Manufacturers.AsNoTracking().Where(b => b.IsEnable.Value && b.CompanyID.Value.Equals(163)).OrderBy(b => b.ManufacturerName).ToDictionary(b => b.ID.ToString(), b => b.ManufacturerName),
+                    battery = new Dictionary<string, string>() { { "1", "Yes" }, { "0", "No" } }
                 };
             }
             catch (Exception e)
@@ -154,8 +153,6 @@ namespace QDLogistics.Controllers.Website
 
         public ActionResult AjaxData(int draw, List<Dictionary<string, string>> order, int start, int length)
         {
-            Preset = new GenericRepository<Preset>(db);
-
             var total = 0;
             List<object> dataList = new List<object>();
 
@@ -194,6 +191,18 @@ namespace QDLogistics.Controllers.Website
                         results = MyHelp.SetOrder(results, p => p.Sku, dir);
                         break;
                     case 14:
+                        results = MyHelp.SetOrder(results, p => p.Suffix, dir);
+                        break;
+                    case 15:
+                        results = MyHelp.SetOrder(results, p => p.ProductType, dir);
+                        break;
+                    case 16:
+                        results = MyHelp.SetOrder(results, p => p.Brand, dir);
+                        break;
+                    case 17:
+                        results = MyHelp.SetOrder(results, p => p.Battery, dir);
+                        break;
+                    case 18:
                         results = MyHelp.SetOrder(results, p => p.Weight, dir);
                         break;
                     default:
@@ -228,6 +237,10 @@ namespace QDLogistics.Controllers.Website
                         amountType = preset.AmountType,
                         method = preset.ShippingMethod,
                         sku = preset.Sku,
+                        suffix = preset.Suffix,
+                        productType = preset.ProductType,
+                        brand = preset.Brand,
+                        battery = preset.Battery,
                         weight = preset.Weight,
                         weightType = preset.WeightType,
                         warehouse = preset.WarehouseID,

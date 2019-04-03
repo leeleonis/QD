@@ -64,7 +64,11 @@
                                             <th width="150" class="text-center">Sales channel</th>
                                             <th width="120" class="text-center">Item QTY per order</th>
                                             <th width="200" class="text-center">Shipping Method</th>
+                                            <th width="100" class="text-center">SKU</th>
                                             <th width="100" class="text-center">Last 3 digits of SKU</th>
+                                            <th width="100" class="text-center">Product Type</th>
+                                            <th width="100" class="text-center">Brand</th>
+                                            <th width="100" class="text-center">Battery</th>
                                             <th width="150" class="text-center">Item shipping weight</th>
                                             <th width="" class="text-center">功能</th>
                                         </tr>
@@ -81,7 +85,7 @@
 @section pagespecific {
     <script type="text/javascript">
         var $Table;
-        var countryList, stateList, companyList, sourceList, methodList, warehouseList;
+        var countryList, stateList, companyList, sourceList, methodList, warehouseList, productTypeList, brandList, battery;
 
         $(document).ready(function () {
             var url = '@Url.RouteUrl("website", new {controller = "preset", action = "ajaxOption"})';
@@ -93,6 +97,9 @@
                     sourceList = response['data']['sourceList'];
                     methodList = response['data']['methodList'];
                     warehouseList = response['data']['warehouseList'];
+                    productTypeList = response.data.productTypeList;
+                    brandList = response.data.brandList;
+                    battery = response.data.battery;
                 }
 
                 dataInit();
@@ -207,6 +214,25 @@
                     }, {
                         data: "sku", render: function (data, type, row, meta) {
                             return "<input class='form-control' id='sku-" + row.id + "' value='" + $.trim(data) + "'>";
+                        }
+                    }, {
+                        data: "suffix", render: function (data, type, row, meta) {
+                            return "<input class='form-control' id='suffix-" + row.id + "' value='" + $.trim(data) + "'>";
+                        }
+                    }, {
+                        data: "productType", render: function (data, type, row, meta) {
+                            var id = 'productType-' + row.id;
+                            return "<select class='form-control' id='" + id + "'><option value=''>不選擇</option>" + setSelectOption(productTypeList, data.toString()) + "</select>";
+                        }
+                    }, {
+                        data: "brand", render: function (data, type, row, meta) {
+                            var id = 'brand-' + row.id;
+                            return "<select class='form-control' id='" + id + "'><option value=''>不選擇</option>" + setSelectOption(brandList, data.toString()) + "</select>";
+                        }
+                    }, {
+                        data: "battery", render: function (data, type, row, meta) {
+                            var id = 'battery-' + row.id;
+                            return "<select class='form-control' id='" + id + "'><option value=''>不選擇</option>" + setSelectOption(battery, !isEmpty(data) ? (data ? '1' : '0') : null) + "</select>";
                         }
                     }, {
                         data: "weight", render: function (data, type, row, meta) {
@@ -336,6 +362,10 @@
                 AmountType: checkValue($('#amountType-' + id).val(), true),
                 ShippingMethod: checkValue($('#method-' + id).val(), false),
                 Sku: checkValue($('#sku-' + id).val(), false),
+                Suffix: checkValue($('#suffix-' + id).val(), false),
+                ProductType: checkValue($('#productType-' + id).val(), true),
+                Brand: checkValue($('#brand-' + id).val(), true),
+                Battery: !isEmpty($('#battery-' + id).val()) ? $('#battery-' + id).val() == '1' : null,
                 Weight: checkValue($('#weight-' + id).val(), true),
                 WeightType: checkValue($('#weightType-' + id).val(), true),
                 WarehouseID: checkValue($('.DTFC_Cloned #warehouse-' + id).val(), true),

@@ -304,7 +304,8 @@ namespace QDLogistics.Commons
 
         private bool Valid(Packages package, Preset preset)
         {
-            List<Items> itemList = package.Items.Where(i => i.IsEnable.Equals(true)).ToList();
+            List<Items> itemList = package.Items.Where(i => i.IsEnable.Value).ToList();
+            List<Skus> skuList = itemList.Select(i => i.Skus).ToList();
 
             int zipCode;
             List<StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
@@ -326,10 +327,14 @@ namespace QDLogistics.Commons
             bool source = preset.SourceID.Equals(0) || preset.SourceID.Equals(Order.OrderSource.Value + 1);
             bool qty = preset.Amount.Equals(0) || Compare(preset.AmountType, preset.Amount, itemList.Sum(i => i.Qty).Value);
             bool method = string.IsNullOrEmpty(preset.ShippingMethod) || preset.ShippingMethod.Equals(Order.ShippingServiceSelected);
-            bool sku = string.IsNullOrEmpty(preset.Sku) || itemList.Any(i => i.ProductID.Substring(i.ProductID.Length - preset.Sku.Length).Equals(preset.Sku));
+            bool sku = string.IsNullOrEmpty(preset.Sku) || itemList.Any(i => i.ProductID.Equals(preset.Sku));
+            bool suffix = string.IsNullOrEmpty(preset.Suffix) || itemList.Any(i => i.ProductID.Substring(i.ProductID.Length - preset.Suffix.Length).Equals(preset.Suffix));
+            bool productType = preset.ProductType.Equals(0) || skuList.Any(s => s.ProductTypeID.Value.Equals(preset.ProductType));
+            bool brand = preset.ProductType.Equals(0) || skuList.Any(s => s.Brand.Value.Equals(preset.Brand));
+            bool battery = !preset.Battery.HasValue || skuList.Any(s => s.Battery.Value.Equals(preset.Battery.Value));
             bool weight = preset.Weight.Equals(0) || Compare(preset.WeightType, preset.Weight, itemList.Sum(i => i.Qty * (SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight)).Value);
 
-            return total && country && state && zipCodeFrom && zipCodeTo && company && source && method && sku && weight;
+            return total && country && state && zipCodeFrom && zipCodeTo && company && source && method && sku && suffix && productType && brand && battery && weight;
         }
 
         private bool Compare(byte type, decimal compare, decimal value)

@@ -421,7 +421,11 @@
           <Property Name="Amount" Type="int" Nullable="false" />
           <Property Name="AmountType" Type="tinyint" Nullable="false" />
           <Property Name="ShippingMethod" Type="nvarchar" MaxLength="100" />
-          <Property Name="Sku" Type="nvarchar" MaxLength="10" />
+          <Property Name="Sku" Type="nvarchar" MaxLength="20" />
+          <Property Name="Suffix" Type="nvarchar" MaxLength="10" />
+          <Property Name="ProductType" Type="int" Nullable="false" />
+          <Property Name="Brand" Type="int" Nullable="false" />
+          <Property Name="Battery" Type="bit" />
           <Property Name="Weight" Type="int" Nullable="false" />
           <Property Name="WeightType" Type="tinyint" Nullable="false" />
         </EntityType>
@@ -431,6 +435,7 @@
           </Key>
           <Property Name="IsEnable" Type="bit" Nullable="false" />
           <Property Name="ID" Type="int" Nullable="false" />
+          <Property Name="CompanyID" Type="int" Nullable="false" />
           <Property Name="ProductTypeName" Type="nvarchar" MaxLength="100" />
           <Property Name="ChtName" Type="nvarchar" MaxLength="100" />
           <Property Name="HSCode" Type="nchar" MaxLength="20" />
@@ -1652,6 +1657,7 @@
           </Key>
           <Property Name="IsEnable" Type="Boolean" Nullable="false" DefaultValue="True" />
           <Property Name="ID" Type="Int32" Nullable="false" />
+          <Property Name="CompanyID" Type="Int32" Nullable="false" />
           <Property Name="ProductTypeName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="true" />
           <NavigationProperty Name="Skus" Relationship="QDLogisticsModel.FK_Skus_ProductType" FromRole="ProductType" ToRole="Skus" />
           <Property Name="ChtName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
@@ -1841,7 +1847,11 @@
           <Property Name="Amount" Type="Int32" Nullable="false" />
           <Property Name="AmountType" Type="Byte" Nullable="false" />
           <Property Name="ShippingMethod" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
-          <Property Name="Sku" Type="String" MaxLength="10" FixedLength="false" Unicode="true" />
+          <Property Name="Sku" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
+          <Property Name="Suffix" Type="String" MaxLength="10" FixedLength="false" Unicode="true" />
+          <Property Name="ProductType" Type="Int32" Nullable="false" />
+          <Property Name="Brand" Type="Int32" Nullable="false" />
+          <Property Name="Battery" Type="Boolean" />
           <Property Name="Weight" Type="Int32" Nullable="false" />
           <Property Name="WeightType" Type="Byte" Nullable="false" />
         </EntityType>
@@ -2473,6 +2483,7 @@
           <EntitySetMapping Name="ProductType">
             <EntityTypeMapping TypeName="QDLogisticsModel.ProductType">
               <MappingFragment StoreEntitySet="ProductType">
+                <ScalarProperty Name="CompanyID" ColumnName="CompanyID" />
                 <ScalarProperty Name="HSCode" ColumnName="HSCode" />
                 <ScalarProperty Name="ChtName" ColumnName="ChtName" />
                 <ScalarProperty Name="ProductTypeName" ColumnName="ProductTypeName" />
@@ -2570,6 +2581,10 @@
           <EntitySetMapping Name="Preset">
             <EntityTypeMapping TypeName="QDLogisticsModel.Preset">
               <MappingFragment StoreEntitySet="Preset">
+                <ScalarProperty Name="Battery" ColumnName="Battery" />
+                <ScalarProperty Name="Brand" ColumnName="Brand" />
+                <ScalarProperty Name="ProductType" ColumnName="ProductType" />
+                <ScalarProperty Name="Suffix" ColumnName="Suffix" />
                 <ScalarProperty Name="ZipCodeTo" ColumnName="ZipCodeTo" />
                 <ScalarProperty Name="ZipCodeFrom" ColumnName="ZipCodeFrom" />
                 <ScalarProperty Name="State" ColumnName="State" />

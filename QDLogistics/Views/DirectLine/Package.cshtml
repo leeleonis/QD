@@ -250,7 +250,7 @@
             });
 
             $("#btn-pick").click(function () {
-                $pickWin.window("open").window("refresh", "@Url.Action("packagePickUpList", "directLine")?directLine=" + $typeSelect.val());
+                $pickWin.window("open").window("refresh", "@Url.Action("packagePickUpList", "directLine")?directLine=" + $typeSelect.val() + "&firstMile=" + $methodSelect.val() + "&methodID=" + $typeMethodSelect.val());
             });
 
             $shipBtn.click(function () {
@@ -315,7 +315,8 @@
                 idField: "BoxID",
                 url: "@Url.Action("GetBoxData", "DirectLine")",
                 queryParams: {
-                    Status: 0
+                    Status: 0,
+                    WarehouseFrom: @route.warehouseId
                 },
                 width: "100%",
                 height: window.screen.availHeight-280,
@@ -383,7 +384,7 @@
 
         function printPickUpList() {
             var url = '@Url.Action("printPickUpList", "directLine")';
-            ajaxUrl(url, 'post', { warehouseId:@route.warehouseId, directLine: $typeSelect.val(), adminId:@route.adminId }).done(function (response) {
+            ajaxUrl(url, 'post', { directLine: $typeSelect.val(), firstMile: $methodSelect.val(), methodID: $typeMethodSelect.val() }).done(function (response) {
                 if(response['status']){
                     print($.param({fileName: response['fileName'], filePath: response['filePath'], amount: response['amount']}, true));
                 }

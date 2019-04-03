@@ -716,7 +716,7 @@ namespace QDLogistics.Controllers
 
                                             if (directLineList.Any(d => d.ID.Equals(label.Box.DirectLine) && d.Abbreviation.Equals("IDS (US)")))
                                             {
-                                                if (!string.IsNullOrEmpty(package.TrackingNumber))
+                                                if (!label.Box.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.未發貨) && !string.IsNullOrEmpty(package.TrackingNumber))
                                                 {
                                                     ThreadTask syncTask = new ThreadTask(string.Format("Direct Line 訂單【{0}】SC更新", package.OrderID));
                                                     syncTask.AddWork(factory.StartNew(() =>

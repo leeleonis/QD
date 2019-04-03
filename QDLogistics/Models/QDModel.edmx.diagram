@@ -43,7 +43,7 @@
         <AssociationConnector Association="QDLogisticsModel.FK_TaskLog_TaskScheduler" />
         <EntityTypeShape EntityType="QDLogisticsModel.Services" Width="1.5" PointX="8.75" PointY="20" />
         <AssociationConnector Association="QDLogisticsModel.FK_Orders_Services" />
-        <EntityTypeShape EntityType="QDLogisticsModel.Preset" Width="1.5" PointX="13.625" PointY="4.625" />
+        <EntityTypeShape EntityType="QDLogisticsModel.Preset" Width="1.5" PointX="13.75" PointY="3.875" />
         <EntityTypeShape EntityType="QDLogisticsModel.CarrierAPI" Width="1.5" PointX="6.125" PointY="9.125" />
         <EntityTypeShape EntityType="QDLogisticsModel.Carriers" Width="1.5" PointX="8.75" PointY="10" />
         <AssociationConnector Association="QDLogisticsModel.FK_Carriers_CarrierAPI" />

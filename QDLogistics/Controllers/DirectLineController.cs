@@ -215,45 +215,60 @@ namespace QDLogistics.Controllers
             return Json(new { total, rows = dataList }, JsonRequestBehavior.AllowGet);
         }
 
-        public ActionResult PackagePickUpList(int directLine)
+        public ActionResult PackagePickUpList(int directLine, int firstMile, int methodID)
         {
-            int warehouseId = int.Parse(Session["warehouseId"].ToString());
+            int warehouseID = int.Parse(Session["WarehouseID"].ToString());
 
-            var PackageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨) && string.IsNullOrEmpty(p.BoxID));
+            var PackageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨) && p.FirstMile.Value.Equals(firstMile));
+            if (!methodID.Equals(0)) PackageFilter = PackageFilter.Where(p => p.ShippingMethod.Value.Equals(methodID));
 
-            var ItemList = PackageFilter.ToList()
-                .Join(db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && m.IsDirectLine && m.DirectLine.Equals(directLine)), p => p.ShippingMethod, m => m.ID, (p, m) => p)
-                .Join(db.Orders.AsNoTracking().Where(o => o.StatusCode.Value.Equals((int)OrderStatusCode.InProcess)), p => p.OrderID, o => o.OrderID, (package, order) => new { order, package })
-                .OrderBy(data => data.order.TimeOfOrder).OrderByDescending(data => data.order.RushOrder)
-                .Join(db.Items.AsNoTracking().Where(i => i.IsEnable.Value && i.ShipFromWarehouseID.Value.Equals(warehouseId)), op => op.package.ID, i => i.PackageID, (op, item) => item).Distinct()
-                .GroupBy(i => i.PackageID).ToList();
+            var LabelFilter = db.DirectLineLabel.AsNoTracking().Where(l => l.IsEnable && l.Status.Equals((byte)EnumData.LabelStatus.正常));
+            var PickFilter = db.PickProduct.AsNoTracking().Where(pick => pick.IsEnable && !pick.IsPicked && pick.WarehouseID.Value.Equals(warehouseID));
+            var MethodFilter = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && m.IsDirectLine && m.DirectLine.Equals(directLine));
+            var OrderFilter = db.Orders.AsNoTracking().Where(o => !o.StatusCode.Value.Equals((int)OrderStatusCode.Completed));
+            var ItemFilter = db.Items.AsNoTracking().Where(i => i.IsEnable.Value && i.ShipFromWarehouseID.Value.Equals(warehouseID));
+
+            var ItemList = PackageFilter.Join(LabelFilter, p => p.TagNo, l => l.LabelID, (p, l) => p)
+                .Join(PickFilter, package => package.ID, pick => pick.PackageID.Value, (package, pick) => new { package, pick })
+                .Join(MethodFilter, data => data.package.ShippingMethod.Value, m => m.ID, (data, method) => new { data.package, data.pick, method })
+                .Join(OrderFilter, data => data.package.OrderID.Value, o => o.OrderID, (data, order) => new { order, data.package, data.pick, data.method }).Distinct()
+                .OrderBy(data => data.package.Qty).OrderBy(data => data.order.TimeOfOrder).OrderByDescending(data => data.order.RushOrder).ToList()
+                .Join(ItemFilter, data => data.package.ID, i => i.PackageID, (data, item) => item).Distinct().GroupBy(i => i.PackageID).ToList();
 
             ViewBag.itemList = ItemList;
             return PartialView("~/Views/Ajax/_PickUpList.cshtml");
         }
 
         [HttpPost]
-        public ActionResult PrintPickUpList(int warehouseId, int directLine, int adminId)
+        public ActionResult PrintPickUpList(int directLine, int firstMile, int methodID)
         {
-            IRepository<AdminUsers> AdminUsers = new GenericRepository<AdminUsers>(db);
+            int warehouseID = int.Parse(Session["WarehouseID"].ToString());
+            int adminID = int.Parse(Session["AdminId"].ToString());
+            AdminUsers admin = db.AdminUsers.Find(adminID);
 
-            AdminUsers admin = AdminUsers.Get(adminId);
+            var PackageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨) && p.FirstMile.Value.Equals(firstMile));
+            if (!methodID.Equals(0)) PackageFilter = PackageFilter.Where(p => p.ShippingMethod.Value.Equals(methodID));
 
-            var PackageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨) && string.IsNullOrEmpty(p.BoxID));
+            var LabelFilter = db.DirectLineLabel.AsNoTracking().Where(l => l.IsEnable && l.Status.Equals((byte)EnumData.LabelStatus.正常));
+            var PickFilter = db.PickProduct.AsNoTracking().Where(pick => pick.IsEnable && !pick.IsPicked && pick.WarehouseID.Value.Equals(warehouseID));
+            var MethodFilter = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && m.IsDirectLine && m.DirectLine.Equals(directLine));
+            var OrderFilter = db.Orders.AsNoTracking().Where(o => !o.StatusCode.Value.Equals((int)OrderStatusCode.Completed));
+            var ItemFilter = db.Items.AsNoTracking().Where(i => i.IsEnable.Value && i.ShipFromWarehouseID.Value.Equals(warehouseID));
 
-            List<Items> itemList = PackageFilter.ToList()
-                .Join(db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && m.IsDirectLine && m.DirectLine.Equals(directLine)), p => p.ShippingMethod, m => m.ID, (p, m) => p)
-                .Join(db.Orders.AsNoTracking().Where(o => o.StatusCode.Value.Equals((int)OrderStatusCode.InProcess)), p => p.OrderID, o => o.OrderID, (package, order) => new { order, package })
-                .OrderBy(data => data.order.TimeOfOrder).OrderByDescending(data => data.order.RushOrder)
-                .Join(db.Items.AsNoTracking().Where(i => i.IsEnable.Value && i.ShipFromWarehouseID.Value.Equals(warehouseId)), op => op.package.ID, i => i.PackageID, (op, item) => item).Distinct().ToList();
-
+            var ItemList = PackageFilter.Join(LabelFilter, p => p.TagNo, l => l.LabelID, (p, l) => p)
+                .Join(PickFilter, package => package.ID, pick => pick.PackageID.Value, (package, pick) => new { package, pick })
+                .Join(MethodFilter, data => data.package.ShippingMethod.Value, m => m.ID, (data, method) => new { data.package, data.pick, method })
+                .Join(OrderFilter, data => data.package.OrderID.Value, o => o.OrderID, (data, order) => new { order, data.package, data.pick, data.method })
+                .OrderBy(data => data.package.Qty).OrderBy(data => data.order.TimeOfOrder).OrderByDescending(data => data.order.RushOrder).ToList()
+                .Join(ItemFilter, data => data.package.ID, i => i.PackageID, (data, item) => item).Distinct().ToList();
+            
             string basePath = HostingEnvironment.MapPath("~/FileUploads");
             string DirPath = Path.Combine(basePath, "pickup");
             if (!Directory.Exists(DirPath)) Directory.CreateDirectory(DirPath);
             string[] fileName = new string[2];
             string[] filePath = new string[2];
 
-            List<IGrouping<int?, Items>> itemGroupList = itemList.GroupBy(i => i.PackageID).ToList();
+            List<IGrouping<int?, Items>> itemGroupList = ItemList.GroupBy(i => i.PackageID).ToList();
 
             XLWorkbook workbook1 = new XLWorkbook();
             if (SetWorkSheet(workbook1, "單項產品", itemGroupList.Where(i => i.Sum(ii => ii.Qty) == 1).ToList(), admin.Name))
@@ -271,7 +286,7 @@ namespace QDLogistics.Controllers
                 workbook2.SaveAs(filePath[1]);
             }
 
-            return Content(JsonConvert.SerializeObject(new { status = true, filePath = filePath, fileName = fileName, amount = new int[] { 1, 1 } }), "appllication /json");
+            return Content(JsonConvert.SerializeObject(new { status = true, filePath, fileName, amount = new int[] { 1, 1 } }), "appllication /json");
         }
         private bool SetWorkSheet(XLWorkbook workbook, string sheetName, List<IGrouping<int?, Items>> itemGroupList, string adminName)
         {
@@ -533,7 +548,7 @@ namespace QDLogistics.Controllers
                 DateTime dateTO = timeZoneConvert.Utc.AddDays(1);
                 LabelFilter = LabelFilter.Where(l => l.Create_at.CompareTo(dateFrom) >= 0 && l.Create_at.CompareTo(dateTO) < 0);
             }
-            if (filter.Dispatch.HasValue) LabelFilter = LabelFilter.Where(l => l.IsUsed.Equals(bool.Parse(filter.Dispatch.ToString())));
+            if (filter.Dispatch.HasValue) LabelFilter = LabelFilter.Where(l => l.IsUsed.Equals(filter.Dispatch.Value));
 
             string[] Skus = LabelFilter.Select(l => l.Sku).Distinct().ToArray();
             var SkuFilter = db.Skus.AsNoTracking().Where(s => s.IsEnable.Value && Skus.Contains(s.Sku));
@@ -1253,6 +1268,8 @@ namespace QDLogistics.Controllers
                                 var IDS_Result = IDS.GetTrackingNumber(package);
                                 if (IDS_Result.trackingnumber.Any(t => t.First().Equals(package.OrderID.ToString())))
                                 {
+                                    MyHelp.Log("Packages", package.ID, string.Format("取得訂單【{0}】的Tracking Number", package.OrderID), Session);
+
                                     package.TrackingNumber = IDS_Result.trackingnumber.Last(t => t.First().Equals(package.OrderID.ToString()))[1];
                                 }
 
@@ -1283,6 +1300,7 @@ namespace QDLogistics.Controllers
                             }
 
                             package.ProcessStatus = (int)EnumData.ProcessStatus.已出貨;
+                            MyHelp.Log("Packages", package.ID, string.Format("訂單【{0}】的完成出貨", package.OrderID), Session);
                         }
                     }
                     else
@@ -2112,44 +2130,29 @@ namespace QDLogistics.Controllers
             {
                 if (FileList == null || !FileList.Any()) throw new Exception("沒有上傳檔案!");
 
-                TaskFactory Factory = System.Web.HttpContext.Current.Application.Get("TaskFactory") as TaskFactory;
-                ThreadTask threadTask = new ThreadTask(string.Format("上傳 {0} 筆 AirWaybill", FileList.Count(f => f.ContentLength > 0)));
-
-                lock (Factory)
+                foreach (var file in FileList.Where(f => f.ContentLength > 0))
                 {
-                    threadTask.AddWork(Factory.StartNew(Session =>
+                    try
                     {
-                        threadTask.Start();
-                        string message = "";
+                        var fileExtension = Path.GetExtension(file.FileName);
+                        var fileName = Path.GetFileNameWithoutExtension(file.FileName);
 
-                        foreach (var file in FileList.Where(f => f.ContentLength > 0))
-                        {
-                            try
-                            {
-                                var fileExtension = Path.GetExtension(file.FileName);
-                                var fileName = Path.GetFileNameWithoutExtension(file.FileName);
+                        if (!fileExtension.ToLower().Equals(".pdf")) throw new Exception(string.Format("此 {0} 不是PDF!", fileName));
 
-                                if (!fileExtension.ToLower().Equals(".pdf")) throw new Exception(string.Format("此 {0} 不是PDF!", fileName));
+                        var package = db.Packages.FirstOrDefault(p => p.TagNo.Equals(fileName));
 
-                                var package = db.Packages.FirstOrDefault(p => p.TagNo.Equals(fileName));
+                        if (package == null) throw new Exception(string.Format("此 {0} 找不到訂單!", fileName));
 
-                                if (package == null) throw new Exception(string.Format("此 {0} 找不到訂單!", fileName));
+                        var filePath = Server.MapPath("~/FileUploads/" + package.FilePath);
+                        if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
 
-                                var filePath = Server.MapPath("~/FileUploads/" + package.FilePath);
-                                if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
-
-                                var path = Path.Combine(filePath, "AirWaybill.pdf");
-                                file.SaveAs(path);
-                            }
-                            catch (Exception e)
-                            {
-                                Msg.Add(e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message);
-                            }
-                        }
-
-                        message = string.Join(", ", Msg.ToArray());
-                        return message;
-                    }, Session));
+                        var path = Path.Combine(filePath, "AirWaybill.pdf");
+                        file.SaveAs(path);
+                    }
+                    catch (Exception e)
+                    {
+                        Msg.Add(e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message);
+                    }
                 }
             }
             catch (Exception e)
@@ -2605,7 +2608,7 @@ namespace QDLogistics.Controllers
             private string SkuField { get; set; }
             private string ProductNameField { get; set; }
             private string SerialNumberField { get; set; }
-            private bool DispatchField { get; set; }
+            private bool? DispatchField { get; set; }
 
             public bool? IsUsed { get; set; }
             public string OrderID { get { return this.OrderIDField; } set { this.OrderIDField = !string.IsNullOrEmpty(value) ? value.Trim() : value; } }
@@ -2618,7 +2621,17 @@ namespace QDLogistics.Controllers
             public string SerialNumber { get { return this.SerialNumberField; } set { this.SerialNumberField = !string.IsNullOrEmpty(value) ? value.Trim() : value; } }
             public int? WarehouseID { get; set; }
             public DateTime? CreateDate { get; set; }
-            public bool? Dispatch { get { return this.DispatchField; } set { this.DispatchField = bool.Parse(value.ToString()); } }
+            public bool? Dispatch
+            {
+                get { return this.DispatchField; }
+                set
+                {
+                    if (value != null)
+                    {
+                        this.DispatchField = bool.Parse(value.ToString());
+                    }
+                }
+            }
 
             public string Sort { get; set; }
             public string Order { get; set; }

@@ -23,6 +23,7 @@ namespace QDLogistics.Models
     
         public bool IsEnable { get; set; }
         public int ID { get; set; }
+        public int CompanyID { get; set; }
         public string ProductTypeName { get; set; }
         public string ChtName { get; set; }
         public string HSCode { get; set; }
