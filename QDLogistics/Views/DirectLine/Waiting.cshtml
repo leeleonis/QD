@@ -20,8 +20,8 @@
                     <div class="action-button col-xs-12">
                         @*<button type="button" class="btn btn-default btn-sm btn-block" id="btn-import">Import</button>*@
                         @*<button type="button" class="btn btn-default btn-sm btn-block" id="btn-export">Export</button>*@
-                        <button type="button" class="btn btn-default btn-sm btn-block" id="btn-IDSUS">IDS(US) PDF上傳</button>
-                        <input type="file" class="hidden" id="file-IDSUS" multiple />
+                        @*<button type="button" class="btn btn-default btn-sm btn-block" id="btn-IDSUS">IDS(US) PDF上傳</button>*@
+                        @*<input type="file" class="hidden" id="file-IDSUS" multiple />*@
                     </div>
                 </div>
             </div>
@@ -54,36 +54,6 @@
                     dataInit();
                 } else {
                     alert(response['message']);
-                }
-            });
-
-            $("#btn-IDSUS").click(function () {
-                $IDSUSfile.trigger("click");
-            });
-
-            $IDSUSfile.change(function (e) {
-                data = new FormData()
-                if (e.target.files.length > 0) {
-                    for (var i = 0; i < e.target.files.length; i++) {
-                        data.append("FileList[" + i + "]", e.target.files[i])
-                    }
-
-                    $.ajax({
-                        url: "@Url.Action("UploadFile", "DirectLine")",
-                        type: "POST",
-                        data: data,
-                        dataType: "JSON",
-                        contentType: false,
-                        processData: false,
-                        success: function (response) {
-                            if (response.status) {
-                                alert('Upload success!');
-                            } else {
-                                alert(response.message);
-                            }
-                            $IDSUSfile.val('');
-                        }
-                    });
                 }
             });
         });

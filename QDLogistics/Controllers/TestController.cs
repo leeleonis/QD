@@ -249,12 +249,9 @@ namespace QDLogistics.Controllers
 
         public void Preset_Test(int OrderID)
         {
-            using (IRepository<Orders> Orders = new GenericRepository<Orders>(db))
+            using (var orderPreset = new OrderPreset(Session, db.Orders.Find(OrderID)))
             {
-                using (var orderPreset = new OrderPreset(Session, Orders.Get(OrderID)))
-                {
-                    orderPreset.Save();
-                }
+                orderPreset.Save();
             }
         }
 
@@ -268,7 +265,7 @@ namespace QDLogistics.Controllers
         {
             using (Hubs.ServerHub server = new Hubs.ServerHub())
             {
-                server.BroadcastOrderEvent(123, 456, EnumData.OrderChangeStatus.包裏回收);
+                server.BroadcastOrderEvent(123, 456, EnumData.OrderChangeStatus.包裹回收);
             }
         }
 
@@ -351,7 +348,7 @@ namespace QDLogistics.Controllers
             }
         }
 
-        private void IDS_Test(int orderID)
+        public void IDS_Test(int orderID)
         {
             Packages package = db.Packages.AsNoTracking().First(p => p.OrderID.Value.Equals(orderID));
 
@@ -590,7 +587,7 @@ namespace QDLogistics.Controllers
             foreach (var type in SCWS.Get_ProductType(163))
             {
                 var productType = db.ProductType.Find(type.ID);
-                if(productType != null)
+                if (productType != null)
                 {
                     productType.CompanyID = 163;
                 }

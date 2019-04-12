@@ -791,7 +791,7 @@ namespace QDLogistics.Commons
 
             try
             {
-                MyHelp.Log("CaseEvent", orderData.OrderID, "回收已出貨訂單包裏", Session);
+                MyHelp.Log("CaseEvent", orderData.OrderID, "回收已出貨訂單包裹", Session);
 
                 return GetCaseEvent(EnumData.CaseEventType.ReturnPackage);
             }

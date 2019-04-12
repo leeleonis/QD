@@ -876,6 +876,7 @@
     <Content Include="FileUploads\sample\Fedex_Recognizances.pdf" />
     <Content Include="FileUploads\sample\Invoice-2.xls" />
     <Content Include="FileUploads\sample\DL-IDS.xlsx" />
+    <Content Include="FileUploads\sample\Box_PackingList.xlsx" />
     <None Include="Properties\PublishProfiles\dmlogistic - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\dmlogistic - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\QD - Deploy.pubxml" />
@@ -7295,6 +7296,7 @@
     <Content Include="Views\Product\plug.cshtml" />
     <Content Include="Views\DirectLine\Info_Box.cshtml" />
     <Content Include="Views\DirectLine\List_CancelLabel.cshtml" />
+    <Content Include="Views\DirectLine\Upload.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

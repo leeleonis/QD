@@ -170,8 +170,12 @@ namespace QDLogistics.Commons
                         /***** Commercial Invoice *****/
                         Box_CreateInvoice(boxList, directLine, basePath, filePath, currency);
 
+                        /***** IDS US Excel *****/
                         if (directLine.Abbreviation.Equals("IDS (US)"))
                             Box_CreateDirectLineExcel(boxList, basePath, filePath);
+
+                        if (boxList.Count() > 1)
+                            Box_CreatePackageList(boxList, basePath, filePath);
 
                         /***** Recognizance Book *****/
                         var CheckList = new { fileName = "CheckList-{0}.xlsx", samplePath = Path.Combine(basePath, "sample", "Fedex_CheckList.xlsx") };
@@ -878,6 +882,84 @@ namespace QDLogistics.Commons
 
                     db.SaveChanges();
                 }
+
+                using (FileStream fsOut = new FileStream(Path.Combine(filePath, FileData.fileName), FileMode.Create))
+                {
+                    workbook.Write(fsOut);
+
+                    fsOut.Close();
+                }
+            }
+        }
+
+        private void Box_CreatePackageList(List<Box> boxList, string basePath, string filePath)
+        {
+            var FileData = new { fileName = "PackageList.xlsx", samplePath = Path.Combine(basePath, "sample", "Box_PackingList.xlsx") };
+            using (FileStream fsIn = new FileStream(FileData.samplePath, FileMode.Open))
+            {
+                XSSFWorkbook workbook = new XSSFWorkbook(fsIn);
+                fsIn.Close();
+
+                XSSFSheet sheet = (XSSFSheet)workbook.GetSheetAt(0);
+
+
+                List<Items> itemList = boxList.SelectMany(b => b.Packages.Where(p => p.IsEnable.Value)).SelectMany(p => p.Items.Where(i => i.IsEnable.Value)).ToList();
+                if (itemList.Count() > 1)
+                {
+                    int insertRow = 19, add = itemList.Count() - 1;
+                    MyHelp.ShiftRows(ref sheet, insertRow, sheet.LastRowNum, add);
+
+                    for (int row = insertRow; row < insertRow + add; row++)
+                    {
+                        MyHelp.CopyRow(ref sheet, insertRow - 1, row, true, false, true, false);
+                    }
+                }
+
+                int rowIndex = 7;
+                var directLine = db.DirectLine.Find(boxList[0].DirectLine);
+                if (!string.IsNullOrWhiteSpace(directLine.ContactName))
+                    sheet.GetRow(rowIndex++).GetCell(1).SetCellValue(directLine.ContactName);
+                if (!string.IsNullOrWhiteSpace(directLine.CompanyName))
+                    sheet.GetRow(rowIndex++).GetCell(1).SetCellValue(directLine.CompanyName);
+                if (!string.IsNullOrWhiteSpace(directLine.StreetLine1))
+                    sheet.GetRow(rowIndex++).GetCell(1).SetCellValue(directLine.StreetLine1);
+                if (!string.IsNullOrWhiteSpace(directLine.StreetLine2))
+                    sheet.GetRow(rowIndex++).GetCell(1).SetCellValue(directLine.StreetLine2);
+                string cityArea = directLine.City + " " + directLine.StateName + " " + directLine.PostalCode;
+                if (!string.IsNullOrWhiteSpace(cityArea))
+                    sheet.GetRow(rowIndex++).GetCell(1).SetCellValue(cityArea);
+                if (!string.IsNullOrWhiteSpace(directLine.CountryName))
+                    sheet.GetRow(rowIndex).GetCell(1).SetCellValue(directLine.CountryName);
+
+
+                sheet.GetRow(14).GetCell(1).SetCellValue(string.Join(", ", boxList.Select(b => b.TrackingNumber).ToArray()));
+                sheet.GetRow(16).GetCell(1).SetCellValue(boxList[0].Create_at.ToString("yyyy-MM-dd"));
+
+                int total = 0;
+                rowIndex = 19;
+                List <StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
+                using (StockKeepingUnit stock = new StockKeepingUnit())
+                {
+                    foreach(var box in boxList)
+                    {
+                        itemList = box.Packages.Where(p => p.IsEnable.Value).SelectMany(p => p.Items.Where(i => i.IsEnable.Value)).ToList();
+                        var IDs = itemList.Select(i => i.ProductID).Distinct().ToArray();
+                        SkuData = stock.GetSkuData(IDs);
+
+                        sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(rowIndex, rowIndex + itemList.Count() -1, 0, 0));
+
+                        sheet.GetRow(rowIndex).GetCell(0).SetCellValue(box.CurrentNo);
+                        foreach (var item in itemList)
+                        {
+                            sheet.GetRow(rowIndex).GetCell(1).SetCellValue(SkuData.Any(s => s.Sku.Equals(item.ProductID)) ? SkuData.First(s => s.Sku.Equals(item.ProductID)).Name : item.Skus.ProductName);
+                            sheet.GetRow(rowIndex++).GetCell(2).SetCellValue(item.Qty.Value);
+                        }
+
+                        total += itemList.Sum(i => i.Qty.Value);
+                    }
+                }
+
+                sheet.GetRow(rowIndex++).GetCell(2).SetCellValue(total);
 
                 using (FileStream fsOut = new FileStream(Path.Combine(filePath, FileData.fileName), FileMode.Create))
                 {

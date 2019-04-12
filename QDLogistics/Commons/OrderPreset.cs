@@ -206,7 +206,7 @@ namespace QDLogistics.Commons
                                         item.ShipFromWareHouseID = packageData.Items.First(i => i.IsEnable == true && i.ID == item.ID).ShipFromWarehouseID.Value;
                                         SCWS.Update_OrderItem(SC_items.First(i => i.ID.Equals(item.ID)));
                                     }
-                                    MyHelp.Log("Orders", packageData.OrderID, "更新訂單包裏的出貨倉", session);
+                                    MyHelp.Log("Orders", packageData.OrderID, "更新訂單包裹的出貨倉", session);
 
                                     /***** 更新客戶地址 *****/
                                     var address = SC_order.ShippingAddress;

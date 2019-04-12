@@ -366,13 +366,13 @@ namespace QDLogistics.Controllers
         {
             if (fileName.Any())
             {
-                Process[] processList = Process.GetProcesses().Where(p => p.ProcessName == "wcpp").ToArray();
-                if (processList.Any())
-                {
-                    Thread t = new Thread(WaitProcess);
-                    t.IsBackground = true;
-                    t.Start(processList.First());
-                }
+                //Process[] processList = Process.GetProcesses().Where(p => p.ProcessName == "wcpp").ToArray();
+                //if (processList.Any())
+                //{
+                //    Thread t = new Thread(WaitProcess);
+                //    t.IsBackground = true;
+                //    t.Start(processList.First());
+                //}
 
                 string[] pdfList = new string[] { "AirWaybill.pdf", "Label.pdf" };
                 ClientPrintJobGroup cpjg = new ClientPrintJobGroup();

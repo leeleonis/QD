@@ -137,7 +137,7 @@ namespace QDLogistics.Controllers
                                             item.ShipFromWareHouseID = packageData.Items.First(i => i.IsEnable == true && i.ID == item.ID).ShipFromWarehouseID.Value;
                                             SCWS.Update_OrderItem(item);
                                         }
-                                        MyHelp.Log("Orders", packageData.OrderID, "更新訂單包裏的出貨倉", session);
+                                        MyHelp.Log("Orders", packageData.OrderID, "更新訂單包裹的出貨倉", session);
 
                                         /***** 更新客戶地址 *****/
                                         var address = SC_order.ShippingAddress;
@@ -271,7 +271,7 @@ namespace QDLogistics.Controllers
             Items = new GenericRepository<Items>(db);
 
             Packages package = Packages.Get(PackageID);
-            if (package == null) return Content(JsonConvert.SerializeObject(new { status = false, message = "找不到包裏!" }), "appllication /json");
+            if (package == null) return Content(JsonConvert.SerializeObject(new { status = false, message = "找不到包裹!" }), "appllication /json");
 
             try
             {

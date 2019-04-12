@@ -19,7 +19,7 @@ namespace QDLogistics.Commons
                 { ProcessStatus.已出貨, "已出貨 Fulfilled" }
             };
         }
-        public enum OrderChangeStatus { 提交至待出貨區, 取消出貨, 已完成出貨, 狀態異常, 產品異常, 包裏回收 }
+        public enum OrderChangeStatus { 提交至待出貨區, 取消出貨, 已完成出貨, 狀態異常, 產品異常, 包裹回收 }
 
         public enum Export { 正式, 簡易 };
         public enum ExportMethod { 外貨復出口, 國貨出口 };

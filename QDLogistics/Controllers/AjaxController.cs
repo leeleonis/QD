@@ -103,8 +103,8 @@ namespace QDLogistics.Controllers
             if (!filter.WarehouseID.Equals(null)) ItemFilter = ItemFilter.Where(i => i.ShipFromWarehouseID.Value.Equals(filter.WarehouseID.Value));
             if (!string.IsNullOrWhiteSpace(filter.ItemName))
             {
-                string[] ProductIDs = db.Skus.AsNoTracking().Where(s => s.UPC.Equals(filter.ItemName)).Select(s => s.Sku).ToArray();
-                ItemFilter = ItemFilter.Where(i => i.DisplayName.ToLower().Contains(filter.ItemName.ToLower()) || i.ProductID.Equals(filter.ItemName) || ProductIDs.Contains(i.ProductID));
+                string[] ProductIDs = db.Skus.AsNoTracking().Where(s => s.Sku.Equals(filter.ItemName) || s.UPC.Equals(filter.ItemName) || s.ProductName.ToLower().Contains(filter.ItemName.ToLower())).Select(s => s.Sku).ToArray();
+                ItemFilter = ItemFilter.Where(i => ProductIDs.Contains(i.ProductID));
             }
 
             /** Address Filter **/
@@ -384,8 +384,8 @@ namespace QDLogistics.Controllers
             if (!filter.WarehouseID.Equals(null)) ItemFilter = ItemFilter.Where(i => i.ShipFromWarehouseID.Value.Equals(filter.WarehouseID.Value));
             if (!string.IsNullOrWhiteSpace(filter.ItemName))
             {
-                string[] ProductIDs = db.Skus.AsNoTracking().Where(s => s.UPC.Equals(filter.ItemName)).Select(s => s.Sku).ToArray();
-                ItemFilter = ItemFilter.Where(i => i.DisplayName.ToLower().Contains(filter.ItemName.ToLower()) || i.ProductID.Equals(filter.ItemName) || ProductIDs.Contains(i.ProductID));
+                string[] ProductIDs = db.Skus.AsNoTracking().Where(s => s.Sku.Equals(filter.ItemName) || s.UPC.Equals(filter.ItemName) || s.ProductName.ToLower().Contains(filter.ItemName.ToLower())).Select(s => s.Sku).ToArray();
+                ItemFilter = ItemFilter.Where(i => ProductIDs.Contains(i.ProductID));
             }
 
             /** Address Filter **/
@@ -492,7 +492,7 @@ namespace QDLogistics.Controllers
                                 CaseEvent caseEvent = caseLog.ReturnPackage();
 
                                 using (Hubs.ServerHub server = new Hubs.ServerHub())
-                                    server.BroadcastOrderEvent(package.OrderID.Value, caseEvent.ID, EnumData.OrderChangeStatus.包裏回收);
+                                    server.BroadcastOrderEvent(package.OrderID.Value, caseEvent.ID, EnumData.OrderChangeStatus.包裹回收);
                             }
 
                             Carriers carrier = package.Method.Carriers;

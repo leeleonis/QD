@@ -330,7 +330,7 @@
 
                     var row = $dataGrid.datagrid('getSelections')[0];
                     if ($amountInput.val() > row.OrderQtyTotal) {
-                        return alert("包裏數量不可超過產品數量!");
+                        return alert("包裹數量不可超過產品數量!");
                     }
 
                     splitAmount = $amountInput.val();
@@ -816,7 +816,7 @@
                 var qty = Object.keys(skus).map(function (itemID) { return skus[itemID]; }).reduce((a, b) => a + b);
 
                 if (qty == 0) {
-                    alert('包裏-' + (i + 1) + '未選擇數量!');
+                    alert('包裹-' + (i + 1) + '未選擇數量!');
                     return true;
                 }
                 return false;

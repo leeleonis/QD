@@ -106,6 +106,13 @@ namespace QDLogistics.Controllers
             return View();
         }
 
+        public ActionResult Upload()
+        {
+            ViewBag.LogList = db.ActionLog.AsNoTracking().Where(l => l.TableName.Equals("DL_Upload")).OrderByDescending(l => l.CreateDate).Take(1000).ToList();
+
+            return View();
+        }
+
         public ActionResult GetWaitingData(DataFilter filter, int page = 1, int rows = 100)
         {
             int total = 0;
@@ -1645,7 +1652,7 @@ namespace QDLogistics.Controllers
                                     item.ShipFromWareHouseID = newPackage.Items.First(i => i.IsEnable == true && i.ID == item.ID).ShipFromWarehouseID.Value;
                                     SCWS.Update_OrderItem(item);
                                 }
-                                MyHelp.Log("Orders", newPackage.OrderID, "更新訂單包裏的出貨倉", Session);
+                                MyHelp.Log("Orders", newPackage.OrderID, "更新訂單包裹的出貨倉", Session);
 
                                 ShipProcess Process = new ShipProcess(SCWS);
                                 Process.Init(newPackage);
@@ -2132,11 +2139,11 @@ namespace QDLogistics.Controllers
 
                 foreach (var file in FileList.Where(f => f.ContentLength > 0))
                 {
+                    var fileExtension = Path.GetExtension(file.FileName);
+                    var fileName = Path.GetFileNameWithoutExtension(file.FileName);
+
                     try
                     {
-                        var fileExtension = Path.GetExtension(file.FileName);
-                        var fileName = Path.GetFileNameWithoutExtension(file.FileName);
-
                         if (!fileExtension.ToLower().Equals(".pdf")) throw new Exception(string.Format("此 {0} 不是PDF!", fileName));
 
                         var package = db.Packages.FirstOrDefault(p => p.TagNo.Equals(fileName));
@@ -2148,10 +2155,15 @@ namespace QDLogistics.Controllers
 
                         var path = Path.Combine(filePath, "AirWaybill.pdf");
                         file.SaveAs(path);
+
+                        MyHelp.Log("DL_Upload", file.FileName, null, Session);
                     }
                     catch (Exception e)
                     {
-                        Msg.Add(e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message);
+                        var msg = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+                        Msg.Add(msg);
+
+                        MyHelp.Log("DL_Upload", file.FileName, msg, Session);
                     }
                 }
             }
@@ -2206,7 +2218,7 @@ namespace QDLogistics.Controllers
                 var package = db.Packages.FirstOrDefault(p => p.TagNo.Equals(LabelID));
 
                 if (package == null) throw new Exception("找不到此標籤號碼!");
-                if (string.IsNullOrEmpty(package.BoxID) || !package.BoxID.Equals(BoxID)) throw new Exception(string.Format("此訂單【{0}】非 {1} 包裏!", package.OrderID, BoxID));
+                if (string.IsNullOrEmpty(package.BoxID) || !package.BoxID.Equals(BoxID)) throw new Exception(string.Format("此訂單【{0}】並不在 {1} 箱子裡!", package.OrderID, BoxID));
 
                 string basePath = HostingEnvironment.MapPath("~/FileUploads");
 
@@ -2224,7 +2236,7 @@ namespace QDLogistics.Controllers
                     case "AWB":
                         if (!System.IO.File.Exists(Path.Combine(basePath, package.FilePath, "AirWaybill.pdf")))
                         {
-                            result.message = string.Format("訂單【{0}】沒有找到AWB，是否要將此包裏移出 {1} ?", package.OrderID, BoxID);
+                            result.message = string.Format("訂單【{0}】沒有找到AWB，是否要將此包裹移出 {1} ?", package.OrderID, BoxID);
                         }
                         else
                         {
@@ -2331,7 +2343,7 @@ namespace QDLogistics.Controllers
                             foreach (var box in boxList)
                             {
                                 var labelArray = box.DirectLineLabel.Where(l => l.IsEnable).Select(l => l.LabelID).ToArray();
-                                mailBody += string.Format("{0}<br /><br />the parcel was sent out via {1} under tracking {2}<br /><br />", labelArray, method.Carriers.Name, box.TrackingNumber);
+                                mailBody += string.Format("{0}<br /><br />the parcel was sent out via {1} under tracking {2}<br /><br />", string.Join("<br />", labelArray), method.Carriers.Name, box.TrackingNumber);
                             }
                         }
 
@@ -2353,11 +2365,15 @@ namespace QDLogistics.Controllers
                             IDSFile2.Add(new Tuple<Stream, string>(memoryStream, "Labels.zip"));
                         }
 
-                        string[] IDSFile1 = null;
-                        if (directLine.Abbreviation.Equals("IDS (US)"))
-                            IDSFile1 = new string[] { Path.Combine(filePath, "DirectLine.xlsx") };
+                        List<string> IDSFile1 = new List<string>();
 
-                        bool IDS_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, IDSFile1, IDSFile2, false);
+                        if (boxList.Count() > 1)
+                            IDSFile1.Add(Path.Combine(filePath, "PackageList.xlsx"));
+
+                        if (directLine.Abbreviation.Equals("IDS (US)"))
+                            IDSFile1.Add(Path.Combine(filePath, "DirectLine.xlsx"));
+
+                        bool IDS_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, IDSFile1.ToArray(), IDSFile2, false);
                         if (IDS_Status)
                         {
                             MyHelp.Log("PickProduct", null, mailTitle);
