@@ -351,29 +351,36 @@ namespace QDLogistics.Commons
             {
                 MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】開始建立RMA", orderData.OrderID), Session);
 
-                Order order = SCWS.Get_OrderData(orderData.OrderID).Order;
-                order.OrderCreationSourceApplication = OrderCreationSourceApplicationType.PointOfSale;
-                if (SCWS.Update_Order(order))
+                using (StockKeepingUnit stock = new StockKeepingUnit())
                 {
-                    int RMAId = SCWS.Create_RMA(order.ID);
-
-                    MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】開始Receive RMA", orderData.OrderID), Session);
-                    foreach (Items item in itemList)
-                    {
-                        int RMAItemID = SCWS.Create_RMA_Item(item.OrderID.Value, item.ID, RMAId, item.Qty.Value, 16, "");
-                        string serialsList = string.Join(", ", item.SerialNumbers.Where(s => !string.IsNullOrEmpty(s.SerialNumber)).Select(s => s.SerialNumber).ToArray());
-                        SCWS.Receive_RMA_Item(RMAId, RMAItemID, item.ProductID, item.Qty.Value, item.ReturnedToWarehouseID.Value, serialsList);
-                        SCWS.Delete_ItemSerials(item.OrderID.Value, item.ID);
-                    }
-                    MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】完成Receive RMA", orderData.OrderID), Session);
-
-                    packageData.RMAId = RMAId;
+                    packageData.RMAId = stock.CreateRMA(orderData.OrderID, itemList.First().ReturnedToWarehouseID.Value);
                     Packages.Update(packageData, packageData.ID);
                     Packages.SaveChanges();
-
-                    order.OrderCreationSourceApplication = OrderCreationSourceApplicationType.Default;
-                    SCWS.Update_Order(order);
                 }
+
+                //Order order = SCWS.Get_OrderData(orderData.OrderID).Order;
+                //order.OrderCreationSourceApplication = OrderCreationSourceApplicationType.PointOfSale;
+                //if (SCWS.Update_Order(order))
+                //{
+                //    int RMAId = SCWS.Create_RMA(order.ID);
+
+                //    MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】開始Receive RMA", orderData.OrderID), Session);
+                //    foreach (Items item in itemList)
+                //    {
+                //        int RMAItemID = SCWS.Create_RMA_Item(item.OrderID.Value, item.ID, RMAId, item.Qty.Value, 16, "");
+                //        string serialsList = string.Join(", ", item.SerialNumbers.Where(s => !string.IsNullOrEmpty(s.SerialNumber)).Select(s => s.SerialNumber).ToArray());
+                //        SCWS.Receive_RMA_Item(RMAId, RMAItemID, item.ProductID, item.Qty.Value, item.ReturnedToWarehouseID.Value, serialsList);
+                //        SCWS.Delete_ItemSerials(item.OrderID.Value, item.ID);
+                //    }
+                //    MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】完成Receive RMA", orderData.OrderID), Session);
+
+                //    packageData.RMAId = RMAId;
+                //    Packages.Update(packageData, packageData.ID);
+                //    Packages.SaveChanges();
+
+                //    order.OrderCreationSourceApplication = OrderCreationSourceApplicationType.Default;
+                //    SCWS.Update_Order(order);
+                //}
 
                 MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0} 完成建立RMA", orderData.OrderID), Session);
             }

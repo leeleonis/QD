@@ -89,6 +89,15 @@ namespace QDLogistics.Commons
             return response.data;
         }
 
+        public int CreateRMA(int OrderID, int ReturnWarehouseID)
+        {
+            Response<int> response = Request<int>("Ajax/CreateALLRMA", "post", new { OrderID, ReturnWarehouseID });
+
+            if (!response.status) throw new Exception(response.message);
+
+            return response.data;
+        }
+
         private Response<T> Request<T>(string url, string method = "post", object data = null) where T : new()
         {
             Response<T> response = new Response<T>();

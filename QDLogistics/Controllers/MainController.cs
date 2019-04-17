@@ -62,7 +62,7 @@ namespace QDLogistics.Controllers
         {
             if (username == "qdadmin" && password == "Chl!eWrlg!NaSTlcOzeswuRegoy5brAprOXo")
             {
-                return SetSessionData(true, "QDadmin", "tim@weypro.com", "timfromweypro");
+                return SetSessionData(true, "QDadmin", "tim@weypro.com", "timfromweypro", 0, 0, 0, 2);
             }
 
             AdminUsers user = AdminUsers.GetAll().FirstOrDefault(u => u.IsEnable && u.IsVisible && u.Account == username);

@@ -385,7 +385,7 @@ namespace QDLogistics.Controllers
                 dateTo = new TimeZoneConvert(dateTo, MyHelp.GetTimeZone((int)Session["TimeZone"])).ConvertDateTime(EnumData.TimeZone.EST);
                 BoxFilter = BoxFilter.Where(b => DateTime.Compare(b.Create_at, dateFrom) >= 0 && DateTime.Compare(b.Create_at, dateTo) < 0);
             }
-            if (!string.IsNullOrEmpty(filter.LabelID)) BoxFilter = BoxFilter.Where(b => b.DirectLineLabel.Any(l => l.LabelID.Contains(filter.LabelID)));
+            if (!string.IsNullOrEmpty(filter.LabelID)) BoxFilter = BoxFilter.Where(b => b.DirectLineLabel.Any(l => l.IsEnable && l.LabelID.Contains(filter.LabelID)));
 
             //int warehouseID = 0;
             //if (int.TryParse(Session["warehouseId"].ToString(), out warehouseID)) BoxFilter = BoxFilter.Where(b => b.WarehouseFrom.Equals(warehouseID));

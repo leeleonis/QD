@@ -348,6 +348,7 @@
           <Property Name="TagNo" Type="nvarchar" MaxLength="50" />
           <Property Name="FinalShippingFee" Type="decimal" Precision="18" Scale="2" />
           <Property Name="UploadTracking" Type="bit" Nullable="false" />
+          <Property Name="NeedInsurance" Type="bit" Nullable="false" />
           <Property Name="TrackingNumber" Type="nvarchar" MaxLength="50" />
           <Property Name="POId" Type="int" />
           <Property Name="POInvoice" Type="nvarchar" MaxLength="50" />
@@ -2087,6 +2088,7 @@
           <Property Name="FinalShippingFee" Type="Decimal" Precision="18" Scale="2" />
           <Property Name="UploadTracking" Type="Boolean" Nullable="false" DefaultValue="True" />
           <Property Name="TrackingNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="NeedInsurance" Type="Boolean" Nullable="false" />
           <Property Name="POId" Type="Int32" />
           <Property Name="POInvoice" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="RMAId" Type="Int32" />
@@ -2762,6 +2764,7 @@
           <EntitySetMapping Name="Packages">
             <EntityTypeMapping TypeName="QDLogisticsModel.Packages">
               <MappingFragment StoreEntitySet="Packages">
+                <ScalarProperty Name="NeedInsurance" ColumnName="NeedInsurance" />
                 <ScalarProperty Name="DLCurrency" ColumnName="DLCurrency" />
                 <ScalarProperty Name="Height" ColumnName="Height" />
                 <ScalarProperty Name="Width" ColumnName="Width" />

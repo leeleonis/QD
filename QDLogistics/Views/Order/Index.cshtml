@@ -137,7 +137,8 @@
                 </div>
                 <div class="table-cell col-xs-2">
                     <div class="action-button col-xs-12">
-                        <button type="button" class="btn btn-default btn-sm btn-block" id="btn-sync" data-href="@Url.Action("getOrder", "orderSync")"><span>資料同步 Sync</span></button>
+                        <button type="button" class="btn btn-default btn-sm btn-block" id="btn-sync"><span>資料同步 Sync</span></button>
+                        <button type="button" class="btn btn-default btn-sm btn-block dispatch" id="btn-sync"><span>Sync & Dispatch</span></button>
                         <div id="dialog-order" class="easyui-dialog" title="輸入要同步的訂單" data-options="iconCls:'icon-edit',closed:true,draggable:false,resizable:false,onClose:function(){$orderInput.val('');}" style="width:300px;">
                             <input type="text" class="form-control" id="input-order" />
                         </div>
@@ -178,7 +179,7 @@
         var $warehouseSelect = $("#warehouseSelect"), $carrierSelect = $("#carrierSelect"), $exportSelect = $("#exportSelect"), $exportMethodSelect = $("#exportMethodSelect"), $statusCodeSelect = $("#statusCodeSelect");
         var $orderIDSearch = $("#search-orderID"), $itemSearch = $("#search-item"), $userIDSearch = $("#search-userID"), $sourceIDSearch = $("#search-sourceID"), $dateFromSearch = $("#search-dateFrom"), $dateToSearch = $("#search-dateTo"),
             $paymentSearch = $("#search-payment"), $statusSearch = $("#search-status"), $warehouseSearch = $("#search-warehouse"), $methodSearch = $("#search-method"), $channelSearch = $("#search-channel"), $countrySearch = $("#search-country");
-        var $syncBtn = $("#btn-sync"), $orderDialog = $("#dialog-order"), $orderInput = $("#input-order"), $disptchBtn = $("#btn-disptch"), $splitBtn = $("#btn-split"), $amountDialog = $("#dialog-amount"),
+        var $syncBtn = $("button#btn-sync"), $orderDialog = $("#dialog-order"), $orderInput = $("#input-order"), $disptchBtn = $("#btn-disptch"), $splitBtn = $("#btn-split"), $amountDialog = $("#dialog-amount"),
             $amountInput = $("#input-amount"), $splitWin = $("#win-split"), $recoveryBtn = $("#btn-recovery"), $exportBtn = $("#btn-export");
 
         $(function () {
@@ -218,6 +219,7 @@
             $syncBtn.click(function () {
                 var orderIDs = [];
                 var rows = $dataGrid.datagrid('getSelections');
+                var isDispatch = $(this).is('.dispatch');
 
                 for (var i in rows) {
                     index = $dataGrid.datagrid('getRowIndex', rows[i].PackageID);
@@ -226,17 +228,21 @@
 
                 if (orderIDs.length > 0) {
                     $.ajax({
-                        url: $(this).data("href"),
+                        url: '@Url.Action("getOrder", "orderSync")',
                         data: { orderIDs: orderIDs },
                         type: 'POST',
                         dataType: "json",
                         success: function (response) {
-                            alert(response['message']);
-                            $dataGrid.datagrid('uncheckAll');
-                            $dataGrid.datagrid('reload');
+                            if (isDispatch) {
+                                $disptchBtn.trigger('click');
+                            } else {
+                                alert(response['message']);
+                                $dataGrid.datagrid('uncheckAll');
+                                $dataGrid.datagrid('reload');
+                            }
                         }
                     });
-                } else {
+                } else if (!isDispatch) {
                     $orderDialog.dialog('open');
                 }
             });
@@ -245,13 +251,15 @@
                 if (event.keyCode == 13) {
                     if (!isEmpty($orderInput.val())) {
                         $.ajax({
-                            url: $syncBtn.data("href"),
+                            url: '@Url.Action("getOrder", "orderSync")',
                             data: { orderIDs: [$orderInput.val()] },
                             type: 'POST',
                             dataType: "json",
                             success: function (response) {
                                 alert(response['message']);
-                                $orderDialog.dialog('close');
+                                if (response.status) {
+                                    $orderDialog.dialog('close');
+                                }
                             }
                         });
                     }
@@ -267,7 +275,7 @@
                         index = $dataGrid.datagrid('getRowIndex', rows[i].PackageID);
                         if (!$("button#btn-save:eq(" + index + ")").is("[disabled]")) {
                             hasDataChange = true;
-                        } 
+                        }
 
                         if ($("select#MethodID:eq(" + index + ")").val() == null) {
                             message += "訂單 - " + rows[i].OrderID + " 尚未選擇運輸方式!\n";
@@ -504,6 +512,11 @@
                         formatter: function (value, row, index) {
                             return setCheckBox(row.PackageID, this.field, value);
                         }
+                    }, {
+                        field: "NeedInsurance", title: "Insurance<br />保險", width: 80, align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            return setCheckBox(row.PackageID, this.field, value);
+                        }
                     },
                     { field: "Instructions", title: "Buyer Note<br />客戶備註", width: 200, align: "center", sortable: false },
                     {
@@ -732,6 +745,7 @@
                 StatusCode: $("select#StatusCode:eq(" + index + ")").val(),
                 RushOrder: $("input#RushOrder:eq(" + index + ")").prop("checked"),
                 UploadTracking: $("input#UploadTracking:eq(" + index + ")").prop("checked"),
+                NeedInsurance: $("input#NeedInsurance:eq(" + index + ")").prop("checked"),
                 Comment: $("input#Comment:eq(" + index + ")").val()
             }
         }
@@ -762,25 +776,6 @@
             }
 
             return option;
-        }
-
-        function checkProcess(id) {
-            var url = "@Url.Action("checkProcessStatus", "orderSync")/" + id;
-
-            getOption(url).done(function (response) {
-                if (!response['success']) {
-                    alert(response['message']);
-                    return;
-                } else {
-                    if (response['status']) {
-                        alert(response['message']);
-                        $syncBtn.removeClass("processing");
-                        $dataGrid.datagrid('uncheckAll');
-                        $dataGrid.datagrid('reload');
-                        return;
-                    }
-                }
-            });
         }
 
         function getOption(url) {

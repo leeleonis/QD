@@ -183,6 +183,7 @@ namespace QDLogistics.Controllers
                     StatusCode = data.order.StatusCode,
                     RushOrder = data.order.RushOrder,
                     UploadTracking = uploadDefault.Contains(data.order.ShippingServiceSelected) ? false : data.package.UploadTracking,
+                    NeedInsurance = data.package.NeedInsurance,
                     Instructions = data.order.Instructions,
                     Comment = string.IsNullOrEmpty(data.package.Comment) ? "" : data.package.Comment,
                     ProcessBack = data.package.ProcessBack
@@ -231,6 +232,7 @@ namespace QDLogistics.Controllers
                     package.Export = oData.Export.Value;
                     package.ExportMethod = oData.ExportMethod.Value;
                     package.UploadTracking = oData.UploadTracking.Value;
+                    package.NeedInsurance = oData.NeedInsurance.Value;
                     package.Comment = oData.Comment;
                     Packages.Update(package, oData.PackageID);
 

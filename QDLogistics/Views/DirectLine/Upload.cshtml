@@ -45,14 +45,18 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach (var log in LogList)
-                                        {
-                                            <tr>
-                                                <td><img src='../content/img/@(string.IsNullOrEmpty(log.ActionName) ? "checked" : "error").png' runat='server' style='width: auto; height: 15px;'></td>
-                                                <td>@log.TargetID</td>
-                                                <td>@log.ActionName</td>
-                                                <td>@log.CreateDate.ToString()</td>
-                                            </tr>
+                                        @{
+                                            var TimeZoneConvert = new TimeZoneConvert();
+                                            var TargetTimeZone = (QDLogistics.Commons.EnumData.TimeZone)(Session["TimeZone"] as int?).Value;
+                                            foreach (var log in LogList)
+                                            {
+                                                <tr>
+                                                    <td><img src='../content/img/@(string.IsNullOrEmpty(log.ActionName) ? "checked" : "error").png' runat='server' style='width: auto; height: 15px;'></td>
+                                                    <td>@log.TargetID</td>
+                                                    <td>@log.ActionName</td>
+                                                    <td>@TimeZoneConvert.InitDateTime(log.CreateDate.Value, QDLogistics.Commons.EnumData.TimeZone.UTC).ConvertDateTime(TargetTimeZone)</td>
+                                                </tr>
+                                            }
                                         }
                                     </tbody>
                                     <tfoot></tfoot>

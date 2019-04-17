@@ -179,9 +179,11 @@
             function check_RMA() {
                 var rows = $dataGrid.datagrid('getSelections');
 
-                if (rows.length == 0) alert("請先選擇一筆訂單!");
+                if (rows.length == 0) return alert("請先選擇一筆訂單!");
 
-                if (rows.length > 1) alert("只能選擇一筆訂單!");
+                if (rows.length > 1) return alert("只能選擇一筆訂單!");
+
+                //window.open('http://internal.qd.com.tw:8080/RMA/Create?OrderID=' + rows[0].OrderID, '_blank');
 
                 return $.ajax({
                     url: '@Url.Action("orderProductList", "ajax")',
