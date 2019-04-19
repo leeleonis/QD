@@ -183,9 +183,9 @@
 
                 if (rows.length > 1) return alert("只能選擇一筆訂單!");
 
-                //window.open('http://internal.qd.com.tw:8080/RMA/Create?OrderID=' + rows[0].OrderID, '_blank');
+                window.open('http://internal.qd.com.tw:8080/RMA/Create?OrderID=' + rows[0].OrderID, '_blank');
 
-                return $.ajax({
+                @*return $.ajax({
                     url: '@Url.Action("orderProductList", "ajax")',
                     type: 'get',
                     data: { PackageID: rows[0].PackageID, type: 'rma', index: 0 },
@@ -195,7 +195,7 @@
                         $warehouseSelect.html($warehouseSelect.find('option:eq(0)').remove()).append(response.warehouse);
                         $reasonDialog.window('open');
                     }
-                });
+                });*@
             }
 
             $reasonDialog.on('change', ':text', function () {

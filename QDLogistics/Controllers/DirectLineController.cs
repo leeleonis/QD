@@ -10,6 +10,7 @@ using System.Web;
 using System.Web.Hosting;
 using System.Web.Mvc;
 using ClosedXML.Excel;
+using DirectLineApi.IDS;
 using Ionic.Zip;
 using Neodynamic.SDK.Web;
 using Newtonsoft.Json;
@@ -268,7 +269,7 @@ namespace QDLogistics.Controllers
                 .Join(OrderFilter, data => data.package.OrderID.Value, o => o.OrderID, (data, order) => new { order, data.package, data.pick, data.method })
                 .OrderBy(data => data.package.Qty).OrderBy(data => data.order.TimeOfOrder).OrderByDescending(data => data.order.RushOrder).ToList()
                 .Join(ItemFilter, data => data.package.ID, i => i.PackageID, (data, item) => item).Distinct().ToList();
-            
+
             string basePath = HostingEnvironment.MapPath("~/FileUploads");
             string DirPath = Path.Combine(basePath, "pickup");
             if (!Directory.Exists(DirPath)) Directory.CreateDirectory(DirPath);
@@ -1264,7 +1265,7 @@ namespace QDLogistics.Controllers
                 foreach (Packages package in box.Packages.Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨)).ToList())
                 {
                     DirectLineLabel label = package.Label;
-                    OrderData order = SCWS.Get_OrderData(package.OrderID.Value);
+                    OrderService.OrderData order = SCWS.Get_OrderData(package.OrderID.Value);
                     if (CheckOrderStatus(package, order.Order))
                     {
                         if (label.Status.Equals((byte)EnumData.LabelStatus.正常))
@@ -1687,7 +1688,7 @@ namespace QDLogistics.Controllers
 
                                 MyHelp.Log("Orders", newOrder.OrderID, string.Format("新訂單【{0}】寄送 {1} 出貨通知", newOrder.OrderID, directLine.Abbreviation), Session);
 
-                                using (CaseLog CaseLog = new CaseLog(oldPackage, Session, CurrentHttpContext))
+                                using (CaseLog CaseLog = new CaseLog(oldPackage, Session))
                                 {
                                     CaseLog.SendResendShipmentMail(newPackage, serials.First().Create_at);
                                 }
@@ -2296,6 +2297,118 @@ namespace QDLogistics.Controllers
             return Json(result, JsonRequestBehavior.AllowGet);
         }
 
+        public void TrackDirectLine(string DL)
+        {
+            TaskFactory factory = System.Web.HttpContext.Current.Application.Get("TaskFactory") as TaskFactory;
+
+            lock (factory)
+            {
+                ThreadTask threadTask = new ThreadTask(string.Format("追蹤 {0} 訂單", DL));
+                threadTask.AddWork(factory.StartNew(Session =>
+                {
+                    threadTask.Start();
+                    string message = "";
+
+                    try
+                    {
+                        HttpSessionStateBase session = (HttpSessionStateBase)Session;
+                        MyHelp.Log("Box", null, string.Format("取得 {0} 訂單", DL), session);
+
+                        var directLine = db.DirectLine.FirstOrDefault(d => d.IsEnable && d.Abbreviation.Equals(DL));
+
+                        if (directLine == null) throw new Exception("找不到 Direct Line!");
+
+                        var labelList = db.DirectLineLabel.Where(l => l.IsEnable && l.Status.Equals((byte)EnumData.LabelStatus.正常))
+                            .Join(db.Box.AsNoTracking().Where(b => b.IsEnable && b.DirectLine.Equals(directLine.ID) && !b.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.未發貨)), l => l.BoxID, b => b.BoxID, (l, b) => l).ToList();
+                        if (labelList.Any())
+                        {
+                            MyHelp.Log("Box", null, string.Format("開始追蹤 {0} 訂單", DL), session);
+
+                            SC_WebService SCWS = new SC_WebService("tim@weypro.com", "timfromweypro");
+
+                            foreach (var label in labelList)
+                            {
+                                if (!label.Packages.Any()) throw new Exception("沒有找到 Package!");
+
+                                var package = label.Packages.First();
+                                var order = package.Orders;
+                                var SC_Order = SCWS.Get_OrderData(label.OrderID).Order;
+
+                                if (package.Orders.StatusCode.Value.Equals((int)SC_Order.StatusCode) && package.Orders.PaymentStatus.Value.Equals((int)SC_Order.PaymentStatus))
+                                {
+                                    if (string.IsNullOrEmpty(package.TrackingNumber))
+                                    {
+                                        MyHelp.Log("Orders ", label.OrderID, string.Format(string.Format("取得 {0} 訂單【{1}】的 Tracking Number", DL, label.OrderID)), session);
+
+                                        CarrierAPI api = package.Method.Carriers.CarrierAPI;
+                                        switch (api.Type)
+                                        {
+                                            case (byte)EnumData.CarrierType.IDS:
+                                                IDS_API IDS = new IDS_API(api);
+                                                var IDS_Result = IDS.GetTrackingNumber(package);
+                                                if (IDS_Result.trackingnumber.Any(t => t.First().Equals(package.OrderID.ToString())))
+                                                {
+                                                    package.TrackingNumber = IDS_Result.trackingnumber.Last(t => t.First().Equals(package.OrderID.ToString()))[1];
+                                                }
+                                                break;
+                                        }
+                                    }
+
+                                    if (!string.IsNullOrEmpty(package.TrackingNumber))
+                                    {
+                                        MyHelp.Log("Orders ", label.OrderID, string.Format(string.Format("{0} 訂單【{1}】SC 更新", DL, label.OrderID)), session);
+
+                                        ThreadTask syncTask = new ThreadTask(string.Format("{0} 訂單【{1}】SC 更新", DL, label.OrderID));
+                                        syncTask.AddWork(factory.StartNew(() =>
+                                        {
+                                            syncTask.Start();
+                                            SyncProcess sync = new SyncProcess(session);
+                                            return sync.Update_Tracking(package);
+                                        }));
+
+                                        using (CaseLog CaseLog = new CaseLog(package, session))
+                                        {
+                                            if (CaseLog.CaseExit(EnumData.CaseEventType.UpdateTracking))
+                                            {
+                                                CaseLog.TrackingResponse();
+                                            }
+                                        }
+
+                                        label.Status = (byte)EnumData.LabelStatus.完成;
+                                    }
+                                }
+                                else
+                                {
+                                    MyHelp.Log("Box ", label.BoxID, string.Format(string.Format("訂單【{0}】資料狀態異常", label.OrderID)), session);
+
+                                    order.StatusCode = (int)SC_Order.StatusCode;
+                                    order.PaymentStatus = (int)SC_Order.PaymentStatus;
+                                    label.Status = (byte)EnumData.LabelStatus.鎖定中;
+
+                                    if (SC_Order.StatusCode.Equals((int)OrderStatusCode.Canceled))
+                                    {
+                                        using (CaseLog CaseLog = new CaseLog(package, session))
+                                        {
+                                            CaseLog.SendCancelMail();
+                                        }
+
+                                        label.Status = (byte)EnumData.LabelStatus.作廢;
+                                    }
+                                }
+                            }
+
+                            db.SaveChanges();
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        message = e.InnerException?.Message ?? e.Message;
+                    }
+
+                    return message;
+                }, Session));
+            }
+        }
 
         public void SendMailToCarrier(List<Box> boxList, ShippingMethod method, DirectLine directLine, bool reSend = false)
         {
@@ -2366,9 +2479,6 @@ namespace QDLogistics.Controllers
                         }
 
                         List<string> IDSFile1 = new List<string>();
-
-                        if (boxList.Count() > 1)
-                            IDSFile1.Add(Path.Combine(filePath, "PackageList.xlsx"));
 
                         if (directLine.Abbreviation.Equals("IDS (US)"))
                             IDSFile1.Add(Path.Combine(filePath, "DirectLine.xlsx"));
@@ -2509,9 +2619,8 @@ namespace QDLogistics.Controllers
                     case (byte)EnumData.CarrierType.FedEx:
                         MyHelp.Log("PickProduct", null, "寄送FedEx出口報單");
 
-                        List<Tuple<Stream, string>> FedExFile = new List<Tuple<Stream, string>>();
-
-                        filePath = Path.Combine(basePath, "export", "Box", create_at.ToString("yyyy/MM/dd"), boxID);
+                        List<string> FedExFile1 = new List<string>();
+                        List<Tuple<Stream, string>> FedExFile2 = new List<Tuple<Stream, string>>();
 
                         var memoryStream = new MemoryStream();
                         using (var file = new ZipFile())
@@ -2527,12 +2636,15 @@ namespace QDLogistics.Controllers
                         }
 
                         memoryStream.Seek(0, SeekOrigin.Begin);
-                        FedExFile.Add(new Tuple<Stream, string>(memoryStream, trackingNumber + ".zip"));
+                        FedExFile2.Add(new Tuple<Stream, string>(memoryStream, trackingNumber + ".zip"));
+
+                        if (boxList.Count() > 1)
+                            FedExFile1.Add(Path.Combine(filePath, "PackageList.xlsx"));
 
                         receiveMails = new string[] { "edd@fedex.com" };
                         mailTitle = string.Format("至優網 正式出口報關資料");
 
-                        bool FedEx_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, "", true, null, FedExFile, false);
+                        bool FedEx_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, "", true, FedExFile1.ToArray(), FedExFile2, false);
 
                         if (FedEx_Status)
                         {

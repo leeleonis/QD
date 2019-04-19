@@ -79,7 +79,7 @@ namespace QDLogistics.Commons
             if (!data.Any()) throw new Exception("沒有找到任何資料");
 
             Response<object> response = Request<object>("Ajax/OrderLogList", "post", data);
-            if (!response.status) throw new Exception(response.message);
+            if (!response.status) throw new Exception("PO Error: " + response.message);
         }
 
         public List<SkuData> GetSkuData(string[] IDs)
@@ -91,11 +91,13 @@ namespace QDLogistics.Commons
 
         public int CreateRMA(int OrderID, int ReturnWarehouseID)
         {
-            Response<int> response = Request<int>("Ajax/CreateALLRMA", "post", new { OrderID, ReturnWarehouseID });
+            Response<int?> response = Request<int?>("Ajax/CreateALLRMA", "post", new { OrderID, ReturnWarehouseID });
 
-            if (!response.status) throw new Exception(response.message);
+            if (!response.status) throw new Exception("PO Error：" + response.message);
 
-            return response.data;
+            if (!response.data.HasValue) throw new Exception("沒有取得RMA ID!");
+
+            return response.data.Value;
         }
 
         private Response<T> Request<T>(string url, string method = "post", object data = null) where T : new()
@@ -110,7 +112,7 @@ namespace QDLogistics.Commons
             {
                 using (StreamWriter streamWriter = new StreamWriter(request.GetRequestStream()))
                 {
-                    var json = JsonConvert.SerializeObject(data);
+                    //var json = JsonConvert.SerializeObject(data);
                     streamWriter.Write(JsonConvert.SerializeObject(data));
                     streamWriter.Flush();
                 }

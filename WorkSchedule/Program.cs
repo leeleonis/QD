@@ -34,6 +34,11 @@ namespace WorkSchedule
 
             Console.WriteLine("Event worked at: " + now.ToString());
 
+            if (min.Equals(0))
+            {
+                RequestJob(Host, "DirectLine/TrackDirectLine", new Dictionary<string, object>() { { "DL", "IDS (US)" } });
+            }
+
             if (min.Equals(0) || min.Equals(30))
             {
                 RequestJob(Host, "DirectLine/CheckBoxStatus", null);

@@ -43,32 +43,13 @@ namespace QDLogistics.Commons
             { "IDS", new string[]{ "gloria.chiu@contin-global.com", "cherry.chen@contin-global.com", "TWCS@contin-global.com", "contincs@gmail.com", "shipping_qd@hotmail.com" } },
             { "ECOF", new string[]{ "customerservice@ecof.com.au", "sophia.wang@ecof.com.au", "Ada.chen@ecof.com.au", "mandy.liang@ecof.com.au" } }
         };
-
-        private HttpContextBase _currentHttpContext;
-        public HttpContextBase CurrentHttpContext
-        {
-            get
-            {
-                if (this._currentHttpContext != null)
-                {
-                    return _currentHttpContext;
-                }
-
-                return Helpers.HttpContextFactory.GetHttpContext();
-            }
-            set { _currentHttpContext = value; }
-        }
-
-        //private string BaseUrl { get { return string.Format("{0}://{1}", CurrentHttpContext.Request.Url.Scheme, CurrentHttpContext.Request.Url.Host); } }
+        
+        //private string BaseUrl { get { return string.Format("{0}://{1}".Request.Url.Scheme.Request.Url.Host); } }
         private string BaseUrl = "http://internal.qd.com.tw";
 
-        public CaseLog(HttpSessionStateBase session) : this(session, null) { }
+        public CaseLog(HttpSessionStateBase session) : this(null, session) { }
 
-        public CaseLog(HttpSessionStateBase session, HttpContextBase httpContext) : this(null, session, httpContext) { }
-
-        public CaseLog(Packages package, HttpSessionStateBase session) : this(package, session, null) { }
-
-        public CaseLog(Packages package, HttpSessionStateBase session, HttpContextBase httpContext)
+        public CaseLog(Packages package, HttpSessionStateBase session)
         {
             db = new QDLogisticsEntities();
 
@@ -78,7 +59,6 @@ namespace QDLogistics.Commons
             }
 
             this.Session = session;
-            this.CurrentHttpContext = httpContext;
         }
 
         public void OrderInit(Packages package)
@@ -324,7 +304,7 @@ namespace QDLogistics.Commons
                         throw new Exception(string.Format("訂單【{0}】更新退貨倉失敗! - {1}", orderData.OrderID, msg));
                     }
 
-                    CreateRMA();
+                    CreateRMA(returnWarehouseID.Value);
                     MoveSku();
                 }
 
@@ -340,12 +320,12 @@ namespace QDLogistics.Commons
             }
         }
 
-        private void CreateRMA()
+        private void CreateRMA(int ReturnedToWarehouseID)
         {
             if (packageData == null) throw new Exception("未設定訂單!");
 
             if (Packages == null) Packages = new GenericRepository<Packages>(db);
-            if (SCWS == null) SCWS = new SC_WebService("tim@weypro.com", "timfromweypro");
+            //if (SCWS == null) SCWS = new SC_WebService("tim@weypro.com", "timfromweypro");
 
             try
             {
@@ -353,7 +333,7 @@ namespace QDLogistics.Commons
 
                 using (StockKeepingUnit stock = new StockKeepingUnit())
                 {
-                    packageData.RMAId = stock.CreateRMA(orderData.OrderID, itemList.First().ReturnedToWarehouseID.Value);
+                    packageData.RMAId = stock.CreateRMA(orderData.OrderID, ReturnedToWarehouseID);
                     Packages.Update(packageData, packageData.ID);
                     Packages.SaveChanges();
                 }
