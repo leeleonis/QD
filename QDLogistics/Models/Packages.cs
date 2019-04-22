@@ -52,6 +52,7 @@ namespace QDLogistics.Models
         public Nullable<decimal> FinalShippingFee { get; set; }
         public bool UploadTracking { get; set; }
         public string TrackingNumber { get; set; }
+        public int WorkDays { get; set; }
         public bool NeedInsurance { get; set; }
         public Nullable<int> POId { get; set; }
         public string POInvoice { get; set; }

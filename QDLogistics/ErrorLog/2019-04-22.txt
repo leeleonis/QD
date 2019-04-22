@@ -1,0 +1,9 @@
+ActionName : 訂單【5599050】資料同步失敗
+Message : 並未將物件參考設定為物件的執行個體。
+StackTrace : 於 QDLogistics.Commons.SyncProcess.<>c.<Sync_Order>b__19_8(Warehouses w) 於 C:\QD Project\Order Shipping System\QDLogistics\Commons\SyncProcess.cs: 行 248
+   於 System.Linq.Enumerable.All[TSource](IEnumerable`1 source, Func`2 predicate)
+   於 QDLogistics.Commons.SyncProcess.Sync_Order(Int32 OrderID) 於 C:\QD Project\Order Shipping System\QDLogistics\Commons\SyncProcess.cs: 行 248
+Date : 2019/4/22 上午 11:59:00
+
+-----------------------------------------------------------------------------
+

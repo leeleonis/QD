@@ -495,8 +495,24 @@ namespace QDLogistics.Commons
 
                 if (db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.OrderID.Value.Equals(package.OrderID.Value)).All(p => p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.已出貨)))
                 {
-                    SCWS.Update_OrderShippingStatus(SC_order, carrier);
-                    MyHelp.Log("Packages", package.ID, string.Format("訂單【{0}】SC完成出貨", package.OrderID), Session);
+                    if(SCWS.Update_OrderShippingStatus(SC_order, carrier))
+                    {
+                        var updatePackage = db.Packages.Find(package.ID);
+                        var paymentDate = new TimeZoneConvert(package.Orders.Payments.FirstOrDefault()?.AuditDate ?? package.Orders.TimeOfOrder.Value, EnumData.TimeZone.EST).Utc;
+                        var updateDate = DateTime.UtcNow;
+                        var checkPoint = new DateTime(paymentDate.Year, paymentDate.Month, paymentDate.Day, 7, 0, 0, DateTimeKind.Utc);
+                        do
+                        {
+                            if (paymentDate.CompareTo(checkPoint) < 0)
+                                if (!checkPoint.DayOfWeek.Equals(DayOfWeek.Saturday) && !checkPoint.DayOfWeek.Equals(DayOfWeek.Sunday))
+                                    updatePackage.WorkDays++;
+
+                            checkPoint = checkPoint.AddDays(1);
+                        } while (checkPoint.CompareTo(updateDate) < 0);
+                        db.SaveChanges();
+
+                        MyHelp.Log("Packages", package.ID, string.Format("訂單【{0}】SC完成出貨", package.OrderID), Session);
+                    }
                 }
 
                 foreach (Items item in package.Items.Where(i => i.IsEnable.Value).ToList())

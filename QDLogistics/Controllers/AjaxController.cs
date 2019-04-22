@@ -1231,6 +1231,7 @@ namespace QDLogistics.Controllers
                         SerialNumber = data.itemCount == 1 ? (serialOfItem.ContainsKey(data.item.ID) ? serialOfItem[data.item.ID] : "None") : "Multi",
                         PickUpDate = data.package.PickUpDate != null && !data.package.PickUpDate.Equals(DateTime.MinValue) ? TimeZoneConvert.InitDateTime(data.package.PickUpDate.Value, EnumData.TimeZone.UTC).ConvertDateTime(EnumData.TimeZone.TST).ToString("MM/dd/yyyy<br />hh:mm tt") : "",
                         TrackingNumber = data.package.TrackingNumber,
+                        WorkDays = data.package.WorkDays,
                         DeliveryStatus = data.package.DeliveryNote,
                         DispatchTime = data.payment != null ? FormatTime(data.package.PickUpDate, TimeZoneConvert.InitDateTime(data.payment.AuditDate.Value, EnumData.TimeZone.EST).Utc) : "",
                         TransitTime = FormatTime(data.package.DeliveryDate, data.package.PickUpDate),

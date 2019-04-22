@@ -158,7 +158,7 @@ namespace QDLogistics.Controllers
             TrackResult result = track.Track();
         }
 
-        public void FedEx_Test(string BoxID)
+        private void FedEx_Test(string BoxID)
         {
             var boxList = db.Box.Where(b => b.IsEnable && b.MainBox.Equals(BoxID)).ToList();
             ShippingMethod method = db.ShippingMethod.Find(boxList.First().FirstMileMethod);
@@ -247,7 +247,7 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public void Preset_Test(int OrderID)
+        private void Preset_Test(int OrderID)
         {
             using (var orderPreset = new OrderPreset(Session, db.Orders.Find(OrderID)))
             {
@@ -348,7 +348,7 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public void IDS_Test(int orderID)
+        private void IDS_Test(int orderID)
         {
             Packages package = db.Packages.AsNoTracking().First(p => p.OrderID.Value.Equals(orderID));
 
@@ -360,7 +360,7 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public void Box_Test(string boxID)
+        private void Box_Test(string boxID)
         {
             SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
             ShipProcess shipProcess = new ShipProcess(SCWS);
@@ -563,7 +563,7 @@ namespace QDLogistics.Controllers
             var result = ship.Dispatch();
         }
 
-        public void SkuData_Test(int OrderID)
+        private void SkuData_Test(int OrderID)
         {
             try
             {
@@ -580,7 +580,7 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public void GetProductType()
+        private void GetProductType()
         {
             SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
 
@@ -604,6 +604,23 @@ namespace QDLogistics.Controllers
             }
 
             db.SaveChanges();
+        }
+
+        public void CheckWorkDays(int OrderID)
+        {
+            int workDays = 0;
+            var order = db.Orders.Find(OrderID);
+            var paymentDate = new TimeZoneConvert(order.Payments.FirstOrDefault()?.AuditDate ?? order.TimeOfOrder.Value, EnumData.TimeZone.EST).Utc;
+            var updateDate = DateTime.UtcNow;
+            var checkPoint = new DateTime(paymentDate.Year, paymentDate.Month, paymentDate.Day, 7, 0, 0, DateTimeKind.Utc);
+            do
+            {
+                if (paymentDate.CompareTo(checkPoint) < 0)
+                    if (!checkPoint.DayOfWeek.Equals(DayOfWeek.Saturday) && !checkPoint.DayOfWeek.Equals(DayOfWeek.Sunday))
+                        workDays++;
+
+                checkPoint = checkPoint.AddDays(1);
+            } while (checkPoint.CompareTo(updateDate) < 0);
         }
     }
 }
