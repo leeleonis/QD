@@ -737,7 +737,7 @@ namespace QDLogistics.Controllers
                                     }
                                     else
                                     {
-                                        MyHelp.Log("Box ", label.BoxID, string.Format("Direct Line訂單【{0}】資料狀態異常", package.OrderID.Value), session);
+                                        MyHelp.Log("Box ", label.BoxID, string.Format("Direct Line 訂單【{0}】資料狀態異常", package.OrderID.Value), session);
 
                                         order.StatusCode = (int)orderData.StatusCode;
                                         order.PaymentStatus = (int)orderData.PaymentStatus;

@@ -588,7 +588,7 @@ namespace QDLogistics.Controllers
                             List<Packages> packageList = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && packageIDs.Contains(p.ID)).ToList();
                             DirectLine directLine = db.DirectLine.Find(packageList[0].Method.DirectLine);
                             string boxID = string.Format("{0}-{1}", directLine.Abbreviation, timeZoneConvert.Utc.ToString("yyyyMMdd"));
-                            int count = Box.GetAll(true).Count(b => b.IsEnable && b.DirectLine.Equals(directLine.ID) && b.BoxID.Contains(boxID)) + 1;
+                            int count = db.Box.Where(b => b.IsEnable && b.DirectLine.Equals(directLine.ID) && b.BoxID.Contains(boxID)).Select(b => b.MainBox).Distinct().Count() + 1;
                             byte[] Byte = BitConverter.GetBytes(count);
                             Byte[0] += 64;
                             boxID = string.Format("{0}-{1}", boxID, System.Text.Encoding.ASCII.GetString(Byte.Take(1).ToArray()));
@@ -685,6 +685,7 @@ namespace QDLogistics.Controllers
                                 {
                                     IsEnable = true,
                                     BoxID = boxID,
+                                    MainBox = boxID,
                                     DirectLine = directLine.ID,
                                     FirstMileMethod = method ?? 0,
                                     WarehouseFrom = warehouseID,

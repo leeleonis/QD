@@ -2679,11 +2679,11 @@ namespace QDLogistics.Controllers
 
                     if (!SCWS.Is_login) throw new Exception("SC is not login");
 
-                    MyHelp.Log("Box", BoxID, BoxID + "Confirm!");
+                    MyHelp.Log("Box", BoxID, BoxID + " Confirm!");
 
                     foreach (var package in boxList.SelectMany(b => b.Packages.Where(p => p.IsEnable.Value)))
                     {
-                        if (!string.IsNullOrEmpty(package.TrackingNumber))
+                        if (!string.IsNullOrEmpty(package.TrackingNumber) && package.Label.Status.Equals((byte)EnumData.LabelStatus.正常))
                         {
                             ThreadTask SyncTask = new ThreadTask(string.Format("Direct Line 訂單【{0}】SC更新", package.OrderID));
                             SyncTask.AddWork(factory.StartNew(() =>

@@ -777,7 +777,7 @@ namespace QDLogistics.Commons
                     Skus sku = item.Skus;
                     Country country = MyHelp.GetCountries().FirstOrDefault(c => c.ID.Equals(sku.Origin));
                     sheet.GetRow(rowIndex).GetCell(1).SetCellValue(country.OriginName);
-                    string productName = sku.ProductType.ProductTypeName + " - " + sku.ProductName;
+                    string productName = sku.ProductType.ProductTypeName + " - " + (SkuData.Any(s => s.Sku.Equals(item.ProductID)) ? SkuData.First(s => s.Sku.Equals(item.ProductID)).Name : sku.ProductName);
                     sheet.GetRow(rowIndex).GetCell(4).SetCellValue(productName);
                     sheet.GetRow(rowIndex).GetCell(5).SetCellValue((SkuData.Any(s => s.Sku.Equals(item.ProductID)) ? SkuData.First(s => s.Sku.Equals(item.ProductID)).HSCode : sku.ProductType.HSCode));
                     sheet.GetRow(rowIndex).GetCell(8).SetCellValue(item.Qty.Value);

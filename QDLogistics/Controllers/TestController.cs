@@ -611,7 +611,7 @@ namespace QDLogistics.Controllers
             int workDays = 0;
             var order = db.Orders.Find(OrderID);
             var paymentDate = new TimeZoneConvert(order.Payments.FirstOrDefault()?.AuditDate ?? order.TimeOfOrder.Value, EnumData.TimeZone.EST).Utc;
-            var updateDate = DateTime.UtcNow;
+            var updateDate = new DateTime(2019, 4, 24, 8, 1, 0, DateTimeKind.Utc);
             var checkPoint = new DateTime(paymentDate.Year, paymentDate.Month, paymentDate.Day, 7, 0, 0, DateTimeKind.Utc);
             do
             {

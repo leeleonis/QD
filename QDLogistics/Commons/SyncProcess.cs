@@ -498,6 +498,7 @@ namespace QDLogistics.Commons
                     if(SCWS.Update_OrderShippingStatus(SC_order, carrier))
                     {
                         var updatePackage = db.Packages.Find(package.ID);
+                        updatePackage.WorkDays = 0;
                         var paymentDate = new TimeZoneConvert(package.Orders.Payments.FirstOrDefault()?.AuditDate ?? package.Orders.TimeOfOrder.Value, EnumData.TimeZone.EST).Utc;
                         var updateDate = DateTime.UtcNow;
                         var checkPoint = new DateTime(paymentDate.Year, paymentDate.Month, paymentDate.Day, 7, 0, 0, DateTimeKind.Utc);

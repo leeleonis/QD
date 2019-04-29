@@ -376,8 +376,6 @@ namespace QDLogistics.Commons
         {
             if (packageData == null) throw new Exception("未設定訂單!");
 
-            if (RefundLabelSerial == null) RefundLabelSerial = new GenericRepository<SerialNumberForRefundLabel>(db);
-
             CaseEvent eventData = GetCaseEvent(EnumData.CaseEventType.CancelShipment);
 
             try
@@ -388,7 +386,7 @@ namespace QDLogistics.Commons
                 {
                     for (int i = 0; i < item.Qty; i++)
                     {
-                        RefundLabelSerial.Create(new SerialNumberForRefundLabel()
+                        db.SerialNumberForRefundLabel.Add(new SerialNumberForRefundLabel()
                         {
                             IsUsed = false,
                             oldOrderID = item.OrderID.Value,
@@ -402,7 +400,7 @@ namespace QDLogistics.Commons
                     }
                 }
 
-                RefundLabelSerial.SaveChanges();
+                db.SaveChanges();
 
                 MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("記錄訂單【{0}】取消出貨產品成功", orderData.OrderID), Session);
             }
