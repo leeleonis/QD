@@ -789,6 +789,7 @@ namespace QDLogistics.Controllers
                     o.OrderID,
                     o.OrderSource,
                     o.OrderSourceOrderId,
+                    o.eBayUserID,
                     o.CompanyID,
                     o.Addresses.CountryCode,
                     o.FinalShippingFee,
