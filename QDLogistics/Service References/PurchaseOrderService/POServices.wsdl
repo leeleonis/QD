@@ -228,6 +228,7 @@
           <s:element minOccurs="1" maxOccurs="1" name="IncludeWalmartOrderSpecificData" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="SkipProductMetadata" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="IncludePODetails" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="IncludeShippingSuggestions" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="CreateNewProducts" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="SplitItems" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="PaymentNotNeeded" type="s:boolean" />
@@ -1644,6 +1645,7 @@
           <s:element minOccurs="0" maxOccurs="1" name="ENDICIA_PassPhrase" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="ENDICIA_WebPassword" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="FedExShipping_KeyID" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="FedExShipping_UseParentCredentials" type="s:boolean" />
           <s:element minOccurs="0" maxOccurs="1" name="FedExShipping_Password" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="FedExShipping_AccountNumber" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="FedExShipping_MeterNumber" type="s:string" />
@@ -2030,6 +2032,10 @@
           <s:element minOccurs="0" maxOccurs="1" name="CanadaAPIPassword" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="CanadaAPICustomerNumber" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="PurchaseOrderDefaultWarehouseID" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="Invoice_IncludeAllTrackingNumbers" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="NewEggDotComEnableSettlementDownlaod" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="OverStockImportOrdersAsUnPaid" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="DoNotApplyEbaySubsidyOnSites" type="tns:ArrayOfString" />
         </s:sequence>
       </s:complexType>
       <s:simpleType name="WebsiteProductViewURLValueTypeType">
@@ -4133,6 +4139,9 @@
           <s:element minOccurs="1" maxOccurs="1" name="BinRefillDays" type="s:int" />
           <s:element minOccurs="1" maxOccurs="1" name="BinRefillQty" type="s:int" />
           <s:element minOccurs="1" maxOccurs="1" name="GroupOnGoodsCost" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="GroupOnGoodsCoOpFee" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="GroupOnGoodsCoOpFee_StartDate" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="GroupOnGoodsCoOpFee_EndtDate" type="s:dateTime" />
           <s:element minOccurs="0" maxOccurs="1" name="AppEagleProfileIDAmazon" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="AppEagleProfileIDUseDefaultAmazon" type="s:boolean" />
           <s:element minOccurs="0" maxOccurs="1" name="AppEagleProfileIDEBay" type="s:string" />
@@ -5210,6 +5219,22 @@
           <s:element minOccurs="1" maxOccurs="1" name="UnbeatableDefaultQtyUseDefault" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="HouzzCost" type="s:decimal" />
           <s:element minOccurs="1" maxOccurs="1" name="HouzzCostUseDefault" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="EtsyShopSectionID" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="WishLocalizedCurrencyCode" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="WishLocalizedCurrencyCodeUseDefault" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="AmazonProductSizeTier" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="BonanzaMaxQtyEnabled" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="BonanzaMaxQty" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="BonanzaMaxQtyUseDefault" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="IsUPCExemptForAmazon" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="UPCExemptTypeForAmazon" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="UpdatedbySellerintell" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="EtsyTags" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="EtsyRenew" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="NewEggDotComItemConditionDetail" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="HouzzColor" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="GoogleExpressSurfacesAcrossGoogleEnabled" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="GoogleExpressSurfacesAcrossGoogleIntention" type="s:string" />
         </s:sequence>
       </s:complexType>
       <s:simpleType name="MagentoProductVisibilityType">
@@ -5299,6 +5324,8 @@
           <s:enumeration value="Fair" />
           <s:enumeration value="Poor" />
           <s:enumeration value="NonFunctioning" />
+          <s:enumeration value="BStock" />
+          <s:enumeration value="MintWithInventory" />
         </s:restriction>
       </s:simpleType>
       <s:simpleType name="BDC_MAPTypeType">
@@ -7172,6 +7199,7 @@
           <s:element minOccurs="1" maxOccurs="1" name="ID" type="s:int" />
           <s:element minOccurs="0" maxOccurs="1" name="Name" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="ClientID" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="IsDisabled" type="s:boolean" />
         </s:sequence>
       </s:complexType>
       <s:simpleType name="WarehouseTypeType">
@@ -7519,6 +7547,7 @@
           <s:element minOccurs="0" maxOccurs="1" name="LogoFileName" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="UPC" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="AverageCostMovementID" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="AdjustedPrice" type="s:decimal" />
         </s:sequence>
       </s:complexType>
       <s:simpleType name="DropShipMode">
@@ -8072,7 +8101,7 @@
           <s:element minOccurs="0" maxOccurs="1" name="DestinationWarehouseCode" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="OrderLevelDiscountAmount" type="s:decimal" />
           <s:element minOccurs="1" maxOccurs="1" name="OrderLevelDiscountType" type="s16:DiscountAmountType" />
-          <s:element minOccurs="1" maxOccurs="1" name="OrderCreationCompleted" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="OrderCreationPending" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="EnableCaseQty" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="EstimatedDeliveryDate" type="s:dateTime" />
           <s:element minOccurs="1" maxOccurs="1" name="ShippedVerifiedBy" type="s:int" />
@@ -8296,6 +8325,7 @@
           <s:element minOccurs="0" maxOccurs="1" name="WalmartOrderSpecifics" type="s16:WalmartOrderSpecifics" />
           <s:element minOccurs="1" maxOccurs="1" name="ShippingLabelThirdPartyStatus" type="s16:ShippingLabelThirdPartyStatusType" />
           <s:element minOccurs="0" maxOccurs="1" name="FulfillmentOption" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="IsTaxCollectedByMarketplace" type="s:boolean" />
           <s:element minOccurs="0" maxOccurs="1" name="ShippingItems" type="s16:ArrayOfOrderItem" />
         </s:sequence>
       </s:complexType>
@@ -9308,6 +9338,7 @@
           <s:enumeration value="WinService_FBAReconciliationDataService" />
           <s:enumeration value="WinService_PriceFallExportInventoryServices" />
           <s:enumeration value="Skustack" />
+          <s:enumeration value="WayToPay" />
         </s:restriction>
       </s:simpleType>
       <s:simpleType name="PaymentStatus">

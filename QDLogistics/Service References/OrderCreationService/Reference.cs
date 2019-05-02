@@ -401,6 +401,17 @@ namespace QDLogistics.OrderCreationService {
         [System.ServiceModel.OperationContractAttribute(Action="http://api.sellercloud.com/ListOrdersForTrackingExport", ReplyAction="*")]
         System.Threading.Tasks.Task<QDLogistics.OrderCreationService.ListOrdersForTrackingExportResponse> ListOrdersForTrackingExportAsync(QDLogistics.OrderCreationService.ListOrdersForTrackingExportRequest request);
         
+        // CODEGEN: 訊息 Products_ListAllSKUs_NonShadow_AllCompaniesRequest 具有標頭，正在產生訊息合約
+        [System.ServiceModel.OperationContractAttribute(Action="http://api.sellercloud.com/Products_ListAllSKUs_NonShadow_AllCompanies", ReplyAction="*")]
+        [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
+        [System.ServiceModel.ServiceKnownTypeAttribute(typeof(ProductImageBase))]
+        [System.ServiceModel.ServiceKnownTypeAttribute(typeof(BusinessEntityBase))]
+        [System.ServiceModel.ServiceKnownTypeAttribute(typeof(Address[]))]
+        QDLogistics.OrderCreationService.Products_ListAllSKUs_NonShadow_AllCompaniesResponse Products_ListAllSKUs_NonShadow_AllCompanies(QDLogistics.OrderCreationService.Products_ListAllSKUs_NonShadow_AllCompaniesRequest request);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://api.sellercloud.com/Products_ListAllSKUs_NonShadow_AllCompanies", ReplyAction="*")]
+        System.Threading.Tasks.Task<QDLogistics.OrderCreationService.Products_ListAllSKUs_NonShadow_AllCompaniesResponse> Products_ListAllSKUs_NonShadow_AllCompaniesAsync(QDLogistics.OrderCreationService.Products_ListAllSKUs_NonShadow_AllCompaniesRequest request);
+        
         // CODEGEN: 訊息 Products_ListAllSKUs_NonShadowRequest 具有標頭，正在產生訊息合約
         [System.ServiceModel.OperationContractAttribute(Action="http://api.sellercloud.com/Products_ListAllSKUs_NonShadow", ReplyAction="*")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
@@ -5436,6 +5447,8 @@ namespace QDLogistics.OrderCreationService {
         
         private int clientIDField;
         
+        private bool isDisabledField;
+        
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
         public string DropShipCentralWarehouseCode {
@@ -5589,6 +5602,18 @@ namespace QDLogistics.OrderCreationService {
             set {
                 this.clientIDField = value;
                 this.RaisePropertyChanged("ClientID");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=13)]
+        public bool IsDisabled {
+            get {
+                return this.isDisabledField;
+            }
+            set {
+                this.isDisabledField = value;
+                this.RaisePropertyChanged("IsDisabled");
             }
         }
         
@@ -8332,6 +8357,12 @@ namespace QDLogistics.OrderCreationService {
         
         private decimal groupOnGoodsCostField;
         
+        private decimal groupOnGoodsCoOpFeeField;
+        
+        private System.DateTime groupOnGoodsCoOpFee_StartDateField;
+        
+        private System.DateTime groupOnGoodsCoOpFee_EndtDateField;
+        
         private string appEagleProfileIDAmazonField;
         
         private bool appEagleProfileIDUseDefaultAmazonField;
@@ -10485,6 +10516,38 @@ namespace QDLogistics.OrderCreationService {
         private decimal houzzCostField;
         
         private bool houzzCostUseDefaultField;
+        
+        private int etsyShopSectionIDField;
+        
+        private int wishLocalizedCurrencyCodeField;
+        
+        private bool wishLocalizedCurrencyCodeUseDefaultField;
+        
+        private string amazonProductSizeTierField;
+        
+        private bool bonanzaMaxQtyEnabledField;
+        
+        private int bonanzaMaxQtyField;
+        
+        private bool bonanzaMaxQtyUseDefaultField;
+        
+        private bool isUPCExemptForAmazonField;
+        
+        private string uPCExemptTypeForAmazonField;
+        
+        private bool updatedbySellerintellField;
+        
+        private string etsyTagsField;
+        
+        private bool etsyRenewField;
+        
+        private string newEggDotComItemConditionDetailField;
+        
+        private string houzzColorField;
+        
+        private bool googleExpressSurfacesAcrossGoogleEnabledField;
+        
+        private string googleExpressSurfacesAcrossGoogleIntentionField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
@@ -17352,6 +17415,42 @@ namespace QDLogistics.OrderCreationService {
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=572)]
+        public decimal GroupOnGoodsCoOpFee {
+            get {
+                return this.groupOnGoodsCoOpFeeField;
+            }
+            set {
+                this.groupOnGoodsCoOpFeeField = value;
+                this.RaisePropertyChanged("GroupOnGoodsCoOpFee");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=573)]
+        public System.DateTime GroupOnGoodsCoOpFee_StartDate {
+            get {
+                return this.groupOnGoodsCoOpFee_StartDateField;
+            }
+            set {
+                this.groupOnGoodsCoOpFee_StartDateField = value;
+                this.RaisePropertyChanged("GroupOnGoodsCoOpFee_StartDate");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=574)]
+        public System.DateTime GroupOnGoodsCoOpFee_EndtDate {
+            get {
+                return this.groupOnGoodsCoOpFee_EndtDateField;
+            }
+            set {
+                this.groupOnGoodsCoOpFee_EndtDateField = value;
+                this.RaisePropertyChanged("GroupOnGoodsCoOpFee_EndtDate");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=575)]
         public string AppEagleProfileIDAmazon {
             get {
                 return this.appEagleProfileIDAmazonField;
@@ -17363,7 +17462,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=573)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=576)]
         public bool AppEagleProfileIDUseDefaultAmazon {
             get {
                 return this.appEagleProfileIDUseDefaultAmazonField;
@@ -17375,7 +17474,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=574)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=577)]
         public string AppEagleProfileIDEBay {
             get {
                 return this.appEagleProfileIDEBayField;
@@ -17387,7 +17486,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=575)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=578)]
         public bool AppEagleProfileIDUseDefaultEBay {
             get {
                 return this.appEagleProfileIDUseDefaultEBayField;
@@ -17399,7 +17498,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=576)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=579)]
         public string AppEagleProfileIDBDC {
             get {
                 return this.appEagleProfileIDBDCField;
@@ -17411,7 +17510,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=577)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=580)]
         public bool AppEagleProfileIDUseDefaultBDC {
             get {
                 return this.appEagleProfileIDUseDefaultBDCField;
@@ -17423,7 +17522,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=578)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=581)]
         public string AppEagleProfileIDWalmartAPI {
             get {
                 return this.appEagleProfileIDWalmartAPIField;
@@ -17435,7 +17534,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=579)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=582)]
         public bool AppEagleProfileIDUseDefaultWalmartAPI {
             get {
                 return this.appEagleProfileIDUseDefaultWalmartAPIField;
@@ -17447,7 +17546,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=580)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=583)]
         public string OneStopPlus_Color_Image_URL {
             get {
                 return this.oneStopPlus_Color_Image_URLField;
@@ -17459,7 +17558,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=581)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=584)]
         public bool Enhancement_ValuePack {
             get {
                 return this.enhancement_ValuePackField;
@@ -17471,7 +17570,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=582)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=585)]
         public bool Enhancement_GalleryPlus {
             get {
                 return this.enhancement_GalleryPlusField;
@@ -17483,7 +17582,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=583)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=586)]
         public bool Enhancement_Bold {
             get {
                 return this.enhancement_BoldField;
@@ -17495,7 +17594,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=584)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=587)]
         public bool Enhancement_Border {
             get {
                 return this.enhancement_BorderField;
@@ -17507,7 +17606,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=585)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=588)]
         public bool Enhancement_Highlight {
             get {
                 return this.enhancement_HighlightField;
@@ -17519,7 +17618,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=586)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=589)]
         public bool Enhancement_HomePage {
             get {
                 return this.enhancement_HomePageField;
@@ -17531,7 +17630,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=587)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=590)]
         public bool EnhancementShipToRecipient {
             get {
                 return this.enhancementShipToRecipientField;
@@ -17543,7 +17642,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=588)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=591)]
         public bool EnhancementExpressShipping {
             get {
                 return this.enhancementExpressShippingField;
@@ -17555,7 +17654,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=589)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=592)]
         public bool EnhancementGiftWrap {
             get {
                 return this.enhancementGiftWrapField;
@@ -17567,7 +17666,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=590)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=593)]
         public bool Enhancement_FeaturedFirst {
             get {
                 return this.enhancement_FeaturedFirstField;
@@ -17579,7 +17678,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=591)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=594)]
         public int Enhancement_FeaturedFirstDuration {
             get {
                 return this.enhancement_FeaturedFirstDurationField;
@@ -17591,7 +17690,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=592)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=595)]
         public string MagentoMerchantSKU {
             get {
                 return this.magentoMerchantSKUField;
@@ -17603,7 +17702,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=593)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=596)]
         public string TaxClassWebSite {
             get {
                 return this.taxClassWebSiteField;
@@ -17615,7 +17714,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=594)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=597)]
         public decimal PriceFallShippingCost2Day {
             get {
                 return this.priceFallShippingCost2DayField;
@@ -17627,7 +17726,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=595)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=598)]
         public decimal PriceFallShippingCost1Day {
             get {
                 return this.priceFallShippingCost1DayField;
@@ -17639,7 +17738,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=596)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=599)]
         public decimal PriceFallShippingCostExpedited {
             get {
                 return this.priceFallShippingCostExpeditedField;
@@ -17651,7 +17750,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=597)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=600)]
         public decimal ShippingCost_2Day {
             get {
                 return this.shippingCost_2DayField;
@@ -17663,7 +17762,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=598)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=601)]
         public decimal ShippingCost_1Day {
             get {
                 return this.shippingCost_1DayField;
@@ -17675,7 +17774,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=599)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=602)]
         public decimal ShippingCost_Expedited {
             get {
                 return this.shippingCost_ExpeditedField;
@@ -17687,7 +17786,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=600)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=603)]
         public bool EnableExtendedHolidayReturnsForEbay {
             get {
                 return this.enableExtendedHolidayReturnsForEbayField;
@@ -17699,7 +17798,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=601)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=604)]
         public string SpecialFeatures4 {
             get {
                 return this.specialFeatures4Field;
@@ -17711,7 +17810,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=602)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=605)]
         public string SpecialFeatures5 {
             get {
                 return this.specialFeatures5Field;
@@ -17723,7 +17822,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=603)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=606)]
         public string SpecialFeatures6 {
             get {
                 return this.specialFeatures6Field;
@@ -17735,7 +17834,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=604)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=607)]
         public string SpecialFeatures7 {
             get {
                 return this.specialFeatures7Field;
@@ -17747,7 +17846,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=605)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=608)]
         public string SpecialFeatures8 {
             get {
                 return this.specialFeatures8Field;
@@ -17759,7 +17858,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=606)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=609)]
         public string SpecialFeatures9 {
             get {
                 return this.specialFeatures9Field;
@@ -17771,7 +17870,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=607)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=610)]
         public string SpecialFeatures10 {
             get {
                 return this.specialFeatures10Field;
@@ -17783,7 +17882,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=608)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=611)]
         public bool GroupOnGoodsEnabled {
             get {
                 return this.groupOnGoodsEnabledField;
@@ -17795,7 +17894,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=609)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=612)]
         public string GroupOnGoodsMerchantSKU {
             get {
                 return this.groupOnGoodsMerchantSKUField;
@@ -17807,7 +17906,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=610)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=613)]
         public decimal GroupOnGoodsPrice {
             get {
                 return this.groupOnGoodsPriceField;
@@ -17819,7 +17918,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=611)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=614)]
         public bool GroupOnGoodsPriceUseDefault {
             get {
                 return this.groupOnGoodsPriceUseDefaultField;
@@ -17831,7 +17930,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=612)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=615)]
         public decimal WishShippingPrice {
             get {
                 return this.wishShippingPriceField;
@@ -17843,7 +17942,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=613)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=616)]
         public string OneStopPlusDescription {
             get {
                 return this.oneStopPlusDescriptionField;
@@ -17855,7 +17954,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=614)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=617)]
         public bool ShopHQEnabled {
             get {
                 return this.shopHQEnabledField;
@@ -17867,7 +17966,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=615)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=618)]
         public decimal ShopHQPrice {
             get {
                 return this.shopHQPriceField;
@@ -17879,7 +17978,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=616)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=619)]
         public bool ShopHQPriceUseDefault {
             get {
                 return this.shopHQPriceUseDefaultField;
@@ -17891,7 +17990,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=617)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=620)]
         public int ShopHQSafetyQty {
             get {
                 return this.shopHQSafetyQtyField;
@@ -17903,7 +18002,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=618)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=621)]
         public bool ShopHQSafetyQtyUseDefault {
             get {
                 return this.shopHQSafetyQtyUseDefaultField;
@@ -17915,7 +18014,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=619)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=622)]
         public string ShopHQMerchantSKU {
             get {
                 return this.shopHQMerchantSKUField;
@@ -17927,7 +18026,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=620)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=623)]
         public decimal AppEagleMinPriceForEbay {
             get {
                 return this.appEagleMinPriceForEbayField;
@@ -17939,7 +18038,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=621)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=624)]
         public decimal AppEagleMaxPriceForEbay {
             get {
                 return this.appEagleMaxPriceForEbayField;
@@ -17951,7 +18050,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=622)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=625)]
         public bool WalmartCAPriceUseDefault {
             get {
                 return this.walmartCAPriceUseDefaultField;
@@ -17963,7 +18062,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=623)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=626)]
         public decimal WalmartCAPrice {
             get {
                 return this.walmartCAPriceField;
@@ -17975,7 +18074,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=624)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=627)]
         public bool EtsyEnabled {
             get {
                 return this.etsyEnabledField;
@@ -17987,7 +18086,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=625)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=628)]
         public string EtsyTitle {
             get {
                 return this.etsyTitleField;
@@ -17999,7 +18098,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=626)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=629)]
         public bool ReStockDateEnabled {
             get {
                 return this.reStockDateEnabledField;
@@ -18011,7 +18110,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=627)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=630)]
         public System.DateTime ReStockDate {
             get {
                 return this.reStockDateField;
@@ -18023,7 +18122,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=628)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=631)]
         public bool WalmartCAEnabled {
             get {
                 return this.walmartCAEnabledField;
@@ -18035,7 +18134,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=629)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=632)]
         public string WalmartCAMerchantSKU {
             get {
                 return this.walmartCAMerchantSKUField;
@@ -18047,7 +18146,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=630)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=633)]
         public string OneStopPlusName {
             get {
                 return this.oneStopPlusNameField;
@@ -18059,7 +18158,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=631)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=634)]
         public decimal AppEagleMinPriceForBDC {
             get {
                 return this.appEagleMinPriceForBDCField;
@@ -18071,7 +18170,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=632)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=635)]
         public decimal AppEagleMaxPriceForBDC {
             get {
                 return this.appEagleMaxPriceForBDCField;
@@ -18083,7 +18182,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=633)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=636)]
         public string BestBuyMerchantSKU {
             get {
                 return this.bestBuyMerchantSKUField;
@@ -18095,7 +18194,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=634)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=637)]
         public string OneStopPlus_Swatch_Image_URL {
             get {
                 return this.oneStopPlus_Swatch_Image_URLField;
@@ -18107,7 +18206,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=635)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=638)]
         public string StaplesSKU {
             get {
                 return this.staplesSKUField;
@@ -18119,7 +18218,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=636)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=639)]
         public string NewEggDotComItemPackageType {
             get {
                 return this.newEggDotComItemPackageTypeField;
@@ -18131,7 +18230,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=637)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=640)]
         public string StaplesMerchantSKU {
             get {
                 return this.staplesMerchantSKUField;
@@ -18143,7 +18242,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=638)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=641)]
         public bool FingerHutEnabled {
             get {
                 return this.fingerHutEnabledField;
@@ -18155,7 +18254,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=639)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=642)]
         public bool BedBathAndBeyondEnabled {
             get {
                 return this.bedBathAndBeyondEnabledField;
@@ -18167,7 +18266,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=640)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=643)]
         public bool GrouponMarketplaceEnabled {
             get {
                 return this.grouponMarketplaceEnabledField;
@@ -18179,7 +18278,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=641)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=644)]
         public bool SPRichEnabled {
             get {
                 return this.sPRichEnabledField;
@@ -18191,7 +18290,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=642)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=645)]
         public decimal SPRichPrice {
             get {
                 return this.sPRichPriceField;
@@ -18203,7 +18302,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=643)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=646)]
         public bool SPRichPriceUseDefault {
             get {
                 return this.sPRichPriceUseDefaultField;
@@ -18215,7 +18314,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=644)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=647)]
         public int SPRichSafetyQty {
             get {
                 return this.sPRichSafetyQtyField;
@@ -18227,7 +18326,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=645)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=648)]
         public bool SPRichSafetyQtyUseDefault {
             get {
                 return this.sPRichSafetyQtyUseDefaultField;
@@ -18239,7 +18338,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=646)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=649)]
         public string SPRichMerchantSKU {
             get {
                 return this.sPRichMerchantSKUField;
@@ -18251,7 +18350,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=647)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=650)]
         public bool SPRichDiscontinued {
             get {
                 return this.sPRichDiscontinuedField;
@@ -18263,7 +18362,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=648)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=651)]
         public System.DateTime SPRichDiscontinuedOn {
             get {
                 return this.sPRichDiscontinuedOnField;
@@ -18275,7 +18374,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=649)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=652)]
         public string WishProductTitle {
             get {
                 return this.wishProductTitleField;
@@ -18287,7 +18386,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=650)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=653)]
         public int WalmartInitialRetail {
             get {
                 return this.walmartInitialRetailField;
@@ -18299,7 +18398,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=651)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=654)]
         public decimal TargetInitialRetail {
             get {
                 return this.targetInitialRetailField;
@@ -18311,7 +18410,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=652)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=655)]
         public string WishProductID {
             get {
                 return this.wishProductIDField;
@@ -18323,7 +18422,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=653)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=656)]
         public string WishProductTags {
             get {
                 return this.wishProductTagsField;
@@ -18335,7 +18434,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=654)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=657)]
         public decimal WishPrice {
             get {
                 return this.wishPriceField;
@@ -18347,7 +18446,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=655)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=658)]
         public bool WishPriceUseDefault {
             get {
                 return this.wishPriceUseDefaultField;
@@ -18359,7 +18458,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=656)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=659)]
         public string WishMerchantSKU {
             get {
                 return this.wishMerchantSKUField;
@@ -18371,7 +18470,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=657)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=660)]
         public bool WishEnabled {
             get {
                 return this.wishEnabledField;
@@ -18383,7 +18482,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=658)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=661)]
         public decimal SonsiSalePrice {
             get {
                 return this.sonsiSalePriceField;
@@ -18395,7 +18494,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=659)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=662)]
         public string WalmartProductID {
             get {
                 return this.walmartProductIDField;
@@ -18407,7 +18506,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=660)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=663)]
         public string TargetProductID {
             get {
                 return this.targetProductIDField;
@@ -18419,7 +18518,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=661)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=664)]
         public bool AppEagleEnabled {
             get {
                 return this.appEagleEnabledField;
@@ -18431,7 +18530,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=662)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=665)]
         public int MinimumQtyForPO {
             get {
                 return this.minimumQtyForPOField;
@@ -18443,7 +18542,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=663)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=666)]
         public string WebsiteProductIDViewURLHandle {
             get {
                 return this.websiteProductIDViewURLHandleField;
@@ -18455,7 +18554,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=664)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=667)]
         public int NewEggDotComMinPurchaseQty {
             get {
                 return this.newEggDotComMinPurchaseQtyField;
@@ -18467,7 +18566,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=665)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=668)]
         public decimal KMartPrice {
             get {
                 return this.kMartPriceField;
@@ -18479,7 +18578,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=666)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=669)]
         public bool KMartPriceUseDefault {
             get {
                 return this.kMartPriceUseDefaultField;
@@ -18491,7 +18590,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=667)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=670)]
         public int KMartSafetyQty {
             get {
                 return this.kMartSafetyQtyField;
@@ -18503,7 +18602,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=668)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=671)]
         public bool KMartSafetyQtyUseDefault {
             get {
                 return this.kMartSafetyQtyUseDefaultField;
@@ -18515,7 +18614,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=669)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=672)]
         public string KMartMerchantSKU {
             get {
                 return this.kMartMerchantSKUField;
@@ -18527,7 +18626,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=670)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=673)]
         public bool KMartEnabled {
             get {
                 return this.kMartEnabledField;
@@ -18539,7 +18638,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=671)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=674)]
         public System.DateTime SalesVelocityDate {
             get {
                 return this.salesVelocityDateField;
@@ -18551,7 +18650,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=672)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=675)]
         public string NewEggdotComProductTitle {
             get {
                 return this.newEggdotComProductTitleField;
@@ -18563,7 +18662,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=673)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=676)]
         public bool SerialNumberLengthScanWhileShippingUseDefault {
             get {
                 return this.serialNumberLengthScanWhileShippingUseDefaultField;
@@ -18575,7 +18674,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=674)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=677)]
         public int SerialNumberLengthScanWhileShipping {
             get {
                 return this.serialNumberLengthScanWhileShippingField;
@@ -18587,7 +18686,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=675)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=678)]
         public int AggregatePhysicalQtyDropShipWarehouse {
             get {
                 return this.aggregatePhysicalQtyDropShipWarehouseField;
@@ -18599,7 +18698,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=676)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=679)]
         public decimal eBaySubsidyAmount {
             get {
                 return this.eBaySubsidyAmountField;
@@ -18611,7 +18710,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=677)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=680)]
         public System.DateTime eBaySubsidyToDate {
             get {
                 return this.eBaySubsidyToDateField;
@@ -18623,7 +18722,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=678)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=681)]
         public System.DateTime eBaySubsidyFromDate {
             get {
                 return this.eBaySubsidyFromDateField;
@@ -18635,7 +18734,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=679)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=682)]
         public bool eBaySubsidyEnabled {
             get {
                 return this.eBaySubsidyEnabledField;
@@ -18647,7 +18746,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=680)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=683)]
         public string PriceFallTitle {
             get {
                 return this.priceFallTitleField;
@@ -18659,7 +18758,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=681)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=684)]
         public int ReOrderDays {
             get {
                 return this.reOrderDaysField;
@@ -18671,7 +18770,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=682)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=685)]
         public decimal SalesVelocity {
             get {
                 return this.salesVelocityField;
@@ -18683,7 +18782,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=683)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=686)]
         public bool NewEggBizEnabled {
             get {
                 return this.newEggBizEnabledField;
@@ -18695,7 +18794,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=684)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=687)]
         public string NewEggBizTitle {
             get {
                 return this.newEggBizTitleField;
@@ -18707,7 +18806,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=685)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=688)]
         public bool ExportedForNewEggBiz {
             get {
                 return this.exportedForNewEggBizField;
@@ -18719,7 +18818,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=686)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=689)]
         public decimal NewEggBizPrice {
             get {
                 return this.newEggBizPriceField;
@@ -18731,7 +18830,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=687)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=690)]
         public int NewEggBizSafetyQuantity {
             get {
                 return this.newEggBizSafetyQuantityField;
@@ -18743,7 +18842,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=688)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=691)]
         public System.DateTime ExportedForNewEggBizOnDotCom {
             get {
                 return this.exportedForNewEggBizOnDotComField;
@@ -18755,7 +18854,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=689)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=692)]
         public bool NewEggBizPriceUseDefault {
             get {
                 return this.newEggBizPriceUseDefaultField;
@@ -18767,7 +18866,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=690)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=693)]
         public bool NewEggBizSafetyQuantityUseDefault {
             get {
                 return this.newEggBizSafetyQuantityUseDefaultField;
@@ -18779,7 +18878,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=691)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=694)]
         public int NewEggBizFixedInventoryQty {
             get {
                 return this.newEggBizFixedInventoryQtyField;
@@ -18791,7 +18890,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=692)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=695)]
         public bool NewEggBizFixedInventoryQtyEnabled {
             get {
                 return this.newEggBizFixedInventoryQtyEnabledField;
@@ -18803,7 +18902,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=693)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=696)]
         public bool NewEggBizFixedInventoryQtyUseDefault {
             get {
                 return this.newEggBizFixedInventoryQtyUseDefaultField;
@@ -18815,7 +18914,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=694)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=697)]
         public string NewEggBizShippingOption {
             get {
                 return this.newEggBizShippingOptionField;
@@ -18827,7 +18926,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=695)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=698)]
         public bool DisconnectFromInventoryNewEggBiz {
             get {
                 return this.disconnectFromInventoryNewEggBizField;
@@ -18839,7 +18938,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=696)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=699)]
         public int NewEggBizCategoryID {
             get {
                 return this.newEggBizCategoryIDField;
@@ -18851,7 +18950,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=697)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=700)]
         public string NewEggBizMerchantSKU {
             get {
                 return this.newEggBizMerchantSKUField;
@@ -18863,7 +18962,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=698)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=701)]
         public string NewEggBizItemNumber {
             get {
                 return this.newEggBizItemNumberField;
@@ -18875,7 +18974,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=699)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=702)]
         public bool NewEggBizCheckoutMAP {
             get {
                 return this.newEggBizCheckoutMAPField;
@@ -18887,7 +18986,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=700)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=703)]
         public NewEggDotComItemCondition NewEggBizItemCondition {
             get {
                 return this.newEggBizItemConditionField;
@@ -18899,7 +18998,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=701)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=704)]
         public string NewEggBizDescription {
             get {
                 return this.newEggBizDescriptionField;
@@ -18911,7 +19010,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=702)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=705)]
         public string PriceFallKeywords {
             get {
                 return this.priceFallKeywordsField;
@@ -18923,7 +19022,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=703)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=706)]
         public decimal PriceFallFixedPrice {
             get {
                 return this.priceFallFixedPriceField;
@@ -18935,7 +19034,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=704)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=707)]
         public int PriceFallCatchItDuration {
             get {
                 return this.priceFallCatchItDurationField;
@@ -18947,7 +19046,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=705)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=708)]
         public int PriceFallListingDuration {
             get {
                 return this.priceFallListingDurationField;
@@ -18959,7 +19058,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=706)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=709)]
         public string PriceFallColor {
             get {
                 return this.priceFallColorField;
@@ -18971,7 +19070,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=707)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=710)]
         public string PriceFallMaterial {
             get {
                 return this.priceFallMaterialField;
@@ -18983,7 +19082,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=708)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=711)]
         public string PriceFallPattern {
             get {
                 return this.priceFallPatternField;
@@ -18995,7 +19094,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=709)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=712)]
         public string PriceFallGender {
             get {
                 return this.priceFallGenderField;
@@ -19007,7 +19106,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=710)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=713)]
         public string PriceFallSize {
             get {
                 return this.priceFallSizeField;
@@ -19019,7 +19118,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=711)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=714)]
         public string PriceFallAgeGroup {
             get {
                 return this.priceFallAgeGroupField;
@@ -19031,7 +19130,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=712)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=715)]
         public decimal PriceFallShippingCost {
             get {
                 return this.priceFallShippingCostField;
@@ -19043,7 +19142,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=713)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=716)]
         public decimal PriceFallHandlingFee {
             get {
                 return this.priceFallHandlingFeeField;
@@ -19055,7 +19154,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=714)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=717)]
         public string PriceFallReturnPolicy {
             get {
                 return this.priceFallReturnPolicyField;
@@ -19067,7 +19166,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=715)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=718)]
         public int PriceFallWarrantyLength {
             get {
                 return this.priceFallWarrantyLengthField;
@@ -19079,7 +19178,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=716)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=719)]
         public int PriceFallLeadTime {
             get {
                 return this.priceFallLeadTimeField;
@@ -19091,7 +19190,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=717)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=720)]
         public string PriceFallShippingType {
             get {
                 return this.priceFallShippingTypeField;
@@ -19103,7 +19202,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=718)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=721)]
         public int PriceFallMaxQty {
             get {
                 return this.priceFallMaxQtyField;
@@ -19115,7 +19214,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=719)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=722)]
         public bool PriceFallMaxQtyEnabled {
             get {
                 return this.priceFallMaxQtyEnabledField;
@@ -19127,7 +19226,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=720)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=723)]
         public bool PriceFallMaxQtyUseDefault {
             get {
                 return this.priceFallMaxQtyUseDefaultField;
@@ -19139,7 +19238,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=721)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=724)]
         public bool BonanzaDescriptionUseDefault {
             get {
                 return this.bonanzaDescriptionUseDefaultField;
@@ -19151,7 +19250,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=722)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=725)]
         public int MagentoAttributeSetID {
             get {
                 return this.magentoAttributeSetIDField;
@@ -19163,7 +19262,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=723)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=726)]
         public string PriceFallCategory {
             get {
                 return this.priceFallCategoryField;
@@ -19175,7 +19274,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=724)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=727)]
         public string BonanzaDescription {
             get {
                 return this.bonanzaDescriptionField;
@@ -19187,7 +19286,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=725)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=728)]
         public string MagentoProductDescriptionShort {
             get {
                 return this.magentoProductDescriptionShortField;
@@ -19199,7 +19298,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=726)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=729)]
         public string MagentoProductDescriptionLong {
             get {
                 return this.magentoProductDescriptionLongField;
@@ -19211,7 +19310,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=727)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=730)]
         public string SearsShippingTemplate {
             get {
                 return this.searsShippingTemplateField;
@@ -19223,7 +19322,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=728)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=731)]
         public bool OneStopPlusSafetyQtyUseDefault {
             get {
                 return this.oneStopPlusSafetyQtyUseDefaultField;
@@ -19235,7 +19334,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=729)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=732)]
         public int OneStopPlusSafetyQty {
             get {
                 return this.oneStopPlusSafetyQtyField;
@@ -19247,7 +19346,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=730)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=733)]
         public bool SonsiSafetyQtyUseDefault {
             get {
                 return this.sonsiSafetyQtyUseDefaultField;
@@ -19259,7 +19358,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=731)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=734)]
         public int SonsiSafetyQty {
             get {
                 return this.sonsiSafetyQtyField;
@@ -19271,7 +19370,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=732)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=735)]
         public string RequireToBeReturned {
             get {
                 return this.requireToBeReturnedField;
@@ -19283,7 +19382,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=733)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=736)]
         public bool eBayEnableOutOfStockListing {
             get {
                 return this.eBayEnableOutOfStockListingField;
@@ -19295,7 +19394,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=734)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=737)]
         public string NewEggDotComItemNumber {
             get {
                 return this.newEggDotComItemNumberField;
@@ -19307,7 +19406,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=735)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=738)]
         public bool NewEggDotComCheckoutMAP {
             get {
                 return this.newEggDotComCheckoutMAPField;
@@ -19319,7 +19418,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=736)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=739)]
         public NewEggDotComItemCondition NewEggdotComItemCondition {
             get {
                 return this.newEggdotComItemConditionField;
@@ -19331,7 +19430,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=737)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=740)]
         public string OneStopPlus_ClothingType {
             get {
                 return this.oneStopPlus_ClothingTypeField;
@@ -19343,7 +19442,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=738)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=741)]
         public string OneStopPlus_RCItemNumber {
             get {
                 return this.oneStopPlus_RCItemNumberField;
@@ -19355,7 +19454,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=739)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=742)]
         public string OneStopPlus_ItemNumber {
             get {
                 return this.oneStopPlus_ItemNumberField;
@@ -19367,7 +19466,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=740)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=743)]
         public bool OneStopPlus_AllowDiscount {
             get {
                 return this.oneStopPlus_AllowDiscountField;
@@ -19379,7 +19478,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=741)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=744)]
         public decimal OneStopPlus_SaleMinPrice {
             get {
                 return this.oneStopPlus_SaleMinPriceField;
@@ -19391,7 +19490,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=742)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=745)]
         public decimal OneStopPlus_SaleMaxPrice {
             get {
                 return this.oneStopPlus_SaleMaxPriceField;
@@ -19403,7 +19502,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=743)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=746)]
         public decimal OneStopPlus_WasMinPrice {
             get {
                 return this.oneStopPlus_WasMinPriceField;
@@ -19415,7 +19514,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=744)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=747)]
         public decimal OneStopPlus_WasMaxPrice {
             get {
                 return this.oneStopPlus_WasMaxPriceField;
@@ -19427,7 +19526,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=745)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=748)]
         public string OneStopPlus_ColorName {
             get {
                 return this.oneStopPlus_ColorNameField;
@@ -19439,7 +19538,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=746)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=749)]
         public string OneStopPlus_ColorCode {
             get {
                 return this.oneStopPlus_ColorCodeField;
@@ -19451,7 +19550,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=747)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=750)]
         public int OneStopPlus_ColorRank {
             get {
                 return this.oneStopPlus_ColorRankField;
@@ -19463,7 +19562,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=748)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=751)]
         public string OneStopPlus_SizeName {
             get {
                 return this.oneStopPlus_SizeNameField;
@@ -19475,7 +19574,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=749)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=752)]
         public string OneStopPlus_SizeCode {
             get {
                 return this.oneStopPlus_SizeCodeField;
@@ -19487,7 +19586,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=750)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=753)]
         public int OneStopPlus_SizeRank {
             get {
                 return this.oneStopPlus_SizeRankField;
@@ -19499,7 +19598,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=751)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=754)]
         public string OneStopPlus_TaxClassification {
             get {
                 return this.oneStopPlus_TaxClassificationField;
@@ -19511,7 +19610,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=752)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=755)]
         public string KohlsMerchantSKU {
             get {
                 return this.kohlsMerchantSKUField;
@@ -19523,7 +19622,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=753)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=756)]
         public System.DateTime WayfairDiscontinuedOn {
             get {
                 return this.wayfairDiscontinuedOnField;
@@ -19535,7 +19634,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=754)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=757)]
         public bool WayfairDiscontinued {
             get {
                 return this.wayfairDiscontinuedField;
@@ -19547,7 +19646,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=755)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=758)]
         public string AmazonRootProductType {
             get {
                 return this.amazonRootProductTypeField;
@@ -19559,7 +19658,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=756)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=759)]
         public string ItemType {
             get {
                 return this.itemTypeField;
@@ -19571,7 +19670,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=757)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=760)]
         public string WebsiteMerchantSKU {
             get {
                 return this.websiteMerchantSKUField;
@@ -19583,7 +19682,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=758)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=761)]
         public string OrderItemShipType {
             get {
                 return this.orderItemShipTypeField;
@@ -19595,7 +19694,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=759)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=762)]
         public decimal SK_Weight {
             get {
                 return this.sK_WeightField;
@@ -19607,7 +19706,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=760)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=763)]
         public string SK_WeightUOM {
             get {
                 return this.sK_WeightUOMField;
@@ -19619,7 +19718,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=761)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=764)]
         public decimal SK_Height {
             get {
                 return this.sK_HeightField;
@@ -19631,7 +19730,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=762)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=765)]
         public string SK_HeightUOM {
             get {
                 return this.sK_HeightUOMField;
@@ -19643,7 +19742,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=763)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=766)]
         public decimal SK_Diameter {
             get {
                 return this.sK_DiameterField;
@@ -19655,7 +19754,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=764)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=767)]
         public string SK_DiameterUOM {
             get {
                 return this.sK_DiameterUOMField;
@@ -19667,7 +19766,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=765)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=768)]
         public decimal SK_Width {
             get {
                 return this.sK_WidthField;
@@ -19679,7 +19778,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=766)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=769)]
         public string SK_WidthUOM {
             get {
                 return this.sK_WidthUOMField;
@@ -19691,7 +19790,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=767)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=770)]
         public decimal SK_Length {
             get {
                 return this.sK_LengthField;
@@ -19703,7 +19802,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=768)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=771)]
         public string SK_LengthUOM {
             get {
                 return this.sK_LengthUOMField;
@@ -19715,7 +19814,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=769)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=772)]
         public string SK_RingSize {
             get {
                 return this.sK_RingSizeField;
@@ -19727,7 +19826,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=770)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=773)]
         public string SK_ChainType {
             get {
                 return this.sK_ChainTypeField;
@@ -19739,7 +19838,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=771)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=774)]
         public string SK_ClaspType {
             get {
                 return this.sK_ClaspTypeField;
@@ -19751,7 +19850,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=772)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=775)]
         public string SK_BackFinding {
             get {
                 return this.sK_BackFindingField;
@@ -19763,7 +19862,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=773)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=776)]
         public string SK_MetalType {
             get {
                 return this.sK_MetalTypeField;
@@ -19775,7 +19874,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=774)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=777)]
         public string SK_SizePerPearl {
             get {
                 return this.sK_SizePerPearlField;
@@ -19787,7 +19886,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=775)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=778)]
         public decimal SK_TotalDimensionWeight {
             get {
                 return this.sK_TotalDimensionWeightField;
@@ -19799,7 +19898,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=776)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=779)]
         public string SK_TotalDimensionWeightUOM {
             get {
                 return this.sK_TotalDimensionWeightUOMField;
@@ -19811,7 +19910,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=777)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=780)]
         public decimal SK_BraceletSize {
             get {
                 return this.sK_BraceletSizeField;
@@ -19823,7 +19922,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=778)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=781)]
         public string SK_BraceletSizeUOM {
             get {
                 return this.sK_BraceletSizeUOMField;
@@ -19835,7 +19934,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=779)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=782)]
         public decimal SK_ChainLength {
             get {
                 return this.sK_ChainLengthField;
@@ -19847,7 +19946,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=780)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=783)]
         public string SK_ChainLengthUOM {
             get {
                 return this.sK_ChainLengthUOMField;
@@ -19859,7 +19958,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=781)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=784)]
         public decimal SK_NeckLength {
             get {
                 return this.sK_NeckLengthField;
@@ -19871,7 +19970,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=782)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=785)]
         public string SK_NeckLengthUOM {
             get {
                 return this.sK_NeckLengthUOMField;
@@ -19883,7 +19982,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=783)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=786)]
         public string SK_MetalStamp {
             get {
                 return this.sK_MetalStampField;
@@ -19895,7 +19994,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=784)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=787)]
         public string SK_ProductType {
             get {
                 return this.sK_ProductTypeField;
@@ -19907,7 +20006,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=785)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=788)]
         public string SK_VariationTheme {
             get {
                 return this.sK_VariationThemeField;
@@ -19919,7 +20018,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=786)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=789)]
         public string Sonsi_CategoryHighLevel {
             get {
                 return this.sonsi_CategoryHighLevelField;
@@ -19931,7 +20030,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=787)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=790)]
         public string Sonsi_CategoryLowLevel {
             get {
                 return this.sonsi_CategoryLowLevelField;
@@ -19943,7 +20042,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=788)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=791)]
         public string Sonsi_ProductSize {
             get {
                 return this.sonsi_ProductSizeField;
@@ -19955,7 +20054,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=789)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=792)]
         public string Sonsi_ProductColor {
             get {
                 return this.sonsi_ProductColorField;
@@ -19967,7 +20066,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=790)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=793)]
         public decimal Sonsi_Price {
             get {
                 return this.sonsi_PriceField;
@@ -19979,7 +20078,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=791)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=794)]
         public bool Sonsi_PriceUseDefault {
             get {
                 return this.sonsi_PriceUseDefaultField;
@@ -19991,7 +20090,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=792)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=795)]
         public string Sonsi_ItemCopy {
             get {
                 return this.sonsi_ItemCopyField;
@@ -20003,7 +20102,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=793)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=796)]
         public string Sonsi_Feature1 {
             get {
                 return this.sonsi_Feature1Field;
@@ -20015,7 +20114,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=794)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=797)]
         public string Sonsi_Feature2 {
             get {
                 return this.sonsi_Feature2Field;
@@ -20027,7 +20126,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=795)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=798)]
         public string Sonsi_Feature3 {
             get {
                 return this.sonsi_Feature3Field;
@@ -20039,7 +20138,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=796)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=799)]
         public string Sonsi_Feature4 {
             get {
                 return this.sonsi_Feature4Field;
@@ -20051,7 +20150,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=797)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=800)]
         public string Sonsi_Feature5 {
             get {
                 return this.sonsi_Feature5Field;
@@ -20063,7 +20162,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=798)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=801)]
         public string Sonsi_ColorFamily {
             get {
                 return this.sonsi_ColorFamilyField;
@@ -20075,7 +20174,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=799)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=802)]
         public string Sonsi_SizeFamily {
             get {
                 return this.sonsi_SizeFamilyField;
@@ -20087,7 +20186,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=800)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=803)]
         public string Sonsi_Material {
             get {
                 return this.sonsi_MaterialField;
@@ -20099,7 +20198,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=801)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=804)]
         public string Sonsi_Silhouette {
             get {
                 return this.sonsi_SilhouetteField;
@@ -20111,7 +20210,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=802)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=805)]
         public string Sonsi_FabricType {
             get {
                 return this.sonsi_FabricTypeField;
@@ -20123,7 +20222,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=803)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=806)]
         public string Sonsi_Collar {
             get {
                 return this.sonsi_CollarField;
@@ -20135,7 +20234,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=804)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=807)]
         public string Sonsi_Neckline {
             get {
                 return this.sonsi_NecklineField;
@@ -20147,7 +20246,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=805)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=808)]
         public string Sonsi_SleeveLength {
             get {
                 return this.sonsi_SleeveLengthField;
@@ -20159,7 +20258,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=806)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=809)]
         public string Sonsi_Length {
             get {
                 return this.sonsi_LengthField;
@@ -20171,7 +20270,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=807)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=810)]
         public string Sonsi_Pattern {
             get {
                 return this.sonsi_PatternField;
@@ -20183,7 +20282,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=808)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=811)]
         public string Sonsi_Occasion {
             get {
                 return this.sonsi_OccasionField;
@@ -20195,7 +20294,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=809)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=812)]
         public string Sonsi_WaistType {
             get {
                 return this.sonsi_WaistTypeField;
@@ -20207,7 +20306,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=810)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=813)]
         public string Sonsi_LegStyle {
             get {
                 return this.sonsi_LegStyleField;
@@ -20219,7 +20318,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=811)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=814)]
         public string Sonsi_SitsAtWaist {
             get {
                 return this.sonsi_SitsAtWaistField;
@@ -20231,7 +20330,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=812)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=815)]
         public string Sonsi_FitThroughHip {
             get {
                 return this.sonsi_FitThroughHipField;
@@ -20243,7 +20342,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=813)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=816)]
         public string Sonsi_JewelryStone1 {
             get {
                 return this.sonsi_JewelryStone1Field;
@@ -20255,7 +20354,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=814)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=817)]
         public string Sonsi_JewelryMetalType1 {
             get {
                 return this.sonsi_JewelryMetalType1Field;
@@ -20267,7 +20366,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=815)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=818)]
         public string Sonsi_CupType {
             get {
                 return this.sonsi_CupTypeField;
@@ -20279,7 +20378,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=816)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=819)]
         public string Sonsi_Seaming {
             get {
                 return this.sonsi_SeamingField;
@@ -20291,7 +20390,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=817)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=820)]
         public string Sonsi_Underwire {
             get {
                 return this.sonsi_UnderwireField;
@@ -20303,7 +20402,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=818)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=821)]
         public int KohlsSafetyQty {
             get {
                 return this.kohlsSafetyQtyField;
@@ -20315,7 +20414,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=819)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=822)]
         public bool KohlsSafetyQtyUseDefault {
             get {
                 return this.kohlsSafetyQtyUseDefaultField;
@@ -20327,7 +20426,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=820)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=823)]
         public int SmartBargainsSafetyQty {
             get {
                 return this.smartBargainsSafetyQtyField;
@@ -20339,7 +20438,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=821)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=824)]
         public bool SmartBargainsSafetyQtyUseDefault {
             get {
                 return this.smartBargainsSafetyQtyUseDefaultField;
@@ -20351,7 +20450,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=822)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=825)]
         public decimal ShippingCostSurchargeForAlaskaHawaii {
             get {
                 return this.shippingCostSurchargeForAlaskaHawaiiField;
@@ -20363,7 +20462,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=823)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=826)]
         public string WebsiteProductDescriptionTemplate {
             get {
                 return this.websiteProductDescriptionTemplateField;
@@ -20375,7 +20474,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=824)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=827)]
         public System.DateTime SalePriceEndDate {
             get {
                 return this.salePriceEndDateField;
@@ -20387,7 +20486,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=825)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=828)]
         public System.DateTime SalePriceStartDate {
             get {
                 return this.salePriceStartDateField;
@@ -20399,7 +20498,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=826)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=829)]
         public string BonanzaDescriptionTemplate {
             get {
                 return this.bonanzaDescriptionTemplateField;
@@ -20411,7 +20510,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=827)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=830)]
         public string ProductBullet {
             get {
                 return this.productBulletField;
@@ -20423,7 +20522,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=828)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=831)]
         public string ProductBullet2 {
             get {
                 return this.productBullet2Field;
@@ -20435,7 +20534,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=829)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=832)]
         public string ProductBullet3 {
             get {
                 return this.productBullet3Field;
@@ -20447,7 +20546,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=830)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=833)]
         public string ProductBullet4 {
             get {
                 return this.productBullet4Field;
@@ -20459,7 +20558,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=831)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=834)]
         public string ProductBullet5 {
             get {
                 return this.productBullet5Field;
@@ -20471,7 +20570,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=832)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=835)]
         public bool SonsiEnabled {
             get {
                 return this.sonsiEnabledField;
@@ -20483,7 +20582,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=833)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=836)]
         public int QtySold15 {
             get {
                 return this.qtySold15Field;
@@ -20495,7 +20594,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=834)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=837)]
         public int QtySold45 {
             get {
                 return this.qtySold45Field;
@@ -20507,7 +20606,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=835)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=838)]
         public int QtySold30 {
             get {
                 return this.qtySold30Field;
@@ -20519,7 +20618,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=836)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=839)]
         public int QtySold60 {
             get {
                 return this.qtySold60Field;
@@ -20531,7 +20630,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=837)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=840)]
         public int QtySold90 {
             get {
                 return this.qtySold90Field;
@@ -20543,7 +20642,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=838)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=841)]
         public int QtySold120 {
             get {
                 return this.qtySold120Field;
@@ -20555,7 +20654,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=839)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=842)]
         public int QtySoldYTD {
             get {
                 return this.qtySoldYTDField;
@@ -20567,7 +20666,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=840)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=843)]
         public bool MeijerEnabled {
             get {
                 return this.meijerEnabledField;
@@ -20579,7 +20678,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=841)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=844)]
         public bool OneStopPlusEnabled {
             get {
                 return this.oneStopPlusEnabledField;
@@ -20591,7 +20690,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=842)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=845)]
         public bool StaplesEnabled {
             get {
                 return this.staplesEnabledField;
@@ -20603,7 +20702,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=843)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=846)]
         public string GSACountryOfOrigin {
             get {
                 return this.gSACountryOfOriginField;
@@ -20615,7 +20714,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=844)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=847)]
         public string GSASchedule {
             get {
                 return this.gSAScheduleField;
@@ -20627,7 +20726,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=845)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=848)]
         public string GSAContractNumber {
             get {
                 return this.gSAContractNumberField;
@@ -20639,7 +20738,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=846)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=849)]
         public System.DateTime GSADateFrom {
             get {
                 return this.gSADateFromField;
@@ -20651,7 +20750,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=847)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=850)]
         public System.DateTime GSADateTo {
             get {
                 return this.gSADateToField;
@@ -20663,7 +20762,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=848)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=851)]
         public string GSASINNumber {
             get {
                 return this.gSASINNumberField;
@@ -20675,7 +20774,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=849)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=852)]
         public decimal GSAPrice {
             get {
                 return this.gSAPriceField;
@@ -20687,7 +20786,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=850)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=853)]
         public bool KohlsEnabled {
             get {
                 return this.kohlsEnabledField;
@@ -20699,7 +20798,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=851)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=854)]
         public string BonanzaShippingTemplateID {
             get {
                 return this.bonanzaShippingTemplateIDField;
@@ -20711,7 +20810,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=852)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=855)]
         public string BonanzaTitle {
             get {
                 return this.bonanzaTitleField;
@@ -20723,7 +20822,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=853)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=856)]
         public int BonanzaCategory {
             get {
                 return this.bonanzaCategoryField;
@@ -20735,7 +20834,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=854)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=857)]
         public decimal BonanzaBuyItNowPrice {
             get {
                 return this.bonanzaBuyItNowPriceField;
@@ -20747,7 +20846,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=855)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=858)]
         public bool BonanzaBuyItNowPriceUseDefault {
             get {
                 return this.bonanzaBuyItNowPriceUseDefaultField;
@@ -20759,7 +20858,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=856)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=859)]
         public decimal BonanzaInstantOfferPrice {
             get {
                 return this.bonanzaInstantOfferPriceField;
@@ -20771,7 +20870,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=857)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=860)]
         public bool BonanzaInstantOfferPriceNegotiable {
             get {
                 return this.bonanzaInstantOfferPriceNegotiableField;
@@ -20783,7 +20882,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=858)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=861)]
         public int BonanzaFixedPriceItemID {
             get {
                 return this.bonanzaFixedPriceItemIDField;
@@ -20795,7 +20894,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=859)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=862)]
         public bool BestBuyEnabled {
             get {
                 return this.bestBuyEnabledField;
@@ -20807,7 +20906,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=860)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=863)]
         public int AggregateNonSellableQty {
             get {
                 return this.aggregateNonSellableQtyField;
@@ -20819,7 +20918,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=861)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=864)]
         public string WebsiteProductIDVariantID {
             get {
                 return this.websiteProductIDVariantIDField;
@@ -20831,7 +20930,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=862)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=865)]
         public string WebsiteProductID {
             get {
                 return this.websiteProductIDField;
@@ -20843,7 +20942,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=863)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=866)]
         public int AggregatePhysicalSellableQtyIncludingPhysical {
             get {
                 return this.aggregatePhysicalSellableQtyIncludingPhysicalField;
@@ -20855,7 +20954,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=864)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=867)]
         public System.DateTime InventoryLowStockNotifiedOn {
             get {
                 return this.inventoryLowStockNotifiedOnField;
@@ -20867,7 +20966,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=865)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=868)]
         public bool InventoryLowStockNotified {
             get {
                 return this.inventoryLowStockNotifiedField;
@@ -20879,7 +20978,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=866)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=869)]
         public bool eBaySafetyQtyUseDefault {
             get {
                 return this.eBaySafetyQtyUseDefaultField;
@@ -20891,7 +20990,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=867)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=870)]
         public int eBaySafetyQty {
             get {
                 return this.eBaySafetyQtyField;
@@ -20903,7 +21002,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=868)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=871)]
         public string NewEggDotComMerchantSKU {
             get {
                 return this.newEggDotComMerchantSKUField;
@@ -20915,7 +21014,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=869)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=872)]
         public decimal CostPerCase {
             get {
                 return this.costPerCaseField;
@@ -20927,7 +21026,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=870)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=873)]
         public string ProductIDAlternate {
             get {
                 return this.productIDAlternateField;
@@ -20939,7 +21038,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=871)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=874)]
         public string WayfairMerchantSKU {
             get {
                 return this.wayfairMerchantSKUField;
@@ -20951,7 +21050,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=872)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=875)]
         public string PaypalEmailAddress {
             get {
                 return this.paypalEmailAddressField;
@@ -20963,7 +21062,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=873)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=876)]
         public int Publisher {
             get {
                 return this.publisherField;
@@ -20975,7 +21074,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=874)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=877)]
         public bool RequireDeliveryConfirmation {
             get {
                 return this.requireDeliveryConfirmationField;
@@ -20987,7 +21086,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=875)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=878)]
         public bool RequireDeliverySignature {
             get {
                 return this.requireDeliverySignatureField;
@@ -20999,7 +21098,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=876)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=879)]
         public bool eBayUseShippingRateTable {
             get {
                 return this.eBayUseShippingRateTableField;
@@ -21011,7 +21110,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=877)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=880)]
         public System.DateTime AggregateLastDate {
             get {
                 return this.aggregateLastDateField;
@@ -21023,7 +21122,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=878)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=881)]
         public System.DateTime ScheduleOneBayTime {
             get {
                 return this.scheduleOneBayTimeField;
@@ -21035,7 +21134,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=879)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=882)]
         public bool ScheduleOneBayEnabled {
             get {
                 return this.scheduleOneBayEnabledField;
@@ -21047,7 +21146,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=880)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=883)]
         public bool ImmediatePaymentRequiredUseDefault {
             get {
                 return this.immediatePaymentRequiredUseDefaultField;
@@ -21059,7 +21158,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=881)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=884)]
         public bool ImmediatePaymentRequired {
             get {
                 return this.immediatePaymentRequiredField;
@@ -21071,7 +21170,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=882)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=885)]
         public bool SmartBargainsEnabled {
             get {
                 return this.smartBargainsEnabledField;
@@ -21083,7 +21182,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=883)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=886)]
         public bool HazMatPreviewRequired {
             get {
                 return this.hazMatPreviewRequiredField;
@@ -21095,7 +21194,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=884)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=887)]
         public bool EnableZeroCostForProduct {
             get {
                 return this.enableZeroCostForProductField;
@@ -21107,7 +21206,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=885)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=888)]
         public ListingDuration DefaultFixedPriceListingDuration {
             get {
                 return this.defaultFixedPriceListingDurationField;
@@ -21119,7 +21218,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=886)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=889)]
         public int BinMaxCap {
             get {
                 return this.binMaxCapField;
@@ -21131,7 +21230,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=887)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=890)]
         public int uBidShippingTemplateID {
             get {
                 return this.uBidShippingTemplateIDField;
@@ -21143,7 +21242,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=888)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=891)]
         public int uBidCategoryID2 {
             get {
                 return this.uBidCategoryID2Field;
@@ -21155,7 +21254,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=889)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=892)]
         public bool uBidPriceUseDefault {
             get {
                 return this.uBidPriceUseDefaultField;
@@ -21167,7 +21266,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=890)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=893)]
         public decimal uBidPrice {
             get {
                 return this.uBidPriceField;
@@ -21179,7 +21278,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=891)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=894)]
         public bool uBidEnabled {
             get {
                 return this.uBidEnabledField;
@@ -21191,7 +21290,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=892)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=895)]
         public string uBidMerchantSKU {
             get {
                 return this.uBidMerchantSKUField;
@@ -21203,7 +21302,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=893)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=896)]
         public string uBidProductName {
             get {
                 return this.uBidProductNameField;
@@ -21215,7 +21314,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=894)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=897)]
         public int uBidCategoryID {
             get {
                 return this.uBidCategoryIDField;
@@ -21227,7 +21326,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=895)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=898)]
         public string uBidWarrantyDetail {
             get {
                 return this.uBidWarrantyDetailField;
@@ -21239,7 +21338,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=896)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=899)]
         public uBidProductCondition uBidProductCondition {
             get {
                 return this.uBidProductConditionField;
@@ -21251,7 +21350,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=897)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=900)]
         public string uBidSubTitle {
             get {
                 return this.uBidSubTitleField;
@@ -21263,7 +21362,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=898)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=901)]
         public bool uBidWarrantyOver90 {
             get {
                 return this.uBidWarrantyOver90Field;
@@ -21275,7 +21374,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=899)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=902)]
         public string uBidStandardNotice {
             get {
                 return this.uBidStandardNoticeField;
@@ -21287,7 +21386,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=900)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=903)]
         public string uBidShipRestrictions {
             get {
                 return this.uBidShipRestrictionsField;
@@ -21299,7 +21398,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=901)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=904)]
         public bool DoNotPostonEbayBeforeDateEnabled {
             get {
                 return this.doNotPostonEbayBeforeDateEnabledField;
@@ -21311,7 +21410,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=902)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=905)]
         public System.DateTime DoNotPostonEbayBeforeDate {
             get {
                 return this.doNotPostonEbayBeforeDateField;
@@ -21323,7 +21422,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=903)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=906)]
         public int MaxQtyShipFromSite {
             get {
                 return this.maxQtyShipFromSiteField;
@@ -21335,7 +21434,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=904)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=907)]
         public bool eBayPhotoDisplayModeUseDefault {
             get {
                 return this.eBayPhotoDisplayModeUseDefaultField;
@@ -21347,7 +21446,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=905)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=908)]
         public int AmazonNumberOfSellers {
             get {
                 return this.amazonNumberOfSellersField;
@@ -21359,7 +21458,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=906)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=909)]
         public decimal MyPriceOnAmazon {
             get {
                 return this.myPriceOnAmazonField;
@@ -21371,7 +21470,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=907)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=910)]
         public decimal LowestSupSavShipPrice {
             get {
                 return this.lowestSupSavShipPriceField;
@@ -21383,7 +21482,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=908)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=911)]
         public int SalesRank {
             get {
                 return this.salesRankField;
@@ -21395,7 +21494,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=909)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=912)]
         public decimal MegaSellerPrice {
             get {
                 return this.megaSellerPriceField;
@@ -21407,7 +21506,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=910)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=913)]
         public decimal LowestNewPrice {
             get {
                 return this.lowestNewPriceField;
@@ -21419,7 +21518,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=911)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=914)]
         public bool IhaveTheBuyBox {
             get {
                 return this.ihaveTheBuyBoxField;
@@ -21431,7 +21530,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=912)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=915)]
         public decimal BuyBoxNewPriceShipping {
             get {
                 return this.buyBoxNewPriceShippingField;
@@ -21443,7 +21542,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=913)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=916)]
         public bool PriceFallEnabled {
             get {
                 return this.priceFallEnabledField;
@@ -21455,7 +21554,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=914)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=917)]
         public decimal PriceFallPrice {
             get {
                 return this.priceFallPriceField;
@@ -21467,7 +21566,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=915)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=918)]
         public bool PriceFallPriceUseDefault {
             get {
                 return this.priceFallPriceUseDefaultField;
@@ -21479,7 +21578,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=916)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=919)]
         public string eBayRestockingFee {
             get {
                 return this.eBayRestockingFeeField;
@@ -21491,7 +21590,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=917)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=920)]
         public System.DateTime AmazonSpecialPriceEndDate {
             get {
                 return this.amazonSpecialPriceEndDateField;
@@ -21503,7 +21602,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=918)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=921)]
         public System.DateTime AmazonSpecialPriceStartDate {
             get {
                 return this.amazonSpecialPriceStartDateField;
@@ -21515,7 +21614,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=919)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=922)]
         public decimal AmazonSpecialPrice {
             get {
                 return this.amazonSpecialPriceField;
@@ -21527,7 +21626,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=920)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=923)]
         public bool eBayEndListingInDaysEnabled {
             get {
                 return this.eBayEndListingInDaysEnabledField;
@@ -21539,7 +21638,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=921)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=924)]
         public int eBayEndListingInDays {
             get {
                 return this.eBayEndListingInDaysField;
@@ -21551,7 +21650,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=922)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=925)]
         public bool eBayEnableGlobalShippingProgram {
             get {
                 return this.eBayEnableGlobalShippingProgramField;
@@ -21563,7 +21662,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=923)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=926)]
         public bool MagentoFreeShippingEnabled {
             get {
                 return this.magentoFreeShippingEnabledField;
@@ -21575,7 +21674,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=924)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=927)]
         public int QueuedJobUserID {
             get {
                 return this.queuedJobUserIDField;
@@ -21587,7 +21686,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=925)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=928)]
         public int QueuedJobNumber {
             get {
                 return this.queuedJobNumberField;
@@ -21599,7 +21698,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=926)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=929)]
         public int NewEggDotComCategoryID {
             get {
                 return this.newEggDotComCategoryIDField;
@@ -21611,7 +21710,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=927)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=930)]
         public PhotoDisplayCodeType eBayPhotoDisplayMode {
             get {
                 return this.eBayPhotoDisplayModeField;
@@ -21623,7 +21722,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=928)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=931)]
         public bool BonanzaEnabled {
             get {
                 return this.bonanzaEnabledField;
@@ -21635,7 +21734,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=929)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=932)]
         public bool eBayPriceUseDefault {
             get {
                 return this.eBayPriceUseDefaultField;
@@ -21647,7 +21746,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=930)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=933)]
         public string VendorCentralMerchantSKU {
             get {
                 return this.vendorCentralMerchantSKUField;
@@ -21659,7 +21758,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=931)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=934)]
         public bool VendorCentralEnabled {
             get {
                 return this.vendorCentralEnabledField;
@@ -21671,7 +21770,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=932)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=935)]
         public bool WayfairSafetyQtyUseDefault {
             get {
                 return this.wayfairSafetyQtyUseDefaultField;
@@ -21683,7 +21782,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=933)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=936)]
         public int WayfairSafetyQty {
             get {
                 return this.wayfairSafetyQtyField;
@@ -21695,7 +21794,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=934)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=937)]
         public bool WayfairPriceUseDefault {
             get {
                 return this.wayfairPriceUseDefaultField;
@@ -21707,7 +21806,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=935)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=938)]
         public decimal WayfairPrice {
             get {
                 return this.wayfairPriceField;
@@ -21719,7 +21818,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=936)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=939)]
         public string WayfairProductID {
             get {
                 return this.wayfairProductIDField;
@@ -21731,7 +21830,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=937)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=940)]
         public decimal WayfairCost {
             get {
                 return this.wayfairCostField;
@@ -21743,7 +21842,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=938)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=941)]
         public string DSWMerchantSKU {
             get {
                 return this.dSWMerchantSKUField;
@@ -21755,7 +21854,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=939)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=942)]
         public bool DSWEnabled {
             get {
                 return this.dSWEnabledField;
@@ -21767,7 +21866,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=940)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=943)]
         public System.DateTime DSWDiscontinuedOn {
             get {
                 return this.dSWDiscontinuedOnField;
@@ -21779,7 +21878,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=941)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=944)]
         public bool DSWDiscontinued {
             get {
                 return this.dSWDiscontinuedField;
@@ -21791,7 +21890,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=942)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=945)]
         public bool DSWSafetyQtyUseDefault {
             get {
                 return this.dSWSafetyQtyUseDefaultField;
@@ -21803,7 +21902,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=943)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=946)]
         public int DSWSafetyQty {
             get {
                 return this.dSWSafetyQtyField;
@@ -21815,7 +21914,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=944)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=947)]
         public bool DSWPriceUseDefault {
             get {
                 return this.dSWPriceUseDefaultField;
@@ -21827,7 +21926,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=945)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=948)]
         public decimal DSWPrice {
             get {
                 return this.dSWPriceField;
@@ -21839,7 +21938,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=946)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=949)]
         public string GiltMerchantSKU {
             get {
                 return this.giltMerchantSKUField;
@@ -21851,7 +21950,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=947)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=950)]
         public bool GiltEnabled {
             get {
                 return this.giltEnabledField;
@@ -21863,7 +21962,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=948)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=951)]
         public System.DateTime GiltDiscontinuedOn {
             get {
                 return this.giltDiscontinuedOnField;
@@ -21875,7 +21974,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=949)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=952)]
         public bool GiltDiscontinued {
             get {
                 return this.giltDiscontinuedField;
@@ -21887,7 +21986,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=950)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=953)]
         public bool GiltSafetyQtyUseDefault {
             get {
                 return this.giltSafetyQtyUseDefaultField;
@@ -21899,7 +21998,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=951)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=954)]
         public int GiltSafetyQty {
             get {
                 return this.giltSafetyQtyField;
@@ -21911,7 +22010,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=952)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=955)]
         public bool GiltPriceUseDefault {
             get {
                 return this.giltPriceUseDefaultField;
@@ -21923,7 +22022,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=953)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=956)]
         public decimal GiltPrice {
             get {
                 return this.giltPriceField;
@@ -21935,7 +22034,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=954)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=957)]
         public bool HayneedleSafetyQtyUseDefault {
             get {
                 return this.hayneedleSafetyQtyUseDefaultField;
@@ -21947,7 +22046,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=955)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=958)]
         public int HayneedleSafetyQty {
             get {
                 return this.hayneedleSafetyQtyField;
@@ -21959,7 +22058,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=956)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=959)]
         public bool HayneedlePriceUseDefault {
             get {
                 return this.hayneedlePriceUseDefaultField;
@@ -21971,7 +22070,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=957)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=960)]
         public decimal HayneedlePrice {
             get {
                 return this.hayneedlePriceField;
@@ -21983,7 +22082,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=958)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=961)]
         public int HayneedleLeadTime {
             get {
                 return this.hayneedleLeadTimeField;
@@ -21995,7 +22094,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=959)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=962)]
         public bool HayneedleLeadTimeUseDefault {
             get {
                 return this.hayneedleLeadTimeUseDefaultField;
@@ -22007,7 +22106,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=960)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=963)]
         public bool HayneedleDiscontinued {
             get {
                 return this.hayneedleDiscontinuedField;
@@ -22019,7 +22118,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=961)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=964)]
         public System.DateTime HayneedleDiscontinuedOn {
             get {
                 return this.hayneedleDiscontinuedOnField;
@@ -22031,7 +22130,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=962)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=965)]
         public string HayneedleListingID {
             get {
                 return this.hayneedleListingIDField;
@@ -22043,7 +22142,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=963)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=966)]
         public int HayneedleBackOrderDays {
             get {
                 return this.hayneedleBackOrderDaysField;
@@ -22055,7 +22154,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=964)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=967)]
         public bool ATGStoresSafetyQtyUseDefault {
             get {
                 return this.aTGStoresSafetyQtyUseDefaultField;
@@ -22067,7 +22166,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=965)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=968)]
         public int ATGStoresSafetyQty {
             get {
                 return this.aTGStoresSafetyQtyField;
@@ -22079,7 +22178,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=966)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=969)]
         public bool ATGStoresPriceUseDefault {
             get {
                 return this.aTGStoresPriceUseDefaultField;
@@ -22091,7 +22190,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=967)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=970)]
         public decimal ATGStoresPrice {
             get {
                 return this.aTGStoresPriceField;
@@ -22103,7 +22202,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=968)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=971)]
         public string OverStockMerchantSKU {
             get {
                 return this.overStockMerchantSKUField;
@@ -22115,7 +22214,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=969)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=972)]
         public string MagentoTitle {
             get {
                 return this.magentoTitleField;
@@ -22127,7 +22226,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=970)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=973)]
         public bool MaxQtyPerShippingPackageEnabled {
             get {
                 return this.maxQtyPerShippingPackageEnabledField;
@@ -22139,7 +22238,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=971)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=974)]
         public string ASIN {
             get {
                 return this.aSINField;
@@ -22151,7 +22250,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=972)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=975)]
         public string ParentASIN {
             get {
                 return this.parentASINField;
@@ -22163,7 +22262,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=973)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=976)]
         public string UnbeatableMerchantSKU {
             get {
                 return this.unbeatableMerchantSKUField;
@@ -22175,7 +22274,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=974)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=977)]
         public bool UnbeatableSalesEnabled {
             get {
                 return this.unbeatableSalesEnabledField;
@@ -22187,7 +22286,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=975)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=978)]
         public int UnbeatableSafetyQty {
             get {
                 return this.unbeatableSafetyQtyField;
@@ -22199,7 +22298,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=976)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=979)]
         public bool UnbeatableSafetyQtyUseDefault {
             get {
                 return this.unbeatableSafetyQtyUseDefaultField;
@@ -22211,7 +22310,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=977)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=980)]
         public System.DateTime SearsSaleStartDate {
             get {
                 return this.searsSaleStartDateField;
@@ -22223,7 +22322,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=978)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=981)]
         public System.DateTime SearsPostingFailureOn {
             get {
                 return this.searsPostingFailureOnField;
@@ -22235,7 +22334,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=979)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=982)]
         public string SearsPostingFailureReason {
             get {
                 return this.searsPostingFailureReasonField;
@@ -22247,7 +22346,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=980)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=983)]
         public int SearsPostingFailureCounts {
             get {
                 return this.searsPostingFailureCountsField;
@@ -22259,7 +22358,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=981)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=984)]
         public string BDC_MerchantSKU {
             get {
                 return this.bDC_MerchantSKUField;
@@ -22271,7 +22370,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=982)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=985)]
         public string eBayMerchantSKU {
             get {
                 return this.eBayMerchantSKUField;
@@ -22283,7 +22382,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=983)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=986)]
         public string EBayItemConditionDescription {
             get {
                 return this.eBayItemConditionDescriptionField;
@@ -22295,7 +22394,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=984)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=987)]
         public int ReserveQtyTotal {
             get {
                 return this.reserveQtyTotalField;
@@ -22307,7 +22406,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=985)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=988)]
         public bool WayfairEnabled {
             get {
                 return this.wayfairEnabledField;
@@ -22319,7 +22418,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=986)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=989)]
         public bool HayneedleEnabled {
             get {
                 return this.hayneedleEnabledField;
@@ -22331,7 +22430,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=987)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=990)]
         public bool ATGStoresEnabled {
             get {
                 return this.aTGStoresEnabledField;
@@ -22343,7 +22442,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=988)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=991)]
         public string BDC_SKU_FindFailureMessage {
             get {
                 return this.bDC_SKU_FindFailureMessageField;
@@ -22355,7 +22454,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=989)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=992)]
         public int BDC_SKU_FindFailureCount {
             get {
                 return this.bDC_SKU_FindFailureCountField;
@@ -22367,7 +22466,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=990)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=993)]
         public bool DisconnectFromInventoryNewEggDotCom {
             get {
                 return this.disconnectFromInventoryNewEggDotComField;
@@ -22379,7 +22478,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=991)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=994)]
         public bool DisconnectFromInventoryMagento {
             get {
                 return this.disconnectFromInventoryMagentoField;
@@ -22391,7 +22490,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=992)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=995)]
         public bool DisconnectFromInventoryOverStock {
             get {
                 return this.disconnectFromInventoryOverStockField;
@@ -22403,7 +22502,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=993)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=996)]
         public bool DisconnectFromInventoryBuyDotcom {
             get {
                 return this.disconnectFromInventoryBuyDotcomField;
@@ -22415,7 +22514,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=994)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=997)]
         public bool DisconnectFromInventorySears {
             get {
                 return this.disconnectFromInventorySearsField;
@@ -22427,7 +22526,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=995)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=998)]
         public bool DisconnectFromInventoryAmazon {
             get {
                 return this.disconnectFromInventoryAmazonField;
@@ -22439,7 +22538,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=996)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=999)]
         public int MaxQtyPerShippingPackage {
             get {
                 return this.maxQtyPerShippingPackageField;
@@ -22451,7 +22550,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=997)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1000)]
         public int WebsiteSafetyQty {
             get {
                 return this.websiteSafetyQtyField;
@@ -22463,7 +22562,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=998)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1001)]
         public bool WebsiteSafetyQtyUseDefault {
             get {
                 return this.websiteSafetyQtyUseDefaultField;
@@ -22475,7 +22574,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=999)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1002)]
         public int WebsiteDefaultQty {
             get {
                 return this.websiteDefaultQtyField;
@@ -22487,7 +22586,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1000)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1003)]
         public bool WebsiteDefaultQtyUseDefault {
             get {
                 return this.websiteDefaultQtyUseDefaultField;
@@ -22499,7 +22598,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1001)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1004)]
         public System.DateTime BDC_CouponEndDate {
             get {
                 return this.bDC_CouponEndDateField;
@@ -22511,7 +22610,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1002)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1005)]
         public System.DateTime BDC_CouponStartDate {
             get {
                 return this.bDC_CouponStartDateField;
@@ -22523,7 +22622,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1003)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1006)]
         public decimal BDC_CouponAmount {
             get {
                 return this.bDC_CouponAmountField;
@@ -22535,7 +22634,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1004)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1007)]
         public bool BDC_EnableCoupon {
             get {
                 return this.bDC_EnableCouponField;
@@ -22547,7 +22646,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1005)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1008)]
         public bool MagentoInventoryOrPriceUpdateNeeded {
             get {
                 return this.magentoInventoryOrPriceUpdateNeededField;
@@ -22559,7 +22658,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1006)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1009)]
         public string eBayListingLastFailureMessage {
             get {
                 return this.eBayListingLastFailureMessageField;
@@ -22571,7 +22670,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1007)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1010)]
         public int eBayListingLastFailureCount {
             get {
                 return this.eBayListingLastFailureCountField;
@@ -22583,7 +22682,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1008)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1011)]
         public ListingFailureCodeType eBayListingLastFailureType {
             get {
                 return this.eBayListingLastFailureTypeField;
@@ -22595,7 +22694,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1009)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1012)]
         public System.DateTime eBayListingLastFailureOn {
             get {
                 return this.eBayListingLastFailureOnField;
@@ -22607,7 +22706,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1010)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1013)]
         public bool ShipByTruck {
             get {
                 return this.shipByTruckField;
@@ -22619,7 +22718,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1011)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1014)]
         public System.DateTime VendorFeedLastReceivedOn {
             get {
                 return this.vendorFeedLastReceivedOnField;
@@ -22631,7 +22730,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1012)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1015)]
         public System.DateTime AmazonShippingPriceLastUpdatedOn {
             get {
                 return this.amazonShippingPriceLastUpdatedOnField;
@@ -22643,7 +22742,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1013)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1016)]
         public string SearsTitle {
             get {
                 return this.searsTitleField;
@@ -22655,7 +22754,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1014)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1017)]
         public string BestBuySKU {
             get {
                 return this.bestBuySKUField;
@@ -22667,7 +22766,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1015)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1018)]
         public int VendorFeedVendorID {
             get {
                 return this.vendorFeedVendorIDField;
@@ -22679,7 +22778,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1016)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1019)]
         public decimal SearsShippingGroundPrice {
             get {
                 return this.searsShippingGroundPriceField;
@@ -22691,7 +22790,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1017)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1020)]
         public decimal SearsShippingExpeditedPrice {
             get {
                 return this.searsShippingExpeditedPriceField;
@@ -22703,7 +22802,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1018)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1021)]
         public decimal SearsShippingPremiumPrice {
             get {
                 return this.searsShippingPremiumPriceField;
@@ -22715,7 +22814,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1019)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1022)]
         public bool SearsShippingFreeEnabled {
             get {
                 return this.searsShippingFreeEnabledField;
@@ -22727,7 +22826,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1020)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1023)]
         public System.DateTime SearsShippingFreeStartDate {
             get {
                 return this.searsShippingFreeStartDateField;
@@ -22739,7 +22838,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1021)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1024)]
         public System.DateTime SearsShippingFreeEndDate {
             get {
                 return this.searsShippingFreeEndDateField;
@@ -22751,7 +22850,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1022)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1025)]
         public string SearsShippingFreePromotionalText {
             get {
                 return this.searsShippingFreePromotionalTextField;
@@ -22763,7 +22862,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1023)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1026)]
         public bool SearsShippingExpeditedEnabled {
             get {
                 return this.searsShippingExpeditedEnabledField;
@@ -22775,7 +22874,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1024)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1027)]
         public bool SearsShippingPremiumEnabled {
             get {
                 return this.searsShippingPremiumEnabledField;
@@ -22787,7 +22886,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1025)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1028)]
         public bool TrackInventoryChanges {
             get {
                 return this.trackInventoryChangesField;
@@ -22799,7 +22898,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1026)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1029)]
         public System.DateTime InventoryDate {
             get {
                 return this.inventoryDateField;
@@ -22811,7 +22910,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1027)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1030)]
         public string SearchTerms {
             get {
                 return this.searchTermsField;
@@ -22823,7 +22922,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1028)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1031)]
         public string SearchTerms2 {
             get {
                 return this.searchTerms2Field;
@@ -22835,7 +22934,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1029)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1032)]
         public string SearchTerms3 {
             get {
                 return this.searchTerms3Field;
@@ -22847,7 +22946,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1030)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1033)]
         public string SearchTerms4 {
             get {
                 return this.searchTerms4Field;
@@ -22859,7 +22958,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1031)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1034)]
         public string SearchTerms5 {
             get {
                 return this.searchTerms5Field;
@@ -22871,7 +22970,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1032)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1035)]
         public decimal SalesManCost {
             get {
                 return this.salesManCostField;
@@ -22883,7 +22982,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1033)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1036)]
         public string SearsMerchantSKU {
             get {
                 return this.searsMerchantSKUField;
@@ -22895,7 +22994,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1034)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1037)]
         public decimal GrouponGatewayCost {
             get {
                 return this.grouponGatewayCostField;
@@ -22907,7 +23006,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1035)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1038)]
         public decimal GrouponGatewayPrice {
             get {
                 return this.grouponGatewayPriceField;
@@ -22919,7 +23018,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1036)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1039)]
         public bool GrouponGatewayPriceUseDefault {
             get {
                 return this.grouponGatewayPriceUseDefaultField;
@@ -22931,7 +23030,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1037)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1040)]
         public string GrouponGatewayMerchantSKU {
             get {
                 return this.grouponGatewayMerchantSKUField;
@@ -22943,7 +23042,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1038)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1041)]
         public bool GrouponGatewayEnabled {
             get {
                 return this.grouponGatewayEnabledField;
@@ -22955,7 +23054,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1039)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1042)]
         public string AmazonMerchantSKU {
             get {
                 return this.amazonMerchantSKUField;
@@ -22967,7 +23066,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1040)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1043)]
         public bool BDC_LeadTimeToShipUseDefault {
             get {
                 return this.bDC_LeadTimeToShipUseDefaultField;
@@ -22979,7 +23078,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1041)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1044)]
         public bool eBayEnableStrikeThroughPrices {
             get {
                 return this.eBayEnableStrikeThroughPricesField;
@@ -22991,7 +23090,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1042)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1045)]
         public MinimumAdvertisedPriceExposureCodeType MAPPriceExposure {
             get {
                 return this.mAPPriceExposureField;
@@ -23003,7 +23102,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1043)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1046)]
         public PricingTreatmentCodeType MAPPricingTreatment {
             get {
                 return this.mAPPricingTreatmentField;
@@ -23015,7 +23114,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1044)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1047)]
         public bool SoldOffeBay {
             get {
                 return this.soldOffeBayField;
@@ -23027,7 +23126,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1045)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1048)]
         public bool SoldOneBay {
             get {
                 return this.soldOneBayField;
@@ -23039,7 +23138,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1046)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1049)]
         public bool IsHazmat {
             get {
                 return this.isHazmatField;
@@ -23051,7 +23150,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1047)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1050)]
         public string BDC_ProductConditionNotes {
             get {
                 return this.bDC_ProductConditionNotesField;
@@ -23063,7 +23162,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1048)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1051)]
         public bool MagentoMinQtyForCartUseGlobal {
             get {
                 return this.magentoMinQtyForCartUseGlobalField;
@@ -23075,7 +23174,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1049)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1052)]
         public bool MagentoMaxQtyForCartUseGlobal {
             get {
                 return this.magentoMaxQtyForCartUseGlobalField;
@@ -23087,7 +23186,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1050)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1053)]
         public bool MagentoQtyToMakeOutOfStockUseGlobal {
             get {
                 return this.magentoQtyToMakeOutOfStockUseGlobalField;
@@ -23099,7 +23198,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1051)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1054)]
         public decimal MagentoSpecialPrice {
             get {
                 return this.magentoSpecialPriceField;
@@ -23111,7 +23210,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1052)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1055)]
         public System.DateTime MagentoSpecialPriceFromDate {
             get {
                 return this.magentoSpecialPriceFromDateField;
@@ -23123,7 +23222,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1053)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1056)]
         public System.DateTime MagentoSpecialPriceToDate {
             get {
                 return this.magentoSpecialPriceToDateField;
@@ -23135,7 +23234,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1054)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1057)]
         public string MagentoTaxClass {
             get {
                 return this.magentoTaxClassField;
@@ -23147,7 +23246,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1055)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1058)]
         public int MagentoMinQtyForCart {
             get {
                 return this.magentoMinQtyForCartField;
@@ -23159,7 +23258,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1056)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1059)]
         public int MagentoMaxQtyForCart {
             get {
                 return this.magentoMaxQtyForCartField;
@@ -23171,7 +23270,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1057)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1060)]
         public int MagentoQtyToMakeOutOfStock {
             get {
                 return this.magentoQtyToMakeOutOfStockField;
@@ -23183,7 +23282,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1058)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1061)]
         public bool MagentoIsStockAvailable {
             get {
                 return this.magentoIsStockAvailableField;
@@ -23195,7 +23294,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1059)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1062)]
         public ProductCondition BDC_ProductCondition {
             get {
                 return this.bDC_ProductConditionField;
@@ -23207,7 +23306,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1060)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1063)]
         public bool IsMatureContent {
             get {
                 return this.isMatureContentField;
@@ -23219,7 +23318,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1061)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1064)]
         public string ProductConditionNotes {
             get {
                 return this.productConditionNotesField;
@@ -23231,7 +23330,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1062)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1065)]
         public long NetWorkSolutionsProductID {
             get {
                 return this.netWorkSolutionsProductIDField;
@@ -23243,7 +23342,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1063)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1066)]
         public bool IsPriceFallEnabled {
             get {
                 return this.isPriceFallEnabledField;
@@ -23255,7 +23354,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1064)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1067)]
         public bool IsExportedForPriceFall {
             get {
                 return this.isExportedForPriceFallField;
@@ -23267,7 +23366,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1065)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1068)]
         public System.DateTime ExportedForPriceFallOn {
             get {
                 return this.exportedForPriceFallOnField;
@@ -23279,7 +23378,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1066)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1069)]
         public string Functionality {
             get {
                 return this.functionalityField;
@@ -23291,7 +23390,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1067)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1070)]
         public string Packaging {
             get {
                 return this.packagingField;
@@ -23303,7 +23402,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1068)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1071)]
         public string Content {
             get {
                 return this.contentField;
@@ -23315,7 +23414,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1069)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1072)]
         public string Dimensions {
             get {
                 return this.dimensionsField;
@@ -23327,7 +23426,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1070)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1073)]
         public string Missing {
             get {
                 return this.missingField;
@@ -23339,7 +23438,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1071)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1074)]
         public bool eBayDisconnectFromInventory {
             get {
                 return this.eBayDisconnectFromInventoryField;
@@ -23351,7 +23450,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1072)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1075)]
         public bool EnableSellingBelowCost {
             get {
                 return this.enableSellingBelowCostField;
@@ -23363,7 +23462,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1073)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1076)]
         public string OverStockOptionDescription {
             get {
                 return this.overStockOptionDescriptionField;
@@ -23375,7 +23474,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1074)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1077)]
         public bool UseMatrixParentProductImage {
             get {
                 return this.useMatrixParentProductImageField;
@@ -23387,7 +23486,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlArrayAttribute(Order=1075)]
+        [System.Xml.Serialization.XmlArrayAttribute(Order=1078)]
         public string[] ShipToLocationsAdditional {
             get {
                 return this.shipToLocationsAdditionalField;
@@ -23399,7 +23498,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1076)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1079)]
         public string NewEggDotComShippingOption {
             get {
                 return this.newEggDotComShippingOptionField;
@@ -23411,7 +23510,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1077)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1080)]
         public bool BDC_ShippingStandardIsFree {
             get {
                 return this.bDC_ShippingStandardIsFreeField;
@@ -23423,7 +23522,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1078)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1081)]
         public bool BDC_ShippingExpeditedIsFree {
             get {
                 return this.bDC_ShippingExpeditedIsFreeField;
@@ -23435,7 +23534,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1079)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1082)]
         public decimal BDC_ShippingOneDay {
             get {
                 return this.bDC_ShippingOneDayField;
@@ -23447,7 +23546,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1080)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1083)]
         public decimal BDC_ShippingTwoDays {
             get {
                 return this.bDC_ShippingTwoDaysField;
@@ -23459,7 +23558,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1081)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1084)]
         public bool BDC_ShippingOneDayIsFree {
             get {
                 return this.bDC_ShippingOneDayIsFreeField;
@@ -23471,7 +23570,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1082)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1085)]
         public bool BDC_ShippingTwoDaysIsFree {
             get {
                 return this.bDC_ShippingTwoDaysIsFreeField;
@@ -23483,7 +23582,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1083)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1086)]
         public int AggregateQty {
             get {
                 return this.aggregateQtyField;
@@ -23495,7 +23594,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1084)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1087)]
         public System.DateTime MagentoLastUpdatedOn {
             get {
                 return this.magentoLastUpdatedOnField;
@@ -23507,7 +23606,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1085)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1088)]
         public bool UseMapPriceForWebsite {
             get {
                 return this.useMapPriceForWebsiteField;
@@ -23519,7 +23618,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1086)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1089)]
         public decimal DealerNet {
             get {
                 return this.dealerNetField;
@@ -23531,7 +23630,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1087)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1090)]
         public decimal DealerDiscount {
             get {
                 return this.dealerDiscountField;
@@ -23543,7 +23642,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1088)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1091)]
         public System.DateTime DealerDiscountFromDate {
             get {
                 return this.dealerDiscountFromDateField;
@@ -23555,7 +23654,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1089)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1092)]
         public System.DateTime DealerDiscountToDate {
             get {
                 return this.dealerDiscountToDateField;
@@ -23567,7 +23666,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1090)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1093)]
         public int DealerDiscountVendorID {
             get {
                 return this.dealerDiscountVendorIDField;
@@ -23579,7 +23678,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1091)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1094)]
         public decimal CoOp {
             get {
                 return this.coOpField;
@@ -23591,7 +23690,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1092)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1095)]
         public bool FulfillmentLatencyForAmazonUseDefault {
             get {
                 return this.fulfillmentLatencyForAmazonUseDefaultField;
@@ -23603,7 +23702,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1093)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1096)]
         public int ShippingRuleID {
             get {
                 return this.shippingRuleIDField;
@@ -23615,7 +23714,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1094)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1097)]
         public bool RequireSerialNumberScanWhileShipping {
             get {
                 return this.requireSerialNumberScanWhileShippingField;
@@ -23627,7 +23726,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1095)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1098)]
         public bool RequireTransparencySticker {
             get {
                 return this.requireTransparencyStickerField;
@@ -23639,7 +23738,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1096)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1099)]
         public string OverStockShortName {
             get {
                 return this.overStockShortNameField;
@@ -23651,7 +23750,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1097)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1100)]
         public string OverStockMSRPSalesLocation {
             get {
                 return this.overStockMSRPSalesLocationField;
@@ -23663,7 +23762,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1098)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1101)]
         public decimal OverStockStreetPrice {
             get {
                 return this.overStockStreetPriceField;
@@ -23675,7 +23774,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1099)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1102)]
         public decimal OverStockSuggestedSellingPrice {
             get {
                 return this.overStockSuggestedSellingPriceField;
@@ -23687,7 +23786,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1100)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1103)]
         public string OverStockSourceZipCode {
             get {
                 return this.overStockSourceZipCodeField;
@@ -23699,7 +23798,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1101)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1104)]
         public string OverStockCountryOfOrigin {
             get {
                 return this.overStockCountryOfOriginField;
@@ -23711,7 +23810,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1102)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1105)]
         public string OverStockCondition {
             get {
                 return this.overStockConditionField;
@@ -23723,7 +23822,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1103)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1106)]
         public decimal OverStockCost {
             get {
                 return this.overStockCostField;
@@ -23735,7 +23834,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1104)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1107)]
         public decimal OverStockCostNew {
             get {
                 return this.overStockCostNewField;
@@ -23747,7 +23846,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1105)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1108)]
         public string OverStockWarrantyProvider {
             get {
                 return this.overStockWarrantyProviderField;
@@ -23759,7 +23858,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1106)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1109)]
         public string OverStockWarrantyDescription {
             get {
                 return this.overStockWarrantyDescriptionField;
@@ -23771,7 +23870,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1107)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1110)]
         public string OverStockWarrantyContactPhoneNumber {
             get {
                 return this.overStockWarrantyContactPhoneNumberField;
@@ -23783,7 +23882,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1108)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1111)]
         public string OverStockSpecificationsMaterials {
             get {
                 return this.overStockSpecificationsMaterialsField;
@@ -23795,7 +23894,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1109)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1112)]
         public decimal CommissionPercentage {
             get {
                 return this.commissionPercentageField;
@@ -23807,7 +23906,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1110)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1113)]
         public bool SearsFixedInventoryQtyUseDefault {
             get {
                 return this.searsFixedInventoryQtyUseDefaultField;
@@ -23819,7 +23918,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1111)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1114)]
         public bool SearsFixedInventoryQtyEnabled {
             get {
                 return this.searsFixedInventoryQtyEnabledField;
@@ -23831,7 +23930,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1112)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1115)]
         public int SearsFixedInventoryQty {
             get {
                 return this.searsFixedInventoryQtyField;
@@ -23843,7 +23942,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1113)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1116)]
         public bool BuyDotcomFixedInventoryQtyUseDefault {
             get {
                 return this.buyDotcomFixedInventoryQtyUseDefaultField;
@@ -23855,7 +23954,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1114)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1117)]
         public bool BuyDotcomFixedInventoryQtyEnabled {
             get {
                 return this.buyDotcomFixedInventoryQtyEnabledField;
@@ -23867,7 +23966,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1115)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1118)]
         public int BuyDotcomFixedInventoryQty {
             get {
                 return this.buyDotcomFixedInventoryQtyField;
@@ -23879,7 +23978,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1116)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1119)]
         public bool OverStockFixedInventoryQtyUseDefault {
             get {
                 return this.overStockFixedInventoryQtyUseDefaultField;
@@ -23891,7 +23990,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1117)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1120)]
         public bool OverStockFixedInventoryQtyEnabled {
             get {
                 return this.overStockFixedInventoryQtyEnabledField;
@@ -23903,7 +24002,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1118)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1121)]
         public int OverStockFixedInventoryQty {
             get {
                 return this.overStockFixedInventoryQtyField;
@@ -23915,7 +24014,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1119)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1122)]
         public bool NewEggDotComFixedInventoryQtyUseDefault {
             get {
                 return this.newEggDotComFixedInventoryQtyUseDefaultField;
@@ -23927,7 +24026,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1120)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1123)]
         public bool NewEggDotComFixedInventoryQtyEnabled {
             get {
                 return this.newEggDotComFixedInventoryQtyEnabledField;
@@ -23939,7 +24038,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1121)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1124)]
         public int NewEggDotComFixedInventoryQty {
             get {
                 return this.newEggDotComFixedInventoryQtyField;
@@ -23951,7 +24050,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1122)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1125)]
         public string eBayCatalogEntryValue {
             get {
                 return this.eBayCatalogEntryValueField;
@@ -23963,7 +24062,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1123)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1126)]
         public eBayCatalogEntryTypeType eBayCatalogEntryType {
             get {
                 return this.eBayCatalogEntryTypeField;
@@ -23975,7 +24074,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1124)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1127)]
         public bool EBayBuyerReq_MaximumBuyerPolicyViolations_Enabled {
             get {
                 return this.eBayBuyerReq_MaximumBuyerPolicyViolations_EnabledField;
@@ -23987,7 +24086,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1125)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1128)]
         public bool EBayBuyerReq_MaximumItemRequirements_Enabled {
             get {
                 return this.eBayBuyerReq_MaximumItemRequirements_EnabledField;
@@ -23999,7 +24098,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1126)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1129)]
         public bool EBayBuyerReq_MaximumItemRequirements_FeedbackScore_Enabled {
             get {
                 return this.eBayBuyerReq_MaximumItemRequirements_FeedbackScore_EnabledField;
@@ -24011,7 +24110,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1127)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1130)]
         public bool EBayBuyerReq_MaximumUnpaidItemStrikesInfo_Enabled {
             get {
                 return this.eBayBuyerReq_MaximumUnpaidItemStrikesInfo_EnabledField;
@@ -24023,7 +24122,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1128)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1131)]
         public bool EBayBuyerReq_MinimumFeedbackScore_Enabled {
             get {
                 return this.eBayBuyerReq_MinimumFeedbackScore_EnabledField;
@@ -24035,7 +24134,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1129)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1132)]
         public bool IncludeInCMFeed {
             get {
                 return this.includeInCMFeedField;
@@ -24047,7 +24146,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1130)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1133)]
         public bool AmazonPriceUpdateRequired {
             get {
                 return this.amazonPriceUpdateRequiredField;
@@ -24059,7 +24158,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1131)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1134)]
         public decimal SalePrice {
             get {
                 return this.salePriceField;
@@ -24071,7 +24170,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1132)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1135)]
         public int ClientID {
             get {
                 return this.clientIDField;
@@ -24083,7 +24182,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1133)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1136)]
         public bool EBayBuyerReq_AllowOverride {
             get {
                 return this.eBayBuyerReq_AllowOverrideField;
@@ -24095,7 +24194,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1134)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1137)]
         public bool EBayBuyerReq_LinkedPayPalAccount {
             get {
                 return this.eBayBuyerReq_LinkedPayPalAccountField;
@@ -24107,7 +24206,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1135)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1138)]
         public int EBayBuyerReq_MaximumBuyerPolicyViolations_Count {
             get {
                 return this.eBayBuyerReq_MaximumBuyerPolicyViolations_CountField;
@@ -24119,7 +24218,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1136)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1139)]
         public PeriodCodeType EBayBuyerReq_MaximumBuyerPolicyViolations_Period {
             get {
                 return this.eBayBuyerReq_MaximumBuyerPolicyViolations_PeriodField;
@@ -24131,7 +24230,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1137)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1140)]
         public int EBayBuyerReq_MaximumItemRequirements_Count {
             get {
                 return this.eBayBuyerReq_MaximumItemRequirements_CountField;
@@ -24143,7 +24242,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1138)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1141)]
         public int EBayBuyerReq_MaximumItemRequirements_FeedbackScore {
             get {
                 return this.eBayBuyerReq_MaximumItemRequirements_FeedbackScoreField;
@@ -24155,7 +24254,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1139)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1142)]
         public int EBayBuyerReq_MaximumUnpaidItemStrikesInfo_Count {
             get {
                 return this.eBayBuyerReq_MaximumUnpaidItemStrikesInfo_CountField;
@@ -24167,7 +24266,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1140)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1143)]
         public PeriodCodeType EBayBuyerReq_MaximumUnpaidItemStrikesInfo_Period {
             get {
                 return this.eBayBuyerReq_MaximumUnpaidItemStrikesInfo_PeriodField;
@@ -24179,7 +24278,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1141)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1144)]
         public int EBayBuyerReq_MinimumFeedbackScore {
             get {
                 return this.eBayBuyerReq_MinimumFeedbackScoreField;
@@ -24191,7 +24290,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1142)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1145)]
         public bool EBayBuyerReq_ShipToRegistrationCountry {
             get {
                 return this.eBayBuyerReq_ShipToRegistrationCountryField;
@@ -24203,7 +24302,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1143)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1146)]
         public int EBayBuyerReq_VerifiedUserRequirements_FeedbackScore {
             get {
                 return this.eBayBuyerReq_VerifiedUserRequirements_FeedbackScoreField;
@@ -24215,7 +24314,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1144)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1147)]
         public bool EBayBuyerReq_VerifiedUserRequirements_VerifiedUser {
             get {
                 return this.eBayBuyerReq_VerifiedUserRequirements_VerifiedUserField;
@@ -24227,7 +24326,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1145)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1148)]
         public bool EBayBuyerReq_ZeroFeedbackScore {
             get {
                 return this.eBayBuyerReq_ZeroFeedbackScoreField;
@@ -24239,7 +24338,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1146)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1149)]
         public System.DateTime AmazonReleaseDate {
             get {
                 return this.amazonReleaseDateField;
@@ -24251,7 +24350,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1147)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1150)]
         public bool AmazonReleaseDateEnabled {
             get {
                 return this.amazonReleaseDateEnabledField;
@@ -24263,7 +24362,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1148)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1151)]
         public int QtyPerPalet {
             get {
                 return this.qtyPerPaletField;
@@ -24275,7 +24374,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1149)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1152)]
         public string ShippingMethod {
             get {
                 return this.shippingMethodField;
@@ -24287,7 +24386,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1150)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1153)]
         public string ShippingCarrier {
             get {
                 return this.shippingCarrierField;
@@ -24299,7 +24398,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1151)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1154)]
         public decimal MAPPrice {
             get {
                 return this.mAPPriceField;
@@ -24311,7 +24410,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1152)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1155)]
         public bool GiftMessageAllowed {
             get {
                 return this.giftMessageAllowedField;
@@ -24323,7 +24422,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1153)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1156)]
         public string SpecialFeatures1 {
             get {
                 return this.specialFeatures1Field;
@@ -24335,7 +24434,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1154)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1157)]
         public string SpecialFeatures2 {
             get {
                 return this.specialFeatures2Field;
@@ -24347,7 +24446,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1155)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1158)]
         public string SpecialFeatures3 {
             get {
                 return this.specialFeatures3Field;
@@ -24359,7 +24458,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1156)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1159)]
         public int FulfillmentLatencyForAmazon {
             get {
                 return this.fulfillmentLatencyForAmazonField;
@@ -24371,7 +24470,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1157)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1160)]
         public int AmazonLabelUnits {
             get {
                 return this.amazonLabelUnitsField;
@@ -24383,7 +24482,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1158)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1161)]
         public AmazonLabelFormatType AmazonLabelFormat {
             get {
                 return this.amazonLabelFormatField;
@@ -24395,7 +24494,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1159)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1162)]
         public bool AmazonLabelRequired {
             get {
                 return this.amazonLabelRequiredField;
@@ -24407,7 +24506,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1160)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1163)]
         public string DefaultKitParentProductID {
             get {
                 return this.defaultKitParentProductIDField;
@@ -24419,7 +24518,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1161)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1164)]
         public int InventoryMaxQtyForAmazon {
             get {
                 return this.inventoryMaxQtyForAmazonField;
@@ -24431,7 +24530,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1162)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1165)]
         public bool InventoryMaxQtyForAmazonEnabled {
             get {
                 return this.inventoryMaxQtyForAmazonEnabledField;
@@ -24443,7 +24542,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlArrayAttribute(Order=1163)]
+        [System.Xml.Serialization.XmlArrayAttribute(Order=1166)]
         public string[] ExcludeShippingToLocations {
             get {
                 return this.excludeShippingToLocationsField;
@@ -24455,7 +24554,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1164)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1167)]
         public decimal BDC_ShippingExpedited {
             get {
                 return this.bDC_ShippingExpeditedField;
@@ -24467,7 +24566,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1165)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1168)]
         public decimal BDC_ShippingStandard {
             get {
                 return this.bDC_ShippingStandardField;
@@ -24479,7 +24578,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1166)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1169)]
         public int BDC_LeadTimeToShip {
             get {
                 return this.bDC_LeadTimeToShipField;
@@ -24491,7 +24590,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1167)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1170)]
         public CurrencyCodeType PricesConvertedToCurrency {
             get {
                 return this.pricesConvertedToCurrencyField;
@@ -24503,7 +24602,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1168)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1171)]
         public bool IsPricesConverted {
             get {
                 return this.isPricesConvertedField;
@@ -24515,7 +24614,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1169)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1172)]
         public System.DateTime PricesLastConvertedOn {
             get {
                 return this.pricesLastConvertedOnField;
@@ -24527,7 +24626,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1170)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1173)]
         public System.DateTime InventoryAuditDate {
             get {
                 return this.inventoryAuditDateField;
@@ -24539,7 +24638,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1171)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1174)]
         public string BuyDotComCategoryID {
             get {
                 return this.buyDotComCategoryIDField;
@@ -24551,7 +24650,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1172)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1175)]
         public decimal EstimatedPostingFeeForEBay {
             get {
                 return this.estimatedPostingFeeForEBayField;
@@ -24563,7 +24662,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1173)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1176)]
         public int PackageQty {
             get {
                 return this.packageQtyField;
@@ -24575,7 +24674,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1174)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1177)]
         public int NumberOfItems {
             get {
                 return this.numberOfItemsField;
@@ -24587,7 +24686,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1175)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1178)]
         public bool IsSubComponentScanRequired {
             get {
                 return this.isSubComponentScanRequiredField;
@@ -24599,7 +24698,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1176)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1179)]
         public string CurrentFixedPriceListingID {
             get {
                 return this.currentFixedPriceListingIDField;
@@ -24611,7 +24710,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1177)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1180)]
         public string AmazonTaxCode {
             get {
                 return this.amazonTaxCodeField;
@@ -24623,7 +24722,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1178)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1181)]
         public bool Approved {
             get {
                 return this.approvedField;
@@ -24635,7 +24734,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1179)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1182)]
         public int OnOrder {
             get {
                 return this.onOrderField;
@@ -24647,7 +24746,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1180)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1183)]
         public int Purchaser {
             get {
                 return this.purchaserField;
@@ -24659,7 +24758,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1181)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1184)]
         public int AmazonFixedInventoryQty {
             get {
                 return this.amazonFixedInventoryQtyField;
@@ -24671,7 +24770,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1182)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1185)]
         public bool AmazonUseFixedInventoryQty {
             get {
                 return this.amazonUseFixedInventoryQtyField;
@@ -24683,7 +24782,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1183)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1186)]
         public FulfilledBy FulfilledBy {
             get {
                 return this.fulfilledByField;
@@ -24695,7 +24794,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1184)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1187)]
         public bool MagentoSafetyQuantityUseDefault {
             get {
                 return this.magentoSafetyQuantityUseDefaultField;
@@ -24707,7 +24806,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1185)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1188)]
         public int MagentoSafetyQuantity {
             get {
                 return this.magentoSafetyQuantityField;
@@ -24719,7 +24818,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1186)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1189)]
         public string ShippingCustomWarning {
             get {
                 return this.shippingCustomWarningField;
@@ -24731,7 +24830,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1187)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1190)]
         public string ShippingCustomInstructions {
             get {
                 return this.shippingCustomInstructionsField;
@@ -24743,7 +24842,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1188)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1191)]
         public bool RequireShipperToInputInformation {
             get {
                 return this.requireShipperToInputInformationField;
@@ -24755,7 +24854,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1189)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1192)]
         public bool RequireShippertoAcknowledgeWarning {
             get {
                 return this.requireShippertoAcknowledgeWarningField;
@@ -24767,7 +24866,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1190)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1193)]
         public bool ExportedForNewEggDotCom {
             get {
                 return this.exportedForNewEggDotComField;
@@ -24779,7 +24878,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1191)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1194)]
         public decimal NewEggDotComPrice {
             get {
                 return this.newEggDotComPriceField;
@@ -24791,7 +24890,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1192)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1195)]
         public bool NewEggDotComEnabled {
             get {
                 return this.newEggDotComEnabledField;
@@ -24803,7 +24902,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1193)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1196)]
         public bool NewEggDotComPriceUseDefault {
             get {
                 return this.newEggDotComPriceUseDefaultField;
@@ -24815,7 +24914,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1194)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1197)]
         public int NewEggDotComSafetyQuantity {
             get {
                 return this.newEggDotComSafetyQuantityField;
@@ -24827,7 +24926,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1195)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1198)]
         public bool NewEggDotComSafetyQuantityUseDefault {
             get {
                 return this.newEggDotComSafetyQuantityUseDefaultField;
@@ -24839,7 +24938,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1196)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1199)]
         public System.DateTime ExportedForNewEggOnDotCom {
             get {
                 return this.exportedForNewEggOnDotComField;
@@ -24851,7 +24950,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1197)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1200)]
         public string NewEggDotComDescription {
             get {
                 return this.newEggDotComDescriptionField;
@@ -24863,7 +24962,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1198)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1201)]
         public string NewEggDotComCountryOfOrigin {
             get {
                 return this.newEggDotComCountryOfOriginField;
@@ -24875,7 +24974,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1199)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1202)]
         public bool AmazonEnableShippingOverride {
             get {
                 return this.amazonEnableShippingOverrideField;
@@ -24887,7 +24986,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1200)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1203)]
         public string CustomProductURL {
             get {
                 return this.customProductURLField;
@@ -24899,7 +24998,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1201)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1204)]
         public string AmazonFBASKU {
             get {
                 return this.amazonFBASKUField;
@@ -24911,7 +25010,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1202)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1205)]
         public string PromotionTitle {
             get {
                 return this.promotionTitleField;
@@ -24923,7 +25022,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1203)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1206)]
         public decimal PromotionPrice {
             get {
                 return this.promotionPriceField;
@@ -24935,7 +25034,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1204)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1207)]
         public string PromotionDescription {
             get {
                 return this.promotionDescriptionField;
@@ -24947,7 +25046,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1205)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1208)]
         public int PromotionImageId {
             get {
                 return this.promotionImageIdField;
@@ -24959,7 +25058,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1206)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1209)]
         public bool PromotionEnabled {
             get {
                 return this.promotionEnabledField;
@@ -24971,7 +25070,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1207)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1210)]
         public System.DateTime OverStockInventoryLastRevisedOn {
             get {
                 return this.overStockInventoryLastRevisedOnField;
@@ -24983,7 +25082,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1208)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1211)]
         public int QtyPerCase {
             get {
                 return this.qtyPerCaseField;
@@ -24995,7 +25094,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1209)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1212)]
         public int ReOrderQty {
             get {
                 return this.reOrderQtyField;
@@ -25007,7 +25106,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1210)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1213)]
         public bool GoogleBaseEnabled {
             get {
                 return this.googleBaseEnabledField;
@@ -25019,7 +25118,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1211)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1214)]
         public string OverstockHTMLDescription {
             get {
                 return this.overstockHTMLDescriptionField;
@@ -25031,7 +25130,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1212)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1215)]
         public string OverstockTitle {
             get {
                 return this.overstockTitleField;
@@ -25043,7 +25142,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1213)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1216)]
         public int FBAFullfillmentCenterID {
             get {
                 return this.fBAFullfillmentCenterIDField;
@@ -25055,7 +25154,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1214)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1217)]
         public string OverstockGeneratedProductID {
             get {
                 return this.overstockGeneratedProductIDField;
@@ -25067,7 +25166,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1215)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1218)]
         public string OverStockOptionSKU {
             get {
                 return this.overStockOptionSKUField;
@@ -25079,7 +25178,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1216)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1219)]
         public bool NexTagEnabled {
             get {
                 return this.nexTagEnabledField;
@@ -25091,7 +25190,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1217)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1220)]
         public decimal OverStockPrice {
             get {
                 return this.overStockPriceField;
@@ -25103,7 +25202,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1218)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1221)]
         public System.DateTime ExportedForOverStockOn {
             get {
                 return this.exportedForOverStockOnField;
@@ -25115,7 +25214,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1219)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1222)]
         public bool OverStockUseDefaultPrice {
             get {
                 return this.overStockUseDefaultPriceField;
@@ -25127,7 +25226,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1220)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1223)]
         public int OverStockSafetyQuantity {
             get {
                 return this.overStockSafetyQuantityField;
@@ -25139,7 +25238,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1221)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1224)]
         public bool OverStockSafetyQuantityUseDefault {
             get {
                 return this.overStockSafetyQuantityUseDefaultField;
@@ -25151,7 +25250,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1222)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1225)]
         public int OverStockSubCategoryId {
             get {
                 return this.overStockSubCategoryIdField;
@@ -25163,7 +25262,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1223)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1226)]
         public int OverStockBrandID {
             get {
                 return this.overStockBrandIDField;
@@ -25175,7 +25274,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1224)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1227)]
         public bool ExportedForOverStock {
             get {
                 return this.exportedForOverStockField;
@@ -25187,7 +25286,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1225)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1228)]
         public bool OverStockEnabled {
             get {
                 return this.overStockEnabledField;
@@ -25199,7 +25298,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1226)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1229)]
         public string EBayItemCondition {
             get {
                 return this.eBayItemConditionField;
@@ -25211,7 +25310,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1227)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1230)]
         public InventoryDependantOptionType InventoryDependantOption {
             get {
                 return this.inventoryDependantOptionField;
@@ -25223,7 +25322,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1228)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1231)]
         public int AmazonPricingRuleID {
             get {
                 return this.amazonPricingRuleIDField;
@@ -25235,7 +25334,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1229)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1232)]
         public System.DateTime ExportedForAmazonOn {
             get {
                 return this.exportedForAmazonOnField;
@@ -25247,7 +25346,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1230)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1233)]
         public System.DateTime ExportedForMagentoOn {
             get {
                 return this.exportedForMagentoOnField;
@@ -25259,7 +25358,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1231)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1234)]
         public System.DateTime ExportedForNewEggOn {
             get {
                 return this.exportedForNewEggOnField;
@@ -25271,7 +25370,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1232)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1235)]
         public System.DateTime ExportedForSearsOn {
             get {
                 return this.exportedForSearsOnField;
@@ -25283,7 +25382,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1233)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1236)]
         public int MaximumShippingPackages {
             get {
                 return this.maximumShippingPackagesField;
@@ -25295,7 +25394,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1234)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1237)]
         public bool HandlingFeeUseDefault {
             get {
                 return this.handlingFeeUseDefaultField;
@@ -25307,7 +25406,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1235)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1238)]
         public decimal HandlingFeeFixedAmount {
             get {
                 return this.handlingFeeFixedAmountField;
@@ -25319,7 +25418,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1236)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1239)]
         public decimal HandlingFeePricePercentage {
             get {
                 return this.handlingFeePricePercentageField;
@@ -25331,7 +25430,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1237)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1240)]
         public bool FreeShipping {
             get {
                 return this.freeShippingField;
@@ -25343,7 +25442,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1238)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1241)]
         public bool ShippingDomesticOnly {
             get {
                 return this.shippingDomesticOnlyField;
@@ -25355,7 +25454,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1239)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1242)]
         public System.DateTime EBayListingsLastEndedOn {
             get {
                 return this.eBayListingsLastEndedOnField;
@@ -25367,7 +25466,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1240)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1243)]
         public bool NewEggSafetyQuantityUseDefault {
             get {
                 return this.newEggSafetyQuantityUseDefaultField;
@@ -25379,7 +25478,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1241)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1244)]
         public int NewEggSafetyQuantity {
             get {
                 return this.newEggSafetyQuantityField;
@@ -25391,7 +25490,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1242)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1245)]
         public bool NewEggPriceUseDefault {
             get {
                 return this.newEggPriceUseDefaultField;
@@ -25403,7 +25502,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1243)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1246)]
         public bool BuyDotComSafetyQuantityUseDefault {
             get {
                 return this.buyDotComSafetyQuantityUseDefaultField;
@@ -25415,7 +25514,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1244)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1247)]
         public int BuyDotComSafetyQuantity {
             get {
                 return this.buyDotComSafetyQuantityField;
@@ -25427,7 +25526,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1245)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1248)]
         public bool BuyDotComPriceUseDefault {
             get {
                 return this.buyDotComPriceUseDefaultField;
@@ -25439,7 +25538,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1246)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1249)]
         public bool AmazonPriceUseDefault {
             get {
                 return this.amazonPriceUseDefaultField;
@@ -25451,7 +25550,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1247)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1250)]
         public bool SearsUseDefaultPrice {
             get {
                 return this.searsUseDefaultPriceField;
@@ -25463,7 +25562,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1248)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1251)]
         public int SearsSafetyQuantity {
             get {
                 return this.searsSafetyQuantityField;
@@ -25475,7 +25574,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1249)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1252)]
         public bool SearsSafetyQuantityUseDefault {
             get {
                 return this.searsSafetyQuantityUseDefaultField;
@@ -25487,7 +25586,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1250)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1253)]
         public bool AmazonEnableBotPrice {
             get {
                 return this.amazonEnableBotPriceField;
@@ -25499,7 +25598,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1251)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1254)]
         public decimal AmazonBotPrice {
             get {
                 return this.amazonBotPriceField;
@@ -25511,7 +25610,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1252)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1255)]
         public System.DateTime AmazonBotPriceDate {
             get {
                 return this.amazonBotPriceDateField;
@@ -25523,7 +25622,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1253)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1256)]
         public bool EnableAmazonPriceUpdate {
             get {
                 return this.enableAmazonPriceUpdateField;
@@ -25535,7 +25634,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1254)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1257)]
         public bool AmazonSafetyQtyUseDefault {
             get {
                 return this.amazonSafetyQtyUseDefaultField;
@@ -25547,7 +25646,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1255)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1258)]
         public string Commission {
             get {
                 return this.commissionField;
@@ -25559,7 +25658,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1256)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1259)]
         public string CustomMessage {
             get {
                 return this.customMessageField;
@@ -25571,7 +25670,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1257)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1260)]
         public System.DateTime ExpectedAvailableDate {
             get {
                 return this.expectedAvailableDateField;
@@ -25583,7 +25682,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1258)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1261)]
         public bool CashBackEnabled {
             get {
                 return this.cashBackEnabledField;
@@ -25595,7 +25694,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1259)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1262)]
         public bool PriceGrabberEnabled {
             get {
                 return this.priceGrabberEnabledField;
@@ -25607,7 +25706,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1260)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1263)]
         public bool BingEnabled {
             get {
                 return this.bingEnabledField;
@@ -25619,7 +25718,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1261)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1264)]
         public string LocationNotes {
             get {
                 return this.locationNotesField;
@@ -25631,7 +25730,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1262)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1265)]
         public string CustomProductSpecific {
             get {
                 return this.customProductSpecificField;
@@ -25643,7 +25742,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1263)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1266)]
         public int ShippingPackageTypeID {
             get {
                 return this.shippingPackageTypeIDField;
@@ -25655,7 +25754,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1264)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1267)]
         public string SearchResultsTitle {
             get {
                 return this.searchResultsTitleField;
@@ -25667,7 +25766,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1265)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1268)]
         public string SearsStoreLocation {
             get {
                 return this.searsStoreLocationField;
@@ -25679,7 +25778,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1266)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1269)]
         public bool SearsPickupNowEligible {
             get {
                 return this.searsPickupNowEligibleField;
@@ -25691,7 +25790,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1267)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1270)]
         public decimal SearsPrice {
             get {
                 return this.searsPriceField;
@@ -25703,7 +25802,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1268)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1271)]
         public string SearsCategory1 {
             get {
                 return this.searsCategory1Field;
@@ -25715,7 +25814,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1269)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1272)]
         public string SearsCategory2 {
             get {
                 return this.searsCategory2Field;
@@ -25727,7 +25826,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1270)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1273)]
         public string SearsCategory3 {
             get {
                 return this.searsCategory3Field;
@@ -25739,7 +25838,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1271)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1274)]
         public decimal SearsSalePrice {
             get {
                 return this.searsSalePriceField;
@@ -25751,7 +25850,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1272)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1275)]
         public System.DateTime SearsSaleEndDate {
             get {
                 return this.searsSaleEndDateField;
@@ -25763,7 +25862,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1273)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1276)]
         public bool ExportedForSears {
             get {
                 return this.exportedForSearsField;
@@ -25775,7 +25874,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1274)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1277)]
         public bool SearsEnabled {
             get {
                 return this.searsEnabledField;
@@ -25787,7 +25886,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1275)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1278)]
         public string CustomTitle {
             get {
                 return this.customTitleField;
@@ -25799,7 +25898,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1276)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1279)]
         public string ProductMasterSKU {
             get {
                 return this.productMasterSKUField;
@@ -25811,7 +25910,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1277)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1280)]
         public string BDC_SKU {
             get {
                 return this.bDC_SKUField;
@@ -25823,7 +25922,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1278)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1281)]
         public string ProductSourceSKU {
             get {
                 return this.productSourceSKUField;
@@ -25835,7 +25934,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1279)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1282)]
         public ProductSource ProductSource {
             get {
                 return this.productSourceField;
@@ -25847,7 +25946,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1280)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1283)]
         public bool ExportedForAmazon {
             get {
                 return this.exportedForAmazonField;
@@ -25859,7 +25958,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1281)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1284)]
         public bool eBayReturnPolicyOverride {
             get {
                 return this.eBayReturnPolicyOverrideField;
@@ -25871,7 +25970,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1282)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1285)]
         public bool eBayReturnAccepted {
             get {
                 return this.eBayReturnAcceptedField;
@@ -25883,7 +25982,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1283)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1286)]
         public ItemReturnType eBayRefundOption {
             get {
                 return this.eBayRefundOptionField;
@@ -25895,7 +25994,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1284)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1287)]
         public ItemReturnDays eBayReturnWithinDays {
             get {
                 return this.eBayReturnWithinDaysField;
@@ -25907,7 +26006,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1285)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1288)]
         public string eBayReturnPolicyDetails {
             get {
                 return this.eBayReturnPolicyDetailsField;
@@ -25919,7 +26018,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1286)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1289)]
         public string eBayReturnShippingCostPaidBy {
             get {
                 return this.eBayReturnShippingCostPaidByField;
@@ -25931,7 +26030,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1287)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1290)]
         public int StyleID {
             get {
                 return this.styleIDField;
@@ -25943,7 +26042,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1288)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1291)]
         public int SizeID {
             get {
                 return this.sizeIDField;
@@ -25955,7 +26054,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1289)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1292)]
         public int ColorID {
             get {
                 return this.colorIDField;
@@ -25967,7 +26066,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1290)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1293)]
         public bool ExportedForMagento {
             get {
                 return this.exportedForMagentoField;
@@ -25979,7 +26078,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1291)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1294)]
         public bool MagentoEnabled {
             get {
                 return this.magentoEnabledField;
@@ -25991,7 +26090,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1292)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1295)]
         public bool NewEggEnabled {
             get {
                 return this.newEggEnabledField;
@@ -26003,7 +26102,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1293)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1296)]
         public bool BuyDotComEnabled {
             get {
                 return this.buyDotComEnabledField;
@@ -26015,7 +26114,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1294)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1297)]
         public bool SaleOfTheWeek {
             get {
                 return this.saleOfTheWeekField;
@@ -26027,7 +26126,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1295)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1298)]
         public bool BestSeller {
             get {
                 return this.bestSellerField;
@@ -26039,7 +26138,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1296)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1299)]
         public string CustomURL {
             get {
                 return this.customURLField;
@@ -26051,7 +26150,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1297)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1300)]
         public bool IsNew {
             get {
                 return this.isNewField;
@@ -26063,7 +26162,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1298)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1301)]
         public bool Clearance {
             get {
                 return this.clearanceField;
@@ -26075,7 +26174,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1299)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1302)]
         public bool Featured {
             get {
                 return this.featuredField;
@@ -26087,7 +26186,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1300)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1303)]
         public decimal WholeSalePrice {
             get {
                 return this.wholeSalePriceField;
@@ -26099,7 +26198,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1301)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1304)]
         public string eBaySellingZipCode {
             get {
                 return this.eBaySellingZipCodeField;
@@ -26111,7 +26210,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1302)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1305)]
         public string eBaySellingCity {
             get {
                 return this.eBaySellingCityField;
@@ -26123,7 +26222,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1303)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1306)]
         public string eBaySellingState {
             get {
                 return this.eBaySellingStateField;
@@ -26135,7 +26234,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1304)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1307)]
         public System.DateTime ExportedToBuyDotComDate {
             get {
                 return this.exportedToBuyDotComDateField;
@@ -26147,7 +26246,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1305)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1308)]
         public bool ExportedForNewEgg {
             get {
                 return this.exportedForNewEggField;
@@ -26159,7 +26258,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1306)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1309)]
         public System.DateTime GalleryImageCreatedOn {
             get {
                 return this.galleryImageCreatedOnField;
@@ -26171,7 +26270,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1307)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1310)]
         public bool EnableSecondChancePosting {
             get {
                 return this.enableSecondChancePostingField;
@@ -26183,7 +26282,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1308)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1311)]
         public System.DateTime InventoryLastNotifiedOn {
             get {
                 return this.inventoryLastNotifiedOnField;
@@ -26195,7 +26294,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1309)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1312)]
         public decimal NewEggPrice {
             get {
                 return this.newEggPriceField;
@@ -26207,7 +26306,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1310)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1313)]
         public decimal BuyDotComPrice {
             get {
                 return this.buyDotComPriceField;
@@ -26219,7 +26318,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1311)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1314)]
         public bool ExportedForBuyDotCom {
             get {
                 return this.exportedForBuyDotComField;
@@ -26231,7 +26330,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1312)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1315)]
         public bool GenerateStoreInventoryItem {
             get {
                 return this.generateStoreInventoryItemField;
@@ -26243,7 +26342,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1313)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1316)]
         public bool EnableFreeShippingShadowProduct {
             get {
                 return this.enableFreeShippingShadowProductField;
@@ -26255,7 +26354,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1314)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1317)]
         public bool MaintainFixedPriceQty {
             get {
                 return this.maintainFixedPriceQtyField;
@@ -26267,7 +26366,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1315)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1318)]
         public string FixedPriceGTCItemID {
             get {
                 return this.fixedPriceGTCItemIDField;
@@ -26279,7 +26378,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1316)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1319)]
         public bool KeepOneAuctionAlive {
             get {
                 return this.keepOneAuctionAliveField;
@@ -26291,7 +26390,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1317)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1320)]
         public string ShadowOf {
             get {
                 return this.shadowOfField;
@@ -26303,7 +26402,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1318)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1321)]
         public DispatchTime DispatchTimeMax {
             get {
                 return this.dispatchTimeMaxField;
@@ -26315,7 +26414,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1319)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1322)]
         public bool EnableGetItFast {
             get {
                 return this.enableGetItFastField;
@@ -26327,7 +26426,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1320)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1323)]
         public bool UseeBayPostingDurationMin {
             get {
                 return this.useeBayPostingDurationMinField;
@@ -26339,7 +26438,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1321)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1324)]
         public int eBayPostingDurationMin {
             get {
                 return this.eBayPostingDurationMinField;
@@ -26351,7 +26450,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1322)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1325)]
         public bool UseStopLossPrice {
             get {
                 return this.useStopLossPriceField;
@@ -26363,7 +26462,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1323)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1326)]
         public decimal StopLossPrice {
             get {
                 return this.stopLossPriceField;
@@ -26375,7 +26474,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1324)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1327)]
         public System.DateTime AmazonEnabledOn {
             get {
                 return this.amazonEnabledOnField;
@@ -26387,7 +26486,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1325)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1328)]
         public bool AmazonEnabled {
             get {
                 return this.amazonEnabledField;
@@ -26399,7 +26498,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1326)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1329)]
         public string AmazonShippingTemplate {
             get {
                 return this.amazonShippingTemplateField;
@@ -26411,7 +26510,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1327)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1330)]
         public string AmazonConditionNotes {
             get {
                 return this.amazonConditionNotesField;
@@ -26423,7 +26522,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1328)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1331)]
         public string UPC {
             get {
                 return this.uPCField;
@@ -26435,7 +26534,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1329)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1332)]
         public string ItemIncludesDescription {
             get {
                 return this.itemIncludesDescriptionField;
@@ -26447,7 +26546,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1330)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1333)]
         public string AmazonSalesRank {
             get {
                 return this.amazonSalesRankField;
@@ -26459,7 +26558,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1331)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1334)]
         public int ShippingWidthUnits {
             get {
                 return this.shippingWidthUnitsField;
@@ -26471,7 +26570,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1332)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1335)]
         public int ShippingLengthUnits {
             get {
                 return this.shippingLengthUnitsField;
@@ -26483,7 +26582,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1333)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1336)]
         public int ShippingHeightUnits {
             get {
                 return this.shippingHeightUnitsField;
@@ -26495,7 +26594,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1334)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1337)]
         public string AmazonTitle {
             get {
                 return this.amazonTitleField;
@@ -26507,7 +26606,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1335)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1338)]
         public WeightUnitType ActiveWeightUnit {
             get {
                 return this.activeWeightUnitField;
@@ -26519,7 +26618,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1336)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1339)]
         public string WeightVerifiedNotes {
             get {
                 return this.weightVerifiedNotesField;
@@ -26531,7 +26630,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1337)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1340)]
         public decimal WeightLbs {
             get {
                 return this.weightLbsField;
@@ -26543,7 +26642,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1338)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1341)]
         public PackageSize1 PackageSize {
             get {
                 return this.packageSizeField;
@@ -26555,7 +26654,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1339)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1342)]
         public int ProductConditionInHouse {
             get {
                 return this.productConditionInHouseField;
@@ -26567,7 +26666,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1340)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1343)]
         public int AmazonProductCondition {
             get {
                 return this.amazonProductConditionField;
@@ -26579,7 +26678,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1341)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1344)]
         public bool Refurbished {
             get {
                 return this.refurbishedField;
@@ -26591,7 +26690,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1342)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1345)]
         public int AmazonInventoryTemplateID {
             get {
                 return this.amazonInventoryTemplateIDField;
@@ -26603,7 +26702,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1343)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1346)]
         public string AmazonProductType {
             get {
                 return this.amazonProductTypeField;
@@ -26615,7 +26714,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1344)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1347)]
         public int BrandID {
             get {
                 return this.brandIDField;
@@ -26627,7 +26726,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1345)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1348)]
         public int AmazonSafetyQty {
             get {
                 return this.amazonSafetyQtyField;
@@ -26639,7 +26738,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1346)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1349)]
         public string AmazonCategoryID {
             get {
                 return this.amazonCategoryIDField;
@@ -26651,7 +26750,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1347)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1350)]
         public string AmazonSubCategoryID {
             get {
                 return this.amazonSubCategoryIDField;
@@ -26663,7 +26762,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1348)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1351)]
         public bool AmazonRestricted {
             get {
                 return this.amazonRestrictedField;
@@ -26675,7 +26774,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1349)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1352)]
         public bool GenerateFixedPriceItem {
             get {
                 return this.generateFixedPriceItemField;
@@ -26687,7 +26786,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1350)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1353)]
         public HitCounterCodeType eBayHitCounterType {
             get {
                 return this.eBayHitCounterTypeField;
@@ -26699,7 +26798,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1351)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1354)]
         public bool AllowStoreOnlyItems {
             get {
                 return this.allowStoreOnlyItemsField;
@@ -26711,7 +26810,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1352)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1355)]
         public bool CreateStoreItemsFromUnusedTitles {
             get {
                 return this.createStoreItemsFromUnusedTitlesField;
@@ -26723,7 +26822,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1353)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1356)]
         public bool eBayCocktailApproved {
             get {
                 return this.eBayCocktailApprovedField;
@@ -26735,7 +26834,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1354)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1357)]
         public int CocktailCampaignTemplateID {
             get {
                 return this.cocktailCampaignTemplateIDField;
@@ -26747,7 +26846,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1355)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1358)]
         public CurrencyCodeType2 eBayCurrencyCode {
             get {
                 return this.eBayCurrencyCodeField;
@@ -26759,7 +26858,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1356)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1359)]
         public SiteCodeType eBaySiteCode {
             get {
                 return this.eBaySiteCodeField;
@@ -26771,7 +26870,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1357)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1360)]
         public bool eBayEnabled {
             get {
                 return this.eBayEnabledField;
@@ -26783,7 +26882,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1358)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1361)]
         public decimal StoreBuyItNowPrice {
             get {
                 return this.storeBuyItNowPriceField;
@@ -26795,7 +26894,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1359)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1362)]
         public int TotalLocationQty {
             get {
                 return this.totalLocationQtyField;
@@ -26807,7 +26906,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1360)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1363)]
         public System.DateTime GalleryImageExpireDate {
             get {
                 return this.galleryImageExpireDateField;
@@ -26819,7 +26918,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1361)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1364)]
         public string GalleryImageURL {
             get {
                 return this.galleryImageURLField;
@@ -26831,7 +26930,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1362)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1365)]
         public string ShippingTemplateID {
             get {
                 return this.shippingTemplateIDField;
@@ -26843,7 +26942,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1363)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1366)]
         public bool eBayCocktailDisabled {
             get {
                 return this.eBayCocktailDisabledField;
@@ -26855,7 +26954,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1364)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1367)]
         public bool Replenishable {
             get {
                 return this.replenishableField;
@@ -26867,7 +26966,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1365)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1368)]
         public int CocktailListingQty {
             get {
                 return this.cocktailListingQtyField;
@@ -26879,7 +26978,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1366)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1369)]
         public string eBayCategory1 {
             get {
                 return this.eBayCategory1Field;
@@ -26891,7 +26990,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1367)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1370)]
         public string eBayCategory2 {
             get {
                 return this.eBayCategory2Field;
@@ -26903,7 +27002,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1368)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1371)]
         public decimal StartPrice {
             get {
                 return this.startPriceField;
@@ -26915,7 +27014,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1369)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1372)]
         public decimal ReservePrice {
             get {
                 return this.reservePriceField;
@@ -26927,7 +27026,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1370)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1373)]
         public decimal BuyItNowPrice {
             get {
                 return this.buyItNowPriceField;
@@ -26939,7 +27038,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1371)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1374)]
         public int FixedPriceQuantity {
             get {
                 return this.fixedPriceQuantityField;
@@ -26951,7 +27050,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1372)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1375)]
         public string StoreCategory1 {
             get {
                 return this.storeCategory1Field;
@@ -26963,7 +27062,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1373)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1376)]
         public string StoreCategory2 {
             get {
                 return this.storeCategory2Field;
@@ -26975,7 +27074,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1374)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1377)]
         public string DescriptionTemplateId {
             get {
                 return this.descriptionTemplateIdField;
@@ -26987,7 +27086,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1375)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1378)]
         public bool EnableBestOffer {
             get {
                 return this.enableBestOfferField;
@@ -26999,7 +27098,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1376)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1379)]
         public decimal BestOfferAutoRejecttLimit {
             get {
                 return this.bestOfferAutoRejecttLimitField;
@@ -27011,7 +27110,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1377)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1380)]
         public decimal BestOfferAutoAcceptLimit {
             get {
                 return this.bestOfferAutoAcceptLimitField;
@@ -27023,7 +27122,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1378)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1381)]
         public string ShippingDetails {
             get {
                 return this.shippingDetailsField;
@@ -27035,7 +27134,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1379)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1382)]
         public string Attributes {
             get {
                 return this.attributesField;
@@ -27047,7 +27146,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1380)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1383)]
         public decimal SecondChanceMinPrice {
             get {
                 return this.secondChanceMinPriceField;
@@ -27059,7 +27158,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1381)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1384)]
         public int DefaultAmazonMerchant {
             get {
                 return this.defaultAmazonMerchantField;
@@ -27071,7 +27170,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1382)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1385)]
         public System.DateTime eBayProprtiesLastModified {
             get {
                 return this.eBayProprtiesLastModifiedField;
@@ -27083,7 +27182,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1383)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1386)]
         public System.DateTime eBayResearchLastRunOn {
             get {
                 return this.eBayResearchLastRunOnField;
@@ -27095,7 +27194,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1384)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1387)]
         public bool WeightVerified {
             get {
                 return this.weightVerifiedField;
@@ -27107,7 +27206,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1385)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1388)]
         public decimal WeightOz {
             get {
                 return this.weightOzField;
@@ -27119,7 +27218,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1386)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1389)]
         public decimal PackageWeightLbs {
             get {
                 return this.packageWeightLbsField;
@@ -27131,7 +27230,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1387)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1390)]
         public decimal PackageWeightOz {
             get {
                 return this.packageWeightOzField;
@@ -27143,7 +27242,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1388)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1391)]
         public int CocktailCampaigneBayProductID {
             get {
                 return this.cocktailCampaigneBayProductIDField;
@@ -27155,7 +27254,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1389)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1392)]
         public System.DateTime CocktailCampaignLastGenerated {
             get {
                 return this.cocktailCampaignLastGeneratedField;
@@ -27167,7 +27266,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1390)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1393)]
         public int CocktailCampaignID {
             get {
                 return this.cocktailCampaignIDField;
@@ -27179,7 +27278,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1391)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1394)]
         public int CompanyID {
             get {
                 return this.companyIDField;
@@ -27191,7 +27290,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1392)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1395)]
         public int ebayListingCount {
             get {
                 return this.ebayListingCountField;
@@ -27203,7 +27302,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1393)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1396)]
         public bool IsDirty {
             get {
                 return this.isDirtyField;
@@ -27215,7 +27314,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1394)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1397)]
         public string EbayKeywordsForListing {
             get {
                 return this.ebayKeywordsForListingField;
@@ -27227,7 +27326,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1395)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1398)]
         public bool Promote {
             get {
                 return this.promoteField;
@@ -27239,7 +27338,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1396)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1399)]
         public string EbayKeywordsExclusion {
             get {
                 return this.ebayKeywordsExclusionField;
@@ -27251,7 +27350,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1397)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1400)]
         public bool ToBeResearched {
             get {
                 return this.toBeResearchedField;
@@ -27263,7 +27362,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1398)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1401)]
         public string EbayKeywords {
             get {
                 return this.ebayKeywordsField;
@@ -27275,7 +27374,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1399)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1402)]
         public PriceLevels PriceLevel {
             get {
                 return this.priceLevelField;
@@ -27287,7 +27386,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1400)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1403)]
         public decimal EbayListingFeePercentage {
             get {
                 return this.ebayListingFeePercentageField;
@@ -27299,7 +27398,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1401)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1404)]
         public decimal EbayTransactionFeePercentage {
             get {
                 return this.ebayTransactionFeePercentageField;
@@ -27311,7 +27410,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1402)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1405)]
         public decimal PaypalFeePercentage {
             get {
                 return this.paypalFeePercentageField;
@@ -27323,7 +27422,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1403)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1406)]
         public bool MaxDiscountPriceUserDefined {
             get {
                 return this.maxDiscountPriceUserDefinedField;
@@ -27335,7 +27434,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1404)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1407)]
         public decimal MaxDiscountPricePercentage {
             get {
                 return this.maxDiscountPricePercentageField;
@@ -27347,7 +27446,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1405)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1408)]
         public bool AmazonPriceUserDefined {
             get {
                 return this.amazonPriceUserDefinedField;
@@ -27359,7 +27458,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1406)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1409)]
         public decimal AmazonPricePercentage {
             get {
                 return this.amazonPricePercentageField;
@@ -27371,7 +27470,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1407)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1410)]
         public decimal EbayListingFee {
             get {
                 return this.ebayListingFeeField;
@@ -27383,7 +27482,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1408)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1411)]
         public bool EbayListingFeeUserDefined {
             get {
                 return this.ebayListingFeeUserDefinedField;
@@ -27395,7 +27494,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1409)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1412)]
         public decimal EbayTransactionFee {
             get {
                 return this.ebayTransactionFeeField;
@@ -27407,7 +27506,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1410)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1413)]
         public bool EbayTransactionFeeUserDefined {
             get {
                 return this.ebayTransactionFeeUserDefinedField;
@@ -27419,7 +27518,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1411)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1414)]
         public decimal PaypalFee {
             get {
                 return this.paypalFeeField;
@@ -27431,7 +27530,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1412)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1415)]
         public bool PaypalFeeUserDefined {
             get {
                 return this.paypalFeeUserDefinedField;
@@ -27443,7 +27542,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1413)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1416)]
         public bool ListPriceUserDefined {
             get {
                 return this.listPriceUserDefinedField;
@@ -27455,7 +27554,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1414)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1417)]
         public bool SitePriceUserDefined {
             get {
                 return this.sitePriceUserDefinedField;
@@ -27467,7 +27566,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1415)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1418)]
         public bool SiteCostUserDefined {
             get {
                 return this.siteCostUserDefinedField;
@@ -27479,7 +27578,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1416)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1419)]
         public bool LastCostUserDefined {
             get {
                 return this.lastCostUserDefinedField;
@@ -27491,7 +27590,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1417)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1420)]
         public bool AverageCostUserDefined {
             get {
                 return this.averageCostUserDefinedField;
@@ -27503,7 +27602,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1418)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1421)]
         public bool StorePriceUserDefined {
             get {
                 return this.storePriceUserDefinedField;
@@ -27515,7 +27614,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1419)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1422)]
         public bool EbayPriceUserDefined {
             get {
                 return this.ebayPriceUserDefinedField;
@@ -27527,7 +27626,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1420)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1423)]
         public bool EBayHighPriceUserDefined {
             get {
                 return this.eBayHighPriceUserDefinedField;
@@ -27539,7 +27638,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1421)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1424)]
         public bool EbayLowPriceUserDefined {
             get {
                 return this.ebayLowPriceUserDefinedField;
@@ -27551,7 +27650,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1422)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1425)]
         public decimal EstimatedCost {
             get {
                 return this.estimatedCostField;
@@ -27563,7 +27662,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1423)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1426)]
         public bool EstimatedCostUserDefined {
             get {
                 return this.estimatedCostUserDefinedField;
@@ -27575,7 +27674,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1424)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1427)]
         public decimal ShippingCost {
             get {
                 return this.shippingCostField;
@@ -27587,7 +27686,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1425)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1428)]
         public bool ShippingCostUserDefined {
             get {
                 return this.shippingCostUserDefinedField;
@@ -27599,7 +27698,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1426)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1429)]
         public decimal ShippingPrice {
             get {
                 return this.shippingPriceField;
@@ -27611,7 +27710,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1427)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1430)]
         public bool ShippingPriceUserDefined {
             get {
                 return this.shippingPriceUserDefinedField;
@@ -27623,7 +27722,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1428)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1431)]
         public decimal ShippingPriceEbay {
             get {
                 return this.shippingPriceEbayField;
@@ -27635,7 +27734,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1429)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1432)]
         public bool ShippingPriceEbayUserDefined {
             get {
                 return this.shippingPriceEbayUserDefinedField;
@@ -27647,7 +27746,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1430)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1433)]
         public decimal ListPricePercentage {
             get {
                 return this.listPricePercentageField;
@@ -27659,7 +27758,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1431)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1434)]
         public decimal SitePricePercentage {
             get {
                 return this.sitePricePercentageField;
@@ -27671,7 +27770,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1432)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1435)]
         public decimal SiteCostPercentage {
             get {
                 return this.siteCostPercentageField;
@@ -27683,7 +27782,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1433)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1436)]
         public decimal LastCostPercentage {
             get {
                 return this.lastCostPercentageField;
@@ -27695,7 +27794,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1434)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1437)]
         public decimal AverageCostPercentage {
             get {
                 return this.averageCostPercentageField;
@@ -27707,7 +27806,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1435)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1438)]
         public decimal StorePricePercentage {
             get {
                 return this.storePricePercentageField;
@@ -27719,7 +27818,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1436)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1439)]
         public decimal EbayPricePercentage {
             get {
                 return this.ebayPricePercentageField;
@@ -27731,7 +27830,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1437)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1440)]
         public decimal EBayHighPricePercentage {
             get {
                 return this.eBayHighPricePercentageField;
@@ -27743,7 +27842,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1438)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1441)]
         public decimal EbayLowPricePercentage {
             get {
                 return this.ebayLowPricePercentageField;
@@ -27755,7 +27854,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1439)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1442)]
         public decimal EstimatedCostPercentage {
             get {
                 return this.estimatedCostPercentageField;
@@ -27767,7 +27866,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1440)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1443)]
         public decimal ShippingCostPercentage {
             get {
                 return this.shippingCostPercentageField;
@@ -27779,7 +27878,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1441)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1444)]
         public decimal ShippingPricePercentage {
             get {
                 return this.shippingPricePercentageField;
@@ -27791,7 +27890,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1442)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1445)]
         public decimal ShippingPriceEbayPercentage {
             get {
                 return this.shippingPriceEbayPercentageField;
@@ -27803,7 +27902,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1443)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1446)]
         public string ManufacturerSKU {
             get {
                 return this.manufacturerSKUField;
@@ -27815,7 +27914,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1444)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1447)]
         public int eBaySaleQty {
             get {
                 return this.eBaySaleQtyField;
@@ -27827,7 +27926,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1445)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1448)]
         public bool EbayPostpone {
             get {
                 return this.ebayPostponeField;
@@ -27839,7 +27938,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1446)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1449)]
         public bool IsToBuy {
             get {
                 return this.isToBuyField;
@@ -27851,7 +27950,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1447)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1450)]
         public bool IsBackOrder {
             get {
                 return this.isBackOrderField;
@@ -27863,7 +27962,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1448)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1451)]
         public decimal AmazonPrice {
             get {
                 return this.amazonPriceField;
@@ -27875,7 +27974,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1449)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1452)]
         public decimal MaxDiscountPrice {
             get {
                 return this.maxDiscountPriceField;
@@ -27887,7 +27986,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1450)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1453)]
         public bool IsUserDefinedPrice {
             get {
                 return this.isUserDefinedPriceField;
@@ -27899,7 +27998,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1451)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1454)]
         public WatchFrequency WatchFrequency {
             get {
                 return this.watchFrequencyField;
@@ -27911,7 +28010,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1452)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1455)]
         public string PriceGrabberURL {
             get {
                 return this.priceGrabberURLField;
@@ -27923,7 +28022,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1453)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1456)]
         public bool Watch {
             get {
                 return this.watchField;
@@ -27935,7 +28034,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1454)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1457)]
         public decimal EbayLowPrice {
             get {
                 return this.ebayLowPriceField;
@@ -27947,7 +28046,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1455)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1458)]
         public decimal EBayHighPrice {
             get {
                 return this.eBayHighPriceField;
@@ -27959,7 +28058,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1456)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1459)]
         public int EBayListedBy {
             get {
                 return this.eBayListedByField;
@@ -27971,7 +28070,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1457)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1460)]
         public decimal EbayPrice {
             get {
                 return this.ebayPriceField;
@@ -27983,7 +28082,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1458)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1461)]
         public ProductStatus EbayStatus {
             get {
                 return this.ebayStatusField;
@@ -27995,7 +28094,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1459)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1462)]
         public bool EbayListed {
             get {
                 return this.ebayListedField;
@@ -28007,7 +28106,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1460)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1463)]
         public System.DateTime EbayLastListDate {
             get {
                 return this.ebayLastListDateField;
@@ -28019,7 +28118,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1461)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1464)]
         public System.DateTime EbayLastModifiedDate {
             get {
                 return this.ebayLastModifiedDateField;
@@ -28031,7 +28130,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1462)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1465)]
         public bool Researched {
             get {
                 return this.researchedField;
@@ -28043,7 +28142,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1463)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1466)]
         public System.DateTime LastResearchDate {
             get {
                 return this.lastResearchDateField;
@@ -28055,7 +28154,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1464)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1467)]
         public int ResearchedBy {
             get {
                 return this.researchedByField;
@@ -28067,7 +28166,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1465)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1468)]
         public int WeightUnits {
             get {
                 return this.weightUnitsField;
@@ -28079,7 +28178,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1466)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1469)]
         public int Rating {
             get {
                 return this.ratingField;
@@ -28091,7 +28190,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1467)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1470)]
         public int Priority {
             get {
                 return this.priorityField;
@@ -28103,7 +28202,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1468)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1471)]
         public bool IsEndOfLife {
             get {
                 return this.isEndOfLifeField;
@@ -28115,7 +28214,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1469)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1472)]
         public decimal LastCost {
             get {
                 return this.lastCostField;
@@ -28127,7 +28226,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1470)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1473)]
         public decimal AverageCost {
             get {
                 return this.averageCostField;
@@ -28139,7 +28238,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1471)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1474)]
         public decimal StorePrice {
             get {
                 return this.storePriceField;
@@ -28151,7 +28250,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1472)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1475)]
         public System.DateTime DateModified {
             get {
                 return this.dateModifiedField;
@@ -28163,7 +28262,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1473)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1476)]
         public int ModifiedBy {
             get {
                 return this.modifiedByField;
@@ -28175,7 +28274,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1474)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1477)]
         public System.DateTime DateCreated {
             get {
                 return this.dateCreatedField;
@@ -28187,7 +28286,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1475)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1478)]
         public int CreatedBy {
             get {
                 return this.createdByField;
@@ -28199,7 +28298,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1476)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1479)]
         public string ID {
             get {
                 return this.idField;
@@ -28211,7 +28310,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1477)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1480)]
         public string ProductName {
             get {
                 return this.productNameField;
@@ -28223,7 +28322,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1478)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1481)]
         public int ProductTypeID {
             get {
                 return this.productTypeIDField;
@@ -28235,7 +28334,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1479)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1482)]
         public decimal ListPrice {
             get {
                 return this.listPriceField;
@@ -28247,7 +28346,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1480)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1483)]
         public decimal SitePrice {
             get {
                 return this.sitePriceField;
@@ -28259,7 +28358,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1481)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1484)]
         public decimal SiteCost {
             get {
                 return this.siteCostField;
@@ -28271,7 +28370,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1482)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1485)]
         public string MetaKeywords {
             get {
                 return this.metaKeywordsField;
@@ -28283,7 +28382,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1483)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1486)]
         public string MetaDescription {
             get {
                 return this.metaDescriptionField;
@@ -28295,7 +28394,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1484)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1487)]
         public string MetaTitle {
             get {
                 return this.metaTitleField;
@@ -28307,7 +28406,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1485)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1488)]
         public bool TaxExempt {
             get {
                 return this.taxExemptField;
@@ -28319,7 +28418,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1486)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1489)]
         public int TaxClass {
             get {
                 return this.taxClassField;
@@ -28331,7 +28430,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1487)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1490)]
         public bool NonShipping {
             get {
                 return this.nonShippingField;
@@ -28343,7 +28442,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1488)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1491)]
         public bool ShipSeparately {
             get {
                 return this.shipSeparatelyField;
@@ -28355,7 +28454,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1489)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1492)]
         public ProductDropShipMode DropShipMode {
             get {
                 return this.dropShipModeField;
@@ -28367,7 +28466,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1490)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1493)]
         public string BonanzaMerchantSKU {
             get {
                 return this.bonanzaMerchantSKUField;
@@ -28379,7 +28478,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1491)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1494)]
         public decimal Height {
             get {
                 return this.heightField;
@@ -28391,7 +28490,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1492)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1495)]
         public int HeightUnits {
             get {
                 return this.heightUnitsField;
@@ -28403,7 +28502,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1493)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1496)]
         public decimal Width {
             get {
                 return this.widthField;
@@ -28415,7 +28514,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1494)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1497)]
         public int WidthUnits {
             get {
                 return this.widthUnitsField;
@@ -28427,7 +28526,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1495)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1498)]
         public decimal Length {
             get {
                 return this.lengthField;
@@ -28439,7 +28538,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1496)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1499)]
         public int LengthUnits {
             get {
                 return this.lengthUnitsField;
@@ -28451,7 +28550,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1497)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1500)]
         public int ShippingWeightUnits {
             get {
                 return this.shippingWeightUnitsField;
@@ -28463,7 +28562,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1498)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1501)]
         public double ShippingLength {
             get {
                 return this.shippingLengthField;
@@ -28475,7 +28574,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1499)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1502)]
         public double ShippingWidth {
             get {
                 return this.shippingWidthField;
@@ -28487,7 +28586,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1500)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1503)]
         public double ShippingHeight {
             get {
                 return this.shippingHeightField;
@@ -28499,7 +28598,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1501)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1504)]
         public ProductStatus Status {
             get {
                 return this.statusField;
@@ -28511,7 +28610,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1502)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1505)]
         public string ImageFileSmall {
             get {
                 return this.imageFileSmallField;
@@ -28523,7 +28622,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1503)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1506)]
         public string ImageFileMedium {
             get {
                 return this.imageFileMediumField;
@@ -28535,7 +28634,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1504)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1507)]
         public System.DateTime CreationDate {
             get {
                 return this.creationDateField;
@@ -28547,7 +28646,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1505)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1508)]
         public int MinimumQty {
             get {
                 return this.minimumQtyField;
@@ -28559,7 +28658,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1506)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1509)]
         public int ParentID {
             get {
                 return this.parentIDField;
@@ -28571,7 +28670,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1507)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1510)]
         public VariantDisplayMode VariantDisplayMode {
             get {
                 return this.variantDisplayModeField;
@@ -28583,7 +28682,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1508)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1511)]
         public int InventoryAvailableQty {
             get {
                 return this.inventoryAvailableQtyField;
@@ -28595,7 +28694,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1509)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1512)]
         public int InventoryLowStockNotice {
             get {
                 return this.inventoryLowStockNoticeField;
@@ -28607,7 +28706,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1510)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1513)]
         public ProductInventoryStatus InventoryStatus {
             get {
                 return this.inventoryStatusField;
@@ -28619,7 +28718,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1511)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1514)]
         public ProductInventoryStatus InventoryNotAvailableStatus {
             get {
                 return this.inventoryNotAvailableStatusField;
@@ -28631,7 +28730,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1512)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1515)]
         public string InventoryNotAvailableMessage {
             get {
                 return this.inventoryNotAvailableMessageField;
@@ -28643,7 +28742,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1513)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1516)]
         public bool UseVolumePricing {
             get {
                 return this.useVolumePricingField;
@@ -28655,7 +28754,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlArrayAttribute(Order=1514)]
+        [System.Xml.Serialization.XmlArrayAttribute(Order=1517)]
         public ProductProperty[] Properties {
             get {
                 return this.propertiesField;
@@ -28667,7 +28766,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlArrayAttribute(Order=1515)]
+        [System.Xml.Serialization.XmlArrayAttribute(Order=1518)]
         public ProductChoice[] Choices {
             get {
                 return this.choicesField;
@@ -28679,7 +28778,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlArrayAttribute(Order=1516)]
+        [System.Xml.Serialization.XmlArrayAttribute(Order=1519)]
         public ProductInventoryKey[] InventoryKeys {
             get {
                 return this.inventoryKeysField;
@@ -28691,7 +28790,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1517)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1520)]
         public string ShortDescription {
             get {
                 return this.shortDescriptionField;
@@ -28703,7 +28802,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1518)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1521)]
         public string LongDescription {
             get {
                 return this.longDescriptionField;
@@ -28715,7 +28814,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1519)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1522)]
         public int ManufacturerID {
             get {
                 return this.manufacturerIDField;
@@ -28727,7 +28826,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1520)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1523)]
         public int VendorID {
             get {
                 return this.vendorIDField;
@@ -28739,7 +28838,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1521)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1524)]
         public bool GiftWrapAllowed {
             get {
                 return this.giftWrapAllowedField;
@@ -28751,7 +28850,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1522)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1525)]
         public decimal ExtraShipFee {
             get {
                 return this.extraShipFeeField;
@@ -28763,7 +28862,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlArrayAttribute(Order=1523)]
+        [System.Xml.Serialization.XmlArrayAttribute(Order=1526)]
         public ProductImage[] Images {
             get {
                 return this.imagesField;
@@ -28775,7 +28874,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1524)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1527)]
         public bool WebEnabled {
             get {
                 return this.webEnabledField;
@@ -28787,7 +28886,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1525)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1528)]
         public decimal PriceinBundle {
             get {
                 return this.priceinBundleField;
@@ -28799,7 +28898,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1526)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1529)]
         public System.DateTime WalmartDiscontinuedOn {
             get {
                 return this.walmartDiscontinuedOnField;
@@ -28811,7 +28910,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1527)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1530)]
         public bool WalmartDiscontinued {
             get {
                 return this.walmartDiscontinuedField;
@@ -28823,7 +28922,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1528)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1531)]
         public string WalmartMerchantSKU {
             get {
                 return this.walmartMerchantSKUField;
@@ -28835,7 +28934,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1529)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1532)]
         public bool WalmartSafetyQtyUseDefault {
             get {
                 return this.walmartSafetyQtyUseDefaultField;
@@ -28847,7 +28946,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1530)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1533)]
         public int WalmartSafetyQty {
             get {
                 return this.walmartSafetyQtyField;
@@ -28859,7 +28958,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1531)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1534)]
         public bool WalmartPriceUseDefault {
             get {
                 return this.walmartPriceUseDefaultField;
@@ -28871,7 +28970,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1532)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1535)]
         public decimal WalmartPrice {
             get {
                 return this.walmartPriceField;
@@ -28883,7 +28982,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1533)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1536)]
         public bool WalmartEnabled {
             get {
                 return this.walmartEnabledField;
@@ -28895,7 +28994,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1534)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1537)]
         public string WalmartDirectUPC {
             get {
                 return this.walmartDirectUPCField;
@@ -28907,7 +29006,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1535)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1538)]
         public bool WalmartDirectUPCUseDefault {
             get {
                 return this.walmartDirectUPCUseDefaultField;
@@ -28919,7 +29018,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1536)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1539)]
         public int WalmartDefaultQty {
             get {
                 return this.walmartDefaultQtyField;
@@ -28931,7 +29030,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1537)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1540)]
         public bool WalmartDefaultQtyEnabled {
             get {
                 return this.walmartDefaultQtyEnabledField;
@@ -28943,7 +29042,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1538)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1541)]
         public bool WalmartDefaultQtyUseDefault {
             get {
                 return this.walmartDefaultQtyUseDefaultField;
@@ -28955,7 +29054,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1539)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1542)]
         public int WalmartDSVMaxQty {
             get {
                 return this.walmartDSVMaxQtyField;
@@ -28967,7 +29066,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1540)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1543)]
         public bool WalmartDSVMaxQtyUseDefault {
             get {
                 return this.walmartDSVMaxQtyUseDefaultField;
@@ -28979,7 +29078,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1541)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1544)]
         public System.DateTime TargetDiscontinuedOn {
             get {
                 return this.targetDiscontinuedOnField;
@@ -28991,7 +29090,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1542)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1545)]
         public bool TargetDiscontinued {
             get {
                 return this.targetDiscontinuedField;
@@ -29003,7 +29102,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1543)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1546)]
         public string TargetMerchantSKU {
             get {
                 return this.targetMerchantSKUField;
@@ -29015,7 +29114,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1544)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1547)]
         public bool TargetSafetyQtyUseDefault {
             get {
                 return this.targetSafetyQtyUseDefaultField;
@@ -29027,7 +29126,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1545)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1548)]
         public int TargetSafetyQty {
             get {
                 return this.targetSafetyQtyField;
@@ -29039,7 +29138,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1546)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1549)]
         public bool TargetPriceUseDefault {
             get {
                 return this.targetPriceUseDefaultField;
@@ -29051,7 +29150,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1547)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1550)]
         public decimal TargetPrice {
             get {
                 return this.targetPriceField;
@@ -29063,7 +29162,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1548)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1551)]
         public bool TargetEnabled {
             get {
                 return this.targetEnabledField;
@@ -29075,7 +29174,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1549)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1552)]
         public string BestBuyDSMerchantSKU {
             get {
                 return this.bestBuyDSMerchantSKUField;
@@ -29087,7 +29186,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1550)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1553)]
         public bool BestBuyDSEnabled {
             get {
                 return this.bestBuyDSEnabledField;
@@ -29099,7 +29198,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1551)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1554)]
         public string AmazonProductID {
             get {
                 return this.amazonProductIDField;
@@ -29111,7 +29210,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1552)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1555)]
         public int JETSalesRank {
             get {
                 return this.jETSalesRankField;
@@ -29123,7 +29222,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1553)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1556)]
         public decimal AverageShippingCost {
             get {
                 return this.averageShippingCostField;
@@ -29135,7 +29234,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1554)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1557)]
         public System.DateTime AverageShippingCostDate {
             get {
                 return this.averageShippingCostDateField;
@@ -29147,7 +29246,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1555)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1558)]
         public JETShoeProductType JETProductType {
             get {
                 return this.jETProductTypeField;
@@ -29159,7 +29258,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1556)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1559)]
         public string Comments {
             get {
                 return this.commentsField;
@@ -29171,7 +29270,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1557)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1560)]
         public int PhysicalInventoryQty {
             get {
                 return this.physicalInventoryQtyField;
@@ -29183,7 +29282,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1558)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1561)]
         public System.DateTime QtySoldLastCalculatedOn {
             get {
                 return this.qtySoldLastCalculatedOnField;
@@ -29195,7 +29294,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1559)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1562)]
         public System.DateTime QtySoldFBALastCalculatedOn {
             get {
                 return this.qtySoldFBALastCalculatedOnField;
@@ -29207,7 +29306,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1560)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1563)]
         public int AggregatePhysicalNonSellableQty {
             get {
                 return this.aggregatePhysicalNonSellableQtyField;
@@ -29219,7 +29318,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1561)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1564)]
         public int TotalQtyNonFBA {
             get {
                 return this.totalQtyNonFBAField;
@@ -29231,7 +29330,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1562)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1565)]
         public bool JETEnableCustomAttributes {
             get {
                 return this.jETEnableCustomAttributesField;
@@ -29243,7 +29342,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1563)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1566)]
         public int WishShippingTemplateID {
             get {
                 return this.wishShippingTemplateIDField;
@@ -29255,7 +29354,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1564)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1567)]
         public long EtsyActiveListingVariationID {
             get {
                 return this.etsyActiveListingVariationIDField;
@@ -29267,7 +29366,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1565)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1568)]
         public bool ReverbPublish {
             get {
                 return this.reverbPublishField;
@@ -29279,7 +29378,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1566)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1569)]
         public bool ReverbAcceptOffers {
             get {
                 return this.reverbAcceptOffersField;
@@ -29291,7 +29390,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1567)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1570)]
         public bool GrouponMarketplaceMaxQtyEnabled {
             get {
                 return this.grouponMarketplaceMaxQtyEnabledField;
@@ -29303,7 +29402,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1568)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1571)]
         public int GrouponMarketplaceMaxQty {
             get {
                 return this.grouponMarketplaceMaxQtyField;
@@ -29315,7 +29414,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1569)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1572)]
         public bool GrouponMarketplaceMaxQtyUseDefault {
             get {
                 return this.grouponMarketplaceMaxQtyUseDefaultField;
@@ -29327,7 +29426,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1570)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1573)]
         public int GrouponMarketplaceSafetyQuantity {
             get {
                 return this.grouponMarketplaceSafetyQuantityField;
@@ -29339,7 +29438,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1571)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1574)]
         public bool GrouponMarketplaceSafetyQuantityUseDefault {
             get {
                 return this.grouponMarketplaceSafetyQuantityUseDefaultField;
@@ -29351,7 +29450,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1572)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1575)]
         public bool NewEggBizEnableVolumeDiscount {
             get {
                 return this.newEggBizEnableVolumeDiscountField;
@@ -29363,7 +29462,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1573)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1576)]
         public bool JETUseParentCategoryID {
             get {
                 return this.jETUseParentCategoryIDField;
@@ -29375,7 +29474,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1574)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1577)]
         public int LotSize {
             get {
                 return this.lotSizeField;
@@ -29387,7 +29486,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1575)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1578)]
         public bool DisconnectFromInventoryJet {
             get {
                 return this.disconnectFromInventoryJetField;
@@ -29399,7 +29498,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1576)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1579)]
         public bool DisconnectFromInventoryGroupOnGoods {
             get {
                 return this.disconnectFromInventoryGroupOnGoodsField;
@@ -29411,7 +29510,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1577)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1580)]
         public string TaxJarProductTaxCode {
             get {
                 return this.taxJarProductTaxCodeField;
@@ -29423,7 +29522,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1578)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1581)]
         public string ReverbDescriptionTemplateId {
             get {
                 return this.reverbDescriptionTemplateIdField;
@@ -29435,7 +29534,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1579)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1582)]
         public bool PricefallLeadTimeUseDefault {
             get {
                 return this.pricefallLeadTimeUseDefaultField;
@@ -29447,7 +29546,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1580)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1583)]
         public bool HouzzDefaultQtyEnabled {
             get {
                 return this.houzzDefaultQtyEnabledField;
@@ -29459,7 +29558,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1581)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1584)]
         public int HouzzDefaultQty {
             get {
                 return this.houzzDefaultQtyField;
@@ -29471,7 +29570,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1582)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1585)]
         public bool HouzzDefaultQtyUseDefault {
             get {
                 return this.houzzDefaultQtyUseDefaultField;
@@ -29483,7 +29582,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1583)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1586)]
         public string JETSafetyWarning {
             get {
                 return this.jETSafetyWarningField;
@@ -29495,7 +29594,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1584)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1587)]
         public string MatrixNSimplePrimaryDimension {
             get {
                 return this.matrixNSimplePrimaryDimensionField;
@@ -29507,7 +29606,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1585)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1588)]
         public string MatrixNSimpleSortColumn1Name {
             get {
                 return this.matrixNSimpleSortColumn1NameField;
@@ -29519,7 +29618,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1586)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1589)]
         public string MatrixNSimpleSortColumn2Name {
             get {
                 return this.matrixNSimpleSortColumn2NameField;
@@ -29531,7 +29630,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1587)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1590)]
         public string MatrixNSimpleSortColumn3Name {
             get {
                 return this.matrixNSimpleSortColumn3NameField;
@@ -29543,7 +29642,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1588)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1591)]
         public bool GoogleExpressEnabled {
             get {
                 return this.googleExpressEnabledField;
@@ -29555,7 +29654,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1589)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1592)]
         public string GoogleExpressTitle {
             get {
                 return this.googleExpressTitleField;
@@ -29567,7 +29666,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1590)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1593)]
         public string GoogleExpressMerchantSKU {
             get {
                 return this.googleExpressMerchantSKUField;
@@ -29579,7 +29678,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1591)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1594)]
         public decimal GoogleExpressPrice {
             get {
                 return this.googleExpressPriceField;
@@ -29591,7 +29690,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1592)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1595)]
         public bool GoogleExpressPriceUseDefault {
             get {
                 return this.googleExpressPriceUseDefaultField;
@@ -29603,7 +29702,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1593)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1596)]
         public int GoogleExpressSafetyQty {
             get {
                 return this.googleExpressSafetyQtyField;
@@ -29615,7 +29714,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1594)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1597)]
         public bool GoogleExpressSafetyQtyUseDefault {
             get {
                 return this.googleExpressSafetyQtyUseDefaultField;
@@ -29627,7 +29726,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1595)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1598)]
         public string GoogleExpressActiveListingID {
             get {
                 return this.googleExpressActiveListingIDField;
@@ -29639,7 +29738,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1596)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1599)]
         public string GoogleExpressDescription {
             get {
                 return this.googleExpressDescriptionField;
@@ -29651,7 +29750,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1597)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1600)]
         public string GoogleExpressTaxonomyPath {
             get {
                 return this.googleExpressTaxonomyPathField;
@@ -29663,7 +29762,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1598)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1601)]
         public bool DisconnectFromInventoryWalmart {
             get {
                 return this.disconnectFromInventoryWalmartField;
@@ -29675,7 +29774,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1599)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1602)]
         public decimal GoogleExpressSalePrice {
             get {
                 return this.googleExpressSalePriceField;
@@ -29687,7 +29786,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1600)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1603)]
         public string GoogleExpressLink {
             get {
                 return this.googleExpressLinkField;
@@ -29699,7 +29798,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1601)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1604)]
         public int GoogleExpressMaxHandlingTime {
             get {
                 return this.googleExpressMaxHandlingTimeField;
@@ -29711,7 +29810,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1602)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1605)]
         public bool GoogleExpressMaxHandlingTimeUseDefault {
             get {
                 return this.googleExpressMaxHandlingTimeUseDefaultField;
@@ -29723,7 +29822,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1603)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1606)]
         public int GoogleExpressMinHandlingTime {
             get {
                 return this.googleExpressMinHandlingTimeField;
@@ -29735,7 +29834,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1604)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1607)]
         public bool GoogleExpressMinHandlingTimeUseDefault {
             get {
                 return this.googleExpressMinHandlingTimeUseDefaultField;
@@ -29747,7 +29846,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1605)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1608)]
         public string GoogleExpressShippingTemplateID {
             get {
                 return this.googleExpressShippingTemplateIDField;
@@ -29759,7 +29858,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1606)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1609)]
         public bool GoogleExpressDestinationShoppingEnabled {
             get {
                 return this.googleExpressDestinationShoppingEnabledField;
@@ -29771,7 +29870,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1607)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1610)]
         public string GoogleExpressDestinationShoppingIntention {
             get {
                 return this.googleExpressDestinationShoppingIntentionField;
@@ -29783,7 +29882,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1608)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1611)]
         public bool GoogleExpressDestinationShoppingActionsEnabled {
             get {
                 return this.googleExpressDestinationShoppingActionsEnabledField;
@@ -29795,7 +29894,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1609)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1612)]
         public string GoogleExpressDestinationShoppingActionsIntention {
             get {
                 return this.googleExpressDestinationShoppingActionsIntentionField;
@@ -29807,7 +29906,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1610)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1613)]
         public bool GoogleExpressDestinationDisplayAdsEnabled {
             get {
                 return this.googleExpressDestinationDisplayAdsEnabledField;
@@ -29819,7 +29918,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1611)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1614)]
         public string GoogleExpressDestinationDisplayAdsIntention {
             get {
                 return this.googleExpressDestinationDisplayAdsIntentionField;
@@ -29831,7 +29930,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1612)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1615)]
         public int NewEggDotComProp65WarningType {
             get {
                 return this.newEggDotComProp65WarningTypeField;
@@ -29843,7 +29942,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1613)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1616)]
         public string NewEggDotComProp65ChemicalNames {
             get {
                 return this.newEggDotComProp65ChemicalNamesField;
@@ -29855,7 +29954,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1614)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1617)]
         public HouzzProp65HarmType HouzzProp65Harm {
             get {
                 return this.houzzProp65HarmField;
@@ -29867,7 +29966,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1615)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1618)]
         public Prop65WarningTypeType HouzzProp65WarningType {
             get {
                 return this.houzzProp65WarningTypeField;
@@ -29879,7 +29978,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1616)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1619)]
         public SearsProp65WarningCodeType SearsProp65WarningCode {
             get {
                 return this.searsProp65WarningCodeField;
@@ -29891,7 +29990,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1617)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1620)]
         public bool HasProposition65WarningLabelOnPackage {
             get {
                 return this.hasProposition65WarningLabelOnPackageField;
@@ -29903,7 +30002,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1618)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1621)]
         public string eBayShippingDiscountProfileID {
             get {
                 return this.eBayShippingDiscountProfileIDField;
@@ -29915,7 +30014,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1619)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1622)]
         public bool eBayShippingDiscountProfileIDUseDefault {
             get {
                 return this.eBayShippingDiscountProfileIDUseDefaultField;
@@ -29927,7 +30026,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1620)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1623)]
         public bool MagentoAllowUseConfigBackOrders {
             get {
                 return this.magentoAllowUseConfigBackOrdersField;
@@ -29939,7 +30038,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1621)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1624)]
         public int ebayCharityNumber {
             get {
                 return this.ebayCharityNumberField;
@@ -29951,7 +30050,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1622)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1625)]
         public bool eBayCharityNumberUseDefault {
             get {
                 return this.eBayCharityNumberUseDefaultField;
@@ -29963,7 +30062,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1623)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1626)]
         public string eBayCharityID {
             get {
                 return this.eBayCharityIDField;
@@ -29975,7 +30074,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1624)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1627)]
         public bool eBayCharityIDUseDefault {
             get {
                 return this.eBayCharityIDUseDefaultField;
@@ -29987,7 +30086,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1625)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1628)]
         public decimal eBayDonationPercent {
             get {
                 return this.eBayDonationPercentField;
@@ -29999,7 +30098,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1626)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1629)]
         public bool eBayDonationPercentUseDefault {
             get {
                 return this.eBayDonationPercentUseDefaultField;
@@ -30011,7 +30110,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1627)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1630)]
         public int EtsyMaxQty {
             get {
                 return this.etsyMaxQtyField;
@@ -30023,7 +30122,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1628)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1631)]
         public bool EtsyMaxQtyUseDefault {
             get {
                 return this.etsyMaxQtyUseDefaultField;
@@ -30035,7 +30134,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1629)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1632)]
         public decimal CaseLength {
             get {
                 return this.caseLengthField;
@@ -30047,7 +30146,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1630)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1633)]
         public decimal CaseWidth {
             get {
                 return this.caseWidthField;
@@ -30059,7 +30158,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1631)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1634)]
         public decimal CaseHeight {
             get {
                 return this.caseHeightField;
@@ -30071,7 +30170,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1632)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1635)]
         public decimal CaseWeight {
             get {
                 return this.caseWeightField;
@@ -30083,7 +30182,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1633)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1636)]
         public int WalmartAPITwoDayShippingTemplateID {
             get {
                 return this.walmartAPITwoDayShippingTemplateIDField;
@@ -30095,7 +30194,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1634)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1637)]
         public System.DateTime GoogleExpressSalePriceStartDate {
             get {
                 return this.googleExpressSalePriceStartDateField;
@@ -30107,7 +30206,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1635)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1638)]
         public System.DateTime GoogleExpressSalePriceEndDate {
             get {
                 return this.googleExpressSalePriceEndDateField;
@@ -30119,7 +30218,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1636)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1639)]
         public int EtsyDefaultQty {
             get {
                 return this.etsyDefaultQtyField;
@@ -30131,7 +30230,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1637)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1640)]
         public bool EtsyDefaultQtyUseDefault {
             get {
                 return this.etsyDefaultQtyUseDefaultField;
@@ -30143,7 +30242,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1638)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1641)]
         public bool EtsyDefaultQtyEnabled {
             get {
                 return this.etsyDefaultQtyEnabledField;
@@ -30155,7 +30254,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1639)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1642)]
         public bool EtsyMaxQtyEnabled {
             get {
                 return this.etsyMaxQtyEnabledField;
@@ -30167,7 +30266,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1640)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1643)]
         public bool JETMaxQtyEnabled {
             get {
                 return this.jETMaxQtyEnabledField;
@@ -30179,7 +30278,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1641)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1644)]
         public int JETMaxQty {
             get {
                 return this.jETMaxQtyField;
@@ -30191,7 +30290,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1642)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1645)]
         public bool JETMaxQtyUseDefault {
             get {
                 return this.jETMaxQtyUseDefaultField;
@@ -30203,7 +30302,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1643)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1646)]
         public bool DisconnectFromInventoryDropShipCentral {
             get {
                 return this.disconnectFromInventoryDropShipCentralField;
@@ -30215,7 +30314,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1644)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1647)]
         public bool UnbeatableDefaultQtyEnabled {
             get {
                 return this.unbeatableDefaultQtyEnabledField;
@@ -30227,7 +30326,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1645)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1648)]
         public int UnbeatableDefaultQty {
             get {
                 return this.unbeatableDefaultQtyField;
@@ -30239,7 +30338,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1646)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1649)]
         public bool UnbeatableDefaultQtyUseDefault {
             get {
                 return this.unbeatableDefaultQtyUseDefaultField;
@@ -30251,7 +30350,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1647)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1650)]
         public decimal HouzzCost {
             get {
                 return this.houzzCostField;
@@ -30263,7 +30362,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1648)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=1651)]
         public bool HouzzCostUseDefault {
             get {
                 return this.houzzCostUseDefaultField;
@@ -30271,6 +30370,198 @@ namespace QDLogistics.OrderCreationService {
             set {
                 this.houzzCostUseDefaultField = value;
                 this.RaisePropertyChanged("HouzzCostUseDefault");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=1652)]
+        public int EtsyShopSectionID {
+            get {
+                return this.etsyShopSectionIDField;
+            }
+            set {
+                this.etsyShopSectionIDField = value;
+                this.RaisePropertyChanged("EtsyShopSectionID");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=1653)]
+        public int WishLocalizedCurrencyCode {
+            get {
+                return this.wishLocalizedCurrencyCodeField;
+            }
+            set {
+                this.wishLocalizedCurrencyCodeField = value;
+                this.RaisePropertyChanged("WishLocalizedCurrencyCode");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=1654)]
+        public bool WishLocalizedCurrencyCodeUseDefault {
+            get {
+                return this.wishLocalizedCurrencyCodeUseDefaultField;
+            }
+            set {
+                this.wishLocalizedCurrencyCodeUseDefaultField = value;
+                this.RaisePropertyChanged("WishLocalizedCurrencyCodeUseDefault");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=1655)]
+        public string AmazonProductSizeTier {
+            get {
+                return this.amazonProductSizeTierField;
+            }
+            set {
+                this.amazonProductSizeTierField = value;
+                this.RaisePropertyChanged("AmazonProductSizeTier");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=1656)]
+        public bool BonanzaMaxQtyEnabled {
+            get {
+                return this.bonanzaMaxQtyEnabledField;
+            }
+            set {
+                this.bonanzaMaxQtyEnabledField = value;
+                this.RaisePropertyChanged("BonanzaMaxQtyEnabled");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=1657)]
+        public int BonanzaMaxQty {
+            get {
+                return this.bonanzaMaxQtyField;
+            }
+            set {
+                this.bonanzaMaxQtyField = value;
+                this.RaisePropertyChanged("BonanzaMaxQty");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=1658)]
+        public bool BonanzaMaxQtyUseDefault {
+            get {
+                return this.bonanzaMaxQtyUseDefaultField;
+            }
+            set {
+                this.bonanzaMaxQtyUseDefaultField = value;
+                this.RaisePropertyChanged("BonanzaMaxQtyUseDefault");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=1659)]
+        public bool IsUPCExemptForAmazon {
+            get {
+                return this.isUPCExemptForAmazonField;
+            }
+            set {
+                this.isUPCExemptForAmazonField = value;
+                this.RaisePropertyChanged("IsUPCExemptForAmazon");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=1660)]
+        public string UPCExemptTypeForAmazon {
+            get {
+                return this.uPCExemptTypeForAmazonField;
+            }
+            set {
+                this.uPCExemptTypeForAmazonField = value;
+                this.RaisePropertyChanged("UPCExemptTypeForAmazon");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=1661)]
+        public bool UpdatedbySellerintell {
+            get {
+                return this.updatedbySellerintellField;
+            }
+            set {
+                this.updatedbySellerintellField = value;
+                this.RaisePropertyChanged("UpdatedbySellerintell");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=1662)]
+        public string EtsyTags {
+            get {
+                return this.etsyTagsField;
+            }
+            set {
+                this.etsyTagsField = value;
+                this.RaisePropertyChanged("EtsyTags");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=1663)]
+        public bool EtsyRenew {
+            get {
+                return this.etsyRenewField;
+            }
+            set {
+                this.etsyRenewField = value;
+                this.RaisePropertyChanged("EtsyRenew");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=1664)]
+        public string NewEggDotComItemConditionDetail {
+            get {
+                return this.newEggDotComItemConditionDetailField;
+            }
+            set {
+                this.newEggDotComItemConditionDetailField = value;
+                this.RaisePropertyChanged("NewEggDotComItemConditionDetail");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=1665)]
+        public string HouzzColor {
+            get {
+                return this.houzzColorField;
+            }
+            set {
+                this.houzzColorField = value;
+                this.RaisePropertyChanged("HouzzColor");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=1666)]
+        public bool GoogleExpressSurfacesAcrossGoogleEnabled {
+            get {
+                return this.googleExpressSurfacesAcrossGoogleEnabledField;
+            }
+            set {
+                this.googleExpressSurfacesAcrossGoogleEnabledField = value;
+                this.RaisePropertyChanged("GoogleExpressSurfacesAcrossGoogleEnabled");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=1667)]
+        public string GoogleExpressSurfacesAcrossGoogleIntention {
+            get {
+                return this.googleExpressSurfacesAcrossGoogleIntentionField;
+            }
+            set {
+                this.googleExpressSurfacesAcrossGoogleIntentionField = value;
+                this.RaisePropertyChanged("GoogleExpressSurfacesAcrossGoogleIntention");
             }
         }
         
@@ -30509,6 +30800,12 @@ namespace QDLogistics.OrderCreationService {
         
         /// <remarks/>
         NonFunctioning,
+        
+        /// <remarks/>
+        BStock,
+        
+        /// <remarks/>
+        MintWithInventory,
     }
     
     /// <remarks/>
@@ -33594,6 +33891,8 @@ namespace QDLogistics.OrderCreationService {
         
         private int averageCostMovementIDField;
         
+        private decimal adjustedPriceField;
+        
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
         public string ReplacementSKU {
@@ -33999,6 +34298,18 @@ namespace QDLogistics.OrderCreationService {
             set {
                 this.averageCostMovementIDField = value;
                 this.RaisePropertyChanged("AverageCostMovementID");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=34)]
+        public decimal AdjustedPrice {
+            get {
+                return this.adjustedPriceField;
+            }
+            set {
+                this.adjustedPriceField = value;
+                this.RaisePropertyChanged("AdjustedPrice");
             }
         }
         
@@ -37093,7 +37404,7 @@ namespace QDLogistics.OrderCreationService {
         
         private DiscountAmountType1 orderLevelDiscountTypeField;
         
-        private bool orderCreationCompletedField;
+        private bool orderCreationPendingField;
         
         private bool enableCaseQtyField;
         
@@ -37529,6 +37840,8 @@ namespace QDLogistics.OrderCreationService {
         
         private string fulfillmentOptionField;
         
+        private bool isTaxCollectedByMarketplaceField;
+        
         private OrderItem[] shippingItemsField;
         
         /// <remarks/>
@@ -37941,13 +38254,13 @@ namespace QDLogistics.OrderCreationService {
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=34)]
-        public bool OrderCreationCompleted {
+        public bool OrderCreationPending {
             get {
-                return this.orderCreationCompletedField;
+                return this.orderCreationPendingField;
             }
             set {
-                this.orderCreationCompletedField = value;
-                this.RaisePropertyChanged("OrderCreationCompleted");
+                this.orderCreationPendingField = value;
+                this.RaisePropertyChanged("OrderCreationPending");
             }
         }
         
@@ -40556,7 +40869,19 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlArrayAttribute(Order=252)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=252)]
+        public bool IsTaxCollectedByMarketplace {
+            get {
+                return this.isTaxCollectedByMarketplaceField;
+            }
+            set {
+                this.isTaxCollectedByMarketplaceField = value;
+                this.RaisePropertyChanged("IsTaxCollectedByMarketplace");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlArrayAttribute(Order=253)]
         public OrderItem[] ShippingItems {
             get {
                 return this.shippingItemsField;
@@ -43658,6 +43983,9 @@ namespace QDLogistics.OrderCreationService {
         
         /// <remarks/>
         Skustack,
+        
+        /// <remarks/>
+        WayToPay,
     }
     
     /// <remarks/>
@@ -46479,6 +46807,8 @@ namespace QDLogistics.OrderCreationService {
         
         private string fedExShipping_KeyIDField;
         
+        private bool fedExShipping_UseParentCredentialsField;
+        
         private string fedExShipping_PasswordField;
         
         private string fedExShipping_AccountNumberField;
@@ -47250,6 +47580,14 @@ namespace QDLogistics.OrderCreationService {
         private string canadaAPICustomerNumberField;
         
         private int purchaseOrderDefaultWarehouseIDField;
+        
+        private bool invoice_IncludeAllTrackingNumbersField;
+        
+        private bool newEggDotComEnableSettlementDownlaodField;
+        
+        private bool overStockImportOrdersAsUnPaidField;
+        
+        private string[] doNotApplyEbaySubsidyOnSitesField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
@@ -48525,6 +48863,18 @@ namespace QDLogistics.OrderCreationService {
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=106)]
+        public bool FedExShipping_UseParentCredentials {
+            get {
+                return this.fedExShipping_UseParentCredentialsField;
+            }
+            set {
+                this.fedExShipping_UseParentCredentialsField = value;
+                this.RaisePropertyChanged("FedExShipping_UseParentCredentials");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=107)]
         public string FedExShipping_Password {
             get {
                 return this.fedExShipping_PasswordField;
@@ -48536,7 +48886,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=107)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=108)]
         public string FedExShipping_AccountNumber {
             get {
                 return this.fedExShipping_AccountNumberField;
@@ -48548,7 +48898,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=108)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=109)]
         public string FedExShipping_MeterNumber {
             get {
                 return this.fedExShipping_MeterNumberField;
@@ -48560,7 +48910,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=109)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=110)]
         public bool eBayPriceUseDefault {
             get {
                 return this.eBayPriceUseDefaultField;
@@ -48572,7 +48922,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=110)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=111)]
         public System.DateTime OverStock_OrderDownloadDateLimitDate {
             get {
                 return this.overStock_OrderDownloadDateLimitDateField;
@@ -48584,7 +48934,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=111)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=112)]
         public bool OverStock_OrderDownloadDateLimitEnabled {
             get {
                 return this.overStock_OrderDownloadDateLimitEnabledField;
@@ -48596,7 +48946,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=112)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=113)]
         public string Invoice_ForWholeSalePluginID {
             get {
                 return this.invoice_ForWholeSalePluginIDField;
@@ -48608,7 +48958,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=113)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=114)]
         public string Invoice_OrderFormPluginID {
             get {
                 return this.invoice_OrderFormPluginIDField;
@@ -48620,7 +48970,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=114)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=115)]
         public bool AmazonDefaultIsAmazonEnabled {
             get {
                 return this.amazonDefaultIsAmazonEnabledField;
@@ -48632,7 +48982,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=115)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=116)]
         public Invoice_InvoicePrintingTypeType Invoice_InvoicePrintingType {
             get {
                 return this.invoice_InvoicePrintingTypeField;
@@ -48644,7 +48994,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=116)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=117)]
         public string Invoice_CustomInvoicePluginID {
             get {
                 return this.invoice_CustomInvoicePluginIDField;
@@ -48656,7 +49006,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=117)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=118)]
         public bool EnableEBayPricesControl {
             get {
                 return this.enableEBayPricesControlField;
@@ -48668,7 +49018,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=118)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=119)]
         public string NetworkSolutionsCertificateKey {
             get {
                 return this.networkSolutionsCertificateKeyField;
@@ -48680,7 +49030,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=119)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=120)]
         public string NetworkSolutionsApplicationKey {
             get {
                 return this.networkSolutionsApplicationKeyField;
@@ -48692,7 +49042,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=120)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=121)]
         public int MinInventoryForEBayListingsAuctions {
             get {
                 return this.minInventoryForEBayListingsAuctionsField;
@@ -48704,7 +49054,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=121)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=122)]
         public int WebsiteDefaultQty {
             get {
                 return this.websiteDefaultQtyField;
@@ -48716,7 +49066,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=122)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=123)]
         public int WebsiteSafetyQty {
             get {
                 return this.websiteSafetyQtyField;
@@ -48728,7 +49078,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=123)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=124)]
         public bool WebSiteOrderCreateLimitDateEnabled {
             get {
                 return this.webSiteOrderCreateLimitDateEnabledField;
@@ -48740,7 +49090,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=124)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=125)]
         public System.DateTime WebSiteOrderCreateLimitDate {
             get {
                 return this.webSiteOrderCreateLimitDateField;
@@ -48752,7 +49102,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=125)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=126)]
         public bool Invoice_ShowWeight {
             get {
                 return this.invoice_ShowWeightField;
@@ -48764,7 +49114,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=126)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=127)]
         public bool AutoSplitOrdersHavingMultiItems {
             get {
                 return this.autoSplitOrdersHavingMultiItemsField;
@@ -48776,7 +49126,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=127)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=128)]
         public bool BuyDotComUseAmazonPrice {
             get {
                 return this.buyDotComUseAmazonPriceField;
@@ -48788,7 +49138,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=128)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=129)]
         public string Volusion_WebsiteURL {
             get {
                 return this.volusion_WebsiteURLField;
@@ -48800,7 +49150,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=129)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=130)]
         public string Volusion_EncryptedPassword {
             get {
                 return this.volusion_EncryptedPasswordField;
@@ -48812,7 +49162,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=130)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=131)]
         public string Volusion_UserName {
             get {
                 return this.volusion_UserNameField;
@@ -48824,7 +49174,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=131)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=132)]
         public AmazonLabelFormatType AmazonDefaultFBALabelFormat {
             get {
                 return this.amazonDefaultFBALabelFormatField;
@@ -48836,7 +49186,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=132)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=133)]
         public int DefaultReplenishableQty {
             get {
                 return this.defaultReplenishableQtyField;
@@ -48848,7 +49198,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=133)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=134)]
         public bool DefaultReplenishableQtyEnabled {
             get {
                 return this.defaultReplenishableQtyEnabledField;
@@ -48860,7 +49210,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=134)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=135)]
         public bool WebsiteAllowOrderDownload {
             get {
                 return this.websiteAllowOrderDownloadField;
@@ -48872,7 +49222,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=135)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=136)]
         public bool WebSiteAllowInventoryUpdate {
             get {
                 return this.webSiteAllowInventoryUpdateField;
@@ -48884,7 +49234,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=136)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=137)]
         public bool WebSiteAllowTrackingUpdate {
             get {
                 return this.webSiteAllowTrackingUpdateField;
@@ -48896,7 +49246,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=137)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=138)]
         public bool WebSiteAllowProductsExport {
             get {
                 return this.webSiteAllowProductsExportField;
@@ -48908,7 +49258,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=138)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=139)]
         public bool Invoice_ShowShippingPackage {
             get {
                 return this.invoice_ShowShippingPackageField;
@@ -48920,7 +49270,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=139)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=140)]
         public bool Invoice_ShowAmazonEmail {
             get {
                 return this.invoice_ShowAmazonEmailField;
@@ -48932,7 +49282,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=140)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=141)]
         public bool Invoice_ShowBuyDotcomEmail {
             get {
                 return this.invoice_ShowBuyDotcomEmailField;
@@ -48944,7 +49294,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=141)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=142)]
         public bool BuyDotComOfferShippingExpedited {
             get {
                 return this.buyDotComOfferShippingExpeditedField;
@@ -48956,7 +49306,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=142)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=143)]
         public bool BuyDotComOfferShippingOneDay {
             get {
                 return this.buyDotComOfferShippingOneDayField;
@@ -48968,7 +49318,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=143)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=144)]
         public bool BuyDotComOfferShippingTwoDay {
             get {
                 return this.buyDotComOfferShippingTwoDayField;
@@ -48980,7 +49330,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=144)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=145)]
         public string AmazonProductSearchAPIAssociateKey {
             get {
                 return this.amazonProductSearchAPIAssociateKeyField;
@@ -48992,7 +49342,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=145)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=146)]
         public string AmazonProductSearchAPIAccessKey {
             get {
                 return this.amazonProductSearchAPIAccessKeyField;
@@ -49004,7 +49354,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=146)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=147)]
         public bool CMFeedIncludeConditionColumn {
             get {
                 return this.cMFeedIncludeConditionColumnField;
@@ -49016,7 +49366,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=147)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=148)]
         public string eBaySecondChanceOfferMessage {
             get {
                 return this.eBaySecondChanceOfferMessageField;
@@ -49028,7 +49378,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=148)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=149)]
         public bool eBayEnableSecondChanceOffer {
             get {
                 return this.eBayEnableSecondChanceOfferField;
@@ -49040,7 +49390,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=149)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=150)]
         public bool BuyDotComUsePassive {
             get {
                 return this.buyDotComUsePassiveField;
@@ -49052,7 +49402,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=150)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=151)]
         public string POAlertTo_Others {
             get {
                 return this.pOAlertTo_OthersField;
@@ -49064,7 +49414,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=151)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=152)]
         public bool POAlertTo_Creator {
             get {
                 return this.pOAlertTo_CreatorField;
@@ -49076,7 +49426,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=152)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=153)]
         public bool POAlertTo_Purchaser {
             get {
                 return this.pOAlertTo_PurchaserField;
@@ -49088,7 +49438,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=153)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=154)]
         public bool CMFeedIncludeQuantity {
             get {
                 return this.cMFeedIncludeQuantityField;
@@ -49100,7 +49450,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=154)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=155)]
         public bool RequirePINForReceiveBridge {
             get {
                 return this.requirePINForReceiveBridgeField;
@@ -49112,7 +49462,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=155)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=156)]
         public bool CMFeedIncludePurchasePrice {
             get {
                 return this.cMFeedIncludePurchasePriceField;
@@ -49124,7 +49474,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=156)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=157)]
         public string CMFeedFileName {
             get {
                 return this.cMFeedFileNameField;
@@ -49136,7 +49486,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=157)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=158)]
         public bool AmazonProxyEnabled {
             get {
                 return this.amazonProxyEnabledField;
@@ -49148,7 +49498,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=158)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=159)]
         public string AmazonProxyServer {
             get {
                 return this.amazonProxyServerField;
@@ -49160,7 +49510,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=159)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=160)]
         public string AmazonProxyDomain {
             get {
                 return this.amazonProxyDomainField;
@@ -49172,7 +49522,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=160)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=161)]
         public string AmazonProxyUserName {
             get {
                 return this.amazonProxyUserNameField;
@@ -49184,7 +49534,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=161)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=162)]
         public string AmazonProxyPassword {
             get {
                 return this.amazonProxyPasswordField;
@@ -49196,7 +49546,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=162)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=163)]
         public int AmazonProxyPort {
             get {
                 return this.amazonProxyPortField;
@@ -49208,7 +49558,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=163)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=164)]
         public int MinInventoryForEBayListings {
             get {
                 return this.minInventoryForEBayListingsField;
@@ -49220,7 +49570,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=164)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=165)]
         public ProductCondition BDC_ProductCondition {
             get {
                 return this.bDC_ProductConditionField;
@@ -49232,7 +49582,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=165)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=166)]
         public long LastProductIDCounter {
             get {
                 return this.lastProductIDCounterField;
@@ -49244,7 +49594,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=166)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=167)]
         public string ProductIDGeneratorPluginID {
             get {
                 return this.productIDGeneratorPluginIDField;
@@ -49256,7 +49606,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=167)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=168)]
         public WebsiteStoreTypeType WebsiteStoreType {
             get {
                 return this.websiteStoreTypeField;
@@ -49268,7 +49618,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=168)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=169)]
         public string NetworkSolutionsUserKeyForToken {
             get {
                 return this.networkSolutionsUserKeyForTokenField;
@@ -49280,7 +49630,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=169)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=170)]
         public System.DateTime NetworkSolutionsTokenExpiresOn {
             get {
                 return this.networkSolutionsTokenExpiresOnField;
@@ -49292,7 +49642,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=170)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=171)]
         public System.DateTime NetworkSolutionsTokenVerifiedOn {
             get {
                 return this.networkSolutionsTokenVerifiedOnField;
@@ -49304,7 +49654,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=171)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=172)]
         public string NetworkSolutionsToken {
             get {
                 return this.networkSolutionsTokenField;
@@ -49316,7 +49666,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=172)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=173)]
         public bool NetworkSolutionsTokenVerified {
             get {
                 return this.networkSolutionsTokenVerifiedField;
@@ -49328,7 +49678,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=173)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=174)]
         public Address DefaultPurchaseOrderFromAddress {
             get {
                 return this.defaultPurchaseOrderFromAddressField;
@@ -49340,7 +49690,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=174)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=175)]
         public string BuyDotComLoginPassword {
             get {
                 return this.buyDotComLoginPasswordField;
@@ -49352,7 +49702,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=175)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=176)]
         public string BuyDotComLoginEmail {
             get {
                 return this.buyDotComLoginEmailField;
@@ -49364,7 +49714,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=176)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=177)]
         public bool OverStock_NotifyOrderCancellation {
             get {
                 return this.overStock_NotifyOrderCancellationField;
@@ -49376,7 +49726,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=177)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=178)]
         public bool eBayOrderDownloadDateLimitEnabled {
             get {
                 return this.eBayOrderDownloadDateLimitEnabledField;
@@ -49388,7 +49738,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=178)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=179)]
         public System.DateTime eBayOrderDownloadDateLimit {
             get {
                 return this.eBayOrderDownloadDateLimitField;
@@ -49400,7 +49750,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=179)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=180)]
         public bool eBayEnableOrderDownload {
             get {
                 return this.eBayEnableOrderDownloadField;
@@ -49412,7 +49762,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=180)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=181)]
         public string FlickrToken {
             get {
                 return this.flickrTokenField;
@@ -49424,7 +49774,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=181)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=182)]
         public string FlickrUserName {
             get {
                 return this.flickrUserNameField;
@@ -49436,7 +49786,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=182)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=183)]
         public string FlickrUserID {
             get {
                 return this.flickrUserIDField;
@@ -49448,7 +49798,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=183)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=184)]
         public System.DateTime FlickrAuthenticatedOn {
             get {
                 return this.flickrAuthenticatedOnField;
@@ -49460,7 +49810,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=184)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=185)]
         public bool EnableOrderDownloadDateLimitAmazon {
             get {
                 return this.enableOrderDownloadDateLimitAmazonField;
@@ -49472,7 +49822,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=185)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=186)]
         public System.DateTime OrderDownloadDateLimitAmazon {
             get {
                 return this.orderDownloadDateLimitAmazonField;
@@ -49484,7 +49834,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=186)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=187)]
         public decimal BuyDotComOneDayShippingPrice {
             get {
                 return this.buyDotComOneDayShippingPriceField;
@@ -49496,7 +49846,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=187)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=188)]
         public decimal BuyDotComTwoDaysShippingPrice {
             get {
                 return this.buyDotComTwoDaysShippingPriceField;
@@ -49508,7 +49858,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=188)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=189)]
         public bool BuyDotComOneDayShippingIsFree {
             get {
                 return this.buyDotComOneDayShippingIsFreeField;
@@ -49520,7 +49870,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=189)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=190)]
         public bool BuyDotComTwoDaysShippingIsFree {
             get {
                 return this.buyDotComTwoDaysShippingIsFreeField;
@@ -49532,7 +49882,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=190)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=191)]
         public bool BuyDotComStandardShippingIsFree {
             get {
                 return this.buyDotComStandardShippingIsFreeField;
@@ -49544,7 +49894,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=191)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=192)]
         public bool BuyDotComExpeditedShippingIsFree {
             get {
                 return this.buyDotComExpeditedShippingIsFreeField;
@@ -49556,7 +49906,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=192)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=193)]
         public string FedExPassword {
             get {
                 return this.fedExPasswordField;
@@ -49568,7 +49918,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=193)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=194)]
         public OrderFileFormatType BuyDotComOrderFileFormat {
             get {
                 return this.buyDotComOrderFileFormatField;
@@ -49580,7 +49930,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=194)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=195)]
         public FileFormatType NewEggDotComFileFormat {
             get {
                 return this.newEggDotComFileFormatField;
@@ -49592,7 +49942,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=195)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=196)]
         public bool FedExTestMode {
             get {
                 return this.fedExTestModeField;
@@ -49604,7 +49954,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=196)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=197)]
         public string FedExUserName {
             get {
                 return this.fedExUserNameField;
@@ -49616,7 +49966,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=197)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=198)]
         public string FedExAccountNumber {
             get {
                 return this.fedExAccountNumberField;
@@ -49628,7 +49978,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=198)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=199)]
         public string FedExMeterNumber {
             get {
                 return this.fedExMeterNumberField;
@@ -49640,7 +49990,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=199)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=200)]
         public string FedExPackaging {
             get {
                 return this.fedExPackagingField;
@@ -49652,7 +50002,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=200)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=201)]
         public int AmazonDefaultShippingTemplate {
             get {
                 return this.amazonDefaultShippingTemplateField;
@@ -49664,7 +50014,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=201)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=202)]
         public int AmazonDefaultCondition {
             get {
                 return this.amazonDefaultConditionField;
@@ -49676,7 +50026,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=202)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=203)]
         public FulfilledBy AmazonDefaultFulfilledBy {
             get {
                 return this.amazonDefaultFulfilledByField;
@@ -49688,7 +50038,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=203)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=204)]
         public string CyberProber_SiteName {
             get {
                 return this.cyberProber_SiteNameField;
@@ -49700,7 +50050,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=204)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=205)]
         public string CyberProber_Password {
             get {
                 return this.cyberProber_PasswordField;
@@ -49712,7 +50062,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=205)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=206)]
         public string CyberProber_UserName {
             get {
                 return this.cyberProber_UserNameField;
@@ -49724,7 +50074,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=206)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=207)]
         public bool Invoice_PrintProductCondition {
             get {
                 return this.invoice_PrintProductConditionField;
@@ -49736,7 +50086,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=207)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=208)]
         public string CompanyNameAbbreviation {
             get {
                 return this.companyNameAbbreviationField;
@@ -49748,7 +50098,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=208)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=209)]
         public bool AmazonEnablePendingOrdersReport {
             get {
                 return this.amazonEnablePendingOrdersReportField;
@@ -49760,7 +50110,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=209)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=210)]
         public bool CMFeedIncludeRepricingModel {
             get {
                 return this.cMFeedIncludeRepricingModelField;
@@ -49772,7 +50122,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=210)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=211)]
         public bool IsOverStockInTestMode {
             get {
                 return this.isOverStockInTestModeField;
@@ -49784,7 +50134,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=211)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=212)]
         public string OverStockMerchantID {
             get {
                 return this.overStockMerchantIDField;
@@ -49796,7 +50146,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=212)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=213)]
         public bool Invoice_InvoicePrintedCount {
             get {
                 return this.invoice_InvoicePrintedCountField;
@@ -49808,7 +50158,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=213)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=214)]
         public bool Invoice_PrintInvoicePrintedDate {
             get {
                 return this.invoice_PrintInvoicePrintedDateField;
@@ -49820,7 +50170,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=214)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=215)]
         public bool Invoice_PrintInventoryAvailableQty {
             get {
                 return this.invoice_PrintInventoryAvailableQtyField;
@@ -49832,7 +50182,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=215)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=216)]
         public bool Invoice_PrintUPC {
             get {
                 return this.invoice_PrintUPCField;
@@ -49844,7 +50194,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=216)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=217)]
         public bool Invoice_PrintUPCForKitItems {
             get {
                 return this.invoice_PrintUPCForKitItemsField;
@@ -49856,7 +50206,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=217)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=218)]
         public int NewEggDotcomDefaultFixedQty {
             get {
                 return this.newEggDotcomDefaultFixedQtyField;
@@ -49868,7 +50218,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=218)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=219)]
         public int OverStockDefaultFixedQty {
             get {
                 return this.overStockDefaultFixedQtyField;
@@ -49880,7 +50230,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=219)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=220)]
         public int BuyDotComDefaultFixedQty {
             get {
                 return this.buyDotComDefaultFixedQtyField;
@@ -49892,7 +50242,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=220)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=221)]
         public int SearsDefaultFixedQty {
             get {
                 return this.searsDefaultFixedQtyField;
@@ -49904,7 +50254,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=221)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=222)]
         public bool AmazonEnableSettlementReport {
             get {
                 return this.amazonEnableSettlementReportField;
@@ -49916,7 +50266,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=222)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=223)]
         public bool AmazonEnableInventoryHealthReport {
             get {
                 return this.amazonEnableInventoryHealthReportField;
@@ -49928,7 +50278,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=223)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=224)]
         public string ChannelMaxLoginID {
             get {
                 return this.channelMaxLoginIDField;
@@ -49940,7 +50290,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=224)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=225)]
         public bool CMFeedEnabled {
             get {
                 return this.cMFeedEnabledField;
@@ -49952,7 +50302,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=225)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=226)]
         public string CMFeedFTPUserName {
             get {
                 return this.cMFeedFTPUserNameField;
@@ -49964,7 +50314,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=226)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=227)]
         public string CMFeedFTPPassword {
             get {
                 return this.cMFeedFTPPasswordField;
@@ -49976,7 +50326,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=227)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=228)]
         public int CMFeedFTPPort {
             get {
                 return this.cMFeedFTPPortField;
@@ -49988,7 +50338,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=228)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=229)]
         public string CMFeedFTPServer {
             get {
                 return this.cMFeedFTPServerField;
@@ -50000,7 +50350,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=229)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=230)]
         public bool CMFeedFTPUsePassive {
             get {
                 return this.cMFeedFTPUsePassiveField;
@@ -50012,7 +50362,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=230)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=231)]
         public bool ShipBridge_LockAddress {
             get {
                 return this.shipBridge_LockAddressField;
@@ -50024,7 +50374,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=231)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=232)]
         public bool ShipBridge_LockAddressValidation {
             get {
                 return this.shipBridge_LockAddressValidationField;
@@ -50036,7 +50386,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=232)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=233)]
         public bool ShipBridge_LockShippingMethod {
             get {
                 return this.shipBridge_LockShippingMethodField;
@@ -50048,7 +50398,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=233)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=234)]
         public bool ShipBridge_LockPackageMangaer {
             get {
                 return this.shipBridge_LockPackageMangaerField;
@@ -50060,7 +50410,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=234)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=235)]
         public bool ShipBridge_LockEditOrder {
             get {
                 return this.shipBridge_LockEditOrderField;
@@ -50072,7 +50422,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=235)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=236)]
         public bool ShipBridge_LockRateCalculator {
             get {
                 return this.shipBridge_LockRateCalculatorField;
@@ -50084,7 +50434,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=236)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=237)]
         public bool ShipBridge_LockFilters {
             get {
                 return this.shipBridge_LockFiltersField;
@@ -50096,7 +50446,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=237)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=238)]
         public string OverStockPassword {
             get {
                 return this.overStockPasswordField;
@@ -50108,7 +50458,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=238)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=239)]
         public string OverStockUserName {
             get {
                 return this.overStockUserNameField;
@@ -50120,7 +50470,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=239)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=240)]
         public ProductImagesHostedOnType ProductImagesHostedOn {
             get {
                 return this.productImagesHostedOnField;
@@ -50132,7 +50482,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=240)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=241)]
         public string GooglePicasaPassword {
             get {
                 return this.googlePicasaPasswordField;
@@ -50144,7 +50494,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=241)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=242)]
         public string GooglePicasaUserName {
             get {
                 return this.googlePicasaUserNameField;
@@ -50156,7 +50506,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=242)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=243)]
         public decimal SearsDefaultProductLength {
             get {
                 return this.searsDefaultProductLengthField;
@@ -50168,7 +50518,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=243)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=244)]
         public decimal SearsDefaultProductHeight {
             get {
                 return this.searsDefaultProductHeightField;
@@ -50180,7 +50530,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=244)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=245)]
         public decimal SearsDefaultProductWidth {
             get {
                 return this.searsDefaultProductWidthField;
@@ -50192,7 +50542,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=245)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=246)]
         public decimal SearsDefaultProductWeight {
             get {
                 return this.searsDefaultProductWeightField;
@@ -50204,7 +50554,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=246)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=247)]
         public bool Invoice_ShowKitComponentName {
             get {
                 return this.invoice_ShowKitComponentNameField;
@@ -50216,7 +50566,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=247)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=248)]
         public int AmazonFulfillmentLatencyDays {
             get {
                 return this.amazonFulfillmentLatencyDaysField;
@@ -50228,7 +50578,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=248)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=249)]
         public bool AmazonFulfillmentLatencyEnabled {
             get {
                 return this.amazonFulfillmentLatencyEnabledField;
@@ -50240,7 +50590,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=249)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=250)]
         public int InventoryMaxQtyForAmazon {
             get {
                 return this.inventoryMaxQtyForAmazonField;
@@ -50252,7 +50602,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=250)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=251)]
         public bool InventoryMaxQtyForAmazonEnabled {
             get {
                 return this.inventoryMaxQtyForAmazonEnabledField;
@@ -50264,7 +50614,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=251)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=252)]
         public bool ShipBridge_LockFullyShippedTab {
             get {
                 return this.shipBridge_LockFullyShippedTabField;
@@ -50276,7 +50626,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=252)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=253)]
         public bool ShipBridge_LockUnShippedTab {
             get {
                 return this.shipBridge_LockUnShippedTabField;
@@ -50288,7 +50638,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=253)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=254)]
         public bool ShipBridge_LockOptionsTab {
             get {
                 return this.shipBridge_LockOptionsTabField;
@@ -50300,7 +50650,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=254)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=255)]
         public int BuyDotComShippingLeadTime {
             get {
                 return this.buyDotComShippingLeadTimeField;
@@ -50312,7 +50662,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=255)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=256)]
         public decimal BuyDotComExpeditedShippingPrice {
             get {
                 return this.buyDotComExpeditedShippingPriceField;
@@ -50324,7 +50674,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=256)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=257)]
         public decimal BuyDotComStandardShippingPrice {
             get {
                 return this.buyDotComStandardShippingPriceField;
@@ -50336,7 +50686,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=257)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=258)]
         public bool DivideEBayInventoryPerListing {
             get {
                 return this.divideEBayInventoryPerListingField;
@@ -50348,7 +50698,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=258)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=259)]
         public string LinkShare_MerchantName {
             get {
                 return this.linkShare_MerchantNameField;
@@ -50360,7 +50710,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=259)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=260)]
         public string EmailFromName {
             get {
                 return this.emailFromNameField;
@@ -50372,7 +50722,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=260)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=261)]
         public string EmailFromEmail {
             get {
                 return this.emailFromEmailField;
@@ -50384,7 +50734,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=261)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=262)]
         public string EmailServer {
             get {
                 return this.emailServerField;
@@ -50396,7 +50746,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=262)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=263)]
         public string EmailUserName {
             get {
                 return this.emailUserNameField;
@@ -50408,7 +50758,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=263)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=264)]
         public string EmailPassword {
             get {
                 return this.emailPasswordField;
@@ -50420,7 +50770,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=264)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=265)]
         public int EmailPort {
             get {
                 return this.emailPortField;
@@ -50432,7 +50782,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=265)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=266)]
         public bool EmailUseSSL {
             get {
                 return this.emailUseSSLField;
@@ -50444,7 +50794,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=266)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=267)]
         public bool EmailRequiresAuthentication {
             get {
                 return this.emailRequiresAuthenticationField;
@@ -50456,7 +50806,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=267)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=268)]
         public bool BindToHomeCountryCompanyProducts {
             get {
                 return this.bindToHomeCountryCompanyProductsField;
@@ -50468,7 +50818,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=268)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=269)]
         public string ShipBridgeSecurityPin {
             get {
                 return this.shipBridgeSecurityPinField;
@@ -50480,7 +50830,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=269)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=270)]
         public bool ShippingRuleDropShipLessThanRequested {
             get {
                 return this.shippingRuleDropShipLessThanRequestedField;
@@ -50492,7 +50842,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=270)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=271)]
         public bool ShippingRuleDropShipIsNone {
             get {
                 return this.shippingRuleDropShipIsNoneField;
@@ -50504,7 +50854,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=271)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=272)]
         public string USPSUserID {
             get {
                 return this.uSPSUserIDField;
@@ -50516,7 +50866,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=272)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=273)]
         public string UPSPassword {
             get {
                 return this.uPSPasswordField;
@@ -50528,7 +50878,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=273)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=274)]
         public string UPSUserName {
             get {
                 return this.uPSUserNameField;
@@ -50540,7 +50890,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=274)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=275)]
         public string UPSShipperNumber {
             get {
                 return this.uPSShipperNumberField;
@@ -50552,7 +50902,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=275)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=276)]
         public string UPSLicenseNumber {
             get {
                 return this.uPSLicenseNumberField;
@@ -50564,7 +50914,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=276)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=277)]
         public bool EnableEbayInventoryControl {
             get {
                 return this.enableEbayInventoryControlField;
@@ -50576,7 +50926,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=277)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=278)]
         public bool AllowShippingUnPaidOrders {
             get {
                 return this.allowShippingUnPaidOrdersField;
@@ -50588,7 +50938,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=278)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=279)]
         public bool LinkShare_AlwaysSendFullFeed {
             get {
                 return this.linkShare_AlwaysSendFullFeedField;
@@ -50600,7 +50950,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=279)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=280)]
         public System.DateTime LinkShare_FeedLastGeneratedOn {
             get {
                 return this.linkShare_FeedLastGeneratedOnField;
@@ -50612,7 +50962,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=280)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=281)]
         public int LinkShare_FeedInvervalInHours {
             get {
                 return this.linkShare_FeedInvervalInHoursField;
@@ -50624,7 +50974,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=281)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=282)]
         public bool Invoice_ShowShippingMethodRequested {
             get {
                 return this.invoice_ShowShippingMethodRequestedField;
@@ -50636,7 +50986,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=282)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=283)]
         public string AmazonTaxCode {
             get {
                 return this.amazonTaxCodeField;
@@ -50648,7 +50998,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=283)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=284)]
         public int LinkShare_FTPPort {
             get {
                 return this.linkShare_FTPPortField;
@@ -50660,7 +51010,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=284)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=285)]
         public bool LinkShare_UsePassive {
             get {
                 return this.linkShare_UsePassiveField;
@@ -50672,7 +51022,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=285)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=286)]
         public string LinkShare_FTPTargetFolder {
             get {
                 return this.linkShare_FTPTargetFolderField;
@@ -50684,7 +51034,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=286)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=287)]
         public string LinkShare_FTPServer {
             get {
                 return this.linkShare_FTPServerField;
@@ -50696,7 +51046,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=287)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=288)]
         public string LinkShare_FTPUserName {
             get {
                 return this.linkShare_FTPUserNameField;
@@ -50708,7 +51058,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=288)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=289)]
         public string LinkShare_FTPPassword {
             get {
                 return this.linkShare_FTPPasswordField;
@@ -50720,7 +51070,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=289)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=290)]
         public string LinkShare_MerchantID {
             get {
                 return this.linkShare_MerchantIDField;
@@ -50732,7 +51082,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=290)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=291)]
         public bool LinkShare_EnableFeeds {
             get {
                 return this.linkShare_EnableFeedsField;
@@ -50744,7 +51094,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=291)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=292)]
         public bool Invoice_PrintKitItemsInMultiLine {
             get {
                 return this.invoice_PrintKitItemsInMultiLineField;
@@ -50756,7 +51106,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=292)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=293)]
         public InvoicePrintType Invoice_InvoicePrintType {
             get {
                 return this.invoice_InvoicePrintTypeField;
@@ -50768,7 +51118,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=293)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=294)]
         public bool Invoice_DontPrintInvoice {
             get {
                 return this.invoice_DontPrintInvoiceField;
@@ -50780,7 +51130,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=294)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=295)]
         public bool Invoice_Print2InvoiceCopies {
             get {
                 return this.invoice_Print2InvoiceCopiesField;
@@ -50792,7 +51142,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=295)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=296)]
         public bool Invoice_UseQueue {
             get {
                 return this.invoice_UseQueueField;
@@ -50804,7 +51154,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=296)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=297)]
         public bool Invoice_InsuranceLine {
             get {
                 return this.invoice_InsuranceLineField;
@@ -50816,7 +51166,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=297)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=298)]
         public bool Invoice_InsuranceLineOriginal {
             get {
                 return this.invoice_InsuranceLineOriginalField;
@@ -50828,7 +51178,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=298)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=299)]
         public bool Invoice_HandlingLine {
             get {
                 return this.invoice_HandlingLineField;
@@ -50840,7 +51190,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=299)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=300)]
         public bool Invoice_DiscountLine {
             get {
                 return this.invoice_DiscountLineField;
@@ -50852,7 +51202,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=300)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=301)]
         public bool Invoice_TrackingNumber {
             get {
                 return this.invoice_TrackingNumberField;
@@ -50864,7 +51214,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=301)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=302)]
         public bool Invoice_ShippingService {
             get {
                 return this.invoice_ShippingServiceField;
@@ -50876,7 +51226,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=302)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=303)]
         public bool Invoice_PrintOrderID {
             get {
                 return this.invoice_PrintOrderIDField;
@@ -50888,7 +51238,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=303)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=304)]
         public bool Invoice_BlackOutUPS {
             get {
                 return this.invoice_BlackOutUPSField;
@@ -50900,7 +51250,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=304)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=305)]
         public bool Invoice_PrintProductNameInMultiLine {
             get {
                 return this.invoice_PrintProductNameInMultiLineField;
@@ -50912,7 +51262,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=305)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=306)]
         public bool Invoice_PrintBarCode {
             get {
                 return this.invoice_PrintBarCodeField;
@@ -50924,7 +51274,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=306)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=307)]
         public bool Invoice_BarCodeUseSmallFont {
             get {
                 return this.invoice_BarCodeUseSmallFontField;
@@ -50936,7 +51286,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=307)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=308)]
         public PrintBarCodeOptionType Invoice_PrintBarCodeOption {
             get {
                 return this.invoice_PrintBarCodeOptionField;
@@ -50948,7 +51298,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=308)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=309)]
         public InvoiceLayoutType Invoice_InvoiceLayoutType {
             get {
                 return this.invoice_InvoiceLayoutTypeField;
@@ -50960,7 +51310,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=309)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=310)]
         public InvoiceMultipageOptionType Invoice_InvoiceMultiPageOption {
             get {
                 return this.invoice_InvoiceMultiPageOptionField;
@@ -50972,7 +51322,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=310)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=311)]
         public OverStockInvoiceLayoutType Invoice_OverStockInvoiceLayout {
             get {
                 return this.invoice_OverStockInvoiceLayoutField;
@@ -50984,7 +51334,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=311)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=312)]
         public int Invoice_UseQueueInvoicePerChunk {
             get {
                 return this.invoice_UseQueueInvoicePerChunkField;
@@ -50996,7 +51346,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=312)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=313)]
         public int AmazonDefaultFixedQty {
             get {
                 return this.amazonDefaultFixedQtyField;
@@ -51008,7 +51358,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=313)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=314)]
         public bool SearsEnablePricingUpdate {
             get {
                 return this.searsEnablePricingUpdateField;
@@ -51020,7 +51370,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=314)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=315)]
         public bool SearsEnableNewProductPosting {
             get {
                 return this.searsEnableNewProductPostingField;
@@ -51032,7 +51382,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=315)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=316)]
         public bool SearsEnableFullfillmentUpload {
             get {
                 return this.searsEnableFullfillmentUploadField;
@@ -51044,7 +51394,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=316)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=317)]
         public bool SearsEnableInventoryUpload {
             get {
                 return this.searsEnableInventoryUploadField;
@@ -51056,7 +51406,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=317)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=318)]
         public bool SearsEnableOrderDownload {
             get {
                 return this.searsEnableOrderDownloadField;
@@ -51068,7 +51418,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=318)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=319)]
         public bool Invoice_ShowCompanyAddress {
             get {
                 return this.invoice_ShowCompanyAddressField;
@@ -51080,7 +51430,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=319)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=320)]
         public bool BuyDotComDeleteFilesFromFtp {
             get {
                 return this.buyDotComDeleteFilesFromFtpField;
@@ -51092,7 +51442,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=320)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=321)]
         public bool NewEggDeleteFilesFromFtp {
             get {
                 return this.newEggDeleteFilesFromFtpField;
@@ -51104,7 +51454,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=321)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=322)]
         public bool NewEggDotComDeleteFilesFromFtp {
             get {
                 return this.newEggDotComDeleteFilesFromFtpField;
@@ -51116,7 +51466,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=322)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=323)]
         public bool Invoice_ShowProductImages {
             get {
                 return this.invoice_ShowProductImagesField;
@@ -51128,7 +51478,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=323)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=324)]
         public bool Invoice_ShowPrices {
             get {
                 return this.invoice_ShowPricesField;
@@ -51140,7 +51490,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=324)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=325)]
         public bool Invoice_ShowCustomerMessage {
             get {
                 return this.invoice_ShowCustomerMessageField;
@@ -51152,7 +51502,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=325)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=326)]
         public bool Invoice_ShowTotalQty {
             get {
                 return this.invoice_ShowTotalQtyField;
@@ -51164,7 +51514,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=326)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=327)]
         public bool Invoice_ShowRushOrder {
             get {
                 return this.invoice_ShowRushOrderField;
@@ -51176,7 +51526,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=327)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=328)]
         public bool Invoice_ShowGiftMessage {
             get {
                 return this.invoice_ShowGiftMessageField;
@@ -51188,7 +51538,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=328)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=329)]
         public bool Invoice_ShowLocationNotes {
             get {
                 return this.invoice_ShowLocationNotesField;
@@ -51200,7 +51550,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=329)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=330)]
         public string NewEggDotComFTPHost {
             get {
                 return this.newEggDotComFTPHostField;
@@ -51212,7 +51562,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=330)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=331)]
         public string NewEggDotComMerchantID {
             get {
                 return this.newEggDotComMerchantIDField;
@@ -51224,7 +51574,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=331)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=332)]
         public string NewEggDotComFtpUserName {
             get {
                 return this.newEggDotComFtpUserNameField;
@@ -51236,7 +51586,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=332)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=333)]
         public string NewEggDotComFtpPassword {
             get {
                 return this.newEggDotComFtpPasswordField;
@@ -51248,7 +51598,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=333)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=334)]
         public bool NewEggDotComEnabled {
             get {
                 return this.newEggDotComEnabledField;
@@ -51260,7 +51610,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=334)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=335)]
         public bool NewEggDotComEnableOrderDownload {
             get {
                 return this.newEggDotComEnableOrderDownloadField;
@@ -51272,7 +51622,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=335)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=336)]
         public bool NewEggDotComEnableInventoryUpload {
             get {
                 return this.newEggDotComEnableInventoryUploadField;
@@ -51284,7 +51634,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=336)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=337)]
         public bool NewEggDotComEnableFullfillmentUpload {
             get {
                 return this.newEggDotComEnableFullfillmentUploadField;
@@ -51296,7 +51646,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=337)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=338)]
         public int NewEggDotComSafetyQuantity {
             get {
                 return this.newEggDotComSafetyQuantityField;
@@ -51308,7 +51658,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=338)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=339)]
         public string AmazonFBAAssociateID {
             get {
                 return this.amazonFBAAssociateIDField;
@@ -51320,7 +51670,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=339)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=340)]
         public string AmazonFBAAccessKey {
             get {
                 return this.amazonFBAAccessKeyField;
@@ -51332,7 +51682,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=340)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=341)]
         public int AmazonSafetyQuantityReplenishable {
             get {
                 return this.amazonSafetyQuantityReplenishableField;
@@ -51344,7 +51694,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=341)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=342)]
         public CountryCodeType HomeCountryCode {
             get {
                 return this.homeCountryCodeField;
@@ -51356,7 +51706,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=342)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=343)]
         public CurrencyCodeType HomeCurrencyCode {
             get {
                 return this.homeCurrencyCodeField;
@@ -51368,7 +51718,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=343)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=344)]
         public int OverStockSafetyQty {
             get {
                 return this.overStockSafetyQtyField;
@@ -51380,7 +51730,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=344)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=345)]
         public bool AmazonEnableOrderCancellation {
             get {
                 return this.amazonEnableOrderCancellationField;
@@ -51392,7 +51742,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=345)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=346)]
         public bool OverStockAllowInventoryUpload {
             get {
                 return this.overStockAllowInventoryUploadField;
@@ -51404,7 +51754,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=346)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=347)]
         public bool OverStockAllowOrderShipConfirmation {
             get {
                 return this.overStockAllowOrderShipConfirmationField;
@@ -51416,7 +51766,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=347)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=348)]
         public bool OverStockAllowOrderAcknowledgements {
             get {
                 return this.overStockAllowOrderAcknowledgementsField;
@@ -51428,7 +51778,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=348)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=349)]
         public bool OverStockAllowOrderDownload {
             get {
                 return this.overStockAllowOrderDownloadField;
@@ -51440,7 +51790,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=349)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=350)]
         public bool ShippingRuleDropShipOtherThanNoneOnly {
             get {
                 return this.shippingRuleDropShipOtherThanNoneOnlyField;
@@ -51452,7 +51802,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=350)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=351)]
         public bool ShippingRuleOkToShipOnly {
             get {
                 return this.shippingRuleOkToShipOnlyField;
@@ -51464,7 +51814,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=351)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=352)]
         public bool ShippingRuleInvoicedOnly {
             get {
                 return this.shippingRuleInvoicedOnlyField;
@@ -51476,7 +51826,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=352)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=353)]
         public bool ShippingRuleConfirmedOnly {
             get {
                 return this.shippingRuleConfirmedOnlyField;
@@ -51488,7 +51838,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=353)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=354)]
         public bool EnableFBAOrders {
             get {
                 return this.enableFBAOrdersField;
@@ -51500,7 +51850,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=354)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=355)]
         public int NewEggSafetyQuantity {
             get {
                 return this.newEggSafetyQuantityField;
@@ -51512,7 +51862,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=355)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=356)]
         public int SearsSafetyQuantity {
             get {
                 return this.searsSafetyQuantityField;
@@ -51524,7 +51874,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=356)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=357)]
         public int BuyDotComSafetyQuantity {
             get {
                 return this.buyDotComSafetyQuantityField;
@@ -51536,7 +51886,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=357)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=358)]
         public bool AmazonEnablePriceUpdate {
             get {
                 return this.amazonEnablePriceUpdateField;
@@ -51548,7 +51898,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=358)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=359)]
         public string ProductViewURL {
             get {
                 return this.productViewURLField;
@@ -51560,7 +51910,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=359)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=360)]
         public string AmazonMarketPlaceID {
             get {
                 return this.amazonMarketPlaceIDField;
@@ -51572,7 +51922,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=360)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=361)]
         public bool Cart32DeleteFilesFromFtp {
             get {
                 return this.cart32DeleteFilesFromFtpField;
@@ -51584,7 +51934,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=361)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=362)]
         public bool CalculateOrderWeight {
             get {
                 return this.calculateOrderWeightField;
@@ -51596,7 +51946,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=362)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=363)]
         public string InvoiceCustomMessage {
             get {
                 return this.invoiceCustomMessageField;
@@ -51608,7 +51958,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=363)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=364)]
         public bool AmazonEnableOrderDownload {
             get {
                 return this.amazonEnableOrderDownloadField;
@@ -51620,7 +51970,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=364)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=365)]
         public bool AmazonEnableFullfillmentUpload {
             get {
                 return this.amazonEnableFullfillmentUploadField;
@@ -51632,7 +51982,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=365)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=366)]
         public bool AmazonEnableInventoryUpload {
             get {
                 return this.amazonEnableInventoryUploadField;
@@ -51644,7 +51994,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=366)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=367)]
         public bool Cart32Enabled {
             get {
                 return this.cart32EnabledField;
@@ -51656,7 +52006,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=367)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=368)]
         public string Cart32FTPAddress {
             get {
                 return this.cart32FTPAddressField;
@@ -51668,7 +52018,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=368)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=369)]
         public string Cart32FTPUserName {
             get {
                 return this.cart32FTPUserNameField;
@@ -51680,7 +52030,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=369)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=370)]
         public string Cart32FTPPassword {
             get {
                 return this.cart32FTPPasswordField;
@@ -51692,7 +52042,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=370)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=371)]
         public int Cart32FTPPort {
             get {
                 return this.cart32FTPPortField;
@@ -51704,7 +52054,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=371)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=372)]
         public System.DateTime OverStockAuthenticatedOn {
             get {
                 return this.overStockAuthenticatedOnField;
@@ -51716,7 +52066,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=372)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=373)]
         public string OverStockAuthenticationId {
             get {
                 return this.overStockAuthenticationIdField;
@@ -51728,7 +52078,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=373)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=374)]
         public bool OverStockLoginVerified {
             get {
                 return this.overStockLoginVerifiedField;
@@ -51740,7 +52090,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=374)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=375)]
         public bool OverStockEnabled {
             get {
                 return this.overStockEnabledField;
@@ -51752,7 +52102,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=375)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=376)]
         public bool NewEggEnableFullfillmentUpload {
             get {
                 return this.newEggEnableFullfillmentUploadField;
@@ -51764,7 +52114,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=376)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=377)]
         public bool NewEggEnableInventoryUpload {
             get {
                 return this.newEggEnableInventoryUploadField;
@@ -51776,7 +52126,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=377)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=378)]
         public bool NewEggEnableOrderDownload {
             get {
                 return this.newEggEnableOrderDownloadField;
@@ -51788,7 +52138,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=378)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=379)]
         public bool BuyDotComEnableFullfillmentUpload {
             get {
                 return this.buyDotComEnableFullfillmentUploadField;
@@ -51800,7 +52150,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=379)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=380)]
         public bool BuyDotComEnableInventoryUpload {
             get {
                 return this.buyDotComEnableInventoryUploadField;
@@ -51812,7 +52162,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=380)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=381)]
         public bool BuyDotComEnableOrderDownload {
             get {
                 return this.buyDotComEnableOrderDownloadField;
@@ -51824,7 +52174,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=381)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=382)]
         public bool YahooInventoryReliesOnMasterSKU {
             get {
                 return this.yahooInventoryReliesOnMasterSKUField;
@@ -51836,7 +52186,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=382)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=383)]
         public string YahooPassword {
             get {
                 return this.yahooPasswordField;
@@ -51848,7 +52198,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=383)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=384)]
         public string YahooUserID {
             get {
                 return this.yahooUserIDField;
@@ -51860,7 +52210,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=384)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=385)]
         public string SearsStoreLocations {
             get {
                 return this.searsStoreLocationsField;
@@ -51872,7 +52222,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=385)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=386)]
         public string SearsPassword {
             get {
                 return this.searsPasswordField;
@@ -51884,7 +52234,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=386)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=387)]
         public string SearsEmail {
             get {
                 return this.searsEmailField;
@@ -51896,7 +52246,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=387)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=388)]
         public bool SearsEnabled {
             get {
                 return this.searsEnabledField;
@@ -51908,7 +52258,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=388)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=389)]
         public string TestimonialImagesPath {
             get {
                 return this.testimonialImagesPathField;
@@ -51920,7 +52270,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=389)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=390)]
         public string ScrollingBannerText {
             get {
                 return this.scrollingBannerTextField;
@@ -51932,7 +52282,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=390)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=391)]
         public bool EnableScrollingBanner {
             get {
                 return this.enableScrollingBannerField;
@@ -51944,7 +52294,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=391)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=392)]
         public bool AllowCombineShipping {
             get {
                 return this.allowCombineShippingField;
@@ -51956,7 +52306,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=392)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=393)]
         public string AmazonStoreFrontID {
             get {
                 return this.amazonStoreFrontIDField;
@@ -51968,7 +52318,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=393)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=394)]
         public string AmazonSearchIndex {
             get {
                 return this.amazonSearchIndexField;
@@ -51980,7 +52330,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=394)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=395)]
         public int AmazonSafetyQuantity {
             get {
                 return this.amazonSafetyQuantityField;
@@ -51992,7 +52342,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=395)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=396)]
         public string OrderDownloadFileNumberLimit {
             get {
                 return this.orderDownloadFileNumberLimitField;
@@ -52004,7 +52354,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=396)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=397)]
         public bool EnableOrderDownloadFileNumberLimit {
             get {
                 return this.enableOrderDownloadFileNumberLimitField;
@@ -52016,7 +52366,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=397)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=398)]
         public int LastYahooOrderID {
             get {
                 return this.lastYahooOrderIDField;
@@ -52028,7 +52378,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=398)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=399)]
         public string YahooAPIToken {
             get {
                 return this.yahooAPITokenField;
@@ -52040,7 +52390,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=399)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=400)]
         public bool BuyDotComEnabled {
             get {
                 return this.buyDotComEnabledField;
@@ -52052,7 +52402,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=400)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=401)]
         public bool NewEggEnabled {
             get {
                 return this.newEggEnabledField;
@@ -52064,7 +52414,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=401)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=402)]
         public bool YahooStoreEnabled {
             get {
                 return this.yahooStoreEnabledField;
@@ -52076,7 +52426,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=402)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=403)]
         public string YahooStoreName {
             get {
                 return this.yahooStoreNameField;
@@ -52088,7 +52438,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=403)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=404)]
         public string YahooStoreID {
             get {
                 return this.yahooStoreIDField;
@@ -52100,7 +52450,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=404)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=405)]
         public string BuyDotComDocumentArchivePath {
             get {
                 return this.buyDotComDocumentArchivePathField;
@@ -52112,7 +52462,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=405)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=406)]
         public string GoogleCheckoutContinueToken {
             get {
                 return this.googleCheckoutContinueTokenField;
@@ -52124,7 +52474,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=406)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=407)]
         public bool IsDefaultCompany {
             get {
                 return this.isDefaultCompanyField;
@@ -52136,7 +52486,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=407)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=408)]
         public int ClientID {
             get {
                 return this.clientIDField;
@@ -52148,7 +52498,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=408)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=409)]
         public string NewEggFTPPassword {
             get {
                 return this.newEggFTPPasswordField;
@@ -52160,7 +52510,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=409)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=410)]
         public string NewEggFTPUserName {
             get {
                 return this.newEggFTPUserNameField;
@@ -52172,7 +52522,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=410)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=411)]
         public string ContactPersonLastName {
             get {
                 return this.contactPersonLastNameField;
@@ -52184,7 +52534,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=411)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=412)]
         public string ContactPersonFirstName {
             get {
                 return this.contactPersonFirstNameField;
@@ -52196,7 +52546,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=412)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=413)]
         public int LoginContactID {
             get {
                 return this.loginContactIDField;
@@ -52208,7 +52558,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=413)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=414)]
         public string AmazonCheckoutDescription {
             get {
                 return this.amazonCheckoutDescriptionField;
@@ -52220,7 +52570,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=414)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=415)]
         public bool AmazonCheckoutTestMode {
             get {
                 return this.amazonCheckoutTestModeField;
@@ -52232,7 +52582,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=415)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=416)]
         public string AmazonMWSAccessKey {
             get {
                 return this.amazonMWSAccessKeyField;
@@ -52244,7 +52594,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=416)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=417)]
         public string AmazonMWSAssociateID {
             get {
                 return this.amazonMWSAssociateIDField;
@@ -52256,7 +52606,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=417)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=418)]
         public bool AllowAmazonCheckout {
             get {
                 return this.allowAmazonCheckoutField;
@@ -52268,7 +52618,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=418)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=419)]
         public bool AllowGoogleCheckout {
             get {
                 return this.allowGoogleCheckoutField;
@@ -52280,7 +52630,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=419)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=420)]
         public int GoogleCheckOutCartExpirationMinutes {
             get {
                 return this.googleCheckOutCartExpirationMinutesField;
@@ -52292,7 +52642,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=420)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=421)]
         public string GoogleCheckOutCurrency {
             get {
                 return this.googleCheckOutCurrencyField;
@@ -52304,7 +52654,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=421)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=422)]
         public bool GoogleCheckOutTestMode {
             get {
                 return this.googleCheckOutTestModeField;
@@ -52316,7 +52666,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=422)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=423)]
         public string GoogleCheckOutMerchantKey {
             get {
                 return this.googleCheckOutMerchantKeyField;
@@ -52328,7 +52678,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=423)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=424)]
         public string GoogleCheckOutMerchantID {
             get {
                 return this.googleCheckOutMerchantIDField;
@@ -52340,7 +52690,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=424)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=425)]
         public string NewEggMerchantID {
             get {
                 return this.newEggMerchantIDField;
@@ -52352,7 +52702,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=425)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=426)]
         public string BuyDotComFTPPassword {
             get {
                 return this.buyDotComFTPPasswordField;
@@ -52364,7 +52714,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=426)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=427)]
         public string BuyDotComFTPUserName {
             get {
                 return this.buyDotComFTPUserNameField;
@@ -52376,7 +52726,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=427)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=428)]
         public string MerchantSKUPrefix {
             get {
                 return this.merchantSKUPrefixField;
@@ -52388,7 +52738,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=428)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=429)]
         public string Street1 {
             get {
                 return this.street1Field;
@@ -52400,7 +52750,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=429)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=430)]
         public string Street2 {
             get {
                 return this.street2Field;
@@ -52412,7 +52762,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=430)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=431)]
         public string City {
             get {
                 return this.cityField;
@@ -52424,7 +52774,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=431)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=432)]
         public string StateName {
             get {
                 return this.stateNameField;
@@ -52436,7 +52786,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=432)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=433)]
         public string ZipCode {
             get {
                 return this.zipCodeField;
@@ -52448,7 +52798,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=433)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=434)]
         public string Phone {
             get {
                 return this.phoneField;
@@ -52460,7 +52810,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=434)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=435)]
         public string Country {
             get {
                 return this.countryField;
@@ -52472,7 +52822,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=435)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=436)]
         public string BuyDotComStoreCode {
             get {
                 return this.buyDotComStoreCodeField;
@@ -52484,7 +52834,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=436)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=437)]
         public string BuyDotComSellerID {
             get {
                 return this.buyDotComSellerIDField;
@@ -52496,7 +52846,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=437)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=438)]
         public System.DateTime LastUpdatedOn {
             get {
                 return this.lastUpdatedOnField;
@@ -52508,7 +52858,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=438)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=439)]
         public string AMTUInventoryFilesPath {
             get {
                 return this.aMTUInventoryFilesPathField;
@@ -52520,7 +52870,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=439)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=440)]
         public string AMTUInventoryFilesArchivePath {
             get {
                 return this.aMTUInventoryFilesArchivePathField;
@@ -52532,7 +52882,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=440)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=441)]
         public string AMTUInventoryFilesBadPath {
             get {
                 return this.aMTUInventoryFilesBadPathField;
@@ -52544,7 +52894,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=441)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=442)]
         public string ShipRushReturnTemplateFile {
             get {
                 return this.shipRushReturnTemplateFileField;
@@ -52556,7 +52906,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=442)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=443)]
         public bool IsAmazonEnabled {
             get {
                 return this.isAmazonEnabledField;
@@ -52568,7 +52918,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=443)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=444)]
         public string CustomsSigner {
             get {
                 return this.customsSignerField;
@@ -52580,7 +52930,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=444)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=445)]
         public string AMTUDiskPath {
             get {
                 return this.aMTUDiskPathField;
@@ -52592,7 +52942,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=445)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=446)]
         public string FirstClassIntTemplate {
             get {
                 return this.firstClassIntTemplateField;
@@ -52604,7 +52954,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=446)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=447)]
         public decimal MaxSmallPackageSize {
             get {
                 return this.maxSmallPackageSizeField;
@@ -52616,7 +52966,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=447)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=448)]
         public string InvoiceTemplate {
             get {
                 return this.invoiceTemplateField;
@@ -52628,7 +52978,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=448)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=449)]
         public bool eBayEnabled {
             get {
                 return this.eBayEnabledField;
@@ -52640,7 +52990,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=449)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=450)]
         public string WebsiteURL {
             get {
                 return this.websiteURLField;
@@ -52652,7 +53002,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=450)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=451)]
         public string Email {
             get {
                 return this.emailField;
@@ -52664,7 +53014,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=451)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=452)]
         public string ShipRushTemplateFile {
             get {
                 return this.shipRushTemplateFileField;
@@ -52676,7 +53026,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=452)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=453)]
         public string LogoFileName {
             get {
                 return this.logoFileNameField;
@@ -52688,7 +53038,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=453)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=454)]
         public string CompanyName {
             get {
                 return this.companyNameField;
@@ -52700,7 +53050,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=454)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=455)]
         public int ID {
             get {
                 return this.idField;
@@ -52712,7 +53062,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=455)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=456)]
         public string MerchantToken {
             get {
                 return this.merchantTokenField;
@@ -52724,7 +53074,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=456)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=457)]
         public string MerchantName {
             get {
                 return this.merchantNameField;
@@ -52736,7 +53086,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=457)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=458)]
         public string UserName {
             get {
                 return this.userNameField;
@@ -52748,7 +53098,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=458)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=459)]
         public string Password {
             get {
                 return this.passwordField;
@@ -52760,7 +53110,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=459)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=460)]
         public string BuyDotComShopName {
             get {
                 return this.buyDotComShopNameField;
@@ -52772,7 +53122,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=460)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=461)]
         public bool AmazonEnablePriceUpdateRegular {
             get {
                 return this.amazonEnablePriceUpdateRegularField;
@@ -52784,7 +53134,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=461)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=462)]
         public string AmazonMWSAuthToken {
             get {
                 return this.amazonMWSAuthTokenField;
@@ -52796,7 +53146,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=462)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=463)]
         public bool AmazonMWSAuthTokenEnabled {
             get {
                 return this.amazonMWSAuthTokenEnabledField;
@@ -52808,7 +53158,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=463)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=464)]
         public bool IsAmazonUnifiedAccountParentCompany {
             get {
                 return this.isAmazonUnifiedAccountParentCompanyField;
@@ -52820,7 +53170,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=464)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=465)]
         public int AmazonUnifiedAccountParentCompany {
             get {
                 return this.amazonUnifiedAccountParentCompanyField;
@@ -52832,7 +53182,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=465)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=466)]
         public bool NewEggDotComEnableDownloadSBNOrders {
             get {
                 return this.newEggDotComEnableDownloadSBNOrdersField;
@@ -52844,7 +53194,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=466)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=467)]
         public string NewEggDotComShippingOptionDefault {
             get {
                 return this.newEggDotComShippingOptionDefaultField;
@@ -52856,7 +53206,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=467)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=468)]
         public CurrencyCodeType CurrencyCodeForShipViaFBADeclaredValue {
             get {
                 return this.currencyCodeForShipViaFBADeclaredValueField;
@@ -52868,7 +53218,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=468)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=469)]
         public bool AutoCreateFBARemovalTransfers {
             get {
                 return this.autoCreateFBARemovalTransfersField;
@@ -52880,7 +53230,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=469)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=470)]
         public System.DateTime AmazonMWSAuthTokenExpiresOn {
             get {
                 return this.amazonMWSAuthTokenExpiresOnField;
@@ -52892,7 +53242,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=470)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=471)]
         public int SearsLeadTime {
             get {
                 return this.searsLeadTimeField;
@@ -52904,7 +53254,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=471)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=472)]
         public bool CMFeedUseSecureFTP {
             get {
                 return this.cMFeedUseSecureFTPField;
@@ -52916,7 +53266,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=472)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=473)]
         public FTPConnectionType CMFeedSecureFTPType {
             get {
                 return this.cMFeedSecureFTPTypeField;
@@ -52928,7 +53278,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=473)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=474)]
         public bool CMFeedUseSSHFTPwithKeyauthentication {
             get {
                 return this.cMFeedUseSSHFTPwithKeyauthenticationField;
@@ -52940,7 +53290,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=474)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=475)]
         public bool CMFeedOverrideSSLAllowedCiphers {
             get {
                 return this.cMFeedOverrideSSLAllowedCiphersField;
@@ -52952,7 +53302,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=475)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=476)]
         public string CMFeedSSLAllowedCiphers {
             get {
                 return this.cMFeedSSLAllowedCiphersField;
@@ -52964,7 +53314,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=476)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=477)]
         public bool AmazonUseMWSToGetInfoFromAmazon {
             get {
                 return this.amazonUseMWSToGetInfoFromAmazonField;
@@ -52976,7 +53326,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=477)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=478)]
         public bool AmazonDefaultAppEagleEnabled {
             get {
                 return this.amazonDefaultAppEagleEnabledField;
@@ -52988,7 +53338,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=478)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=479)]
         public bool Invoice_PrintShippedOnDate {
             get {
                 return this.invoice_PrintShippedOnDateField;
@@ -53000,7 +53350,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=479)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=480)]
         public bool NewEggDotComEnableIntlListings {
             get {
                 return this.newEggDotComEnableIntlListingsField;
@@ -53012,7 +53362,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=480)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=481)]
         public bool BuyDotComIncludeLeadTimeInventoryFeed {
             get {
                 return this.buyDotComIncludeLeadTimeInventoryFeedField;
@@ -53024,7 +53374,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=481)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=482)]
         public bool TaxJarCalculateTax {
             get {
                 return this.taxJarCalculateTaxField;
@@ -53036,7 +53386,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=482)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=483)]
         public bool eBayDoNotReviseNonUSListings {
             get {
                 return this.eBayDoNotReviseNonUSListingsField;
@@ -53048,7 +53398,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlArrayAttribute(Order=483)]
+        [System.Xml.Serialization.XmlArrayAttribute(Order=484)]
         public string[] BuyDotComIgnoreTaxStates {
             get {
                 return this.buyDotComIgnoreTaxStatesField;
@@ -53060,7 +53410,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=484)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=485)]
         public bool YahooEnableOrderDownloadLimitDate {
             get {
                 return this.yahooEnableOrderDownloadLimitDateField;
@@ -53072,7 +53422,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=485)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=486)]
         public System.DateTime YahooOrderDownloadLimitDate {
             get {
                 return this.yahooOrderDownloadLimitDateField;
@@ -53084,7 +53434,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=486)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=487)]
         public bool TaxJarEnableSubmitTaxViaAPI {
             get {
                 return this.taxJarEnableSubmitTaxViaAPIField;
@@ -53096,7 +53446,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=487)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=488)]
         public bool NewEggDotComAlwaysSendIntPricesINUSD {
             get {
                 return this.newEggDotComAlwaysSendIntPricesINUSDField;
@@ -53108,7 +53458,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=488)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=489)]
         public string CanadaAPIUsername {
             get {
                 return this.canadaAPIUsernameField;
@@ -53120,7 +53470,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=489)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=490)]
         public string CanadaAPIPassword {
             get {
                 return this.canadaAPIPasswordField;
@@ -53132,7 +53482,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=490)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=491)]
         public string CanadaAPICustomerNumber {
             get {
                 return this.canadaAPICustomerNumberField;
@@ -53144,7 +53494,7 @@ namespace QDLogistics.OrderCreationService {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=491)]
+        [System.Xml.Serialization.XmlElementAttribute(Order=492)]
         public int PurchaseOrderDefaultWarehouseID {
             get {
                 return this.purchaseOrderDefaultWarehouseIDField;
@@ -53152,6 +53502,54 @@ namespace QDLogistics.OrderCreationService {
             set {
                 this.purchaseOrderDefaultWarehouseIDField = value;
                 this.RaisePropertyChanged("PurchaseOrderDefaultWarehouseID");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=493)]
+        public bool Invoice_IncludeAllTrackingNumbers {
+            get {
+                return this.invoice_IncludeAllTrackingNumbersField;
+            }
+            set {
+                this.invoice_IncludeAllTrackingNumbersField = value;
+                this.RaisePropertyChanged("Invoice_IncludeAllTrackingNumbers");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=494)]
+        public bool NewEggDotComEnableSettlementDownlaod {
+            get {
+                return this.newEggDotComEnableSettlementDownlaodField;
+            }
+            set {
+                this.newEggDotComEnableSettlementDownlaodField = value;
+                this.RaisePropertyChanged("NewEggDotComEnableSettlementDownlaod");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=495)]
+        public bool OverStockImportOrdersAsUnPaid {
+            get {
+                return this.overStockImportOrdersAsUnPaidField;
+            }
+            set {
+                this.overStockImportOrdersAsUnPaidField = value;
+                this.RaisePropertyChanged("OverStockImportOrdersAsUnPaid");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlArrayAttribute(Order=496)]
+        public string[] DoNotApplyEbaySubsidyOnSites {
+            get {
+                return this.doNotApplyEbaySubsidyOnSitesField;
+            }
+            set {
+                this.doNotApplyEbaySubsidyOnSitesField = value;
+                this.RaisePropertyChanged("DoNotApplyEbaySubsidyOnSites");
             }
         }
         
@@ -56039,6 +56437,18 @@ namespace QDLogistics.OrderCreationService {
         
         /// <remarks/>
         TrackingDownload,
+        
+        /// <remarks/>
+        BillOfLading_Download,
+        
+        /// <remarks/>
+        PackkingSlip_Download,
+        
+        /// <remarks/>
+        ReturnItem_Mark_Shipped,
+        
+        /// <remarks/>
+        Register_Mutation,
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
@@ -57078,6 +57488,40 @@ namespace QDLogistics.OrderCreationService {
         
         public ListOrdersForTrackingExportResponse(QDLogistics.OrderCreationService.OrderShippedDetail[] ListOrdersForTrackingExportResult) {
             this.ListOrdersForTrackingExportResult = ListOrdersForTrackingExportResult;
+        }
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+    [System.ServiceModel.MessageContractAttribute(WrapperName="Products_ListAllSKUs_NonShadow_AllCompanies", WrapperNamespace="http://api.sellercloud.com/", IsWrapped=true)]
+    public partial class Products_ListAllSKUs_NonShadow_AllCompaniesRequest {
+        
+        [System.ServiceModel.MessageHeaderAttribute(Namespace="http://api.sellercloud.com/")]
+        public QDLogistics.OrderCreationService.AuthHeader AuthHeader;
+        
+        public Products_ListAllSKUs_NonShadow_AllCompaniesRequest() {
+        }
+        
+        public Products_ListAllSKUs_NonShadow_AllCompaniesRequest(QDLogistics.OrderCreationService.AuthHeader AuthHeader) {
+            this.AuthHeader = AuthHeader;
+        }
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+    [System.ServiceModel.MessageContractAttribute(WrapperName="Products_ListAllSKUs_NonShadow_AllCompaniesResponse", WrapperNamespace="http://api.sellercloud.com/", IsWrapped=true)]
+    public partial class Products_ListAllSKUs_NonShadow_AllCompaniesResponse {
+        
+        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://api.sellercloud.com/", Order=0)]
+        public string[] Products_ListAllSKUs_NonShadow_AllCompaniesResult;
+        
+        public Products_ListAllSKUs_NonShadow_AllCompaniesResponse() {
+        }
+        
+        public Products_ListAllSKUs_NonShadow_AllCompaniesResponse(string[] Products_ListAllSKUs_NonShadow_AllCompaniesResult) {
+            this.Products_ListAllSKUs_NonShadow_AllCompaniesResult = Products_ListAllSKUs_NonShadow_AllCompaniesResult;
         }
     }
     
@@ -59993,6 +60437,29 @@ namespace QDLogistics.OrderCreationService {
             inValue.AuthHeader = AuthHeader;
             inValue.CompanyID = CompanyID;
             return ((QDLogistics.OrderCreationService.OrderCreationServiceSoap)(this)).ListOrdersForTrackingExportAsync(inValue);
+        }
+        
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        QDLogistics.OrderCreationService.Products_ListAllSKUs_NonShadow_AllCompaniesResponse QDLogistics.OrderCreationService.OrderCreationServiceSoap.Products_ListAllSKUs_NonShadow_AllCompanies(QDLogistics.OrderCreationService.Products_ListAllSKUs_NonShadow_AllCompaniesRequest request) {
+            return base.Channel.Products_ListAllSKUs_NonShadow_AllCompanies(request);
+        }
+        
+        public string[] Products_ListAllSKUs_NonShadow_AllCompanies(QDLogistics.OrderCreationService.AuthHeader AuthHeader) {
+            QDLogistics.OrderCreationService.Products_ListAllSKUs_NonShadow_AllCompaniesRequest inValue = new QDLogistics.OrderCreationService.Products_ListAllSKUs_NonShadow_AllCompaniesRequest();
+            inValue.AuthHeader = AuthHeader;
+            QDLogistics.OrderCreationService.Products_ListAllSKUs_NonShadow_AllCompaniesResponse retVal = ((QDLogistics.OrderCreationService.OrderCreationServiceSoap)(this)).Products_ListAllSKUs_NonShadow_AllCompanies(inValue);
+            return retVal.Products_ListAllSKUs_NonShadow_AllCompaniesResult;
+        }
+        
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        System.Threading.Tasks.Task<QDLogistics.OrderCreationService.Products_ListAllSKUs_NonShadow_AllCompaniesResponse> QDLogistics.OrderCreationService.OrderCreationServiceSoap.Products_ListAllSKUs_NonShadow_AllCompaniesAsync(QDLogistics.OrderCreationService.Products_ListAllSKUs_NonShadow_AllCompaniesRequest request) {
+            return base.Channel.Products_ListAllSKUs_NonShadow_AllCompaniesAsync(request);
+        }
+        
+        public System.Threading.Tasks.Task<QDLogistics.OrderCreationService.Products_ListAllSKUs_NonShadow_AllCompaniesResponse> Products_ListAllSKUs_NonShadow_AllCompaniesAsync(QDLogistics.OrderCreationService.AuthHeader AuthHeader) {
+            QDLogistics.OrderCreationService.Products_ListAllSKUs_NonShadow_AllCompaniesRequest inValue = new QDLogistics.OrderCreationService.Products_ListAllSKUs_NonShadow_AllCompaniesRequest();
+            inValue.AuthHeader = AuthHeader;
+            return ((QDLogistics.OrderCreationService.OrderCreationServiceSoap)(this)).Products_ListAllSKUs_NonShadow_AllCompaniesAsync(inValue);
         }
         
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
