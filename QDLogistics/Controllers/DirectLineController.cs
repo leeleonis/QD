@@ -2275,14 +2275,18 @@ namespace QDLogistics.Controllers
                 switch (Action)
                 {
                     case "MoveIn":
+                        MyHelp.Log("Orders", package.OrderID, string.Format("訂單【{0}】移入BOX-{1}中", package.OrderID, BoxID), Session);
+
                         package.BoxID = BoxID;
                         package.Label.BoxID = BoxID;
                         package.ProcessStatus = (byte)EnumData.ProcessStatus.待出貨;
                         break;
                     case "MoveOut":
+                        MyHelp.Log("Orders", package.OrderID, string.Format("訂單【{0}】BOX-{1}中移出", package.OrderID, package.BoxID), Session);
+
                         package.BoxID = null;
                         package.Label.BoxID = null;
-                        package.ProcessStatus = (byte)EnumData.ProcessStatus.包貨;
+                        package.ProcessStatus = (byte)EnumData.ProcessStatus.保留中;
                         break;
                 }
 

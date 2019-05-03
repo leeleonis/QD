@@ -123,7 +123,19 @@ namespace QDLogistics.Controllers
             }
             else
             {
-                url = Url.Action(data.package.ProcessStatus.Equals(3) ? "shipped" : (data.package.ProcessStatus.Equals(1) ? "waiting" : "index"), "order", new { data.order.OrderID });
+                switch (data.package.ProcessStatus)
+                {
+                    case 1:
+                    case 2:
+                        url = Url.Action("waiting", "order", new { data.order.OrderID });
+                        break;
+                    case 3:
+                        url = Url.Action("shipped", "order", new { data.order.OrderID });
+                        break;
+                    default:
+                        url = Url.Action("index", "order", new { data.order.OrderID });
+                        break;
+                }
             }
 
             return string.Format(link, url, EnumData.ProcessStatusList()[(EnumData.ProcessStatus)data.package.ProcessStatus]);

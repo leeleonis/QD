@@ -8,7 +8,7 @@ namespace QDLogistics.Commons
     public static class EnumData
     {
         public enum YesNo { No, Yes };
-        public enum ProcessStatus { 訂單管理, 待出貨, 包貨, 已出貨, 鎖定中 };
+        public enum ProcessStatus { 訂單管理, 待出貨, 保留中, 已出貨, 鎖定中 };
         public static Dictionary<ProcessStatus, string> ProcessStatusList()
         {
             return new Dictionary<ProcessStatus, string>()
@@ -16,7 +16,8 @@ namespace QDLogistics.Commons
                 { ProcessStatus.訂單管理, "訂單管理 Unmanaged" },
                 { ProcessStatus.待出貨, "待出貨 Awaiting Dispatch" },
                 { ProcessStatus.鎖定中, "鎖定中 Locked" },
-                { ProcessStatus.已出貨, "已出貨 Fulfilled" }
+                { ProcessStatus.已出貨, "已出貨 Fulfilled" },
+                { ProcessStatus.保留中, "保留中" }
             };
         }
         public enum OrderChangeStatus { 提交至待出貨區, 取消出貨, 已完成出貨, 狀態異常, 產品異常, 包裹回收 }

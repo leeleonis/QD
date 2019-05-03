@@ -114,7 +114,7 @@ namespace QDLogistics.Commons
                             }
                         }
 
-                        if (db.Packages.AsNoTracking().Any(p => p.IsEnable.Value && p.OrderID.Value.Equals(orderStateInfo.ID) && !p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨)))
+                        if (db.Packages.AsNoTracking().Any(p => p.IsEnable.Value && p.OrderID.Value.Equals(orderStateInfo.ID) && !p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨) && !p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.保留中)))
                         {
                             if (db.Items.AsNoTracking().Any(i => i.IsEnable.Value && i.OrderID.Value.Equals(orderStateInfo.ID) && !(dropshipWarehouse.Contains(i.ShipFromWarehouseID.Value) && i.SerialNumbers.Any())))
                             {
@@ -141,7 +141,8 @@ namespace QDLogistics.Commons
                 Check_Item(itemDatas, SC_Orders.SelectMany(o => o.Items).ToList());
                 Orders.SaveChanges();
 
-                int[] OrderIDs = packageDatas.Where(p => !p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨)).SelectMany(p => p.Items.Where(i => !dropshipWarehouse.Contains(i.ShipFromWarehouseID.Value))).Select(i => i.OrderID.Value).ToArray();
+                int[] OrderIDs = packageDatas.Where(p => !p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨) && !p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.保留中))
+                    .SelectMany(p => p.Items.Where(i => !dropshipWarehouse.Contains(i.ShipFromWarehouseID.Value))).Select(i => i.OrderID.Value).ToArray();
                 List<SerialNumbers> serialNumberDatas = SerialNumbers.GetAll().Where(serial => OrderIDs.Contains(serial.OrderID.Value)).ToList();
                 Check_Serial(serialNumberDatas, SC_SerialNumbers);
                 Orders.SaveChanges();
@@ -243,7 +244,7 @@ namespace QDLogistics.Commons
 
                     Check_Item(orderData.Packages.Where(p => p.IsEnable.Equals(true)).SelectMany(p => p.Items.Where(i => i.IsEnable.Equals(true))).ToList(), orderDetail.Items.ToList());
 
-                    if (orderData.Packages.All(p => p.IsEnable.Value && !p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨)))
+                    if (orderData.Packages.All(p => p.IsEnable.Value && !p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨) && !p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.保留中)))
                     {
                         if (orderData.Packages.SelectMany(p => p.Items.Select(i => i.ShipWarehouses)).All(w => !w.WarehouseType.Equals(WarehouseTypeType.DropShip)))
                         {
