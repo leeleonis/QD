@@ -122,7 +122,7 @@ namespace QDLogistics.Controllers
             if (!filter.DateTo.Equals(new DateTime()))
             {
                 filter.DateTo.AddDays(1);
-                DateTime dateTo = new DateTime(filter.DateTo.Year, filter.DateTo.Month, filter.DateTo.Day, 0, 0, 0);
+                DateTime dateTo = new DateTime(filter.DateTo.Year, filter.DateTo.Month, filter.DateTo.Day + 1, 0, 0, 0);
                 dateTo = new TimeZoneConvert(dateTo, MyHelp.GetTimeZone((int)Session["TimeZone"])).ConvertDateTime(EnumData.TimeZone.EST);
                 PaymentFilter = PaymentFilter.Where(p => DateTime.Compare(p.AuditDate.Value, dateTo) < 0);
             }
@@ -278,7 +278,7 @@ namespace QDLogistics.Controllers
             }
             catch (Exception e)
             {
-                string errorMsg = string.Format("傳送訂單狀態至測試系統失敗，請通知處理人員：{0}", e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
+                string errorMsg = string.Format("傳送訂單狀態至PO系統失敗，請通知處理人員：{0}", e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
                 MyHelp.Log("SkuStatement", order.OrderID, string.Format("訂單【{0}】{1}", order.OrderID, errorMsg), Session);
             }
 
@@ -405,7 +405,7 @@ namespace QDLogistics.Controllers
             if (!filter.DateTo.Equals(new DateTime()))
             {
                 filter.DateTo.AddDays(1);
-                DateTime dateTo = new DateTime(filter.DateTo.Year, filter.DateTo.Month, filter.DateTo.Day, 0, 0, 0);
+                DateTime dateTo = new DateTime(filter.DateTo.Year, filter.DateTo.Month, filter.DateTo.Day + 1, 0, 0, 0);
                 dateTo = new TimeZoneConvert(dateTo, MyHelp.GetTimeZone((int)Session["TimeZone"])).ConvertDateTime(EnumData.TimeZone.EST);
                 PaymentFilter = PaymentFilter.Where(p => DateTime.Compare(p.AuditDate.Value, dateTo) < 0);
             }
@@ -1062,13 +1062,13 @@ namespace QDLogistics.Controllers
                         {
                             AjaxResult postResult = JsonConvert.DeserializeObject<AjaxResult>(streamReader.ReadToEnd());
                             if (!postResult.status) throw new Exception(postResult.message);
-                            MyHelp.Log("Inventory", package.OrderID, string.Format("訂單【{0}】傳送出貨資料至測試系統", package.OrderID), Session);
+                            MyHelp.Log("Inventory", package.OrderID, string.Format("訂單【{0}】傳送出貨資料至PO系統", package.OrderID), Session);
                         }
                     }
                 }
                 catch (Exception e)
                 {
-                    string errorMsg = string.Format("傳送出貨資料至測試系統失敗，請通知處理人員：{0}", e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
+                    string errorMsg = string.Format("傳送出貨資料至PO系統失敗，請通知處理人員：{0}", e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
                     MyHelp.Log("Inventory", package.OrderID, string.Format("訂單【{0}】{1}", package.OrderID, errorMsg), Session);
                     //result.Error(string.Format("訂單【{0}】{1}", package.OrderID, errorMsg));
                 }
@@ -1131,13 +1131,13 @@ namespace QDLogistics.Controllers
                 if (!filter.PickUpDateFrom.Equals(new DateTime()))
                 {
                     DateTime pickUpDateFrom = new DateTime(filter.PickUpDateFrom.Year, filter.PickUpDateFrom.Month, filter.PickUpDateFrom.Day, 0, 0, 0);
-                    pickUpDateFrom = new TimeZoneConvert(pickUpDateFrom, MyHelp.GetTimeZone((int)Session["TimeZone"])).ConvertDateTime(EnumData.TimeZone.TST);
+                    pickUpDateFrom = new TimeZoneConvert(pickUpDateFrom, MyHelp.GetTimeZone((int)Session["TimeZone"])).Utc;
                     PackageFilter = PackageFilter.Where(p => DateTime.Compare(p.PickUpDate.Value, pickUpDateFrom) >= 0);
                 }
                 if (!filter.PickUpDateTo.Equals(new DateTime()))
                 {
                     DateTime pickUpDateTo = new DateTime(filter.PickUpDateTo.Year, filter.PickUpDateTo.Month, filter.PickUpDateTo.Day + 1, 0, 0, 0);
-                    pickUpDateTo = new TimeZoneConvert(pickUpDateTo, MyHelp.GetTimeZone((int)Session["TimeZone"])).ConvertDateTime(EnumData.TimeZone.TST);
+                    pickUpDateTo = new TimeZoneConvert(pickUpDateTo, MyHelp.GetTimeZone((int)Session["TimeZone"])).Utc;
                     PackageFilter = PackageFilter.Where(p => DateTime.Compare(p.PickUpDate.Value, pickUpDateTo) < 0);
                 }
 
@@ -1167,7 +1167,7 @@ namespace QDLogistics.Controllers
                 if (!filter.DateTo.Equals(new DateTime()))
                 {
                     filter.DateTo.AddDays(1);
-                    DateTime dateTo = new DateTime(filter.DateTo.Year, filter.DateTo.Month, filter.DateTo.Day, 0, 0, 0);
+                    DateTime dateTo = new DateTime(filter.DateTo.Year, filter.DateTo.Month, filter.DateTo.Day + 1, 0, 0, 0);
                     dateTo = new TimeZoneConvert(dateTo, MyHelp.GetTimeZone((int)Session["TimeZone"])).ConvertDateTime(EnumData.TimeZone.EST);
                     PaymentFilter = PaymentFilter.Where(p => DateTime.Compare(p.AuditDate.Value, dateTo) < 0);
                 }
@@ -1409,12 +1409,12 @@ namespace QDLogistics.Controllers
                         {
                             AjaxResult postResult = JsonConvert.DeserializeObject<AjaxResult>(streamReader.ReadToEnd());
                             if (!postResult.status) throw new Exception(postResult.message);
-                            MyHelp.Log("RMAInventory", package.OrderID, string.Format("訂單【{0}】傳送RMA資料至測試系統", package.OrderID), Session);
+                            MyHelp.Log("RMAInventory", package.OrderID, string.Format("訂單【{0}】傳送RMA資料至PO系統", package.OrderID), Session);
                         }
                     }
                     catch (Exception e)
                     {
-                        string errorMsg = string.Format("傳送RMA資料至測試系統失敗，請通知處理人員：{0}", e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
+                        string errorMsg = string.Format("傳送RMA資料至PO系統失敗，請通知處理人員：{0}", e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
                         MyHelp.Log("RMAInventory", package.OrderID, string.Format("訂單【{0}】{1}", package.OrderID, errorMsg), Session);
                     }
                 }

@@ -575,7 +575,7 @@ namespace QDLogistics.Controllers
             }
             catch (Exception e)
             {
-                string errorMsg = string.Format("傳送出貨資料至測試系統失敗，請通知處理人員：{0}", e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
+                string errorMsg = string.Format("傳送出貨資料至PO系統失敗，請通知處理人員：{0}", e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
 
             }
         }

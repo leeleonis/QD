@@ -556,7 +556,7 @@ namespace QDLogistics.Controllers
                 DateTime dateTO = timeZoneConvert.Utc.AddDays(1);
                 LabelFilter = LabelFilter.Where(l => l.Create_at.CompareTo(dateFrom) >= 0 && l.Create_at.CompareTo(dateTO) < 0);
             }
-            if (filter.Dispatch.HasValue) LabelFilter = LabelFilter.Where(l => l.IsUsed.Equals(filter.Dispatch.Value));
+            if (filter.Dispatch.HasValue) LabelFilter = LabelFilter.Where(l => l.IsUsed.Equals(filter.Dispatch.Value.Equals(1)));
 
             string[] Skus = LabelFilter.Select(l => l.Sku).Distinct().ToArray();
             var SkuFilter = db.Skus.AsNoTracking().Where(s => s.IsEnable.Value && Skus.Contains(s.Sku));
@@ -780,7 +780,7 @@ namespace QDLogistics.Controllers
             }
             catch (Exception e)
             {
-                string errorMsg = string.Format("傳送訂單狀態至測試系統失敗，請通知處理人員：{0}", e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
+                string errorMsg = string.Format("傳送訂單狀態至PO系統失敗，請通知處理人員：{0}", e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
                 MyHelp.Log("SkuStatement", order.OrderID, string.Format("訂單【{0}】{1}", order.OrderID, errorMsg), Session);
             }
 
@@ -1183,14 +1183,14 @@ namespace QDLogistics.Controllers
                                 {
                                     AjaxResult postResult = JsonConvert.DeserializeObject<AjaxResult>(streamReader.ReadToEnd());
                                     if (!postResult.status) throw new Exception(postResult.message);
-                                    MyHelp.Log("Inventory", box.BoxID, string.Format("Box【{0}】傳送出貨資料至測試系統", box.BoxID), Session);
+                                    MyHelp.Log("Inventory", box.BoxID, string.Format("Box【{0}】傳送出貨資料至PO系統", box.BoxID), Session);
                                 }
                             }
                         }
                         catch (Exception e)
                         {
                             string errorMsg = e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim();
-                            MyHelp.Log("Inventory", box.BoxID, string.Format("傳送出貨資料至測試系統失敗，請通知處理人員：{0}", errorMsg), Session);
+                            MyHelp.Log("Inventory", box.BoxID, string.Format("傳送出貨資料至PO系統失敗，請通知處理人員：{0}", errorMsg), Session);
                         }
 
                         break;
@@ -1717,6 +1717,62 @@ namespace QDLogistics.Controllers
                                 RefundSerial.Update(serial, serial.ID);
                             }
                             RefundSerial.SaveChanges();
+
+                            try
+                            {
+                                List<dynamic> data = new List<dynamic>();
+                                HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://internal.qd.com.tw:8080/Ajax/ShipmentByOrder");
+                                request.ContentType = "application/json";
+                                request.Method = "post";
+                                //request.ProtocolVersion = HttpVersion.Version10;
+
+                                foreach (Items item in newPackage.Items.Where(i => i.IsEnable.Value))
+                                {
+                                    if (item.SerialNumbers.Any())
+                                    {
+                                        data.AddRange(item.SerialNumbers.Select(s => new
+                                        {
+                                            OrderID = s.OrderID.Value,
+                                            SkuNo = s.ProductID,
+                                            SerialsNo = s.SerialNumber,
+                                            QTY = 1
+                                        }).ToList());
+                                    }
+                                    else
+                                    {
+                                        data.Add(new
+                                        {
+                                            OrderID = item.OrderID.Value,
+                                            SkuNo = item.ProductID,
+                                            SerialsNo = "",
+                                            QTY = item.Qty.Value
+                                        });
+                                    }
+                                }
+
+                                if (data != null)
+                                {
+                                    using (StreamWriter streamWriter = new StreamWriter(request.GetRequestStream()))
+                                    {
+                                        streamWriter.Write(JsonConvert.SerializeObject(data));
+                                        streamWriter.Flush();
+                                    }
+
+                                    HttpWebResponse httpResponse = (HttpWebResponse)request.GetResponse();
+                                    using (StreamReader streamReader = new StreamReader(httpResponse.GetResponseStream()))
+                                    {
+                                        AjaxResult postResult = JsonConvert.DeserializeObject<AjaxResult>(streamReader.ReadToEnd());
+                                        if (!postResult.status) throw new Exception(postResult.message);
+                                        MyHelp.Log("Inventory", newPackage.OrderID, string.Format("訂單【{0}】傳送出貨資料至PO系統", newPackage.OrderID), Session);
+                                    }
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                string errorMsg = string.Format("傳送出貨資料至PO系統失敗，請通知處理人員：{0}", e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
+                                MyHelp.Log("Inventory", newPackage.OrderID, string.Format("訂單【{0}】{1}", newPackage.OrderID, errorMsg), Session);
+                                //result.Error(string.Format("訂單【{0}】{1}", package.OrderID, errorMsg));
+                            }
                         }
                         catch (Exception e)
                         {
@@ -2740,7 +2796,6 @@ namespace QDLogistics.Controllers
             private string SkuField { get; set; }
             private string ProductNameField { get; set; }
             private string SerialNumberField { get; set; }
-            private bool? DispatchField { get; set; }
 
             public bool? IsUsed { get; set; }
             public string OrderID { get { return this.OrderIDField; } set { this.OrderIDField = !string.IsNullOrEmpty(value) ? value.Trim() : value; } }
@@ -2753,17 +2808,7 @@ namespace QDLogistics.Controllers
             public string SerialNumber { get { return this.SerialNumberField; } set { this.SerialNumberField = !string.IsNullOrEmpty(value) ? value.Trim() : value; } }
             public int? WarehouseID { get; set; }
             public DateTime? CreateDate { get; set; }
-            public bool? Dispatch
-            {
-                get { return this.DispatchField; }
-                set
-                {
-                    if (value != null)
-                    {
-                        this.DispatchField = bool.Parse(value.ToString());
-                    }
-                }
-            }
+            public int? Dispatch { get; set; }
 
             public string Sort { get; set; }
             public string Order { get; set; }

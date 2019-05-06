@@ -291,7 +291,7 @@ namespace QDLogistics.Commons
                         }
                         catch (Exception e)
                         {
-                            string errorMsg = string.Format("傳送訂單狀態至測試系統失敗，請通知處理人員：{0}", e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
+                            string errorMsg = string.Format("傳送訂單狀態至PO系統失敗，請通知處理人員：{0}", e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
                             MyHelp.Log("SkuStatement", orderData.OrderID, string.Format("訂單【{0}】{1}", orderData.OrderID, errorMsg), Session);
                         }
 

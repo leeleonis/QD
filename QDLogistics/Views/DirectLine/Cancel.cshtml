@@ -107,7 +107,12 @@
                 columns: [[
                     { field: "NewLabelID", title: "New Label ID<br />新標籤號碼", width: 200, align: "center", sortable: false },
                     { field: "NewOrderID", title: "New Order ID<br />新訂單號碼", width: 100, align: "center", sortable: false },
-                    { field: "RMAID", title: "RMA ID", width: 80, align: "center", sortable: false },
+                    {
+                        field: "RMAID", title: "RMA ID", width: 80, align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            return isEmpty(row.IsFilter) ? "<a href='http://internal.qd.com.tw:8080/RMA/SCID/" + value + "' target='_blank'>" + value + "</a>" : value;
+                        }
+                    },
                     { field: "Sku", title: "Sku<br />品號", width: 120, align: "center", sortable: false },
                     { field: "ProductName", title: "Product Name<br />產品名稱", width: 500, align: "center", sortable: true },
                     { field: "SerialNumber", title: "Serial Number<br />序號", width: 150, align: "center", sortable: false },
@@ -239,6 +244,7 @@
 
         function setFilterColumn(filterValue) {
             return {
+                IsFilter: true,
                 Qty: 1,
                 LabelID: "<input type='text' class='form-control s-labelID' value='" + (!isEmpty(filterValue['LabelID']) ? filterValue['LabelID'] : '') + "'>",
                 OrderID: "<input type='text' class='form-control s-orderID' value='" + (!isEmpty(filterValue['OrderID']) ? filterValue['OrderID'] : '') + "'>",
