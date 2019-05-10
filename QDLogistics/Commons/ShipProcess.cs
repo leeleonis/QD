@@ -247,14 +247,16 @@ namespace QDLogistics.Commons
                             IDS_API IDS = new IDS_API(package.Method.Carriers.CarrierAPI);
                             CreateOrderResponse result = IDS.CreateOrder(package);
 
+                            string number = string.Format("{0}-{1}", package.OrderID, Convert.ToInt32(package.ShipDate.Value.Subtract(new DateTime(1970, 1, 1)).TotalSeconds));
+
                             if (!result.status.Equals("200"))
                             {
                                 var error = JsonConvert.DeserializeObject<List<List<List<object>>>>(JsonConvert.SerializeObject(result.error));
-                                var msg = JsonConvert.SerializeObject(error.SelectMany(e => e).First(e => e[0].Equals(package.OrderID.ToString()))[1]);
+                                var msg = JsonConvert.SerializeObject(error.SelectMany(e => e).First(e => e[0].Equals(number))[1]);
                                 throw new Exception(JsonConvert.DeserializeObject<string[]>(msg)[0]);
                             }
 
-                            package.TagNo = result.labels.First(l => l.salesRecordNumber.Equals(package.OrderID.ToString())).orderid;
+                            package.TagNo = result.labels.First(l => l.salesRecordNumber.Equals(number)).orderid;
                             using (var client = new WebClient())
                             {
                                 client.DownloadFile(result.labels.First().labellink, Path.Combine(filePath, "Label.zip"));

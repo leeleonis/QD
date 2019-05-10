@@ -96,7 +96,8 @@ namespace DirectLineApi.IDS
 
                 orderList.Add(new OrderData()
                 {
-                    salesRecordNumber = order.OrderID.ToString(),
+                    salesRecordNumber = string.Format("{0}-{1}", package.OrderID, Convert.ToInt32(package.ShipDate.Value.Subtract(new DateTime(1970, 1, 1)).TotalSeconds)),
+                    //salesRecordNumber = order.OrderID.ToString(),
                     productType = string.Join(",", itemList.Select(i => i.Skus.ProductType).Select(t => t.ProductTypeName).Distinct()),
                     serviceType = serviceTypeList[method.MethodType.Value],
                     buyerName = buyerName,
@@ -139,9 +140,11 @@ namespace DirectLineApi.IDS
 
         public GetTrackingNumberResponse GetTrackingNumber(Packages package)
         {
+            string number = string.Format("{0}-{1}", package.OrderID, Convert.ToInt32(package.ShipDate.Value.Subtract(new DateTime(1970, 1, 1)).TotalSeconds));
+
             GetTrackingNumberRequest request = new GetTrackingNumberRequest()
             {
-                salesRecordNumber = new string[] { package.OrderID.ToString() }
+                salesRecordNumber = new string[] { number, package.OrderID.ToString() }
             };
 
             return Request<GetTrackingNumberResponse>("GetTrackingNumber", "POST", request);
@@ -149,7 +152,9 @@ namespace DirectLineApi.IDS
 
         public string[] GetServiceTypeList()
         {
-            return Request<string[]>("GetServiceTypeList", "GET");
+            //string serviceTypeJson = JsonConvert.SerializeObject(Request<string[]>("GetServiceTypeList", "GET"));
+            string serviceTypeJson = "[\"AM\",\"AML\",\"AMR\",\"AULL\",\"AURLL\",\"AURP\",\"CND\",\"CNF\",\"COR\",\"DELL\",\"DEDHL\",\"DEML\",\"DGM\",\"DGMR\",\"DEP\",\"ES48\",\"EUCU\",\"ESLL\",\"FBAAU\",\"FBADE\",\"FBAJP\",\"FBAUK\",\"FBAUS\",\"FBAFR\",\"FC\",\"HS\",\"ND\",\"PM\",\"RM48LL\",\"RM48P\",\"RMLL\",\"RMP\",\"RMRLL\",\"SG\",\"SGR\",\"T24\",\"T24S\",\"T48\",\"T48S\",\"TP\",\"TS\",\"UG\",\"UKCU\",\"USOE\",\"X08FCF\",\"X08PMF\",\"X08PMEF\",\"X08PMD\",\"X08PMED\",\"FCI\",\"FCS\",\"FSI\",\"PMI\",\"PMS\",\"PSI\",\"ILES\",\"PIS\",\"IPFRES\",\"PMFR\",\"HSS\",\"UPSG\",\"PMD\",\"MI\",\"DPDG\",\"FBAUSFE\",\"FBAUSFP\",\"UGS\",\"UGR\",\"UGSR\",\"AUPT\",\"AUHV\",\"AUOE\",\"U2D\",\"AUCU\",\"KRCU\",\"MII\",\"MIP\",\"HKCU\",\"DHLG\",\"FR50\",\"FR100\",\"FR250\",\"AUSK\",\"DEDHLUK\",\"DEPUK\",\"AZP\",\"TWCU\",\"UKM\",\"ITGLS\",\"SGE\",\"TWFCS\",\"TWPMS\",\"TWUGS\",\"TWMFCS\",\"TWMPMS\",\"TWMUGS\",\"PMB\",\"SUP\"]";
+            return JsonConvert.DeserializeObject<string[]>(serviceTypeJson);
         }
 
         public string GetServiceType(int index)

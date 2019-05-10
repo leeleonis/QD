@@ -863,9 +863,10 @@ namespace QDLogistics.Commons
                     case "IDS (US)":
                         IDS_Api = new IDS_API();
                         var IDS_Result = IDS_Api.GetTrackingNumber(packageData);
-                        if (IDS_Result.trackingnumber.Any(t => t.First().Equals(packageData.OrderID.ToString())))
+                        string number = string.Format("{0}-{1}", packageData.OrderID, Convert.ToInt32(packageData.ShipDate.Value.Subtract(new DateTime(1970, 1, 1)).TotalSeconds));
+                        if (IDS_Result.trackingnumber.Any(t => t.First().Equals(number)))
                         {
-                            tracking = IDS_Result.trackingnumber.Last(t => t.First().Equals(packageData.OrderID.ToString()))[1];
+                            tracking = IDS_Result.trackingnumber.Last(t => t.First().Equals(number))[1];
                         }
                         break;
                     case "ECOF":

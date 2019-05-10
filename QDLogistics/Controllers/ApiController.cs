@@ -782,7 +782,7 @@ namespace QDLogistics.Controllers
                 if (OrderID.HasValue) OrderFilter = OrderFilter.Where(o => o.OrderID.Equals(OrderID.Value));
                 if (!string.IsNullOrEmpty(SourceID)) OrderFilter = OrderFilter.Where(o => (o.OrderSource.Value.Equals(1) && o.eBaySalesRecordNumber.Equals(SourceID)) || (o.OrderSource.Value.Equals(4) && o.OrderSourceOrderId.Equals(SourceID)));
                 if (!string.IsNullOrEmpty(UserID)) OrderFilter = OrderFilter.Where(o => o.eBayUserID.Equals(UserID));
-                if (Status.HasValue) OrderFilter = OrderFilter.Where(o => o.Packages.All(p => p.IsEnable.Value && p.ProcessStatus.Equals(Status.Value)));
+                if (Status.HasValue) OrderFilter = OrderFilter.Where(o => o.Packages.Where(p => p.IsEnable.Value).All(p => p.ProcessStatus.Equals(Status.Value)));
 
                 var result = OrderFilter.ToList().Select(o => new
                 {
