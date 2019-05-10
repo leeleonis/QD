@@ -577,15 +577,16 @@ namespace QDLogistics.Commons
                     case "IDS (US)":
                         IDS_Api = new IDS_API(method.Carriers.CarrierAPI);
                         CreateOrderResponse IDS_Result = IDS_Api.CreateOrder(packageData, method);
+                        string number = string.Format("{0}-{1}", packageData.OrderID, Convert.ToInt32(packageData.ShipDate.Value.Subtract(new DateTime(1970, 1, 1)).TotalSeconds));
 
                         if (!IDS_Result.status.Equals("200"))
                         {
                             var error = JsonConvert.DeserializeObject<List<List<List<object>>>>(JsonConvert.SerializeObject(IDS_Result.error));
-                            var msg = JsonConvert.SerializeObject(error.SelectMany(e => e).First(e => e[0].Equals(packageData.OrderID.ToString()))[1]);
+                            var msg = JsonConvert.SerializeObject(error.SelectMany(e => e).First(e => e[0].Equals(number))[1]);
                             throw new Exception(JsonConvert.DeserializeObject<string[]>(msg)[0]);
                         }
 
-                        labelID = IDS_Result.labels.First(l => l.salesRecordNumber.Equals(packageData.OrderID.ToString())).orderid;
+                        labelID = IDS_Result.labels.First(l => l.salesRecordNumber.Equals(number)).orderid;
                         break;
                     case "ECOF":
                         Carriers carrier = method.Carriers;
@@ -613,7 +614,7 @@ namespace QDLogistics.Commons
             catch (Exception e)
             {
                 string msg = e.InnerException != null && string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
-                throw new Exception(string.Format("建立【{0}】標籤號碼失敗", directLine));
+                throw new Exception(string.Format("建立【{0}】標籤號碼失敗 - " + msg, directLine));
             }
 
             MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("成功建立訂單【{0}】新標籤號碼", orderData.OrderID), Session);
