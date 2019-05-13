@@ -691,9 +691,11 @@ namespace QDLogistics.Controllers
                                                 case (byte)EnumData.CarrierType.IDS:
                                                     IDS_API IDS = new IDS_API(api);
                                                     var IDS_Result = IDS.GetTrackingNumber(package);
-                                                    if (IDS_Result.trackingnumber.Any(t => t.First().Equals(package.OrderID.ToString())))
+                                                    string number = string.Format("{0}-{1}", package.OrderID, Convert.ToInt32(package.ShipDate.Value.Subtract(new DateTime(1970, 1, 1)).TotalSeconds));
+                                                    if (IDS_Result.trackingnumber.Any(t => t.First().Equals(number)))
                                                     {
-                                                        package.TrackingNumber = IDS_Result.trackingnumber.Last(t => t.First().Equals(package.OrderID.ToString()))[1];
+                                                        package.TrackingNumber = IDS_Result.trackingnumber.Last(t => t.First().Equals(number))[1];
+                                                        MyHelp.Log("Packages", package.ID, string.Format("取得訂單【{0}】的Tracking Number", package.OrderID), session);
                                                     }
                                                     break;
                                             }

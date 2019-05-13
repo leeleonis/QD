@@ -868,6 +868,7 @@ namespace QDLogistics.Commons
                         if (IDS_Result.trackingnumber.Any(t => t.First().Equals(number)))
                         {
                             tracking = IDS_Result.trackingnumber.Last(t => t.First().Equals(number))[1];
+                            MyHelp.Log("Packages", packageData.ID, string.Format("取得訂單【{0}】的Tracking Number", packageData.OrderID), Session);
                         }
                         break;
                     case "ECOF":

@@ -1272,13 +1272,13 @@ namespace QDLogistics.Controllers
                         {
                             if (directLine.Abbreviation.Equals("IDS (US)"))
                             {
-                                var IDS = new DirectLineApi.IDS.IDS_API(package.Method.Carriers.CarrierAPI);
+                                var IDS = new IDS_API(package.Method.Carriers.CarrierAPI);
                                 var IDS_Result = IDS.GetTrackingNumber(package);
-                                if (IDS_Result.trackingnumber.Any(t => t.First().Equals(package.OrderID.ToString())))
+                                string number = string.Format("{0}-{1}", package.OrderID, Convert.ToInt32(package.ShipDate.Value.Subtract(new DateTime(1970, 1, 1)).TotalSeconds));
+                                if (IDS_Result.trackingnumber.Any(t => t.First().Equals(number)))
                                 {
+                                    package.TrackingNumber = IDS_Result.trackingnumber.Last(t => t.First().Equals(number))[1];
                                     MyHelp.Log("Packages", package.ID, string.Format("取得訂單【{0}】的Tracking Number", package.OrderID), Session);
-
-                                    package.TrackingNumber = IDS_Result.trackingnumber.Last(t => t.First().Equals(package.OrderID.ToString()))[1];
                                 }
 
                                 //if (!string.IsNullOrEmpty(package.TrackingNumber))
@@ -1692,86 +1692,83 @@ namespace QDLogistics.Controllers
                                 {
                                     CaseLog.SendResendShipmentMail(newPackage, serials.First().Create_at);
                                 }
+
+                                MyHelp.Log("DirectLineLabel", labelID, string.Format("完成標籤【{0}】再次寄送", labelID), Session);
+
+                                IRepository<SerialNumberForRefundLabel> RefundSerial = new GenericRepository<SerialNumberForRefundLabel>(db);
+                                foreach (var serial in db.SerialNumberForRefundLabel.AsNoTracking().Where(s => !s.IsUsed && s.oldLabelID.Equals(labelID)).ToList())
+                                {
+                                    serial.IsUsed = true;
+                                    serial.newLabelID = newPackage.TagNo;
+                                    serial.newOrderID = newPackage.OrderID;
+                                    RefundSerial.Update(serial, serial.ID);
+                                }
+                                RefundSerial.SaveChanges();
+
+                                try
+                                {
+                                    List<dynamic> data = new List<dynamic>();
+                                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://internal.qd.com.tw:8080/Ajax/ShipmentByOrder");
+                                    request.ContentType = "application/json";
+                                    request.Method = "post";
+                                    //request.ProtocolVersion = HttpVersion.Version10;
+
+                                    foreach (Items item in newPackage.Items.Where(i => i.IsEnable.Value))
+                                    {
+                                        if (item.SerialNumbers.Any())
+                                        {
+                                            data.AddRange(item.SerialNumbers.Select(s => new
+                                            {
+                                                OrderID = s.OrderID.Value,
+                                                SkuNo = s.ProductID,
+                                                SerialsNo = s.SerialNumber,
+                                                QTY = 1
+                                            }).ToList());
+                                        }
+                                        else
+                                        {
+                                            data.Add(new
+                                            {
+                                                OrderID = item.OrderID.Value,
+                                                SkuNo = item.ProductID,
+                                                SerialsNo = "",
+                                                QTY = item.Qty.Value
+                                            });
+                                        }
+                                    }
+
+                                    if (data != null)
+                                    {
+                                        using (StreamWriter streamWriter = new StreamWriter(request.GetRequestStream()))
+                                        {
+                                            streamWriter.Write(JsonConvert.SerializeObject(data));
+                                            streamWriter.Flush();
+                                        }
+
+                                        HttpWebResponse httpResponse = (HttpWebResponse)request.GetResponse();
+                                        using (StreamReader streamReader = new StreamReader(httpResponse.GetResponseStream()))
+                                        {
+                                            AjaxResult postResult = JsonConvert.DeserializeObject<AjaxResult>(streamReader.ReadToEnd());
+                                            if (!postResult.status) throw new Exception(postResult.message);
+                                            MyHelp.Log("Inventory", newPackage.OrderID, string.Format("訂單【{0}】傳送出貨資料至PO系統", newPackage.OrderID), Session);
+                                        }
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+                                    string errorMsg = string.Format("傳送出貨資料至PO系統失敗，請通知處理人員：{0}", e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
+                                    MyHelp.Log("Inventory", newPackage.OrderID, string.Format("訂單【{0}】{1}", newPackage.OrderID, errorMsg), Session);
+                                    //result.Error(string.Format("訂單【{0}】{1}", package.OrderID, errorMsg));
+                                }
                             }
                             else
                             {
-                                foreach (var serial in SerialNumbers.GetAll().Where(s => s.OrderID.Value.Equals(newOrder.OrderID)).ToList())
-                                {
-                                    SerialNumbers.Delete(serial);
-                                }
-                                SerialNumbers.SaveChanges();
+                                db.SerialNumbers.RemoveRange(db.SerialNumbers.Where(s => s.OrderID.Value.Equals(newOrder.OrderID)).ToList());
+                                db.SaveChanges();
 
                                 string msg = string.Format("新訂單【{0}】提交失敗", newOrder.OrderID);
                                 MyHelp.Log("Orders", newOrder.OrderID, msg + " - " + ShipResult.Message, Session);
                                 throw new Exception(msg + "! - " + ShipResult.Message);
-                            }
-
-                            MyHelp.Log("DirectLineLabel", labelID, string.Format("完成標籤【{0}】再次寄送", labelID), Session);
-
-                            IRepository<SerialNumberForRefundLabel> RefundSerial = new GenericRepository<SerialNumberForRefundLabel>(db);
-                            foreach (var serial in db.SerialNumberForRefundLabel.AsNoTracking().Where(s => !s.IsUsed && s.oldLabelID.Equals(labelID)).ToList())
-                            {
-                                serial.IsUsed = true;
-                                serial.newLabelID = newPackage.TagNo;
-                                serial.newOrderID = newPackage.OrderID;
-                                RefundSerial.Update(serial, serial.ID);
-                            }
-                            RefundSerial.SaveChanges();
-
-                            try
-                            {
-                                List<dynamic> data = new List<dynamic>();
-                                HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://internal.qd.com.tw:8080/Ajax/ShipmentByOrder");
-                                request.ContentType = "application/json";
-                                request.Method = "post";
-                                //request.ProtocolVersion = HttpVersion.Version10;
-
-                                foreach (Items item in newPackage.Items.Where(i => i.IsEnable.Value))
-                                {
-                                    if (item.SerialNumbers.Any())
-                                    {
-                                        data.AddRange(item.SerialNumbers.Select(s => new
-                                        {
-                                            OrderID = s.OrderID.Value,
-                                            SkuNo = s.ProductID,
-                                            SerialsNo = s.SerialNumber,
-                                            QTY = 1
-                                        }).ToList());
-                                    }
-                                    else
-                                    {
-                                        data.Add(new
-                                        {
-                                            OrderID = item.OrderID.Value,
-                                            SkuNo = item.ProductID,
-                                            SerialsNo = "",
-                                            QTY = item.Qty.Value
-                                        });
-                                    }
-                                }
-
-                                if (data != null)
-                                {
-                                    using (StreamWriter streamWriter = new StreamWriter(request.GetRequestStream()))
-                                    {
-                                        streamWriter.Write(JsonConvert.SerializeObject(data));
-                                        streamWriter.Flush();
-                                    }
-
-                                    HttpWebResponse httpResponse = (HttpWebResponse)request.GetResponse();
-                                    using (StreamReader streamReader = new StreamReader(httpResponse.GetResponseStream()))
-                                    {
-                                        AjaxResult postResult = JsonConvert.DeserializeObject<AjaxResult>(streamReader.ReadToEnd());
-                                        if (!postResult.status) throw new Exception(postResult.message);
-                                        MyHelp.Log("Inventory", newPackage.OrderID, string.Format("訂單【{0}】傳送出貨資料至PO系統", newPackage.OrderID), Session);
-                                    }
-                                }
-                            }
-                            catch (Exception e)
-                            {
-                                string errorMsg = string.Format("傳送出貨資料至PO系統失敗，請通知處理人員：{0}", e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
-                                MyHelp.Log("Inventory", newPackage.OrderID, string.Format("訂單【{0}】{1}", newPackage.OrderID, errorMsg), Session);
-                                //result.Error(string.Format("訂單【{0}】{1}", package.OrderID, errorMsg));
                             }
                         }
                         catch (Exception e)
@@ -2406,9 +2403,11 @@ namespace QDLogistics.Controllers
                                             case (byte)EnumData.CarrierType.IDS:
                                                 IDS_API IDS = new IDS_API(api);
                                                 var IDS_Result = IDS.GetTrackingNumber(package);
-                                                if (IDS_Result.trackingnumber.Any(t => t.First().Equals(package.OrderID.ToString())))
+                                                string number = string.Format("{0}-{1}", package.OrderID, Convert.ToInt32(package.ShipDate.Value.Subtract(new DateTime(1970, 1, 1)).TotalSeconds));
+                                                if (IDS_Result.trackingnumber.Any(t => t.First().Equals(number)))
                                                 {
-                                                    package.TrackingNumber = IDS_Result.trackingnumber.Last(t => t.First().Equals(package.OrderID.ToString()))[1];
+                                                    package.TrackingNumber = IDS_Result.trackingnumber.Last(t => t.First().Equals(number))[1];
+                                                    MyHelp.Log("Packages", package.ID, string.Format("取得訂單【{0}】的Tracking Number", package.OrderID), session);
                                                 }
                                                 break;
                                         }
