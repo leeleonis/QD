@@ -15,9 +15,8 @@ namespace DirectLineApi.IDS
         private string ApiUsername;
         private string ApiPassword;
 
-        private static string Version = "v1.2";
-        private static string TestUrl = string.Format("http://dev-labelservice.contin-testing-site.com/api/{0}/", Version);
-        private static string ProductUrl = string.Format("http://labelservice.contin-web.com/api/{0}/", Version);
+        private static string TestUrl = "http://label-api.contin-testing-site.com/";
+        private static string ProductUrl = "http://label-api.contin-web.com/";
         private string Endpoint;
 
         public IDS_API() : this(null) { }
@@ -41,43 +40,43 @@ namespace DirectLineApi.IDS
             //Endpoint = TestUrl;
         }
 
-        public TokenResponse GetToken()
+        public Response<Token> GetToken()
         {
-            TokenRequest request = new TokenRequest()
+            try
             {
-                username = ApiUsername,
-                password = ApiPassword
-            };
+                var request = new
+                {
+                    data = new TokenRequest()
+                    {
+                        account = ApiUsername,
+                        password = ApiPassword
+                    }
+                };
 
-            TokenResponse response = Request<TokenResponse>("GetToken", "POST", request);
-
-            return response;
+                return Request<Token>("login", "POST", request);
+            }
+            catch (Exception e)
+            {
+                throw new Exception(string.Format("Get Token Error: {0}", e.InnerException?.Message ?? e.Message));
+            }
         }
 
-        public CreateOrderResponse CreateOrder(Packages package, ShippingMethod method = null)
+        public Response<OrderResponse> CreateOrder(Packages package, ShippingMethod method = null)
         {
             Orders order = package.Orders;
             Addresses address = order.Addresses;
-            if(method == null) method = package.Method;
-            CreateOrderResponse response;
+            if (method == null) method = package.Method;
 
             try
             {
-                TokenResponse userToken = GetToken();
-
-                if (!userToken.status.Equals("200")) throw new Exception(userToken.error.ToString().Trim());
-
-                string[] serviceTypeList = GetServiceTypeList();
-                List<OrderData> orderList = new List<OrderData>();
-
-                List<Items> itemList = package.Items.Where(i => i.IsEnable.Value).ToList();
+                var serviceTypeList = GetServiceTypeList();
 
                 string buyerName = string.Join(" ", new string[] { address.FirstName, address.MiddleInitial, address.LastName });
                 string buyerAddress2 = !string.IsNullOrEmpty(address.StreetLine2) ? address.StreetLine2.Trim() : "";
                 if (!string.IsNullOrEmpty(address.CompanyName))
                 {
                     string companyName = address.CompanyName.Trim();
-                    if(string.Format("{0} {1}", buyerName, companyName).Length <= 50)
+                    if (string.Format("{0} {1}", buyerName, companyName).Length <= 50)
                     {
                         buyerName = string.Format("{0} {1}", buyerName, companyName).Trim();
                     }
@@ -87,72 +86,83 @@ namespace DirectLineApi.IDS
                     }
                 }
 
-                List<StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
+                List<Items> itemList = package.Items.Where(i => i.IsEnable.Value).ToList();
+                List<StockKeepingUnit.SkuData> SkuData;
                 using (StockKeepingUnit stock = new StockKeepingUnit())
                 {
                     var IDs = package.Items.Where(i => i.IsEnable.Value).Select(i => i.ProductID).ToArray();
                     SkuData = stock.GetSkuData(IDs);
                 }
 
-                orderList.Add(new OrderData()
+                var orderData = new OrderData()
                 {
-                    salesRecordNumber = string.Format("{0}-{1}", package.OrderID, Convert.ToInt32(package.ShipDate.Value.Subtract(new DateTime(1970, 1, 1)).TotalSeconds)),
-                    //salesRecordNumber = order.OrderID.ToString(),
-                    productType = string.Join(",", itemList.Select(i => i.Skus.ProductType).Select(t => t.ProductTypeName).Distinct()),
-                    serviceType = serviceTypeList[method.MethodType.Value],
-                    buyerName = buyerName,
-                    buyerPhone = !string.IsNullOrEmpty(address.PhoneNumber) ? address.PhoneNumber.Trim() : "",
-                    buyerAddress1 = address.StreetLine1.Trim(),
-                    buyerAddress2 = buyerAddress2,
-                    buyerCity = address.City.Trim(),
-                    buyerCountry = address.CountryName.Trim(),
-                    buyerDistrict = address.CountryCode.Equals("US") ? "" : "E",
-                    buyerState = !string.IsNullOrEmpty(address.StateName) ? (address.CountryCode.Equals("US") && address.StateName.Length > 2 ? EnumData.StateAbbreviationExpand(address.StateName.Trim()) : address.StateName.Trim()) : "",
-                    buyerZip = address.CountryCode.Equals("US") ? address.PostalCode.Split('-').First() : address.PostalCode.Trim(),
+                    account = ApiUsername,
+                    service_type = serviceTypeList[method.MethodType.Value],
+                    order_type = "D",
+                    order_status = "Pending",
+                    sales_record_number = string.Format("{0}-{1}", package.OrderID, Convert.ToInt32(package.ShipDate.Value.Subtract(new DateTime(1970, 1, 1)).TotalSeconds)),
+                    product_type = string.Join(",", itemList.Select(i => i.Skus.ProductType).Select(t => t.ProductTypeName).Distinct()),
+                    buyer_name = buyerName,
+                    buyer_phone = !string.IsNullOrEmpty(address.PhoneNumber) ? address.PhoneNumber.Trim() : "",
+                    buyer_address1 = address.StreetLine1.Trim(),
+                    buyer_address2 = buyerAddress2,
+                    buyer_city = address.City.Trim(),
+                    buyer_country = address.CountryName.Trim(),
+                    buyer_district = address.CountryCode.Equals("US") ? "" : "E",
+                    buyer_state = !string.IsNullOrEmpty(address.StateName) ? (address.CountryCode.Equals("US") && address.StateName.Length > 2 ? EnumData.StateAbbreviationExpand(address.StateName.Trim()) : address.StateName.Trim()) : "",
+                    buyer_zip = address.CountryCode.Equals("US") ? address.PostalCode.Split('-').First() : address.PostalCode.Trim(),
                     weight = itemList.Sum(i => i.Qty.Value * (SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight)),
                     quantity = itemList.Sum(i => i.Qty.Value),
-                    cost = (float)itemList.Sum(i => i.Qty.Value * i.DLDeclaredValue),
+                    cost = itemList.Sum(i => i.Qty.Value * i.DLDeclaredValue),
                     remarks = !string.IsNullOrEmpty(package.SupplierComment) ? package.SupplierComment.Trim() : ""
-                });
-
-                CreateOrderRequest request = new CreateOrderRequest()
-                {
-                    userName = ApiUsername,
-                    token = userToken.token,
-                    orderType = "D",
-                    orders = orderList.ToArray(),
-                    notificationURL = ""
                 };
 
-                response = Request<CreateOrderResponse>("CreateOrder", "POST", request);
+                var request = new
+                {
+                    data = new CreateOrderRequest
+                    {
+                        orders = new OrderData[] { orderData }
+                    }
+                };
+
+                return Request<OrderResponse>("orders", "POST", request);
             }
             catch (Exception e)
             {
-                response = new CreateOrderResponse()
+                return new Response<OrderResponse>()
                 {
-                    status = "400",
-                    error = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message
+                    status = 400,
+                    message = e.InnerException?.Message ?? e.Message
                 };
             }
-
-            return response;
         }
 
-        public GetTrackingNumberResponse GetTrackingNumber(Packages package)
+        public Response<OrderResponse> GetLabelByOrderID(string order_id)
         {
-            string number = string.Format("{0}-{1}", package.OrderID, Convert.ToInt32(package.ShipDate.Value.Subtract(new DateTime(1970, 1, 1)).TotalSeconds));
+            return Request<OrderResponse>("label/order_id/" + order_id, "Get");
+        }
 
-            GetTrackingNumberRequest request = new GetTrackingNumberRequest()
+        public string GetTrackingNumber(Packages package)
+        {
+            string trackingNumber = "";
+
+            var result = GetLabelByOrderID(package.TagNo);
+            if (result.status.Equals(200))
             {
-                salesRecordNumber = new string[] { number, package.OrderID.ToString() }
-            };
+                trackingNumber = result.data.tracking_number ?? "";
+            }
+            else
+            {
+                throw new Exception("Get label tracking number failed： " + result.message);
+            }
 
-            return Request<GetTrackingNumberResponse>("GetTrackingNumber", "POST", request);
+            return trackingNumber;
         }
 
         public string[] GetServiceTypeList()
         {
-            //string serviceTypeJson = JsonConvert.SerializeObject(Request<string[]>("GetServiceTypeList", "GET"));
+            //string json = JsonConvert.SerializeObject(Request<ServiceTypes>("service_types", "GET").data.service_types);
+            //string serviceTypeJson = "[\"AM\",\"AML\",\"AMR\",\"AUCU\",\"AUHV\",\"AULL\",\"AUOE\",\"AUPT\",\"AURLL\",\"AURP\",\"AUSK\",\"AZP\",\"CND\",\"CNF\",\"COR\",\"DEDHL\",\"DEDHLUK\",\"DELL\",\"DEML\",\"DEP\",\"DEPUK\",\"DGM\",\"DGMR\",\"DHLG\",\"DPDG\",\"ES48\",\"ESLL\",\"EUCU\",\"FBAAU\",\"FBADE\",\"FBAFR\",\"FBAJP\",\"FBAUK\",\"FBAUS\",\"FBAUSFE\",\"FBAUSFP\",\"FC\",\"FCI\",\"FCS\",\"FR100\",\"FR250\",\"FR50\",\"FSI\",\"FSP\",\"HKCU\",\"HS\",\"HSS\",\"ILES\",\"IPFRES\",\"ITGLS\",\"KRCU\",\"MI\",\"MII\",\"MIP\",\"ND\",\"PIS\",\"PM\",\"PMB\",\"PMD\",\"PMFR\",\"PMI\",\"PMS\",\"PSI\",\"RM48LL\",\"RM48P\",\"RMLL\",\"RMP\",\"RMRLL\",\"SG\",\"SGE\",\"SGR\",\"SUP\",\"T24\",\"T24S\",\"T48\",\"T48S\",\"TP\",\"TWCU\",\"TWFCS\",\"TWMFCS\",\"TWMPMS\",\"TWMUGS\",\"TWPMS\",\"TWUGS\",\"U2D\",\"UG\",\"UGR\",\"UGS\",\"UGSR\",\"UKCU\",\"UKM\",\"UPSG\",\"USOE\",\"X08FCF\",\"X08PMD\",\"X08PMED\",\"X08PMEF\",\"X08PMF\"]";
             string serviceTypeJson = "[\"AM\",\"AML\",\"AMR\",\"AULL\",\"AURLL\",\"AURP\",\"CND\",\"CNF\",\"COR\",\"DELL\",\"DEDHL\",\"DEML\",\"DGM\",\"DGMR\",\"DEP\",\"ES48\",\"EUCU\",\"ESLL\",\"FBAAU\",\"FBADE\",\"FBAJP\",\"FBAUK\",\"FBAUS\",\"FBAFR\",\"FC\",\"HS\",\"ND\",\"PM\",\"RM48LL\",\"RM48P\",\"RMLL\",\"RMP\",\"RMRLL\",\"SG\",\"SGR\",\"T24\",\"T24S\",\"T48\",\"T48S\",\"TP\",\"TS\",\"UG\",\"UKCU\",\"USOE\",\"X08FCF\",\"X08PMF\",\"X08PMEF\",\"X08PMD\",\"X08PMED\",\"FCI\",\"FCS\",\"FSI\",\"PMI\",\"PMS\",\"PSI\",\"ILES\",\"PIS\",\"IPFRES\",\"PMFR\",\"HSS\",\"UPSG\",\"PMD\",\"MI\",\"DPDG\",\"FBAUSFE\",\"FBAUSFP\",\"UGS\",\"UGR\",\"UGSR\",\"AUPT\",\"AUHV\",\"AUOE\",\"U2D\",\"AUCU\",\"KRCU\",\"MII\",\"MIP\",\"HKCU\",\"DHLG\",\"FR50\",\"FR100\",\"FR250\",\"AUSK\",\"DEDHLUK\",\"DEPUK\",\"AZP\",\"TWCU\",\"UKM\",\"ITGLS\",\"SGE\",\"TWFCS\",\"TWPMS\",\"TWUGS\",\"TWMFCS\",\"TWMPMS\",\"TWMUGS\",\"PMB\",\"SUP\"]";
             return JsonConvert.DeserializeObject<string[]>(serviceTypeJson);
         }
@@ -164,7 +174,7 @@ namespace DirectLineApi.IDS
             return serviceTypeList.Skip(index).FirstOrDefault();
         }
 
-        public T Request<T>(string func, string method, object data = null)
+        public Response<T> Request<T>(string func, string method, object data = null)
         {
             string result = "";
 
@@ -173,83 +183,98 @@ namespace DirectLineApi.IDS
             request.Method = method;
             request.ProtocolVersion = HttpVersion.Version10;
 
-            HttpWebResponse httpResponse;
+            if (!func.Equals("login"))
+                request.Headers.Add("Authorization", GetToken().data.token);
 
             if (data != null)
             {
-                string postData = JsonConvert.SerializeObject(data);
+                var jsonSetting = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
+                string postData = JsonConvert.SerializeObject(data, jsonSetting);
                 using (StreamWriter streamWriter = new StreamWriter(request.GetRequestStream()))
                 {
                     streamWriter.Write(postData);
                     streamWriter.Flush();
-                    streamWriter.Close();
                 }
             }
 
-            httpResponse = (HttpWebResponse)request.GetResponse();
+            using (HttpWebResponse httpResponse = (HttpWebResponse)request.GetResponse())
             using (StreamReader streamReader = new StreamReader(httpResponse.GetResponseStream()))
             {
                 result = streamReader.ReadToEnd();
             }
 
-            return JsonConvert.DeserializeObject<T>(result);
+            return JsonConvert.DeserializeObject<Response<T>>(result);
         }
     }
 
     public class TokenRequest
     {
-        public string username { get; set; }
+        public string account { get; set; }
         public string password { get; set; }
     }
 
-    public class TokenResponse : Response
+    public class Token
     {
         public string token { get; set; }
+
+        public int token_validity_period { get; set; }
     }
 
     public class CreateOrderRequest
     {
-        public string userName { get; set; }
-        public string token { get; set; }
-        public string orderType { get; set; }
         public string notificationURL { get; set; }
         public OrderData[] orders { get; set; }
     }
 
     public class OrderData
     {
-        public string salesRecordNumber { get; set; }
-        public string sku { get; set; }
-        public string productType { get; set; }
-        public string serviceType { get; set; }
-        public string buyerName { get; set; }
-        public string buyerPhone { get; set; }
-        public string buyerAddress1 { get; set; }
-        public string buyerAddress2 { get; set; }
-        public string buyerCity { get; set; }
-        public string buyerCountry { get; set; }
-        public string buyerDistrict { get; set; }
-        public string buyerState { get; set; }
-        public string buyerZip { get; set; }
-        public int length { get; set; }
-        public int width { get; set; }
-        public int height { get; set; }
-        public int weight { get; set; }
-        public int quantity { get; set; }
-        public float cost { get; set; }
+        // Request
+        public string service_type { get; set; }
+        public string account { get; set; }
+        public string order_type { get; set; }
+        public string order_status { get; set; }
+        public string buyer_address1 { get; set; }
+        public string buyer_city { get; set; }
+        public string buyer_name { get; set; }
+        public string buyer_country { get; set; }
+        public string buyer_zip { get; set; }
+        public string sales_record_number { get; set; }
+        public decimal cost { get; set; }
+
+        // Optional
+        public string buyer_address2 { get; set; }
+        public string buyer_phone { get; set; }
+        public string buyer_state { get; set; }
+        public string buyer_channel_id { get; set; }
+        public string buyer_district { get; set; }
+        public int? quantity { get; set; }
+        public int? length { get; set; }
+        public int? width { get; set; }
+        public int? weight { get; set; }
+        public int? height { get; set; }
+        public string product_type { get; set; }
         public string remarks { get; set; }
+        public string sales_channel { get; set; }
+        public string sku { get; set; }
+        public string tracking_number { get; set; }
     }
 
-    public class CreateOrderResponse : Response
+    public class OrderResponse
     {
+        public string order_id { get; set; }
+        public string tracking_number { get; set; }
         public OrderLabel[] labels { get; set; }
     }
 
     public class OrderLabel
     {
-        public string orderid { get; set; }
-        public string salesRecordNumber { get; set; }
-        public string labellink { get; set; }
+        public string filename { get; set; }
+        public string content { get; set; }
+    }
+
+    public class ServiceTypes
+    {
+        public string[] service_types { get; set; }
     }
 
     public class GetTrackingNumberRequest
@@ -257,14 +282,17 @@ namespace DirectLineApi.IDS
         public string[] salesRecordNumber { get; set; }
     }
 
-    public class GetTrackingNumberResponse : Response
+    public class GetTrackingNumberResponse
     {
         public List<string[]> trackingnumber { get; set; }
     }
 
-    public class Response
+    public class Response<T>
     {
-        public string status { get; set; }
-        public object error { get; set; }
+        public int status { get; set; }
+
+        public T data { get; set; }
+
+        public string message { get; set; }
     }
 }

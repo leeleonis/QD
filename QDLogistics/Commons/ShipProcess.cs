@@ -244,37 +244,21 @@ namespace QDLogistics.Commons
                     case (int)EnumData.CarrierType.IDS:
                         try
                         {
-                            IDS_API IDS = new IDS_API(package.Method.Carriers.CarrierAPI);
-                            CreateOrderResponse result = IDS.CreateOrder(package);
+                            IDS_API IDS_Api = new IDS_API(package.Method.Carriers.CarrierAPI);
+                            var result = IDS_Api.CreateOrder(package);
 
-                            string number = string.Format("{0}-{1}", package.OrderID, Convert.ToInt32(package.ShipDate.Value.Subtract(new DateTime(1970, 1, 1)).TotalSeconds));
-
-                            if (!result.status.Equals("200"))
+                            if (!result.status.Equals(200))
                             {
-                                var error = JsonConvert.DeserializeObject<List<List<List<object>>>>(JsonConvert.SerializeObject(result.error));
-                                var msg = JsonConvert.SerializeObject(error.SelectMany(e => e).First(e => e[0].Equals(number))[1]);
-                                throw new Exception(JsonConvert.DeserializeObject<string[]>(msg)[0]);
+                                throw new Exception(string.Format("Create label failed: {0}", result.message));
                             }
 
-                            package.TagNo = result.labels.First(l => l.salesRecordNumber.Equals(number)).orderid;
-                            using (var client = new WebClient())
+                            package.TagNo = result.data.labels.First().filename.Split('.')[0];
+                            using (FileStream stream = new FileStream(Path.Combine(filePath, "Label.pdf"), FileMode.Create))
                             {
-                                client.DownloadFile(result.labels.First().labellink, Path.Combine(filePath, "Label.zip"));
-                            }
-
-                            using (ZipArchive archive = ZipFile.OpenRead(Path.Combine(filePath, "Label.zip")))
-                            {
-                                if (File.Exists(Path.Combine(filePath, "Label.pdf")))
+                                using (BinaryWriter writer = new BinaryWriter(stream))
                                 {
-                                    File.Delete(Path.Combine(filePath, "Label.pdf"));
-                                }
-
-                                foreach (ZipArchiveEntry entry in archive.Entries)
-                                {
-                                    if (entry.FullName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
-                                    {
-                                        entry.ExtractToFile(Path.Combine(filePath, "Label.pdf"));
-                                    }
+                                    byte[] bytes = Convert.FromBase64String(result.data.labels.First().content);
+                                    writer.Write(bytes, 0, bytes.Length);
                                 }
                             }
                         }
