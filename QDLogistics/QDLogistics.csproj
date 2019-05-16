@@ -280,6 +280,7 @@
     <Compile Include="App_Code\CarrierApi\DHL\DHLService.cs" />
     <Compile Include="App_Code\CarrierApi\DHL\DHL_API.cs" />
     <Compile Include="App_Code\CarrierApi\Sendle_API.cs" />
+    <Compile Include="App_Code\DirectLineApi\IDS_API_Test.cs" />
     <Compile Include="App_Code\DirectLineApi\IDS_API.cs" />
     <Content Include="Content\bootstrap-theme.css" />
     <Content Include="Content\bootstrap-theme.min.css" />

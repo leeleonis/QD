@@ -206,7 +206,7 @@ namespace QDLogistics.Commons
                                 sheet.GetRow(26).GetCell(6).SetCellValue(!string.IsNullOrEmpty(sku.ProductType.ChtName) ? sku.ProductType.ChtName : sku.ProductType.ProductTypeName);
 
                                 sheet.GetRow(28).GetCell(!sku.Brand.Equals(0) ? 8 : 4).SetCellValue("✔");
-                                sheet.GetRow(28).GetCell(11).SetCellValue(!sku.Brand.Equals(0) ? sku.Manufacturers.ManufacturerName : "");
+                                sheet.GetRow(28).GetCell(11).SetCellValue(sku.Brand.Value > 0 ? sku.Manufacturers.ManufacturerName : "");
 
                                 sheet.GetRow(32).GetCell(9).SetCellValue(group.Sum(i => i.Qty.Value * i.DeclaredValue).ToString("N"));
                                 sheet.GetRow(32).GetCell(10).SetCellValue(currency);

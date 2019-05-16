@@ -10,7 +10,7 @@ using CarrierApi.DHL;
 using CarrierApi.FedEx;
 using CarrierApi.Sendle;
 using CarrierApi.Winit;
-using DirectLineApi.IDS;
+using DirectLineApi.IDS_Test;
 using NPOI.HSSF.UserModel;
 using NPOI.XSSF.UserModel;
 using NPOI.SS.UserModel;
@@ -348,17 +348,32 @@ namespace QDLogistics.Controllers
             }
         }
 
-        private void IDS_Test(int orderID)
+        public void IDS_Test(int OrderID)
         {
-            Packages package = db.Packages.AsNoTracking().First(p => p.OrderID.Value.Equals(orderID));
+            Packages package = db.Packages.AsNoTracking().First(p => p.OrderID.Value.Equals(OrderID));
 
-            IDS_API IDS = new IDS_API(package.Method.Carriers.CarrierAPI);
-            var result = IDS.GetTrackingNumber(package);
-            string number = string.Format("{0}-{1}", package.OrderID, Convert.ToInt32(package.ShipDate.Value.Subtract(new DateTime(1970, 1, 1)).TotalSeconds));
-            if (result.trackingnumber.Any(t => t.First().Equals(number)))
+            IDS_API IDS = new IDS_API(new CarrierAPI()
             {
-                string tracking = result.trackingnumber.Last(t => t.First().Equals(number))[1];
+                IsTest = true,
+                ApiAccount = "TC101",
+                ApiPassword = "000000"
+            });
+            var order = IDS.CreateOrder(package);
+            using (FileStream stream = new FileStream(@"C:\Temp\IDS_Test.pdf", FileMode.CreateNew))
+            {
+                using (BinaryWriter writer = new BinaryWriter(stream))
+                {
+                    byte[] bytes = Convert.FromBase64String(order.data.labels.First().content);
+                    writer.Write(bytes, 0, bytes.Length);
+                }
             }
+            //var order2 = IDS.GetLabelByOrderID(order1.data.labels.First().filename.Split('.')[0]);
+            //var result = IDS.GetTrackingNumber(package);
+            //string number = string.Format("{0}-{1}", package.OrderID, Convert.ToInt32(package.ShipDate.Value.Subtract(new DateTime(1970, 1, 1)).TotalSeconds));
+            //if (result.trackingnumber.Any(t => t.First().Equals(number)))
+            //{
+            //    string tracking = result.trackingnumber.Last(t => t.First().Equals(number))[1];
+            //}
         }
 
         private void Box_Test(string boxID)
