@@ -685,13 +685,18 @@ namespace QDLogistics.Controllers
                                     {
                                         if (string.IsNullOrEmpty(package.TrackingNumber))
                                         {
+                                            MyHelp.Log("Orders ", label.OrderID, string.Format(string.Format("取得訂單【{1}】的 Tracking Number", label.OrderID)), session);
+
                                             CarrierAPI api = package.Method.Carriers.CarrierAPI;
                                             switch (api.Type)
                                             {
                                                 case (byte)EnumData.CarrierType.IDS:
                                                     IDS_API IDS = new IDS_API(api);
                                                     package.TrackingNumber = IDS.GetTrackingNumber(package);
-                                                    MyHelp.Log("Packages", package.ID, string.Format("取得訂單【{0}】的Tracking Number", package.OrderID), session);
+                                                    if (!string.IsNullOrEmpty(package.TrackingNumber))
+                                                    {
+                                                        MyHelp.Log("Packages", package.ID, string.Format("成功取得訂單【{0}】的Tracking Number： {1}", package.OrderID, package.TrackingNumber), session);
+                                                    }
                                                     break;
                                             }
                                         }

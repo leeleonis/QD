@@ -583,7 +583,7 @@ namespace QDLogistics.Commons
                             throw new Exception(string.Format("Create label failed: {0}", result.message));
                         }
 
-                        labelID = result.data.labels.First().filename.Split('.')[0];
+                        labelID = result.data.labels.First().bbcode;
                         break;
                     case "ECOF":
                         Carriers carrier = method.Carriers;
@@ -861,7 +861,10 @@ namespace QDLogistics.Commons
                     case "IDS (US)":
                         IDS_Api = new IDS_API();
                         tracking = IDS_Api.GetTrackingNumber(packageData);
-                        MyHelp.Log("Packages", packageData.ID, string.Format("取得訂單【{0}】的Tracking Number", packageData.OrderID), Session);
+                        if (!string.IsNullOrEmpty(tracking))
+                        {
+                            MyHelp.Log("Packages", packageData.ID, string.Format("成功取得訂單【{0}】的Tracking Number： {1}", packageData.OrderID, tracking), Session);
+                        }
                         break;
                     case "ECOF":
                         tracking = packageData.TrackingNumber;

@@ -1272,9 +1272,14 @@ namespace QDLogistics.Controllers
                         {
                             if (directLine.Abbreviation.Equals("IDS (US)"))
                             {
+                                MyHelp.Log("Orders ", label.OrderID, string.Format(string.Format("取得 {0} 訂單【{1}】的 Tracking Number", directLine.Abbreviation, label.OrderID)), Session);
+
                                 var IDS = new IDS_API(package.Method.Carriers.CarrierAPI);
                                 package.TrackingNumber = IDS.GetTrackingNumber(package);
-                                MyHelp.Log("Packages", package.ID, string.Format("取得訂單【{0}】的Tracking Number", package.OrderID), Session);
+                                if (!string.IsNullOrEmpty(package.TrackingNumber))
+                                {
+                                    MyHelp.Log("Packages", package.ID, string.Format("成功取得訂單【{0}】的Tracking Number： {1}", package.OrderID, package.TrackingNumber), Session);
+                                }
 
                                 //if (!string.IsNullOrEmpty(package.TrackingNumber))
                                 //{
@@ -2044,13 +2049,13 @@ namespace QDLogistics.Controllers
 
                                     var packageFilter = db.Packages.Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨));
 
-                                    if (now.Hour == noon.Hour)
+                                    if (now.Hour >= noon.Hour && now.Hour < evening.Hour)
                                     {
                                         var start = evening.AddDays(-1).ToUniversalTime();
                                         var end = noon.ToUniversalTime();
                                         packageFilter = packageFilter.Where(p => p.ShipDate.Value.CompareTo(end) <= 0 && p.ShipDate.Value.CompareTo(start) > 0);
                                     }
-                                    if (now.Hour == evening.Hour)
+                                    if (now.Hour >= evening.Hour)
                                     {
                                         var start = noon.ToUniversalTime();
                                         var end = evening.ToUniversalTime();
@@ -2398,7 +2403,10 @@ namespace QDLogistics.Controllers
                                             case (byte)EnumData.CarrierType.IDS:
                                                 IDS_API IDS = new IDS_API(api);
                                                 package.TrackingNumber = IDS.GetTrackingNumber(package);
-                                                MyHelp.Log("Packages", package.ID, string.Format("取得訂單【{0}】的Tracking Number", package.OrderID), session);
+                                                if (!string.IsNullOrEmpty(package.TrackingNumber))
+                                                {
+                                                    MyHelp.Log("Packages", package.ID, string.Format("成功取得訂單【{0}】的Tracking Number： {1}", package.OrderID, package.TrackingNumber), session);
+                                                }
                                                 break;
                                         }
                                     }

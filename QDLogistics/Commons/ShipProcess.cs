@@ -244,6 +244,8 @@ namespace QDLogistics.Commons
                     case (int)EnumData.CarrierType.IDS:
                         try
                         {
+                            MyHelp.Log("Packages", package.ID, "開始建立IDS提單");
+
                             IDS_API IDS_Api = new IDS_API(package.Method.Carriers.CarrierAPI);
                             var result = IDS_Api.CreateOrder(package);
 
@@ -252,7 +254,9 @@ namespace QDLogistics.Commons
                                 throw new Exception(string.Format("Create label failed: {0}", result.message));
                             }
 
-                            package.TagNo = result.data.labels.First().filename.Split('.')[0];
+                            MyHelp.Log("Packages", package.ID, "建立IDS提單完成");
+
+                            package.TagNo = result.data.labels.First().bbcode;
                             using (FileStream stream = new FileStream(Path.Combine(filePath, "Label.pdf"), FileMode.Create))
                             {
                                 using (BinaryWriter writer = new BinaryWriter(stream))

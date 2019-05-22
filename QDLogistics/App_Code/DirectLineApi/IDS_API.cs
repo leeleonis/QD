@@ -29,7 +29,7 @@ namespace DirectLineApi.IDS
                 {
                     IsTest = false,
                     ApiAccount = "TW018",
-                    ApiPassword = "000000"
+                    ApiPassword = "CPl78h"
                 };
             }
 
@@ -53,7 +53,12 @@ namespace DirectLineApi.IDS
                     }
                 };
 
-                return Request<Token>("login", "POST", request);
+                var result = Request<Token>("login", "POST", request);
+
+                if (!result.status.Equals(200))
+                    throw new Exception(result.message);
+
+                return result;
             }
             catch (Exception e)
             {
@@ -96,10 +101,7 @@ namespace DirectLineApi.IDS
 
                 var orderData = new OrderData()
                 {
-                    account = ApiUsername,
                     service_type = serviceTypeList[method.MethodType.Value],
-                    order_type = "D",
-                    order_status = "Pending",
                     sales_record_number = string.Format("{0}-{1}", package.OrderID, Convert.ToInt32(package.ShipDate.Value.Subtract(new DateTime(1970, 1, 1)).TotalSeconds)),
                     product_type = string.Join(",", itemList.Select(i => i.Skus.ProductType).Select(t => t.ProductTypeName).Distinct()),
                     buyer_name = buyerName,
@@ -108,13 +110,9 @@ namespace DirectLineApi.IDS
                     buyer_address2 = buyerAddress2,
                     buyer_city = address.City.Trim(),
                     buyer_country = address.CountryName.Trim(),
-                    buyer_district = address.CountryCode.Equals("US") ? "" : "E",
                     buyer_state = !string.IsNullOrEmpty(address.StateName) ? (address.CountryCode.Equals("US") && address.StateName.Length > 2 ? EnumData.StateAbbreviationExpand(address.StateName.Trim()) : address.StateName.Trim()) : "",
                     buyer_zip = address.CountryCode.Equals("US") ? address.PostalCode.Split('-').First() : address.PostalCode.Trim(),
-                    weight = itemList.Sum(i => i.Qty.Value * (SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight)),
-                    quantity = itemList.Sum(i => i.Qty.Value),
-                    cost = itemList.Sum(i => i.Qty.Value * i.DLDeclaredValue),
-                    remarks = !string.IsNullOrEmpty(package.SupplierComment) ? package.SupplierComment.Trim() : ""
+                    cost = itemList.Sum(i => i.Qty.Value * i.DLDeclaredValue)
                 };
 
                 var request = new
@@ -139,7 +137,12 @@ namespace DirectLineApi.IDS
 
         public Response<OrderResponse> GetLabelByOrderID(string order_id)
         {
-            return Request<OrderResponse>("label/order_id/" + order_id, "Get");
+            return Request<OrderResponse>("label/bbcode/" + order_id, "Get");
+        }
+
+        public Response<OrderResponse> GetLabelByTracking(string tracking_number)
+        {
+            return Request<OrderResponse>("label/tracking_number/" + tracking_number, "Get");
         }
 
         public string GetTrackingNumber(Packages package)
@@ -153,7 +156,7 @@ namespace DirectLineApi.IDS
             }
             else
             {
-                throw new Exception("Get label tracking number failed： " + result.message);
+                MyHelp.Log("IDS_API", null, "Get label tracking number failed： " + result.message);
             }
 
             return trackingNumber;
@@ -181,6 +184,7 @@ namespace DirectLineApi.IDS
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Endpoint + func);
             request.ContentType = "application/json";
             request.Method = method;
+            request.Timeout = 20000;
             request.ProtocolVersion = HttpVersion.Version10;
 
             if (!func.Equals("login"))
@@ -197,10 +201,33 @@ namespace DirectLineApi.IDS
                 }
             }
 
-            using (HttpWebResponse httpResponse = (HttpWebResponse)request.GetResponse())
-            using (StreamReader streamReader = new StreamReader(httpResponse.GetResponseStream()))
+            try
             {
-                result = streamReader.ReadToEnd();
+                using (HttpWebResponse httpResponse = (HttpWebResponse)request.GetResponse())
+                using (StreamReader streamReader = new StreamReader(httpResponse.GetResponseStream()))
+                {
+                    if(httpResponse.Headers["X-RateLimit-Remaining"] != null)
+                        MyHelp.Log("IDS_API", null, "X-RateLimit-Remaining: " + httpResponse.Headers["X-RateLimit-Remaining"]);
+
+                    result = streamReader.ReadToEnd();
+                }
+            }
+            catch (WebException wex)
+            {
+                if(wex.Response != null)
+                {
+                    using (StreamReader streamReader = new StreamReader(wex.Response.GetResponseStream()))
+                    {
+                        if (wex.Response.Headers["X-RateLimit-Remaining"] != null)
+                            MyHelp.Log("IDS_API", null, "X-RateLimit-Remaining: " + wex.Response.Headers["X-RateLimit-Remaining"]);
+
+                        result = streamReader.ReadToEnd();
+                    }
+                }
+                else
+                {
+                    throw new Exception(wex.InnerException?.Message ?? wex.Message);
+                }
             }
 
             return JsonConvert.DeserializeObject<Response<T>>(result);
@@ -229,46 +256,35 @@ namespace DirectLineApi.IDS
     public class OrderData
     {
         // Request
+        public string sales_record_number { get; set; }
         public string service_type { get; set; }
-        public string account { get; set; }
-        public string order_type { get; set; }
-        public string order_status { get; set; }
+        public decimal cost { get; set; }
+        public string product_type { get; set; }
+        public string buyer_name { get; set; }
         public string buyer_address1 { get; set; }
         public string buyer_city { get; set; }
-        public string buyer_name { get; set; }
         public string buyer_country { get; set; }
         public string buyer_zip { get; set; }
-        public string sales_record_number { get; set; }
-        public decimal cost { get; set; }
 
         // Optional
         public string buyer_address2 { get; set; }
         public string buyer_phone { get; set; }
         public string buyer_state { get; set; }
-        public string buyer_channel_id { get; set; }
-        public string buyer_district { get; set; }
-        public int? quantity { get; set; }
-        public int? length { get; set; }
-        public int? width { get; set; }
-        public int? weight { get; set; }
-        public int? height { get; set; }
-        public string product_type { get; set; }
-        public string remarks { get; set; }
-        public string sales_channel { get; set; }
-        public string sku { get; set; }
         public string tracking_number { get; set; }
+        public string sku { get; set; }
     }
 
     public class OrderResponse
     {
-        public string order_id { get; set; }
+        public string bbcode { get; set; }
         public string tracking_number { get; set; }
         public OrderLabel[] labels { get; set; }
     }
 
     public class OrderLabel
     {
-        public string filename { get; set; }
+        public string bbcode { get; set; }
+        public string sales_record_number { get; set; }
         public string content { get; set; }
     }
 
@@ -289,9 +305,22 @@ namespace DirectLineApi.IDS
 
     public class Response<T>
     {
+        private string messageField { get; set; }
+
         public int status { get; set; }
 
         public T data { get; set; }
+
+        public string message { get { return error != null && error.Any() ? string.Join(", ", error.Select(e => e.key + "-" + e.message).ToArray()) : messageField; } set { messageField = value; } }
+
+        public Error[] error { get; set; }
+    }
+
+    public class Error
+    {
+        public string key { get; set; }
+
+        public string code { get; set; }
 
         public string message { get; set; }
     }

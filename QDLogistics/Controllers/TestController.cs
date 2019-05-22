@@ -352,21 +352,25 @@ namespace QDLogistics.Controllers
         {
             Packages package = db.Packages.AsNoTracking().First(p => p.OrderID.Value.Equals(OrderID));
 
-            IDS_API IDS = new IDS_API(new CarrierAPI()
-            {
-                IsTest = true,
-                ApiAccount = "TC101",
-                ApiPassword = "000000"
-            });
-            var order = IDS.CreateOrder(package);
-            using (FileStream stream = new FileStream(@"C:\Temp\IDS_Test.pdf", FileMode.CreateNew))
-            {
-                using (BinaryWriter writer = new BinaryWriter(stream))
-                {
-                    byte[] bytes = Convert.FromBase64String(order.data.labels.First().content);
-                    writer.Write(bytes, 0, bytes.Length);
-                }
-            }
+            IDS_API IDS = new IDS_API(package.Method.Carriers.CarrierAPI);
+            //var result = IDS.CreateOrder(package);
+            var label = IDS.GetLabelByTracking(package.TrackingNumber);
+
+            //IDS_API IDS = new IDS_API(new CarrierAPI()
+            //{
+            //    IsTest = true,
+            //    ApiAccount = "TC101",
+            //    ApiPassword = "000000"
+            //});
+            //var order = IDS.CreateOrder(package);
+            //using (FileStream stream = new FileStream(@"C:\Temp\IDS_Test.pdf", FileMode.CreateNew))
+            //{
+            //    using (BinaryWriter writer = new BinaryWriter(stream))
+            //    {
+            //        byte[] bytes = Convert.FromBase64String(order.data.labels.First().content);
+            //        writer.Write(bytes, 0, bytes.Length);
+            //    }
+            //}
             //var order2 = IDS.GetLabelByOrderID(order1.data.labels.First().filename.Split('.')[0]);
             //var result = IDS.GetTrackingNumber(package);
             //string number = string.Format("{0}-{1}", package.OrderID, Convert.ToInt32(package.ShipDate.Value.Subtract(new DateTime(1970, 1, 1)).TotalSeconds));
