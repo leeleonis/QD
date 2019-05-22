@@ -354,7 +354,7 @@ namespace QDLogistics.Controllers
 
             IDS_API IDS = new IDS_API(package.Method.Carriers.CarrierAPI);
             //var result = IDS.CreateOrder(package);
-            var label = IDS.GetLabelByTracking(package.TrackingNumber);
+            var label = IDS.GetTrackingNumber(package);
 
             //IDS_API IDS = new IDS_API(new CarrierAPI()
             //{
@@ -565,7 +565,7 @@ namespace QDLogistics.Controllers
             //var cancel = Sendle.Cancel(result.order_id);
         }
 
-        private void Track_Test(string BoxID)
+        public void Track_Test(string BoxID)
         {
             Box box = db.Box.Find(BoxID);
             CarrierAPI api = db.ShippingMethod.Find(box.FirstMileMethod).Carriers.CarrierAPI;

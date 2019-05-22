@@ -576,7 +576,7 @@ namespace QDLogistics.Commons
                     case "IDS":
                     case "IDS (US)":
                         IDS_Api = new IDS_API(method.Carriers.CarrierAPI);
-                        var result = IDS_Api.CreateOrder(packageData);
+                        var result = IDS_Api.CreateOrder(packageData, method);
 
                         if (!result.status.Equals(200))
                         {
@@ -639,8 +639,8 @@ namespace QDLogistics.Commons
 
                 if (eventData.Request.Equals((byte)EnumData.CaseEventRequest.Successful))
                 {
-                    packageData.TrackingNumber = GetTrackingNumber();
                     packageData.ShippingMethod = eventData.MethodID;
+                    packageData.TrackingNumber = GetTrackingNumber();
                     packageData.TagNo = eventData.NewLabelID;
                     Packages.Update(packageData, packageData.ID);
 

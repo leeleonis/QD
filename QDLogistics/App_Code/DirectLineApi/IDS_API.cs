@@ -278,6 +278,7 @@ namespace DirectLineApi.IDS
     {
         public string bbcode { get; set; }
         public string tracking_number { get; set; }
+        public OrderLabel label { get; set; }
         public OrderLabel[] labels { get; set; }
     }
 

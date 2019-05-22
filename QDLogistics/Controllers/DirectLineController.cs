@@ -1272,7 +1272,7 @@ namespace QDLogistics.Controllers
                         {
                             if (directLine.Abbreviation.Equals("IDS (US)"))
                             {
-                                MyHelp.Log("Orders ", label.OrderID, string.Format(string.Format("取得 {0} 訂單【{1}】的 Tracking Number", directLine.Abbreviation, label.OrderID)), Session);
+                                MyHelp.Log("Packages", package.ID, string.Format(string.Format("開始取得訂單【{0}】的 Tracking Number", directLine.Abbreviation, label.OrderID)), Session);
 
                                 var IDS = new IDS_API(package.Method.Carriers.CarrierAPI);
                                 package.TrackingNumber = IDS.GetTrackingNumber(package);
@@ -2395,7 +2395,7 @@ namespace QDLogistics.Controllers
                                 {
                                     if (string.IsNullOrEmpty(package.TrackingNumber))
                                     {
-                                        MyHelp.Log("Orders ", label.OrderID, string.Format(string.Format("取得 {0} 訂單【{1}】的 Tracking Number", DL, label.OrderID)), session);
+                                        MyHelp.Log("Packages", package.ID, string.Format(string.Format("開始取得訂單【{0}】的 Tracking Number", DL, label.OrderID)), session);
 
                                         CarrierAPI api = package.Method.Carriers.CarrierAPI;
                                         switch (api.Type)

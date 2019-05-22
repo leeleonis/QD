@@ -671,92 +671,100 @@ namespace QDLogistics.Controllers
                                 List<DirectLineLabel> remindList = new List<DirectLineLabel>();
                                 DateTime today = new TimeZoneConvert().ConvertDateTime(EnumData.TimeZone.EST);
 
+                                Packages package;
                                 //var directLineList = db.DirectLine.AsNoTracking().Where(d => d.IsEnable).ToList();
                                 foreach (DirectLineLabel label in labelList)
                                 {
-                                    Packages package = label.Packages.FirstOrDefault(p => p.IsEnable.Value);
+                                    package = label.Packages.FirstOrDefault(p => p.IsEnable.Value);
 
-                                    if (package == null) throw new Exception(string.Format("Label-{0} not find package!", label.PackageID));
-
-                                    Orders order = package.Orders;
-                                    Order orderData = SCWS.Get_OrderData(package.OrderID.Value).Order;
-
-                                    if (order.StatusCode.Value.Equals((int)orderData.StatusCode) && order.PaymentStatus.Value.Equals((int)orderData.PaymentStatus))
+                                    try
                                     {
-                                        if (string.IsNullOrEmpty(package.TrackingNumber))
-                                        {
-                                            MyHelp.Log("Orders ", label.OrderID, string.Format(string.Format("取得訂單【{1}】的 Tracking Number", label.OrderID)), session);
+                                        if (package == null) throw new Exception("Not find package!");
 
-                                            CarrierAPI api = package.Method.Carriers.CarrierAPI;
-                                            switch (api.Type)
-                                            {
-                                                case (byte)EnumData.CarrierType.IDS:
-                                                    IDS_API IDS = new IDS_API(api);
-                                                    package.TrackingNumber = IDS.GetTrackingNumber(package);
-                                                    if (!string.IsNullOrEmpty(package.TrackingNumber))
-                                                    {
-                                                        MyHelp.Log("Packages", package.ID, string.Format("成功取得訂單【{0}】的Tracking Number： {1}", package.OrderID, package.TrackingNumber), session);
-                                                    }
-                                                    break;
-                                            }
-                                        }
+                                        Orders order = package.Orders;
+                                        Order orderData = SCWS.Get_OrderData(package.OrderID.Value).Order;
 
-                                        DateTime paymentDate = order.Payments.FirstOrDefault()?.AuditDate.Value ?? order.TimeOfOrder.Value;
-
-                                        int checkDays = package.Items.First(i => i.IsEnable.Value).ShipWarehouses.WarehouseType.Value.Equals((int)WarehouseTypeType.DropShip) ? 2 : 3;
-
-                                        paymentDate = paymentDate.AddDays(checkDays);
-                                        if (paymentDate.DayOfWeek == DayOfWeek.Saturday) paymentDate = paymentDate.AddDays(2);
-                                        if (paymentDate.DayOfWeek == DayOfWeek.Sunday) paymentDate = paymentDate.AddDays(1);
-
-                                        if (DateTime.Compare(today, paymentDate) > 0)
+                                        if (order.StatusCode.Value.Equals((int)orderData.StatusCode) && order.PaymentStatus.Value.Equals((int)orderData.PaymentStatus))
                                         {
                                             if (string.IsNullOrEmpty(package.TrackingNumber))
                                             {
-                                                if (today.Hour >= paymentDate.Hour && today.Hour <= paymentDate.Hour + 2) remindList.Add(label);
-                                            }
-                                            else
-                                            {
-                                                ThreadTask syncTask = new ThreadTask(string.Format("Direct Line 訂單【{0}】SC更新", package.OrderID));
-                                                syncTask.AddWork(factory.StartNew(() =>
-                                                {
-                                                    syncTask.Start();
-                                                    SyncProcess sync = new SyncProcess(session);
-                                                    return sync.Update_Tracking(package);
-                                                }));
+                                                MyHelp.Log("Packages", package.ID, string.Format(string.Format("開始取得訂單【{0}】的 Tracking Number", label.OrderID)), session);
 
+                                                CarrierAPI api = package.Method.Carriers.CarrierAPI;
+                                                switch (api.Type)
+                                                {
+                                                    case (byte)EnumData.CarrierType.IDS:
+                                                        IDS_API IDS = new IDS_API(api);
+                                                        package.TrackingNumber = IDS.GetTrackingNumber(package);
+                                                        if (!string.IsNullOrEmpty(package.TrackingNumber))
+                                                        {
+                                                            MyHelp.Log("Packages", package.ID, string.Format("成功取得訂單【{0}】的Tracking Number： {1}", package.OrderID, package.TrackingNumber), session);
+                                                        }
+                                                        break;
+                                                }
+                                            }
+
+                                            DateTime paymentDate = order.Payments.FirstOrDefault()?.AuditDate.Value ?? order.TimeOfOrder.Value;
+
+                                            int checkDays = package.Items.First(i => i.IsEnable.Value).ShipWarehouses.WarehouseType.Value.Equals((int)WarehouseTypeType.DropShip) ? 2 : 3;
+
+                                            paymentDate = paymentDate.AddDays(checkDays);
+                                            if (paymentDate.DayOfWeek == DayOfWeek.Saturday) paymentDate = paymentDate.AddDays(2);
+                                            if (paymentDate.DayOfWeek == DayOfWeek.Sunday) paymentDate = paymentDate.AddDays(1);
+
+                                            if (DateTime.Compare(today, paymentDate) > 0)
+                                            {
+                                                if (string.IsNullOrEmpty(package.TrackingNumber))
+                                                {
+                                                    if (today.Hour >= paymentDate.Hour && today.Hour <= paymentDate.Hour + 2) remindList.Add(label);
+                                                }
+                                                else
+                                                {
+                                                    ThreadTask syncTask = new ThreadTask(string.Format("Direct Line 訂單【{0}】SC更新", package.OrderID));
+                                                    syncTask.AddWork(factory.StartNew(() =>
+                                                    {
+                                                        syncTask.Start();
+                                                        SyncProcess sync = new SyncProcess(session);
+                                                        return sync.Update_Tracking(package);
+                                                    }));
+
+                                                    using (CaseLog CaseLog = new CaseLog(package, session))
+                                                    {
+                                                        if (CaseLog.CaseExit(EnumData.CaseEventType.UpdateTracking))
+                                                        {
+                                                            CaseLog.TrackingResponse();
+                                                        }
+                                                    }
+
+                                                    label.Status = (byte)EnumData.LabelStatus.完成;
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            MyHelp.Log("Box ", label.BoxID, string.Format("Direct Line 訂單【{0}】資料狀態異常", package.OrderID.Value), session);
+
+                                            order.StatusCode = (int)orderData.StatusCode;
+                                            order.PaymentStatus = (int)orderData.PaymentStatus;
+                                            label.Status = (byte)EnumData.LabelStatus.鎖定中;
+
+                                            if (orderData.StatusCode.Equals((int)OrderStatusCode.Canceled))
+                                            {
                                                 using (CaseLog CaseLog = new CaseLog(package, session))
                                                 {
-                                                    if (CaseLog.CaseExit(EnumData.CaseEventType.UpdateTracking))
-                                                    {
-                                                        CaseLog.TrackingResponse();
-                                                    }
+                                                    CaseLog.SendCancelMail();
                                                 }
 
-                                                label.Status = (byte)EnumData.LabelStatus.完成;
+                                                label.Status = (byte)EnumData.LabelStatus.作廢;
                                             }
                                         }
+
+                                        db.SaveChanges();
                                     }
-                                    else
+                                    catch (Exception e)
                                     {
-                                        MyHelp.Log("Box ", label.BoxID, string.Format("Direct Line 訂單【{0}】資料狀態異常", package.OrderID.Value), session);
-
-                                        order.StatusCode = (int)orderData.StatusCode;
-                                        order.PaymentStatus = (int)orderData.PaymentStatus;
-                                        label.Status = (byte)EnumData.LabelStatus.鎖定中;
-
-                                        if (orderData.StatusCode.Equals((int)OrderStatusCode.Canceled))
-                                        {
-                                            using (CaseLog CaseLog = new CaseLog(package, session))
-                                            {
-                                                CaseLog.SendCancelMail();
-                                            }
-
-                                            label.Status = (byte)EnumData.LabelStatus.作廢;
-                                        }
+                                        message += string.Format("Label-{0}：{1};", package.TagNo, e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message);
                                     }
-
-                                    db.SaveChanges();
                                 }
 
                                 if (remindList.Any())
@@ -782,7 +790,7 @@ namespace QDLogistics.Controllers
                         }
                         catch (Exception e)
                         {
-                            message = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+                            message += e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
                         }
 
                         return message;
