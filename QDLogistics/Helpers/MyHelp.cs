@@ -626,7 +626,7 @@ public class TimeZoneConvert
 
     public TimeZoneConvert()
     {
-        InitDateTime(DateTime.UtcNow, EnumData.TimeZone.UTC);
+        InitDateTime(DateTime.UtcNow);
     }
 
     public TimeZoneConvert(DateTime originDateTime, EnumData.TimeZone originTimeZone)
@@ -634,7 +634,7 @@ public class TimeZoneConvert
         InitDateTime(originDateTime, originTimeZone);
     }
 
-    public TimeZoneConvert InitDateTime(DateTime originDateTime, EnumData.TimeZone originTimeZone)
+    public TimeZoneConvert InitDateTime(DateTime originDateTime, EnumData.TimeZone originTimeZone = EnumData.TimeZone.UTC)
     {
         originDateTime = DateTime.SpecifyKind(originDateTime, DateTimeKind.Unspecified);
         string timeZoneId = GetTimeZoneId(originTimeZone);
@@ -659,5 +659,16 @@ public class TimeZoneConvert
     private EnumData.TimeZone ConvertCurrencyToTimeZone(string currency)
     {
         return TimeZoneList[currency];
+    }
+
+    public string DateTimeToString(DateTime? dateTime, EnumData.TimeZone orginTimeZone = EnumData.TimeZone.UTC, EnumData.TimeZone timeZone = EnumData.TimeZone.UTC)
+    {
+        string dateTimeString = "";
+        if (dateTime.HasValue && !dateTime.Equals(DateTime.MinValue))
+        {
+            return InitDateTime(dateTime.Value, orginTimeZone).ConvertDateTime(timeZone).ToString("MM/dd/yyyy<br />hh:mm tt");
+
+        }
+        return dateTimeString;
     }
 }

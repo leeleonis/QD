@@ -488,7 +488,7 @@ namespace QDLogistics.Controllers
                             TrackResult result;
                             TrackOrder track = new TrackOrder();
                             var date = DateTime.UtcNow.AddDays(-14);
-                            var PackageFilter = db.Packages.Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((int)EnumData.ProcessStatus.已出貨) && !string.IsNullOrEmpty(p.TrackingNumber) && !p.DeliveryStatus.Value.Equals((int)OrderService.DeliveryStatusType.Delivered));
+                            var PackageFilter = db.Packages.Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((int)EnumData.ProcessStatus.已出貨) && !string.IsNullOrEmpty(p.TrackingNumber) && !p.DeliveryStatus.Value.Equals((int)DeliveryStatusType.Delivered));
                             var ApiList = new List<byte> { (byte)EnumData.CarrierType.DHL, (byte)EnumData.CarrierType.FedEx, (byte)EnumData.CarrierType.Sendle };
                             var ApiFilter = db.CarrierAPI.AsNoTracking().Where(a => a.IsEnable && ApiList.Contains(a.Type.Value));
                             var packageList = PackageFilter.Join(db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable)
@@ -499,14 +499,21 @@ namespace QDLogistics.Controllers
 
                             foreach (var package in packageList)
                             {
-                                track.SetOrder(package.Orders, package);
-                                result = track.Track();
+                                try
+                                {
+                                    track.SetOrder(package.Orders, package);
+                                    result = track.Track();
 
-                                package.PickUpDate = result.PickUpDate;
-                                package.DeliveryDate = result.DeliveryDate;
-                                package.DeliveryStatus = result.DeliveryStatus;
-                                package.DeliveryNote = result.DeliveryNote;
-                                db.Entry(package).State = System.Data.Entity.EntityState.Modified;
+                                    package.ScanDateA = result.PickupDate;
+                                    package.ArrivalDate = result.DeliveryDate;
+                                    package.DeliveryStatus = result.DeliveryStatus;
+                                    package.DeliveryNote = result.DeliveryNote;
+                                    db.Entry(package).State = System.Data.Entity.EntityState.Modified;
+                                }
+                                catch (Exception e)
+                                {
+                                    message += e.InnerException?.Message ?? e.Message;
+                                }
                             }
                             db.SaveChanges();
                         }
@@ -563,8 +570,8 @@ namespace QDLogistics.Controllers
                                 var WinitShippingMethod = db.CarrierAPI.AsNoTracking().Where(api => api.IsEnable && api.Type.Value.Equals((byte)EnumData.CarrierType.Winit))
                                     .SelectMany(api => api.Carriers.Where(c => c.IsEnable)).SelectMany(c => c.ShippingMethod.Where(s => s.IsEnable)).Select(s => s.ID).Distinct().ToArray();
                                 var OrderFilter = db.Orders.AsNoTracking().Where(o => OrderIDs.Contains(o.OrderID.ToString()));
-                                var PackageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.DeliveryStatus.Value.Equals((int)DeliveryStatusType.Delivered) && WinitShippingMethod.Contains(p.ShippingMethod.Value));
-                                var dataList = OrderFilter.ToList().Join(PackageFilter.ToList(), o => o.OrderID, p => p.OrderID.Value, (order, package) => new { order, package }).ToList();
+                                var PackageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && !p.DeliveryStatus.Value.Equals((int)DeliveryStatusType.Delivered) && WinitShippingMethod.Contains(p.ShippingMethod.Value));
+                                var dataList = OrderFilter.Join(PackageFilter, o => o.OrderID, p => p.OrderID.Value, (order, package) => new { order, package }).ToList();
 
                                 if (dataList.Any())
                                 {
@@ -601,8 +608,8 @@ namespace QDLogistics.Controllers
                                         }
 
                                         data.package.WinitNo = trackData.documentNo;
-                                        data.package.PickUpDate = result.PickUpDate;
-                                        data.package.DeliveryDate = result.DeliveryDate;
+                                        data.package.ScanDateA = result.PickupDate;
+                                        data.package.ArrivalDate = result.DeliveryDate;
                                         data.package.DeliveryStatus = result.DeliveryStatus;
                                         data.package.DeliveryNote = result.DeliveryNote;
 
@@ -671,14 +678,13 @@ namespace QDLogistics.Controllers
                                 List<DirectLineLabel> remindList = new List<DirectLineLabel>();
                                 DateTime today = new TimeZoneConvert().ConvertDateTime(EnumData.TimeZone.EST);
 
-                                Packages package;
                                 //var directLineList = db.DirectLine.AsNoTracking().Where(d => d.IsEnable).ToList();
                                 foreach (DirectLineLabel label in labelList)
                                 {
-                                    package = label.Packages.FirstOrDefault(p => p.IsEnable.Value);
-
                                     try
                                     {
+                                        Packages package = label.Packages.FirstOrDefault(p => p.IsEnable.Value);
+
                                         if (package == null) throw new Exception("Not find package!");
 
                                         Orders order = package.Orders;
@@ -725,7 +731,7 @@ namespace QDLogistics.Controllers
                                                     {
                                                         syncTask.Start();
                                                         SyncProcess sync = new SyncProcess(session);
-                                                        return sync.Update_Tracking(package);
+                                                        return sync.Update_Tracking(db.Packages.Find(package.ID));
                                                     }));
 
                                                     using (CaseLog CaseLog = new CaseLog(package, session))
@@ -763,7 +769,7 @@ namespace QDLogistics.Controllers
                                     }
                                     catch (Exception e)
                                     {
-                                        message += string.Format("Label-{0}：{1};", package.TagNo, e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message);
+                                        message += string.Format("Label-{0}：{1};", label.LabelID, e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message);
                                     }
                                 }
 

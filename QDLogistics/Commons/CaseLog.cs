@@ -639,9 +639,9 @@ namespace QDLogistics.Commons
 
                 if (eventData.Request.Equals((byte)EnumData.CaseEventRequest.Successful))
                 {
+                    packageData.TagNo = eventData.NewLabelID;
                     packageData.ShippingMethod = eventData.MethodID;
                     packageData.TrackingNumber = GetTrackingNumber();
-                    packageData.TagNo = eventData.NewLabelID;
                     Packages.Update(packageData, packageData.ID);
 
                     eventData.Status = (byte)EnumData.CaseEventStatus.Close;

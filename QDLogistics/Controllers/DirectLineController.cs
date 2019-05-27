@@ -1918,17 +1918,21 @@ namespace QDLogistics.Controllers
                                     ShippingMethod method = db.ShippingMethod.Find(box.FirstMileMethod);
 
                                     TrackResult boxResult = TrackOrder.Track(box, method.Carriers.CarrierAPI);
-                                    box.PickUpDate = boxResult.PickUpDate;
+                                    box.PickUpDate = boxResult.PickupDate;
                                     box.DeliveryNote = boxResult.DeliveryNote;
                                     box.DeliveryDate = boxResult.DeliveryDate;
-                                    db.Entry(box).State = System.Data.Entity.EntityState.Modified;
+
+                                    foreach (Packages package in box.Packages)
+                                    {
+                                        package.FirstMilePickupDate = box.PickUpDate;
+                                        package.FirstMileArrivalDate = box.DeliveryDate;
+                                    }
 
                                     if (boxResult.DeliveryStatus.Equals((int)DeliveryStatusType.Delivered))
                                     {
                                         MyHelp.Log("Box", box.BoxID, "寄送Box到貨通知", session);
 
                                         box.ShippingStatus = box.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.延誤中) ? (byte)EnumData.DirectLineStatus.延誤後抵達 : (byte)EnumData.DirectLineStatus.已到貨;
-                                        db.Entry(box).State = System.Data.Entity.EntityState.Modified;
 
                                         string basePath = HostingEnvironment.MapPath("~/FileUploads");
                                         DirectLine directLine = db.DirectLine.Find(box.DirectLine);
@@ -1982,7 +1986,6 @@ namespace QDLogistics.Controllers
                                         if (DateTime.Compare(deliveryDate, DateTime.UtcNow) < 0 && box.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.運輸中))
                                         {
                                             box.ShippingStatus = (byte)EnumData.DirectLineStatus.延誤中;
-                                            db.Entry(box).State = System.Data.Entity.EntityState.Modified;
                                         }
                                     }
                                 }
@@ -2420,7 +2423,7 @@ namespace QDLogistics.Controllers
                                         {
                                             syncTask.Start();
                                             SyncProcess sync = new SyncProcess(session);
-                                            return sync.Update_Tracking(package);
+                                            return sync.Update_Tracking(db.Packages.Find(package.ID));
                                         }));
 
                                         using (CaseLog CaseLog = new CaseLog(package, session))

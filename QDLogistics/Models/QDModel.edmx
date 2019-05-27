@@ -339,8 +339,11 @@
           <Property Name="ExportMethod" Type="tinyint" />
           <Property Name="EstimatedDeliveryDate" Type="datetime2" Precision="7" />
           <Property Name="DispatchDate" Type="datetime" />
-          <Property Name="PickUpDate" Type="datetime2" Precision="7" />
-          <Property Name="DeliveryDate" Type="datetime2" Precision="7" />
+          <Property Name="FirstMilePickupDate" Type="datetime2" Precision="7" />
+          <Property Name="FirstMileArrivalDate" Type="datetime2" Precision="7" />
+          <Property Name="ScanDateA" Type="datetime2" Precision="7" />
+          <Property Name="ScanDateB" Type="datetime2" Precision="7" />
+          <Property Name="ArrivalDate" Type="datetime2" Precision="7" />
           <Property Name="DeliveryStatus" Type="int" />
           <Property Name="DeliveryNote" Type="nvarchar" MaxLength="300" />
           <Property Name="WinitNo" Type="nvarchar" MaxLength="50" />
@@ -2079,8 +2082,11 @@
           <Property Name="ExportMethod" Type="Byte" />
           <Property Name="EstimatedDeliveryDate" Type="DateTime" Precision="7" />
           <Property Name="DispatchDate" Type="DateTime" Precision="3" />
-          <Property Name="PickUpDate" Type="DateTime" Precision="7" />
-          <Property Name="DeliveryDate" Type="DateTime" Precision="7" />
+          <Property Name="FirstMilePickupDate" Type="DateTime" Precision="7" />
+          <Property Name="FirstMileArrivalDate" Type="DateTime" Precision="7" />
+          <Property Name="ScanDateA" Type="DateTime" Precision="7" />
+          <Property Name="ScanDateB" Type="DateTime" Precision="7" />
+          <Property Name="ArrivalDate" Type="DateTime" Precision="7" />
           <Property Name="DeliveryStatus" Type="Int32" />
           <Property Name="DeliveryNote" Type="String" MaxLength="300" FixedLength="false" Unicode="true" />
           <Property Name="WinitNo" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
@@ -2766,6 +2772,11 @@
           <EntitySetMapping Name="Packages">
             <EntityTypeMapping TypeName="QDLogisticsModel.Packages">
               <MappingFragment StoreEntitySet="Packages">
+                <ScalarProperty Name="ArrivalDate" ColumnName="ArrivalDate" />
+                <ScalarProperty Name="ScanDateB" ColumnName="ScanDateB" />
+                <ScalarProperty Name="ScanDateA" ColumnName="ScanDateA" />
+                <ScalarProperty Name="FirstMileArrivalDate" ColumnName="FirstMileArrivalDate" />
+                <ScalarProperty Name="FirstMilePickupDate" ColumnName="FirstMilePickupDate" />
                 <ScalarProperty Name="WorkDays" ColumnName="WorkDays" />
                 <ScalarProperty Name="NeedInsurance" ColumnName="NeedInsurance" />
                 <ScalarProperty Name="DLCurrency" ColumnName="DLCurrency" />
@@ -2787,8 +2798,6 @@
                 <ScalarProperty Name="WinitNo" ColumnName="WinitNo" />
                 <ScalarProperty Name="DeliveryNote" ColumnName="DeliveryNote" />
                 <ScalarProperty Name="DeliveryStatus" ColumnName="DeliveryStatus" />
-                <ScalarProperty Name="DeliveryDate" ColumnName="DeliveryDate" />
-                <ScalarProperty Name="PickUpDate" ColumnName="PickUpDate" />
                 <ScalarProperty Name="DispatchDate" ColumnName="DispatchDate" />
                 <ScalarProperty Name="EstimatedDeliveryDate" ColumnName="EstimatedDeliveryDate" />
                 <ScalarProperty Name="ExportMethod" ColumnName="ExportMethod" />

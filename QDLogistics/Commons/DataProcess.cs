@@ -92,7 +92,7 @@ namespace QDLogistics.Commons
                     obj.Add("Comment", data.package.Comment);
                     obj.Add("SerialNumber", data.item.SerialNumber);
                     obj.Add("DispatchDate", data.package.DispatchDate.HasValue ? data.package.DispatchDate.Value.ToString("MM/dd/yyyy hh:mm:ss tt") : "");
-                    obj.Add("PickUpDate", data.package.PickUpDate.HasValue ? data.package.PickUpDate.Value.ToString("MM/dd/yyyy hh:mm:ss tt") : "");
+                    obj.Add("PickUpDate", data.package.ScanDateA.HasValue ? data.package.ScanDateA.Value.ToString("MM/dd/yyyy hh:mm:ss tt") : "");
                     obj.Add("Tracking", data.package.TrackingNumber);
                     obj.Add("DeliveryStatus", data.package.DeliveryStatus);
                     obj.Add("DispatchTime", "");
@@ -235,8 +235,6 @@ namespace QDLogistics.Commons
             package.Qty = packageDetail.Qty;
             package.ShippingMethodName = packageDetail.ShippingMethodName.Trim();
             package.EstimatedDeliveryDate = packageDetail.EstimatedDeliveryDate;
-            package.DeliveryDate = packageDetail.DeliveryDate;
-            package.DeliveryStatus = (int)packageDetail.DeliveryStatus;
             package.FinalShippingFee = packageDetail.FinalShippingFee;
             package.Weight = packageDetail.Weight;
             package.Length = packageDetail.Length;

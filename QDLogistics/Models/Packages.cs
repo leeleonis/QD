@@ -42,8 +42,11 @@ namespace QDLogistics.Models
         public Nullable<byte> ExportMethod { get; set; }
         public Nullable<System.DateTime> EstimatedDeliveryDate { get; set; }
         public Nullable<System.DateTime> DispatchDate { get; set; }
-        public Nullable<System.DateTime> PickUpDate { get; set; }
-        public Nullable<System.DateTime> DeliveryDate { get; set; }
+        public Nullable<System.DateTime> FirstMilePickupDate { get; set; }
+        public Nullable<System.DateTime> FirstMileArrivalDate { get; set; }
+        public Nullable<System.DateTime> ScanDateA { get; set; }
+        public Nullable<System.DateTime> ScanDateB { get; set; }
+        public Nullable<System.DateTime> ArrivalDate { get; set; }
         public Nullable<int> DeliveryStatus { get; set; }
         public string DeliveryNote { get; set; }
         public string WinitNo { get; set; }

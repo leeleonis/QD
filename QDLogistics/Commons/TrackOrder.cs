@@ -13,10 +13,12 @@ namespace QDLogistics.Commons
 {
     public class TrackOrder
     {
-        private Orders _order;
-        private Packages _package;
-        private Carriers _carrier;
-        private string _trackingNumber;
+        private Orders orderData;
+        private Packages packageData;
+        private Carriers firstMile_carrierData;
+        private Carriers carrierData;
+
+        private TimeZoneConvert time_zone = new TimeZoneConvert();
 
         public TrackOrder()
         {
@@ -34,10 +36,9 @@ namespace QDLogistics.Commons
 
         public void SetOrder(Orders order, Packages package)
         {
-            _order = order;
-            _package = package;
-            _carrier = _package.Method != null ? _package.Method.Carriers : null;
-            _trackingNumber = _package.TrackingNumber;
+            orderData = order;
+            packageData = package;
+            carrierData = packageData.Method?.Carriers;
         }
 
         public TrackResult Track()
@@ -46,31 +47,29 @@ namespace QDLogistics.Commons
 
             try
             {
-                TimeZoneConvert timeZone = new TimeZoneConvert();
-
-                if (_order.Payments.Any())
+                if (orderData.Payments.Any())
                 {
-                    result.PaymentDate = timeZone.InitDateTime(_order.Payments.First().AuditDate.Value, EnumData.TimeZone.EST).Utc;
+                    result.PaymentDate = time_zone.InitDateTime(orderData.Payments.First().AuditDate.Value, EnumData.TimeZone.EST).Utc;
                 }
+                
+                if (carrierData == null) throw new Exception("Not found carrier!");
 
-                if (_carrier == null) throw new Exception("Not found carrier!");
-
-                switch (_carrier.CarrierAPI.Type.Value)
+                switch (carrierData.CarrierAPI.Type.Value)
                 {
                     case (byte)EnumData.CarrierType.DHL:
-                        result = DHL_Track(_carrier.CarrierAPI, _trackingNumber);
+                        result = DHL_Track(carrierData.CarrierAPI, packageData.TrackingNumber);
                         break;
                     case (byte)EnumData.CarrierType.FedEx:
-                        result = FedEx_Track(_carrier.CarrierAPI, _trackingNumber);
+                        result = FedEx_Track(carrierData.CarrierAPI, packageData.TrackingNumber);
                         break;
                     case (byte)EnumData.CarrierType.Sendle:
-                        result = Sendle_Track(_carrier.CarrierAPI, _trackingNumber);
+                        result = Sendle_Track(carrierData.CarrierAPI, packageData.TrackingNumber);
                         break;
                 }
             }
             catch (Exception e)
             {
-                throw new Exception(_order.OrderID + " - " + e.Message);
+                throw new Exception(orderData.OrderID + " - " + e.Message);
             }
 
             return result;
@@ -82,11 +81,9 @@ namespace QDLogistics.Commons
 
             try
             {
-                TimeZoneConvert timeZone = new TimeZoneConvert();
-                
-                if (_order.Payments.Any())
+                if (orderData.Payments.Any())
                 {
-                    result.PaymentDate = timeZone.InitDateTime(_order.Payments.First().AuditDate.Value, EnumData.TimeZone.EST).Utc;
+                    result.PaymentDate = time_zone.InitDateTime(orderData.Payments.First().AuditDate.Value, EnumData.TimeZone.EST).Utc;
                 }
 
                 Winit_API winit = new Winit_API();
@@ -100,7 +97,7 @@ namespace QDLogistics.Commons
                 {
                     if (Winit_EventList.Any(e => e.status == "DIC"))
                     {
-                        result.PickUpDate = Winit_EventList.First(e => e.status == "DIC").scandateTime.ToUniversalTime();
+                        result.PickupDate = Winit_EventList.First(e => e.status == "DIC").scandateTime.ToUniversalTime();
                         result.DeliveryStatus = (int)OrderService.DeliveryStatusType.Intransit;
                     }
 
@@ -115,7 +112,7 @@ namespace QDLogistics.Commons
             }
             catch (Exception e)
             {
-                throw new Exception(_order.OrderID + " - " + e.Message);
+                throw new Exception(orderData.OrderID + " - " + e.Message);
             }
 
             return result;
@@ -161,7 +158,7 @@ namespace QDLogistics.Commons
                 {
                     if (DHL_EventList.Any(e => e.ServiceEvent.EventCode == "PU"))
                     {
-                        result.PickUpDate = DHL_EventList.Where(e => e.ServiceEvent.EventCode == "PU").Select(e => timeZone.InitDateTime(e.Date.Add(e.Time.TimeOfDay), EnumData.TimeZone.TST).Utc).First();
+                        result.PickupDate = DHL_EventList.Where(e => e.ServiceEvent.EventCode == "PU").Select(e => timeZone.InitDateTime(e.Date.Add(e.Time.TimeOfDay), EnumData.TimeZone.TST).Utc).First();
                         result.DeliveryStatus = (int)OrderService.DeliveryStatusType.Intransit;
                     }
 
@@ -189,6 +186,12 @@ namespace QDLogistics.Commons
 
             FedEx_API FedEx = new FedEx_API(api);
             TrackReply FedEx_Result = FedEx.Tracking(trackingNumber);
+
+            if(FedEx_Result.HighestSeverity != NotificationSeverityType.SUCCESS)
+            {
+                throw new Exception(string.Join(";", FedEx_Result.Notifications.Select(n => n.Message).ToArray()));
+            }
+
             TrackDetail detail = FedEx_Result.CompletedTrackDetails[0].TrackDetails[0];
 
             if (detail.Events != null)
@@ -197,7 +200,7 @@ namespace QDLogistics.Commons
 
                 if (FedEx_EventList.Any(e => e.EventType == "PU"))
                 {
-                    result.PickUpDate = FedEx_EventList.First(e => e.EventType == "PU").Timestamp.ToUniversalTime();
+                    result.PickupDate = FedEx_EventList.First(e => e.EventType == "PU").Timestamp.ToUniversalTime();
                     result.DeliveryStatus = (int)OrderService.DeliveryStatusType.Intransit;
                 }
 
@@ -224,7 +227,7 @@ namespace QDLogistics.Commons
             {
                 if(Sendle_Result.tracking_events.Any(e => e.event_type == "Pickup"))
                 {
-                    result.PickUpDate = Sendle_Result.tracking_events.First(e => e.event_type == "Pickup").scan_time;
+                    result.PickupDate = Sendle_Result.tracking_events.First(e => e.event_type == "Pickup").scan_time;
                     result.DeliveryStatus = (int)OrderService.DeliveryStatusType.Intransit;
                 }
 
@@ -243,39 +246,23 @@ namespace QDLogistics.Commons
 
     public class TrackResult
     {
-        private DateTime _paymentDate;
-        private DateTime _pickUpDate;
-        private DateTime _deliveryDate;
-
         public TrackResult()
         {
             DeliveryStatus = (int)OrderService.DeliveryStatusType.UnShipped;
         }
 
-        public DateTime PaymentDate
-        {
-            get { return this._paymentDate; }
-            set { this._paymentDate = value; }
-        }
-        public DateTime PickUpDate
-        {
-            get { return this._pickUpDate; }
-            set { this._pickUpDate = value; }
-        }
-        public DateTime DeliveryDate
-        {
-            get { return this._deliveryDate; }
-            set { this._deliveryDate = value; }
-        }
+        public DateTime PaymentDate { get; set; }
+        public DateTime? PickupDate { get; set; }
+        public DateTime? DeliveryDate { get; set; }
         public int DeliveryStatus { get; set; }
         public string DeliveryNote { get; set; }
         public TimeSpan DispatchTime
         {
             get
             {
-                if(!_paymentDate.Equals(DateTime.MinValue) && !_pickUpDate.Equals(DateTime.MinValue))
+                if(!PaymentDate.Equals(DateTime.MinValue) && PickupDate.HasValue)
                 {
-                    return this._pickUpDate - this._paymentDate;
+                    return PickupDate.Value - PaymentDate;
                 }
 
                 return TimeSpan.Zero;
@@ -285,9 +272,9 @@ namespace QDLogistics.Commons
         {
             get
             {
-                if (!_pickUpDate.Equals(DateTime.MinValue) && !_deliveryDate.Equals(DateTime.MinValue))
+                if (PickupDate.HasValue && DeliveryDate.HasValue)
                 {
-                    return this._deliveryDate - this._pickUpDate;
+                    return DeliveryDate.Value - PickupDate.Value;
                 }
 
                 return TimeSpan.Zero;

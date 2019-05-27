@@ -1132,13 +1132,13 @@ namespace QDLogistics.Controllers
                 {
                     DateTime pickUpDateFrom = new DateTime(filter.PickUpDateFrom.Year, filter.PickUpDateFrom.Month, filter.PickUpDateFrom.Day, 0, 0, 0);
                     pickUpDateFrom = new TimeZoneConvert(pickUpDateFrom, MyHelp.GetTimeZone((int)Session["TimeZone"])).Utc;
-                    PackageFilter = PackageFilter.Where(p => DateTime.Compare(p.PickUpDate.Value, pickUpDateFrom) >= 0);
+                    PackageFilter = PackageFilter.Where(p => DateTime.Compare(p.ScanDateA.Value, pickUpDateFrom) >= 0);
                 }
                 if (!filter.PickUpDateTo.Equals(new DateTime()))
                 {
                     DateTime pickUpDateTo = new DateTime(filter.PickUpDateTo.Year, filter.PickUpDateTo.Month, filter.PickUpDateTo.Day + 1, 0, 0, 0);
                     pickUpDateTo = new TimeZoneConvert(pickUpDateTo, MyHelp.GetTimeZone((int)Session["TimeZone"])).Utc;
-                    PackageFilter = PackageFilter.Where(p => DateTime.Compare(p.PickUpDate.Value, pickUpDateTo) < 0);
+                    PackageFilter = PackageFilter.Where(p => DateTime.Compare(p.ScanDateA.Value, pickUpDateTo) < 0);
                 }
 
                 /** Item Filter **/
@@ -1229,12 +1229,16 @@ namespace QDLogistics.Controllers
                         StatusCode = Enum.GetName(typeof(OrderStatusCode), data.order.StatusCode),
                         Comment = !string.IsNullOrEmpty(data.package.Comment) ? data.package.Comment : "",
                         SerialNumber = data.itemCount == 1 ? (serialOfItem.ContainsKey(data.item.ID) ? serialOfItem[data.item.ID] : "None") : "Multi",
-                        PickUpDate = data.package.PickUpDate != null && !data.package.PickUpDate.Equals(DateTime.MinValue) ? TimeZoneConvert.InitDateTime(data.package.PickUpDate.Value, EnumData.TimeZone.UTC).ConvertDateTime(EnumData.TimeZone.TST).ToString("MM/dd/yyyy<br />hh:mm tt") : "",
                         TrackingNumber = data.package.TrackingNumber,
                         WorkDays = data.package.WorkDays,
+                        FirstMilePickupDate = TimeZoneConvert.DateTimeToString(data.package.FirstMilePickupDate, EnumData.TimeZone.UTC, TimeZone),
+                        FirstMileArrivalDate = TimeZoneConvert.DateTimeToString(data.package.FirstMileArrivalDate, EnumData.TimeZone.UTC, TimeZone),
+                        ScanDateA = TimeZoneConvert.DateTimeToString(data.package.ScanDateA, EnumData.TimeZone.UTC, TimeZone),
+                        ScanDateB = TimeZoneConvert.DateTimeToString(data.package.ScanDateB, EnumData.TimeZone.UTC, TimeZone),
+                        ArrivalDate = TimeZoneConvert.DateTimeToString(data.package.ArrivalDate, EnumData.TimeZone.UTC, TimeZone),
                         DeliveryStatus = data.package.DeliveryNote,
-                        DispatchTime = data.payment != null ? FormatTime(data.package.PickUpDate, TimeZoneConvert.InitDateTime(data.payment.AuditDate.Value, EnumData.TimeZone.EST).Utc) : "",
-                        TransitTime = FormatTime(data.package.DeliveryDate, data.package.PickUpDate),
+                        DispatchTime = data.payment != null ? FormatTime(data.package.ScanDateA, TimeZoneConvert.InitDateTime(data.payment.AuditDate.Value, EnumData.TimeZone.EST).Utc) : "",
+                        TransitTime = FormatTime(data.package.ArrivalDate, data.package.ScanDateA),
                         RedirectWarehouse = warehouses[data.item.ReturnedToWarehouseID.Value],
                         RMA = data.package.RMAId,
                         Download = !string.IsNullOrEmpty(data.package.FilePath) ? "FileUploads/" + string.Join("", data.package.FilePath.Skip(data.package.FilePath.IndexOf("export"))) : ""
@@ -1248,7 +1252,7 @@ namespace QDLogistics.Controllers
 
             return Json(new { total = total, rows = dataList }, JsonRequestBehavior.AllowGet);
         }
-
+        
         private string FormatTime(DateTime? dateTime1, DateTime? dateTime2)
         {
             string format = "";

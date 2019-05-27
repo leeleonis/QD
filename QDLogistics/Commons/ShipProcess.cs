@@ -1040,7 +1040,7 @@ namespace QDLogistics.Commons
                     {
                         eBayBuyerID = order.eBayUserID,
                         eBayItemID = item.eBayItemID,
-                        eBaySellerID = "",
+                        eBaySellerID = "qd_us",
                         eBayTransactionID = item.eBayTransactionId,
                         productCode = item.ProductID,
                         productNum = item.Qty.ToString()
