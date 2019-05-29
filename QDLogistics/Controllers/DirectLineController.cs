@@ -876,7 +876,9 @@ namespace QDLogistics.Controllers
                         foreach (var pick in group.Value.Select(p => p.Value))
                             pick.SetWeight(SkuData.First(s => s.Sku.Equals(pick.ProductID)).Weight);
             }
-            List<SerialNumbers> itemSerials = db.SerialNumbers.AsNoTracking().Where(s => productIDs.Contains(s.ProductID)).ToList();
+            var pickupCompare = DateTime.UtcNow.AddHours(-12);
+            var shippedItem = db.PickProduct.AsNoTracking().Where(p => p.IsEnable && productIDs.Contains(p.ProductID) && p.PickUpDate.Value.CompareTo(pickupCompare) >= 0).Select(p => p.ItemID).ToArray();
+            List<SerialNumbers> itemSerials = db.SerialNumbers.AsNoTracking().Where(s => productIDs.Contains(s.ProductID) && shippedItem.Contains(s.OrderItemID)).ToList();
             List<PurchaseItemReceive> purchaseItemSerial = db.PurchaseItemReceive.AsNoTracking().Where(s => productIDs.Contains(s.ProductID)).ToList();
             var serialList = productIDs.ToDictionary(p => p, p => new
             {

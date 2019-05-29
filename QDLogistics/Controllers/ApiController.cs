@@ -267,7 +267,9 @@ namespace QDLogistics.Controllers
                     Dictionary<string, bool> skuList = db.Skus.AsNoTracking().Where(s => s.IsEnable.Value && productIDs.Contains(s.Sku)).ToDictionary(s => s.Sku, s => s.Battery.HasValue ? s.Battery.Value : false);
                     var productList = ProductList.Select(p => p.pick.SetBattery(skuList[p.pick.ProductID])).GroupBy(p => p.ProductID).ToDictionary(group => group.Key.ToString(), group => group.ToDictionary(p => p.ItemID.ToString()));
 
-                    List<SerialNumbers> itemSerials = db.SerialNumbers.AsNoTracking().Where(s => productIDs.Contains(s.ProductID)).ToList();
+                    var pickupCompare = DateTime.UtcNow.AddHours(-12);
+                    var shippedItem = db.PickProduct.AsNoTracking().Where(p => p.IsEnable && productIDs.Contains(p.ProductID) && p.PickUpDate.Value.CompareTo(pickupCompare) >= 0).Select(p => p.ItemID).ToArray();
+                    List<SerialNumbers> itemSerials = db.SerialNumbers.AsNoTracking().Where(s => productIDs.Contains(s.ProductID) && shippedItem.Contains(s.OrderItemID)).ToList();
                     List<PurchaseItemReceive> purchaseItemSerial = db.PurchaseItemReceive.AsNoTracking().Where(s => productIDs.Contains(s.ProductID)).ToList();
                     var serialList = productIDs.ToDictionary(p => p, p => new
                     {

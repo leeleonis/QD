@@ -33,33 +33,6 @@ namespace QDLogistics.Controllers
 
         public void Index()
         {
-            var package = db.Packages.Find(691393);
-            string carrier = package.Method.Carriers != null ? package.Method.Carriers.Name : "";
-            //SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
-
-            //int OrderID = 5575671;
-            //var order = db.Orders.Find(OrderID);
-            //var package = order.Packages.First(p => p.IsEnable.Value);
-            //if (SCWS.Is_login)
-            //{
-            //    OrderService.OrderData orderData = SCWS.Get_OrderData(OrderID);
-            //    Order SC_order = orderData.Order;
-            //    Package SC_package = SC_order.Packages.First(p => p.ID.Equals(package.ID));
-
-            //    string carrier = package.Method.Carriers != null ? package.Method.Carriers.Name : "";
-            //    var weight = SC_package.Weight;
-            //    var stationID_1 = SC_package.StationID;
-            //    var fee = SC_package.FinalShippingFee;
-            //    //SCWS.Update_PackageShippingStatus(SC_package, (package.UploadTracking ? package.TrackingNumber : ""), carrier);
-
-            //    if (db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.OrderID.Value.Equals(package.OrderID.Value)).All(p => p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.已出貨)))
-            //    {
-            //        var stationID_2 = SC_order.StationID;
-            //        var location = SC_order.ShippingLocationID;
-            //        //SCWS.Update_OrderShippingStatus(SC_order, carrier);
-            //        MyHelp.Log("Packages", package.ID, string.Format("訂單【{0}】SC完成出貨", package.OrderID), Session);
-            //    }
-            //}
         }
 
         public void CheckDHL(int OrderID)

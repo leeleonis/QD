@@ -496,7 +496,8 @@
                 if (isEmpty(serial)) return error('不可為空!');
 
                 for (var pId in serialList) {
-                    //if($.inArray(serial, serialList[pId].used) != -1) return error("序號已被使用!");
+                    if ($.inArray(serial, serialList[pId].used) != -1) return error("序號已被使用!");
+
                     if($.inArray(serial, serialList[pId].serials) != -1){
                         productId = pId;
                         serialNumber = serial;
