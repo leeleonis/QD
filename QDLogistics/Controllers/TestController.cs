@@ -328,7 +328,6 @@ namespace QDLogistics.Controllers
             IDS_Track IDS = new IDS_Track(package.Method.Carriers.CarrierAPI);
             //var result = IDS.CreateOrder(package);
             var label = IDS.GetTrackingNumber(package.TrackingNumber);
-
         }
 
         private void Box_Test(string boxID)

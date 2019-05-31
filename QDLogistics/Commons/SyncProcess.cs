@@ -537,15 +537,22 @@ namespace QDLogistics.Commons
         public string Update_PurchaseOrder(int PackageID, bool needUpload = true)
         {
             string Message = "";
-            Packages package = Packages.Get(PackageID);
-            PurchaseOrderService.PurchaseItemReceive[] purchaseItemReceive = null;
-            List<PurchaseOrderService.PurchaseItemReceiveSerial> receiveSerial = new List<PurchaseOrderService.PurchaseItemReceiveSerial>();
+            Packages package = db.Packages.Find(PackageID);
+            //PurchaseOrderService.PurchaseItemReceive[] purchaseItemReceive = null;
+            //List<PurchaseOrderService.PurchaseItemReceiveSerial> receiveSerial = new List<PurchaseOrderService.PurchaseItemReceiveSerial>();
 
             try
             {
                 MyHelp.Log("Orders", package.OrderID, string.Format("訂單包裹 - PO【{0}】更新", package.POId), Session);
 
-                if (!SCWS.Is_login) throw new Exception("SC is not logged in!");
+                //using (StockKeepingUnit stock = new StockKeepingUnit())
+                //{
+                //    stock.RecordShippedOrder(package.ID);
+                //    stock.CreatePO(package.ID);
+                //    MyHelp.Log("Inventory", package.OrderID, string.Format("訂單【{0}】傳送出貨資料至PO系統", package.OrderID), Session);
+                //}
+
+                //if (!SCWS.Is_login) throw new Exception("SC is not logged in!");
 
                 //PurchaseOrderService.Purchase purchaseOrder = SCWS.Get_PurchaseOrder(package.POId.Value);
                 //PurchaseOrderService.PurchaseItemReceiveRequest receiveRequest = new PurchaseOrderService.PurchaseItemReceiveRequest() { PurchaseID = purchaseOrder.ID };
@@ -608,24 +615,6 @@ namespace QDLogistics.Commons
             }
             catch (Exception e)
             {
-                if (receiveSerial.Any())
-                {
-                    //SCWS.Delete_PurchaseOrder_ItemReceive_Serials(receiveSerial.ToArray());
-                }
-
-                if (purchaseItemReceive != null)
-                {
-                    foreach (var Receive in purchaseItemReceive)
-                    {
-                        //SCWS.Delete_PurchaseOrder_ItemReceive(Receive);
-                    }
-                }
-
-                package.ProcessStatus = (int)EnumData.ProcessStatus.待出貨;
-                package.TrackingNumber = "";
-                Packages.Update(package, package.ID);
-                Packages.SaveChanges();
-
                 MyHelp.ErrorLog(e, string.Format("PO【{0}】更新失敗", package.POId), package.OrderID.ToString());
                 Message = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
             }

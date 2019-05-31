@@ -53,6 +53,37 @@ namespace QDLogistics.Commons
             return checkResult;
         }
 
+        public void RecordShippedOrder(int packageID)
+        {
+            List<dynamic> data = new List<dynamic>();
+            foreach (Items item in db.Packages.Find(packageID).Items.Where(i => i.IsEnable.Value))
+            {
+                if (item.SerialNumbers.Any())
+                {
+                    data.AddRange(item.SerialNumbers.Select(s => new
+                    {
+                        OrderID = s.OrderID.Value,
+                        SkuNo = s.ProductID,
+                        SerialsNo = s.SerialNumber,
+                        QTY = 1
+                    }).ToList());
+                }
+                else
+                {
+                    data.Add(new
+                    {
+                        OrderID = item.OrderID.Value,
+                        SkuNo = item.ProductID,
+                        SerialsNo = "",
+                        QTY = item.Qty.Value
+                    });
+                }
+            }
+            
+            Response<object> response = Request<object>("Ajax/ShipmentByOrder", "post", data);
+            if (!response.status) throw new Exception("PO Error: " + response.message);
+        }
+
         public void RecordOrderSkuStatement(int OrderID, string State)
         {
             Orders order = db.Orders.Find(OrderID);
@@ -88,6 +119,11 @@ namespace QDLogistics.Commons
 
             return response.data;
         }
+
+        //public int CreatePO(int packageID)
+        //{
+
+        //}
 
         public int CreateRMA(int OrderID, int ReturnWarehouseID)
         {
@@ -184,7 +220,7 @@ namespace QDLogistics.Commons
             public int Height { get; set; }
             public int Weight { get; set; }
             public string HSCode { get; set; }
-            public string ImagePath { get; set; }
+            public string[] ImagePath { get; set; }
         }
     }
 }

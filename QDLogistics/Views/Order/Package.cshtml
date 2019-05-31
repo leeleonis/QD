@@ -86,7 +86,6 @@
                             <div class="col-sm-8" style="padding:0px;">
                                 <table class="table table-bordered" style="margin-bottom:5px;">
                                     <tr>
-                                        <td rowspan="5"><img id="sku-img" height="150" /></td>
                                         <td colspan="2"><span id="sku-name">&nbsp;</span></td>
                                     </tr>
                                     <tr>
@@ -104,6 +103,9 @@
                                     <tr>
                                         <td><span id="weight-g"></span>&nbsp;g</td>
                                         <td><span id="weight-lb"></span>&nbsp;lb</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2" id="sku-pic"></td>
                                     </tr>
                                 </table>
                             </div>
@@ -562,7 +564,12 @@
             function showLogistic(sku) {
                 var data = SkuData.filter(data => data.Sku == sku);
                 if (data.length > 0) {
-                    $('#sku-img').attr('src', 'http://internal.qd.com.tw:8080/Uploads/' + data[0].ImagePath);
+                    if (data[0].ImagePath.length > 0) {
+                        $('#sku-pic').html('');
+                        $.each(data[0].ImagePath, function (i, fileName) {
+                            $('#sku-pic').append($('<img>').height(150).attr('src', 'http://internal.qd.com.tw:8080/Uploads/' + fileName));
+                        });
+                    }
                     $('#sku-name').html(data[0].Sku + '-' + data[0].Name);
                     $('#width-mm').html(data[0].Width);
                     $('#width-inch').html((data[0].Width * 0.0393700787).toFixed(2));
