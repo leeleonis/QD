@@ -362,7 +362,7 @@ namespace QDLogistics.Commons
                 //    SCWS.Update_Order(order);
                 //}
 
-                MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0} 完成建立RMA", orderData.OrderID), Session);
+                MyHelp.Log("CaseEvent", orderData.OrderID, string.Format("訂單【{0}】完成建立RMA", orderData.OrderID), Session);
             }
             catch (Exception e)
             {

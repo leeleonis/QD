@@ -463,7 +463,7 @@
                             var url = '@Url.Action("ReserveBox", "directLine")';
                             ajaxUrl(url, 'post', { BoxID: $boxID.text() }).done(function (response) {
                                 if (response['status']) {
-                                    alert('已完成包留!');
+                                    alert('已完成保留!');
                                     ProductSerialData.Refresh_Page();
                                 } else {
                                     alert(response['message']);

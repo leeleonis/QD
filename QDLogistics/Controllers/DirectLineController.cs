@@ -1554,6 +1554,7 @@ namespace QDLogistics.Controllers
                         string message = "";
 
                         HttpSessionStateBase Session = (HttpSessionStateBase)session;
+                        Orders newOrder = null;
 
                         try
                         {
@@ -1586,7 +1587,7 @@ namespace QDLogistics.Controllers
                                 }
                             }
 
-                            Orders newOrder = Orders.Get(newOrderID.Value);
+                            newOrder = Orders.Get(newOrderID.Value);
                             if (!CheckLabelSku(newOrder, serials)) throw new Exception(string.Format("新訂單【{0}】產品、數量不符合!", newOrder.OrderID));
 
                             MyHelp.Log("Orders", newOrder.OrderID, string.Format("訂單【{0}】更新出貨倉、運輸方式、產品序號", newOrder.OrderID), Session);
@@ -1765,9 +1766,6 @@ namespace QDLogistics.Controllers
                             }
                             else
                             {
-                                db.SerialNumbers.RemoveRange(db.SerialNumbers.Where(s => s.OrderID.Value.Equals(newOrder.OrderID)).ToList());
-                                db.SaveChanges();
-
                                 string msg = string.Format("新訂單【{0}】提交失敗", newOrder.OrderID);
                                 MyHelp.Log("Orders", newOrder.OrderID, msg + " - " + ShipResult.Message, Session);
                                 throw new Exception(msg + "! - " + ShipResult.Message);
@@ -1775,6 +1773,12 @@ namespace QDLogistics.Controllers
                         }
                         catch (Exception e)
                         {
+                            if(newOrder != null)
+                            {
+                                db.SerialNumbers.RemoveRange(db.SerialNumbers.Where(s => s.OrderID.Value.Equals(newOrder.OrderID)).ToList());
+                                db.SaveChanges();
+                            }
+
                             message = e.InnerException != null && string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
                             MyHelp.Log("DirectLineLabel", labelID, string.Format("標籤【{0}】再次寄送失敗 - {1}", labelID, message), Session);
                         }
