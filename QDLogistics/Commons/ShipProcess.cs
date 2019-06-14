@@ -79,7 +79,7 @@ namespace QDLogistics.Commons
 
             if (isDropShip)
             {
-                result = new ShipResult(true); //DropShip();
+                result = DropShip();
 
                 if (!result.Status) return result;
             }
@@ -347,40 +347,13 @@ namespace QDLogistics.Commons
         {
             try
             {
-                int CompanyID = order.CompanyID.Value; // SCWS.Get_CurrentCompanyID();
-                POVendor VendorData = SCWS.Get_Vendor_All(CompanyID).FirstOrDefault(v => v.DisplayName.Equals(warehouse.Name));
+                POVendor VendorData = SCWS.Get_Vendor_All(order.CompanyID.Value).FirstOrDefault(v => v.DisplayName.Equals(warehouse.Name));
 
-                Purchase newPurchase = SCWS.Create_PurchaseOrder(new Purchase()
+                using (StockKeepingUnit stock = new StockKeepingUnit())
                 {
-                    ID = 0,
-                    CompanyID = CompanyID,
-                    Priority = PriorityCodeType.Normal,
-                    Status = PurchaseOrderService.PurchaseStatus.Ordered,
-                    PurchaseTitle = string.Format("{0} dropship {1} {2}", warehouse.Name, package.OrderID.Value, SCWS.SyncOn.ToString("MMddyyyy")),
-                    VendorID = VendorData != null ? VendorData.ID : 0,
-                    VendorInvoiceNumber = "",
-                    Memo = !string.IsNullOrEmpty(package.SupplierComment) ? package.SupplierComment : "",
-                    DefaultWarehouseID = warehouse.ID,
-                    CreatedBy = SCWS.UserID,
-                    CreatedOn = SCWS.SyncOn
-                });
-
-                foreach (Items item in package.Items.Where(i => i.IsEnable.Equals(true)).ToList())
-                {
-                    PurchaseItem newPurchaseItem = SCWS.Create_PurchaseOrder_Item(new PurchaseItem()
-                    {
-                        PurchaseID = newPurchase.ID,
-                        ProductID = item.ProductID,
-                        ProductName = item.Skus.ProductName,
-                        UPC = item.Skus.UPC,
-                        QtyOrdered = item.Qty.Value,
-                        QtyReceived = 0,
-                        QtyReceivedToDate = 0,
-                        DefaultWarehouseID = warehouse.ID
-                    });
+                    package.POId = stock.CreatePO(package.ID, VendorData?.ID ?? 0);
                 }
 
-                package.POId = newPurchase.ID;
                 MyHelp.Log("PurchaseOrder", package.OrderID, string.Format("開啟 Purchase Order【{0}】成功", package.POId));
             }
             catch (Exception e)

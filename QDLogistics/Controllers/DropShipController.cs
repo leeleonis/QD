@@ -393,21 +393,6 @@ namespace QDLogistics.Controllers
                     {
                         try
                         {
-                            try
-                            {
-                                using (StockKeepingUnit stock = new StockKeepingUnit())
-                                {
-                                    stock.RecordShippedOrder(package.ID);
-                                    MyHelp.Log("Inventory", package.OrderID, string.Format("訂單【{0}】傳送出貨資料至PO系統", package.OrderID), Session);
-                                }
-                            }
-                            catch (Exception e)
-                            {
-                                string errorMsg = string.Format("傳送出貨資料至PO系統失敗，請通知處理人員：{0}", e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
-                                MyHelp.Log("Inventory", package.OrderID, string.Format("訂單【{0}】{1}", package.OrderID, errorMsg), Session);
-                                //result.Error(string.Format("訂單【{0}】{1}", package.OrderID, errorMsg));
-                            }
-
                             UpdatePurchaseOrder(package);
                         }
                         catch (Exception e)
@@ -614,21 +599,6 @@ namespace QDLogistics.Controllers
                                 OrderData order = SCWS.Get_OrderData(package.OrderID.Value);
                                 if (CheckOrderStatus(package, order.Order))
                                 {
-                                    try
-                                    {
-                                        using (StockKeepingUnit stock = new StockKeepingUnit())
-                                        {
-                                            stock.RecordShippedOrder(package.ID);
-                                            MyHelp.Log("Inventory", package.OrderID, string.Format("訂單【{0}】傳送出貨資料至PO系統", package.OrderID), session);
-                                        }
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        string errorMsg = string.Format("傳送出貨資料至PO系統失敗，請通知處理人員：{0}", e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
-                                        MyHelp.Log("Inventory", package.OrderID, string.Format("訂單【{0}】{1}", package.OrderID, errorMsg), session);
-                                        //result.Error(string.Format("訂單【{0}】{1}", package.OrderID, errorMsg));
-                                    }
-
                                     ThreadTask uploadPOTask = new ThreadTask(string.Format("直發商待出貨區 - 更新訂單【{0}】以及PO【{1}】資料至SC", package.OrderID, package.POId), session);
 
                                     lock (factory)

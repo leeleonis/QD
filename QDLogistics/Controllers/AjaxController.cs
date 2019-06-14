@@ -1031,7 +1031,6 @@ namespace QDLogistics.Controllers
                 {
                     string errorMsg = string.Format("傳送出貨資料至PO系統失敗，請通知處理人員：{0}", e.InnerException != null ? e.InnerException.Message.Trim() : e.Message.Trim());
                     MyHelp.Log("Inventory", package.OrderID, string.Format("訂單【{0}】{1}", package.OrderID, errorMsg), Session);
-                    //result.Error(string.Format("訂單【{0}】{1}", package.OrderID, errorMsg));
                 }
             }
 

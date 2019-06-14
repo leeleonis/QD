@@ -120,10 +120,38 @@ namespace QDLogistics.Commons
             return response.data;
         }
 
-        //public int CreatePO(int packageID)
-        //{
+        public int CreatePO(int packageID, int? vendorID = null)
+        {
+            var package = db.Packages.Find(packageID);
 
-        //}
+            if (package == null) throw new Exception("Not found package!");
+
+            var warehouse = package.Items.First(i => i.IsEnable.Value).ShipWarehouses;
+            var data = new
+            {
+                PuchaseID = package.POId ?? 0,
+                package.Orders.CompanyID,
+                VendorID = vendorID ?? 0,
+                PurchaseTitle = string.Format("{0} dropship {1} {2}", warehouse.Name, package.OrderID.Value, DateTime.UtcNow.ToString("MMddyyyy")),
+                DefaultWarehouseID = warehouse.ID,
+                TrackingNumber = package.TrackingNumber ?? "",
+                Memo = package.SupplierComment ?? "",
+                Items = package.Items.Where(i => i.IsEnable.Value).Select(i => new
+                {
+                    Sku = i.ProductID,
+                    Qty = i.Qty.Value,
+                    SerialNumber = i.SerialNumbers.ToArray()
+                }).ToArray()
+            };
+
+            Response<int?> response = Request<int?>("Ajax/CreateDropShipPO", "post", data);
+
+            if (!response.status) throw new Exception("PO Error：" + response.message);
+
+            if (!response.data.HasValue) throw new Exception("沒有取得 PO ID!");
+
+            return response.data.Value;
+        }
 
         public int CreateRMA(int OrderID, int ReturnWarehouseID)
         {
@@ -131,7 +159,7 @@ namespace QDLogistics.Commons
 
             if (!response.status) throw new Exception("PO Error：" + response.message);
 
-            if (!response.data.HasValue) throw new Exception("沒有取得RMA ID!");
+            if (!response.data.HasValue) throw new Exception("沒有取得 RMA ID!");
 
             return response.data.Value;
         }
