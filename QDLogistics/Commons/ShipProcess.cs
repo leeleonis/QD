@@ -1034,13 +1034,17 @@ namespace QDLogistics.Commons
                     productList = new List<createOutboundInfo_productList>()
                 };
 
+                string eBaySeller = "qd_us";
+                if (order.CompanyID.Equals(165)) eBaySeller = "qd_au";
+                if (order.CompanyID.Equals(275)) eBaySeller = "spidal";
+
                 foreach (Items item in package.Items.Where(i => i.IsEnable.Value))
                 {
                     data.productList.Add(new createOutboundInfo_productList()
                     {
                         eBayBuyerID = order.eBayUserID,
                         eBayItemID = item.eBayItemID,
-                        eBaySellerID = "qd_us",
+                        eBaySellerID = eBaySeller,
                         eBayTransactionID = item.eBayTransactionId,
                         productCode = item.ProductID,
                         productNum = item.Qty.ToString()

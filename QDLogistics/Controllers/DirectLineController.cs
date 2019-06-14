@@ -1274,7 +1274,7 @@ namespace QDLogistics.Controllers
                         {
                             if (directLine.Abbreviation.Equals("IDS (US)"))
                             {
-                                MyHelp.Log("Packages", package.ID, string.Format(string.Format("開始取得訂單【{0}】的 Tracking Number", directLine.Abbreviation, label.OrderID)), Session);
+                                MyHelp.Log("Packages", package.ID, string.Format(string.Format("開始取得訂單【{0}】的 Tracking Number", label.OrderID)), Session);
 
                                 var IDS = new IDS_API(package.Method.Carriers.CarrierAPI);
                                 package.TrackingNumber = IDS.GetTrackingNumber(package);
