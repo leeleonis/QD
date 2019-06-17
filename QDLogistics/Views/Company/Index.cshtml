@@ -45,8 +45,13 @@
                 height: window.screen.availHeight - 240,
                 columns: [[
                     { field: "ID", title: "Company ID / 公司 ID", width: "10%", align: "center", sortable: false },
-                    { field: "Name", title: "Name / 公司名稱", width: "50%", align: "center", sortable: false },
+                    { field: "CompanyName", title: "Name / 公司名稱", width: "50%", align: "center", sortable: false },
                     {
+                        field: "Suffix", title: "Suffix", width: "100", align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            return "<input type='text' class='form-control' id='Suffix-" + index + "' value='" + value + "' onchange='onSelect(" + index + ")' />";
+                        }
+                    },  {
                         field: "edit", title: "", width: "60", sortable: false,
                         formatter: function (value, row, index) {
                             return "<a class='btn btn-default btn-sm' href='@Url.Action("edit", "company")/" + row.ID + "'>EDIT</a>"
@@ -110,9 +115,7 @@
         function setData(row, index) {
             return {
                 ID: row.ID,
-                CompanyName: $("#Name-" + index).val(),
-                IsExport: $("#IsExport-" + index).prop("checked"),
-                IsBattery: $("#IsBattery-" + index).prop("checked")
+                Suffix: $("#Suffix-" + index).val()
             }
         }
 

@@ -1011,15 +1011,17 @@ namespace QDLogistics.Commons
                 if (order.CompanyID.Equals(165)) eBaySeller = "qd_au";
                 if (order.CompanyID.Equals(275)) eBaySeller = "spidal";
 
+                string suffix = order.Companies.Suffix;
                 foreach (Items item in package.Items.Where(i => i.IsEnable.Value))
                 {
+                    string sku = !string.IsNullOrEmpty(suffix) && !item.ProductID.ToLower().Contains(suffix) ? item.ProductID + suffix : item.ProductID;
                     data.productList.Add(new createOutboundInfo_productList()
                     {
                         eBayBuyerID = order.eBayUserID,
                         eBayItemID = item.eBayItemID,
                         eBaySellerID = eBaySeller,
                         eBayTransactionID = item.eBayTransactionId,
-                        productCode = item.ProductID,
+                        productCode = sku,
                         productNum = item.Qty.ToString()
                     });
                 }

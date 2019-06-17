@@ -22,6 +22,7 @@ namespace QDLogistics.Models
     
         public int ID { get; set; }
         public string CompanyName { get; set; }
+        public string Suffix { get; set; }
         public Nullable<int> TimeZone { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]

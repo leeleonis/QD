@@ -163,6 +163,7 @@
           </Key>
           <Property Name="ID" Type="int" Nullable="false" />
           <Property Name="CompanyName" Type="nvarchar" MaxLength="100" />
+          <Property Name="Suffix" Type="nvarchar" MaxLength="10" />
           <Property Name="TimeZone" Type="int" />
         </EntityType>
         <EntityType Name="CountryType">
@@ -1721,6 +1722,7 @@
           <Property Name="ID" Type="Int32" Nullable="false" />
           <Property Name="CompanyName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
           <NavigationProperty Name="Orders" Relationship="QDLogisticsModel.FK_Orders_Companies" FromRole="Companies" ToRole="Orders" />
+          <Property Name="Suffix" Type="String" MaxLength="10" FixedLength="false" Unicode="true" />
           <Property Name="TimeZone" Type="Int32" />
         </EntityType>
         <Association Name="FK_Orders_Companies">
@@ -2528,6 +2530,7 @@
           <EntitySetMapping Name="Companies">
             <EntityTypeMapping TypeName="QDLogisticsModel.Companies">
               <MappingFragment StoreEntitySet="Companies">
+                <ScalarProperty Name="Suffix" ColumnName="Suffix" />
                 <ScalarProperty Name="TimeZone" ColumnName="TimeZone" />
                 <ScalarProperty Name="CompanyName" ColumnName="CompanyName" />
                 <ScalarProperty Name="ID" ColumnName="ID" />

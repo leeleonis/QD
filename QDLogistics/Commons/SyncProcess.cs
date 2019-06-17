@@ -478,7 +478,31 @@ namespace QDLogistics.Commons
 
                 OrderData orderData = SCWS.Get_OrderData(package.OrderID.Value);
                 Order SC_order = orderData.Order;
-                Package SC_package = SC_order.Packages.First(p => p.ID.Equals(package.ID));
+                Package SC_package = SC_order.Packages.FirstOrDefault(p => p.ID.Equals(package.ID));
+
+                if(SC_package == null)
+                {
+                    MyHelp.Log("Packages", package.ID, "Not find package on SC website!", Session);
+
+                    package.IsEnable = false;
+                    SC_package = SC_order.Packages.First(p => p.ID.Equals(SC_order.Items.First(i => i.ID.Equals(package.Items.First(ii => ii.IsEnable.Value).ID)).PackageID));
+                    var newPackage = db.Packages.AsNoTracking().First(p => p.ID.Equals(package.ID));
+                    newPackage.ID = SC_package.ID;
+                    db.Packages.Add(newPackage);
+                    foreach (var item in package.Items)
+                    {
+                        item.PackageID = newPackage.ID;
+                    }
+                    foreach (var pick in db.PickProduct.Where(pick => pick.PackageID.Value.Equals(package.ID)))
+                    {
+                        pick.PackageID = newPackage.ID;
+                    }
+                    if (package.Label != null) package.Label.PackageID = newPackage.ID;
+                    db.SaveChanges();
+
+                    MyHelp.Log("Packages", package.ID, string.Format("Change package {0} to {1}", package.ID, newPackage.ID), Session);
+                    package = newPackage;
+                }
 
                 string carrier = "";
                 try

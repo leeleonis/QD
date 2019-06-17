@@ -45,7 +45,7 @@ namespace QDLogistics.Controllers
 
         [CheckSession]
         [HttpPost]
-        public ActionResult Edit([Bind(Include = "ID, CompanyName, TimeZone")] Companies company)
+        public ActionResult Edit([Bind(Include = "ID, CompanyName, Suffix, TimeZone")] Companies company)
         {
             if (!MyHelp.CheckAuth("company", "index", EnumData.AuthType.Edit)) return RedirectToAction("index", "company");
 

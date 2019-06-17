@@ -1547,12 +1547,32 @@ namespace QDLogistics.Controllers
 
                 dataList.AddRange(results.OrderBy(w => w.ID).Select(company => new
                 {
-                    ID = company.ID,
-                    Name = company.CompanyName
+                    company.ID,
+                    Suffix = company.Suffix ?? ""
                 }));
             }
 
             return Content(JsonConvert.SerializeObject(new { total = total, rows = dataList }), "appllication/json");
+        }
+
+
+        [CheckSession]
+        [HttpPost]
+        public ActionResult CompanyUpdate(List<Companies> data)
+        {
+            foreach (Companies cData in data)
+            {
+                Companies company = db.Companies.Find(cData.ID);
+                if (company != null)
+                {
+                    company.Suffix = cData.Suffix;
+                }
+
+                MyHelp.Log("Company", cData.ID, "更新公司資料");
+            }
+
+            db.SaveChanges();
+            return Content(JsonConvert.SerializeObject(new { status = true }), "appllication/json");
         }
 
 

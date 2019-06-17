@@ -261,7 +261,7 @@ namespace QDLogistics.Commons
 
             return package;
         }
-
+        
         public static Items SetItemData(Items item, OrderItem itemDetail)
         {
             item.OrderID = itemDetail.OrderID;
