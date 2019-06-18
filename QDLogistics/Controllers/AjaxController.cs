@@ -1548,6 +1548,7 @@ namespace QDLogistics.Controllers
                 dataList.AddRange(results.OrderBy(w => w.ID).Select(company => new
                 {
                     company.ID,
+                    company.CompanyName,
                     Suffix = company.Suffix ?? ""
                 }));
             }

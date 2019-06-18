@@ -135,12 +135,13 @@ namespace QDLogistics.Commons
                 PurchaseTitle = string.Format("{0} dropship {1} {2}", warehouse.Name, package.OrderID.Value, DateTime.UtcNow.ToString("MMddyyyy")),
                 DefaultWarehouseID = warehouse.ID,
                 TrackingNumber = package.TrackingNumber ?? "",
+                Invoice = package.POInvoice ?? "",
                 Memo = package.SupplierComment ?? "",
                 Items = package.Items.Where(i => i.IsEnable.Value).Select(i => new
                 {
                     Sku = i.ProductID,
                     Qty = i.Qty.Value,
-                    SerialNumber = i.SerialNumbers.ToArray()
+                    SerialNumber = i.SerialNumbers.Any() ? i.SerialNumbers.Select(s => s.SerialNumber).ToArray() : new string[] { }
                 }).ToArray()
             };
 
@@ -176,8 +177,8 @@ namespace QDLogistics.Commons
             {
                 using (StreamWriter streamWriter = new StreamWriter(request.GetRequestStream()))
                 {
-                    //var json = JsonConvert.SerializeObject(data);
-                    streamWriter.Write(JsonConvert.SerializeObject(data));
+                    var json = JsonConvert.SerializeObject(data);
+                    streamWriter.Write(json);
                     streamWriter.Flush();
                 }
 

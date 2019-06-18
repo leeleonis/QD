@@ -571,7 +571,10 @@ namespace QDLogistics.Commons
                 {
                     using (StockKeepingUnit stock = new StockKeepingUnit())
                     {
-                        stock.CreatePO(package.ID);
+                        if (package.POId.HasValue)
+                        {
+                            stock.CreatePO(package.ID);
+                        }
                         stock.RecordShippedOrder(package.ID);
                         MyHelp.Log("Inventory", package.OrderID, string.Format("訂單【{0}】傳送出貨資料至PO系統", package.OrderID), Session);
                     }

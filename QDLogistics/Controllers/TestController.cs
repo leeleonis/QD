@@ -461,12 +461,20 @@ namespace QDLogistics.Controllers
             }
         }
 
-        private void Get_PurchaseOrder()
+        public void PO_Test()
         {
             SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
 
-            int POID = 19679;
-            var PO1 = SCWS.Get_PurchaseOrder(POID);
+            var order = db.Orders.Find(5617844);
+            var package = order.Packages.First(p => p.IsEnable.Value && p.OrderID.Value.Equals(order.OrderID));
+            var warehouse = package.Items.First(i => i.IsEnable.Value && i.OrderID.Value.Equals(order.OrderID)).ShipWarehouses;
+            POVendor[] VendorList = SCWS.Get_Vendor_All(163);
+            var VendorData = VendorList.FirstOrDefault(v => v.DisplayName.ToLower().Equals(warehouse.Name.ToLower()));
+
+            using (StockKeepingUnit stock = new StockKeepingUnit())
+            {
+                package.POId = stock.CreatePO(package.ID, VendorData?.ID ?? 0);
+            }
         }
 
         private void BingMap_Test()

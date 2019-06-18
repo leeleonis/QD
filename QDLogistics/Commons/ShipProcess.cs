@@ -347,7 +347,7 @@ namespace QDLogistics.Commons
         {
             try
             {
-                POVendor VendorData = SCWS.Get_Vendor_All(order.CompanyID.Value).FirstOrDefault(v => v.DisplayName.Equals(warehouse.Name));
+                POVendor VendorData = SCWS.Get_Vendor_All(163).FirstOrDefault(v => v.DisplayName.ToLower().Equals(warehouse.Name.ToLower()));
 
                 using (StockKeepingUnit stock = new StockKeepingUnit())
                 {
