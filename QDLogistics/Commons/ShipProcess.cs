@@ -737,15 +737,17 @@ namespace QDLogistics.Commons
 
                 foreach (var item in itemList)
                 {
+                    if (!SkuData.Any(s => s.Sku.Equals(item.ProductID))) throw new Exception(string.Format("Not found sku-{0} from PO system!", item.ProductID));
+
                     Skus sku = item.Skus;
                     Country country = MyHelp.GetCountries().FirstOrDefault(c => c.ID.Equals(sku.Origin));
                     sheet.GetRow(rowIndex).GetCell(1).SetCellValue(country.OriginName);
-                    string productName = sku.ProductType.ProductTypeName + " - " + (SkuData.Any(s => s.Sku.Equals(item.ProductID)) ? SkuData.First(s => s.Sku.Equals(item.ProductID)).Name : sku.ProductName);
+                    string productName = sku.ProductType.ProductTypeName + " - " + SkuData.FirstOrDefault(s => s.Sku.Equals(item.ProductID))?.Name ?? sku.ProductName;
                     sheet.GetRow(rowIndex).GetCell(4).SetCellValue(productName);
-                    sheet.GetRow(rowIndex).GetCell(5).SetCellValue((SkuData.Any(s => s.Sku.Equals(item.ProductID)) ? SkuData.First(s => s.Sku.Equals(item.ProductID)).HSCode : sku.ProductType.HSCode));
+                    sheet.GetRow(rowIndex).GetCell(5).SetCellValue(SkuData.FirstOrDefault(s => s.Sku.Equals(item.ProductID))?.HSCode ?? sku.ProductType.HSCode);
                     sheet.GetRow(rowIndex).GetCell(8).SetCellValue(item.Qty.Value);
                     sheet.GetRow(rowIndex).GetCell(9).SetCellValue("pieces");
-                    sheet.GetRow(rowIndex).GetCell(10).SetCellValue((item.Qty.Value * (double)(SkuData.Any(s => s.Sku.Equals(item.ProductID)) ? SkuData.First(s => s.Sku.Equals(item.ProductID)).Weight : sku.ShippingWeight) / 1000) + "kg");
+                    sheet.GetRow(rowIndex).GetCell(10).SetCellValue((item.Qty.Value * (double)(SkuData.FirstOrDefault(s => s.Sku.Equals(item.ProductID))?.Weight ?? sku.ShippingWeight) / 1000) + "kg");
                     sheet.GetRow(rowIndex).GetCell(11).SetCellValue(item.DeclaredValue.ToString("N"));
                     sheet.GetRow(rowIndex).GetCell(16).SetCellValue((item.Qty.Value * item.DeclaredValue).ToString("N"));
                     sheet.GetRow(rowIndex++).HeightInPoints = (productName.Length / 20 + 1) * sheet.DefaultRowHeight / 20;
@@ -760,7 +762,7 @@ namespace QDLogistics.Commons
                 var pictuer = drawing.CreatePicture(anchor, picIndex);
 
                 sheet.GetRow(rowIndex).GetCell(3).SetCellValue(boxList.Count());
-                sheet.GetRow(rowIndex).GetCell(10).SetCellValue(itemList.Sum(i => i.Qty.Value * ((double)(SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight) / 1000)).ToString("#0.0") + "kg");
+                sheet.GetRow(rowIndex).GetCell(10).SetCellValue(itemList.Sum(i => i.Qty.Value * ((double)(SkuData.FirstOrDefault(s => s.Sku.Equals(i.ProductID))?.Weight ?? i.Skus.ShippingWeight) / 1000)).ToString("#0.0") + "kg");
                 sheet.GetRow(rowIndex).GetCell(11).SetCellValue(currency);
                 sheet.GetRow(rowIndex).GetCell(16).SetCellValue(itemList.Sum(i => i.Qty.Value * i.DeclaredValue).ToString("N"));
                 sheet.GetRow(rowIndex + 10).GetCell(9).SetCellValue(boxList[0].Create_at.ToString("yyyy-MM-dd"));
@@ -802,7 +804,7 @@ namespace QDLogistics.Commons
                     var IDs = itemList.Select(i => i.ProductID).Distinct().ToArray();
                     SkuData = stock.GetSkuData(IDs);
                 }
-                
+
                 int rowIndex = 2, No = 1;
                 foreach (var itemGroup in itemList.GroupBy(i => i.PackageID.Value))
                 {
@@ -831,9 +833,9 @@ namespace QDLogistics.Commons
                             sheet.GetRow(rowIndex).GetCell(0).SetCellValue(No++);
                             sheet.GetRow(rowIndex).GetCell(1).SetCellValue(boxPackage.TagNo);
                             sheet.GetRow(rowIndex).GetCell(3).SetCellValue("reqular");
-                            sheet.GetRow(rowIndex).GetCell(4).SetCellValue(itemGroup.Sum(i => (SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight) * i.Qty.Value));
+                            sheet.GetRow(rowIndex).GetCell(4).SetCellValue(itemGroup.Sum(i => (SkuData.FirstOrDefault(s => s.Sku.Equals(i.ProductID))?.Weight ?? i.Skus.ShippingWeight) * i.Qty.Value));
                             sheet.GetRow(rowIndex).GetCell(5).SetCellValue("10*10*5 CM");
-                            sheet.GetRow(rowIndex).GetCell(6).SetCellValue("FeDex");
+                            sheet.GetRow(rowIndex).GetCell(6).SetCellValue("FedEx");
                             sheet.GetRow(rowIndex).GetCell(7).SetCellValue(boxList.First(b => b.BoxID.Equals(boxPackage.BoxID)).TrackingNumber);
                             sheet.GetRow(rowIndex).GetCell(8).SetCellValue(itemGroup.Sum(i => i.Qty.Value));
                             sheet.GetRow(rowIndex).GetCell(9).SetCellValue(boxPackage.TrackingNumber);
@@ -900,21 +902,21 @@ namespace QDLogistics.Commons
 
                 int total = 0;
                 rowIndex = 19;
-                List <StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
+                List<StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
                 using (StockKeepingUnit stock = new StockKeepingUnit())
                 {
-                    foreach(var box in boxList)
+                    foreach (var box in boxList)
                     {
                         itemList = box.Packages.Where(p => p.IsEnable.Value).SelectMany(p => p.Items.Where(i => i.IsEnable.Value)).ToList();
                         var IDs = itemList.Select(i => i.ProductID).Distinct().ToArray();
                         SkuData = stock.GetSkuData(IDs);
 
-                        sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(rowIndex, rowIndex + itemList.Count() -1, 0, 0));
+                        sheet.AddMergedRegion(new NPOI.SS.Util.CellRangeAddress(rowIndex, rowIndex + itemList.Count() - 1, 0, 0));
 
                         sheet.GetRow(rowIndex).GetCell(0).SetCellValue(box.CurrentNo);
                         foreach (var item in itemList)
                         {
-                            sheet.GetRow(rowIndex).GetCell(1).SetCellValue(SkuData.Any(s => s.Sku.Equals(item.ProductID)) ? SkuData.First(s => s.Sku.Equals(item.ProductID)).Name : item.Skus.ProductName);
+                            sheet.GetRow(rowIndex).GetCell(1).SetCellValue(SkuData.FirstOrDefault(s => s.Sku.Equals(item.ProductID))?.Name ?? item.Skus.ProductName);
                             sheet.GetRow(rowIndex++).GetCell(2).SetCellValue(item.Qty.Value);
                         }
 
@@ -1014,6 +1016,7 @@ namespace QDLogistics.Commons
                 string suffix = order.Companies.Suffix;
                 foreach (Items item in package.Items.Where(i => i.IsEnable.Value))
                 {
+                    var skuList = new string[] { "106005549-US", "106005547-US", "106005548-US", "106006218-US", "106018122-US", "106018123-US", "106003214-US", "106003274-US", "106018155-US", "106018124-AU" };
                     string sku = !string.IsNullOrEmpty(suffix) && !item.ProductID.ToLower().Contains(suffix) ? item.ProductID + suffix : item.ProductID;
                     data.productList.Add(new createOutboundInfo_productList()
                     {
@@ -1022,7 +1025,8 @@ namespace QDLogistics.Commons
                         eBaySellerID = eBaySeller,
                         eBayTransactionID = item.eBayTransactionId,
                         productCode = sku,
-                        productNum = item.Qty.ToString()
+                        productNum = item.Qty.ToString(),
+                        specification = skuList.Contains(sku) ? item.Skus.ProductName : ""
                     });
                 }
 

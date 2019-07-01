@@ -132,7 +132,7 @@ namespace QDLogistics.Commons
                 PuchaseID = package.POId ?? 0,
                 package.Orders.CompanyID,
                 VendorID = vendorID ?? 0,
-                PurchaseTitle = string.Format("{0} dropship {1} {2}", warehouse.Name, package.OrderID.Value, DateTime.UtcNow.ToString("MMddyyyy")),
+                PurchaseTitle = string.Format("#{0}", package.OrderID),
                 DefaultWarehouseID = warehouse.ID,
                 TrackingNumber = package.TrackingNumber ?? "",
                 Invoice = package.POInvoice ?? "",

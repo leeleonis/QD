@@ -261,7 +261,7 @@ namespace QDLogistics.Controllers
             }
         }
 
-        private void Winit_Test(int OrderID)
+        public void Winit_Test(int OrderID)
         {
             Packages package = db.Packages.First(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID));
 
@@ -341,7 +341,7 @@ namespace QDLogistics.Controllers
             var label = IDS.GetTrackingNumber(package.TrackingNumber);
         }
 
-        private void Box_Test(string boxID)
+        public void Box_Test(string boxID)
         {
             SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
             ShipProcess shipProcess = new ShipProcess(SCWS);
