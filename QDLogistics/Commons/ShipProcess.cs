@@ -1017,7 +1017,7 @@ namespace QDLogistics.Commons
                 foreach (Items item in package.Items.Where(i => i.IsEnable.Value))
                 {
                     var skuList = new string[] { "106005549-US", "106005547-US", "106005548-US", "106006218-US", "106018122-US", "106018123-US", "106003214-US", "106003274-US", "106018155-US", "106018124-AU" };
-                    string sku = !string.IsNullOrEmpty(suffix) && !item.ProductID.ToLower().Contains(suffix) ? item.ProductID + suffix : item.ProductID;
+                    string sku = !string.IsNullOrEmpty(suffix) && !item.ProductID.ToLower().Contains(suffix.ToLower()) ? item.ProductID + suffix : item.ProductID;
                     data.productList.Add(new createOutboundInfo_productList()
                     {
                         eBayBuyerID = order.eBayUserID,

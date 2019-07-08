@@ -271,11 +271,11 @@ namespace QDLogistics.Controllers
             var result = ship.Dispatch();
         }
 
-        private void Check_Winit()
+        public void Check_Winit()
         {
             using (Winit_API winitAPI = new Winit_API())
             {
-
+               var warehoouse = winitAPI.GetWarehouses();
             }
         }
 

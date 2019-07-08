@@ -16,9 +16,9 @@ namespace CarrierApi.Winit
         private bool disposed = false;
 
         private string api_url = "http://api.winit.com.cn/ADInterface/api";
-        private string api_key = "peter@qd.com.tw";
-        private string api_userName = "peter@qd.com.tw";
-        private string api_password = "gubu67qaP5e$ra*t";
+        private string api_key = "peter0626@hotmail.com";
+        private string api_userName = "peter0626@hotmail.com";
+        private string api_password = "%iPC488*pAt8";
         private string api_token;
 
         public Dictionary<int, string> warehouseIDs

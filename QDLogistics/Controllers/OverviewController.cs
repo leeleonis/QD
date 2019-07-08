@@ -35,7 +35,7 @@ namespace QDLogistics.Controllers
             /** Order Filter **/
             var OrderFilter = db.Orders.AsNoTracking().AsQueryable();
             if (!filter.StatusCode.Equals(null)) OrderFilter = OrderFilter.Where(o => o.StatusCode.Value.Equals(filter.StatusCode.Value));
-            if (!string.IsNullOrWhiteSpace(filter.OrderID)) OrderFilter = OrderFilter.Where(o => o.OrderID.ToString().Equals(filter.OrderID) || (o.OrderSource.Value.Equals(1) && o.eBaySalesRecordNumber.Contains(filter.OrderID)) || (o.OrderSource.Value.Equals(4) && o.OrderSourceOrderId.Contains(filter.OrderID)));
+            if (!string.IsNullOrWhiteSpace(filter.OrderID)) OrderFilter = OrderFilter.Where(o => o.OrderID.ToString().Equals(filter.OrderID) || (o.OrderSource.Value.Equals(1) && (o.eBaySalesRecordNumber.Equals(filter.OrderID) || o.OrderSourceOrderId.Contains(filter.OrderID))) || (o.OrderSource.Value.Equals(4) && o.OrderSourceOrderId.Contains(filter.OrderID)));
             if (!string.IsNullOrWhiteSpace(filter.UserID)) OrderFilter = OrderFilter.Where(o => o.eBayUserID.Contains(filter.UserID));
             if (!filter.CurrencyCode.Equals(null)) OrderFilter = OrderFilter.Where(o => o.OrderCurrencyCode.Value.Equals(filter.CurrencyCode.Value));
 

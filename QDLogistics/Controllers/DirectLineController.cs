@@ -122,7 +122,7 @@ namespace QDLogistics.Controllers
             /** Order Filter **/
             var OrderFilter = db.Orders.AsNoTracking().Where(o => !o.StatusCode.Value.Equals((int)OrderStatusCode.Completed) && o.PaymentStatus.Value.Equals((int)OrderPaymentStatus2.Charged));
             if (!filter.StatusCode.Equals(null)) OrderFilter = OrderFilter.Where(o => o.StatusCode.Value.Equals(filter.StatusCode.Value));
-            if (!string.IsNullOrWhiteSpace(filter.OrderID)) OrderFilter = OrderFilter.Where(o => o.OrderID.ToString().Equals(filter.OrderID) || (o.OrderSource.Value.Equals(1) && o.eBaySalesRecordNumber.Equals(filter.OrderID)) || (o.OrderSource.Value.Equals(4) && o.OrderSourceOrderId.Equals(filter.OrderID)));
+            if (!string.IsNullOrWhiteSpace(filter.OrderID)) OrderFilter = OrderFilter.Where(o => o.OrderID.ToString().Equals(filter.OrderID) || (o.OrderSource.Value.Equals(1) && (o.eBaySalesRecordNumber.Equals(filter.OrderID) || o.OrderSourceOrderId.Contains(filter.OrderID))) || (o.OrderSource.Value.Equals(4) && o.OrderSourceOrderId.Equals(filter.OrderID)));
 
             /** Package Filter **/
             var PackageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨));
@@ -2708,7 +2708,7 @@ namespace QDLogistics.Controllers
                             FedExFile1.Add(Path.Combine(filePath, "PackageList.xlsx"));
 
                         receiveMails = new string[] { "edd@fedex.com" };
-                        mailTitle = string.Format("至優網 正式出口報關資料");
+                        mailTitle = string.Format("Zhi You Wan LTD 53362065 正式出口報關資料");
 
                         bool FedEx_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, "", true, FedExFile1.ToArray(), FedExFile2, false);
 

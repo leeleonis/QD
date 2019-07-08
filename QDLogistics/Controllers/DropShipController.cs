@@ -278,7 +278,7 @@ namespace QDLogistics.Controllers
             if (!filter.Source.Equals(null)) OrderFilter = OrderFilter.Where(o => o.OrderSource.Equals(filter.Source));
             if (!string.IsNullOrWhiteSpace(filter.OrderID)) OrderFilter = OrderFilter.Where(o => o.OrderID.ToString().Equals(filter.OrderID));
             if (!string.IsNullOrWhiteSpace(filter.UserID)) OrderFilter = OrderFilter.Where(o => !string.IsNullOrWhiteSpace(o.eBayUserID) && o.eBayUserID.Contains(filter.UserID));
-            if (!string.IsNullOrWhiteSpace(filter.SourceID)) OrderFilter = OrderFilter.Where(o => (o.OrderSource.Equals(1) && o.eBaySalesRecordNumber.Equals(filter.SourceID)) || (o.OrderSource.Equals(4) && o.OrderSourceOrderId.Equals(filter.SourceID)));
+            if (!string.IsNullOrWhiteSpace(filter.SourceID)) OrderFilter = OrderFilter.Where(o => (o.OrderSource.Equals(1) && (o.eBaySalesRecordNumber.Equals(filter.SourceID) || o.OrderSourceOrderId.Contains(filter.SourceID))) || (o.OrderSource.Equals(4) && o.OrderSourceOrderId.Equals(filter.SourceID)));
 
             /** Package Filter **/
             var PackageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)processStatus));

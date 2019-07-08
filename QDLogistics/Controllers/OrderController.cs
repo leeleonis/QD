@@ -1144,7 +1144,7 @@ namespace QDLogistics.Controllers
 
                                             receiveMails = new string[] { "edd@fedex.com" };
                                             //receiveMails = new string[] { "qd.tuko@hotmail.com" };
-                                            mailTitle = string.Format("至優網 {0} 第{1}批 [{2}-{3}]筆提單 正式出口報關資料", now.ToString("yyyy-MM-dd"), DateTime.Compare(now, noon.AddHours(3)) <= 0 ? "1" : "2", skip + 1, (skip + take > max ? max : skip + take));
+                                            mailTitle = string.Format("Zhi You Wan LTD 53362065 {0} 第{1}批 [{2}-{3}]筆提單 正式出口報關資料", now.ToString("yyyy-MM-dd"), DateTime.Compare(now, noon.AddHours(3)) <= 0 ? "1" : "2", skip + 1, (skip + take > max ? max : skip + take));
 
                                             bool FedEx_Status = MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, "", true, null, FedExFile, false);
 
