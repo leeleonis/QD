@@ -278,6 +278,7 @@
           <Property Name="GrandTotal" Type="decimal" Precision="18" Scale="2" />
           <Property Name="StatusCode" Type="int" />
           <Property Name="PaymentStatus" Type="int" />
+          <Property Name="PaymentDate" Type="datetime2" Precision="7" />
           <Property Name="ShippingStatus" Type="int" />
           <Property Name="ShipDate" Type="datetime2" Precision="7" />
           <Property Name="FinalShippingFee" Type="decimal" Precision="18" Scale="2" />
@@ -1349,6 +1350,7 @@
           <Property Name="GrandTotal" Type="Decimal" Precision="18" Scale="2" />
           <Property Name="StatusCode" Type="Int32" />
           <Property Name="PaymentStatus" Type="Int32" />
+          <Property Name="PaymentDate" Type="DateTime" Precision="7" />
           <Property Name="ShippingStatus" Type="Int32" />
           <Property Name="ShipDate" Type="DateTime" Precision="7" />
           <Property Name="FinalShippingFee" Type="Decimal" Precision="18" Scale="2" />
@@ -2312,6 +2314,7 @@
           <EntitySetMapping Name="Orders">
             <EntityTypeMapping TypeName="QDLogisticsModel.Orders">
               <MappingFragment StoreEntitySet="Orders">
+                <ScalarProperty Name="PaymentDate" ColumnName="PaymentDate" />
                 <ScalarProperty Name="SyncOn" ColumnName="SyncOn" />
                 <ScalarProperty Name="Instructions" ColumnName="Instructions" />
                 <ScalarProperty Name="ShippedBy" ColumnName="ShippedBy" />

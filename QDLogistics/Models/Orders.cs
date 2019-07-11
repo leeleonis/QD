@@ -36,6 +36,7 @@ namespace QDLogistics.Models
         public Nullable<decimal> GrandTotal { get; set; }
         public Nullable<int> StatusCode { get; set; }
         public Nullable<int> PaymentStatus { get; set; }
+        public Nullable<System.DateTime> PaymentDate { get; set; }
         public Nullable<int> ShippingStatus { get; set; }
         public Nullable<System.DateTime> ShipDate { get; set; }
         public Nullable<decimal> FinalShippingFee { get; set; }

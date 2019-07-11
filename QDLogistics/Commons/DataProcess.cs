@@ -30,7 +30,7 @@ namespace QDLogistics.Commons
                     obj.Add("GrandTotal", data.order.GrandTotal);
                     obj.Add("Status", Enum.GetName(typeof(OrderStatusCode), data.order.StatusCode));
                     obj.Add("PaymentStatus", Enum.GetName(typeof(OrderPaymentStatus), data.order.PaymentStatus));
-                    obj.Add("PaymentDate", data.order.Payments.Any() ? MyHelp.DateTimeWithZone(data.order.Payments.First().AuditDate.Value).ToString("MM/dd/yyyy hh:mm:ss tt") : "");
+                    obj.Add("PaymentDate", MyHelp.DateTimeWithZone(data.order.PaymentDate.Value).ToString("MM/dd/yyyy hh:mm:ss tt"));
                     obj.Add("PaymentReferenceNumber", data.order.Payments.Any() ? data.order.Payments.First().TransactionReferenceNumber : "");
                     obj.Add("PaymentMethod", data.order.Payments.Any() ? Enum.GetName(typeof(PaymentMethod), data.order.Payments.First().PaymentMethod) : "");
                     obj.Add("ShippingStatus", Enum.GetName(typeof(OrderShippingStatus), data.order.ShippingStatus));
@@ -150,6 +150,7 @@ namespace QDLogistics.Commons
                 order.MarkettingSourceID = orderDetail.MarkettingSourceID;
                 order.ShippedBy = orderDetail.ShippedBy;
                 order.Instructions = orderDetail.Instructions;
+                order.PaymentDate = orderDetail.PaymentDate;
             }
 
             order.StatusCode = (int)orderDetail.StatusCode;
@@ -208,6 +209,7 @@ namespace QDLogistics.Commons
             order.MarkettingSourceID = orderDetail.MarkettingSourceID;
             order.ShippedBy = orderDetail.ShippedBy;
             order.Instructions = orderDetail.Instructions;
+            order.PaymentDate = orderDetail.PaymentDate;
 
             if (!order.Packages.Any(p => p.ProcessStatus == (int)EnumData.ProcessStatus.待出貨))
             {

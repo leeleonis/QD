@@ -815,16 +815,94 @@ namespace QDLogistics.Controllers
 
                 if (order == null) throw new Exception("Not found order-" + OrderID);
 
+                int? intNull = null;
+                TimeZoneConvert TimeZoneConvert = new TimeZoneConvert();
+                var PaymentDate = order.Payments.OrderByDescending(p => p.AuditDate.Value).FirstOrDefault(p => p.IsEnable.Value && p.PaymentStatus.Value.Equals((int)PaymentStatus.Cleared))?.AuditDate;
+                var ShipDate = order.Packages.FirstOrDefault(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.已出貨) && !p.ShipDate.Equals(DateTime.MinValue))?.ShipDate;
+                var Address = order.Addresses;
                 result.data = new
                 {
                     IsRush = order.RushOrder,
-                    OrderParent = order.ParentOrderID,
+                    OrderParent = order.ParentOrderID.HasValue && !order.ParentOrderID.Equals(0) ? order.ParentOrderID.Value : intNull,
                     OrderSourceID = order.OrderSourceOrderId,
                     SCID = order.OrderID,
                     Company = order.CompanyID,
                     Channel = order.OrderSource,
                     CustomerID = order.eBayUserID,
-                    Customer = order.UserName
+                    CustomerEmail = order.UserName,
+                    OrderStatus = order.StatusCode,
+                    OrderDate = TimeZoneConvert.InitDateTime(order.TimeOfOrder.Value, EnumData.TimeZone.EST).Utc,
+                    PaymentStatus = order.PaymentStatus.Value,
+                    PaymentDate = TimeZoneConvert.InitDateTime(order.PaymentDate ?? PaymentDate.Value, EnumData.TimeZone.EST).Utc,
+                    FulfilledDate =  ShipDate.HasValue ? TimeZoneConvert.InitDateTime(ShipDate.Value, EnumData.TimeZone.EST).Utc : ShipDate,
+                    BuyerNote = order.Instructions,
+                    Comment = string.Join("\r\n", order.Packages.Where(p => p.IsEnable.Value && !string.IsNullOrEmpty(p.Comment)).Select(p => p.Comment)),
+
+                    Payments = order.Payments.Where(p => p.IsEnable.Value).Select(p => new
+                    {
+                        SCID = p.ID,
+                        Status = p.PaymentStatus,
+                        Date = p.AuditDate,
+                        Gateway = p.PaymentMethod.Value,
+                        TotalValue = p.Amount,
+                        TransactionID = p.TransactionReferenceNumber
+                    }).ToList(),
+
+                    Addresses = new List<object>(){ new {
+                        Address.FirstName,
+                        Address.LastName,
+                        AddressLine1 = Address.StreetLine1,
+                        AddressLine2 = Address.StreetLine2,
+                        Address.City,
+                        State = Address.StateCode,
+                        Postcode = Address.PostalCode,
+                        Address.CountryCode,
+                        Address.CountryName
+                    } },
+
+                    Packages = order.Packages.Where(p => p.IsEnable.Value).Select(p => new
+                    {
+                        SCID = p.ID,
+                        CarrierBox = p.BoxID,
+                        ShippingMethod = p.ShippingMethod.Value,
+                        Exprot = p.Export.Value,
+                        ExportMethod = p.ExportMethod.Value,
+                        ExportValue = p.DeclaredTotal,
+                        ExportCurrency = order.OrderCurrencyCode.Value,
+                        UploadTracking = p.UploadTracking,
+                        Tracking = p.TrackingNumber,
+                        DLExport = p.Export.Value,
+                        DLExportMethod = p.ExportMethod.Value,
+                        DLExportValue = p.DLDeclaredTotal,
+                        DLExportCurrency = p.DLCurrency,
+                        DLUploadTracking = p.UploadTracking,
+                        DLTracking = p.Box?.TrackingNumber,
+                        ShipWarehouse = p.Items.First(i => i.IsEnable.Value).ShipFromWarehouseID.Value,
+                        ReturnWarehouse = p.Items.First(i => i.IsEnable.Value).ReturnedToWarehouseID.Value,
+                        ShippingStatus = p.ProcessStatus
+                    }).ToList(),
+
+                    Items = order.Items.Where(i => i.IsEnable.Value).Select(i => new
+                    {
+                        SCID = i.ID,
+                        PackageID = i.PackageID.Value,
+                        Sku = i.ProductID,
+                        UnitPrice = i.UnitPrice,
+                        ExportValue = i.DeclaredValue,
+                        DLExportValue = i.DLDeclaredValue,
+                        Qty = i.Qty.Value,
+                        eBayItemID = i.eBayItemID,
+                        eBayTransationID = i.eBayTransactionId,
+                        SalesRecordNumber = i.SalesRecordNumber,
+                        RMAID = i.Packages.RMAId
+                    }).ToList(),
+
+                    Serials = order.Packages.Where(p => p.IsEnable.Value).SelectMany(p => p.Items.Where(i => i.IsEnable.Value).SelectMany(i => i.SerialNumbers)).Select(s => new
+                    {
+                        s.SerialNumber,
+                        ItemID = s.OrderItemID,
+                        Sku = s.ProductID
+                    })
                 };
             }
             catch (Exception e)

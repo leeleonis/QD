@@ -72,7 +72,7 @@ namespace QDLogistics.Controllers
             }
             else
             {
-                results = results.GroupJoin(PaymentFilter, oData => oData.order.OrderID, p => p.OrderID.Value, (oData, p) => new { orderJoinData = oData, payment = p.Take(1) })
+                results = results.GroupJoin(PaymentFilter, oData => oData.order.OrderID, p => p.OrderID.Value, (oData, pg) => new { orderJoinData = oData, payment = pg.OrderBy(p => p.PaymentStatus).OrderByDescending(p => p.AuditDate.Value).Take(1) })
                     .SelectMany(o => o.payment.DefaultIfEmpty(), (o, p) => new OrderJoinData(o.orderJoinData) { payment = p }).ToList();
             }
 

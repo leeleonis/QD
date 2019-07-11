@@ -36,14 +36,9 @@ namespace QDLogistics.Controllers
 
             SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
 
-            Packages package = db.Packages.Find(728466);
-            OrderData orderData = SCWS.Get_OrderData(package.OrderID.Value);
+            Orders order = db.Orders.Find(5624510);
+            OrderData orderData = SCWS.Get_OrderData(order.OrderID);
             Order SC_order = orderData.Order;
-            Package SC_package = SC_order.Packages.FirstOrDefault(p => p.ID.Equals(package.ID));
-
-            if (SC_package == null)
-            {
-            }
         }
 
         public void CheckDHL(int OrderID)
