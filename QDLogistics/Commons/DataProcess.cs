@@ -263,7 +263,7 @@ namespace QDLogistics.Commons
 
             return package;
         }
-        
+
         public static Items SetItemData(Items item, OrderItem itemDetail)
         {
             item.OrderID = itemDetail.OrderID;
@@ -284,13 +284,17 @@ namespace QDLogistics.Commons
             item.SalesRecordNumber = itemDetail.SalesRecordNumber.Trim();
             item.BackOrderQty = itemDetail.BackOrderQty;
             item.UnitPrice = itemDetail.PricePerCase;
-            item.DeclaredValue = item.DeclaredValue.Equals(0) ? itemDetail.PricePerCase : item.DeclaredValue;
-            item.DLDeclaredValue = item.DLDeclaredValue.Equals(0) ? itemDetail.PricePerCase : item.DLDeclaredValue;
-            item.ReturnedToWarehouseID = itemDetail.ReturnedToWarehouseID;
             item.Weight = itemDetail.Weight;
 
-            if (item.Packages == null || item.Packages.ProcessStatus != (int)EnumData.ProcessStatus.待出貨)
+            if (item.Packages == null)
             {
+                item.DeclaredValue = item.DeclaredValue.Equals(0) ? itemDetail.PricePerCase : item.DeclaredValue;
+                item.DLDeclaredValue = item.DLDeclaredValue.Equals(0) ? itemDetail.PricePerCase : item.DLDeclaredValue;
+            }
+
+            if (item.Packages == null || item.Packages.ProcessStatus.Equals((int)EnumData.ProcessStatus.已出貨))
+            {
+                item.ReturnedToWarehouseID = itemDetail.ReturnedToWarehouseID;
                 item.ShipFromWarehouseID = itemDetail.ShipFromWareHouseID;
             }
 

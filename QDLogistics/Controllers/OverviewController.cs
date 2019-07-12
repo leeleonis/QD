@@ -103,7 +103,9 @@ namespace QDLogistics.Controllers
                     SubTotal = data.items.Sum(i => i.Qty * i.UnitPrice).Value.ToString("N"),
                     DeclaredTotal = data.package.DeclaredTotal != 0 ? data.package.DeclaredTotal.ToString("N") : "",
                     OrderCurrencyCode = Enum.GetName(typeof(CurrencyCodeType2), data.order.OrderCurrencyCode),
+                    PaymentStatus = Enum.GetName(typeof(OrderPaymentStatus2), data.order.PaymentStatus),
                     StatusCode = Enum.GetName(typeof(OrderStatusCode), data.order.StatusCode),
+                    Comment = data.package.Comment ?? "",
                     ProccessStatus = GetOrderLink(data),
                     HasCaseAction = data.package.ProcessStatus.Equals((byte)EnumData.ProcessStatus.已出貨) && data.package.ShippingMethod.HasValue && isDirectLine.ContainsKey(data.package.ShippingMethod.Value) && isDirectLine[data.package.ShippingMethod.Value]
                 }));
@@ -165,7 +167,13 @@ namespace QDLogistics.Controllers
                 ProccessStatusCode.Add(new { text = Enum.GetName(typeof(EnumData.ProcessStatus), code), value = code });
             }
 
-            result.data = new { CountryCode, CurrencyCode, StatusCode, ProccessStatusCode };
+            List<object> PaymentStatus = new List<object>();
+            foreach (int code in Enum.GetValues(typeof(OrderPaymentStatus2)))
+            {
+                PaymentStatus.Add(new { text = Enum.GetName(typeof(OrderPaymentStatus2), code), value = code });
+            }
+
+            result.data = new { CountryCode, CurrencyCode, StatusCode, ProccessStatusCode, PaymentStatus };
 
             return Json(result, JsonRequestBehavior.AllowGet);
         }
@@ -233,6 +241,37 @@ namespace QDLogistics.Controllers
 
             ViewBag.productList = productList;
             return PartialView(string.Format("List_{0}", Type));
+        }
+
+        [CheckSession]
+        [HttpPost]
+        public ActionResult PackageUpdate(List<Packages> data)
+        {
+            AjaxResult result = new AjaxResult();
+
+            try
+            {
+                if (!data.Any()) throw new Exception("未取得任何資料!");
+
+                foreach (Packages pData in data)
+                {
+                    Packages package = db.Packages.Find(pData.ID);
+
+                    if (package == null) throw new Exception(string.Format("找不到{0}資料!", pData.OrderID));
+
+                    package.Comment = pData.Comment;
+                    db.SaveChanges();
+
+                    MyHelp.Log("Orders", pData.OrderID, "更新訂單Comment資料");
+                }
+            }
+            catch (Exception e)
+            {
+                result.status = false;
+                result.message = e.Message;
+            }
+
+            return Json(result, JsonRequestBehavior.AllowGet);
         }
 
         public class AjaxResult

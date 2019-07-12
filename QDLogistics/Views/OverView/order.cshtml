@@ -52,6 +52,7 @@
     <script src="~/scripts/datagrid-detailview.js"></script>
     <script type="text/javascript">
         var pager, pageSize = 100, selectOption, filterValue = {};
+        var selected = false, loaded = false;
         var $dataGrid;
         var $caseDialog = $('#dialog-case'), $caseForm = $('#form-case'), $methodSelect = $('#select-method'), $submitBtn = $('#btn-submit');
 
@@ -98,9 +99,9 @@
                         formatter: function (value, row, index) {
                             if (!isEmpty(value)) {
                                 if (row.ParentOrderID != 0) {
-                                    var url = value + "(<a href='https://dm.cwa.sellercloud.com/Orders/Orders_details.aspx?id=" + row.ParentOrderID + "' target='_blank'>" + row.ParentOrderID + "</a>)"
+                                    var url = value + "(<a href='http://internal.qd.com.tw:8080/Order/Edit/" + row.ParentOrderID + "' target='_blank'>" + row.ParentOrderID + "</a> - <a href='https://dm.cwa.sellercloud.com/Orders/Orders_details.aspx?id=" + row.ParentOrderID + "' target='_blank'>SC</a>)"
                                 } else {
-                                    var url = "<a href='https://dm.cwa.sellercloud.com/Orders/Orders_details.aspx?id=" + value + "' target='_blank'>" + value + "</a>";
+                                    var url = "<a href='http://internal.qd.com.tw:8080/Order/Edit/" + value + "' target='_blank'>" + value + "</a> - <a href='https://dm.cwa.sellercloud.com/Orders/Orders_details.aspx?id=" + value + "' target='_blank'>SC</a>";
                                 }
                                 if (row.OrderSourceOrderId != "") url += "<br />" + row.OrderSourceOrderId;
                                 return url;
@@ -117,7 +118,7 @@
                             if (!isEmpty(value)) {
                                 return "<a href='http://feedback.ebay.com/ws/eBayISAPI.dll?ViewFeedback2&UserID=" + value + "' target='_blank'>" + value + "</a>";
                             } else {
-                                if (isEmpty(row.OrderID)) {
+                                if (!isEmpty(row.IsFilter)) {
                                     return "<input type='text' class='form-control s-userID' value='" + (!isEmpty(filterValue['UserID']) ? filterValue['UserID'] : '') + "'>";
                                 }
                             }
@@ -128,20 +129,34 @@
                     { field: "DisplayName", title: "Item Name<br />品名", width: 440, align: "center", sortable: false },
                     { field: "ShippingCountry", title: "Country<br />國家", width: 120, align: "center", sortable: false },
                     { field: "DeclaredTotal", title: "Export Value<br />出口價值", width: 90, align: "center", sortable: false },
-                    { field: "OrderCurrencyCode", title: "Currency<br />幣別", width: 80, align: "center", sortable: false },
-                    { field: "StatusCode", title: "Status<br />訂單狀態", width: 120, align: "center", sortable: false },
+                    { field: "OrderCurrencyCode", title: "Order Currency<br />幣別", width: 100, align: "center", sortable: false },
+                    { field: "PaymentStatus", title: "Payment Status<br />付款狀態", width: 100, align: "center", sortable: false },
+                    { field: "StatusCode", title: "Order Status<br />訂單狀態", width: 120, align: "center", sortable: false },
+                    {
+                        field: "Comment", title: "Comment<br />出貨備註", width: 200, align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            if (isEmpty(row.IsFilter)) {
+                                return "<input type='text' class='form-control input-sm' id='Comment' value='" + value + "' onchange='onDataChange(" + row.PackageID + ")'>";
+                            }
+                        }
+                    },
                     { field: "ProccessStatus", title: "工作區塊", width: 170, align: "center", sortable: false },
                     {
                         field: "HasCaseAction", title: "Case Action", width: 80, align: "center", sortable: false,
                         formatter: function (value, row, index) {
-                            if (!isEmpty(row.OrderID)) {
+                            if (isEmpty(row.IsFilter)) {
                                 return "<button type='button' class='btn btn-default btn-sm' onclick='createCase(" + row.PackageID + ")' " + (row.HasCaseAction ? '' : 'disabled') + ">CASE</button>";
                             }
+                        }
+                    }, {
+                        field: "save", title: "<button type='button' class='btn btn-default btn-sm' onclick='SaveData()'>SAVE</button>", width: "60", sortable: false,
+                        formatter: function (value, row, index) {
+                            return "<button type='button' class='btn btn-default btn-sm' id='btn-save' onclick='SaveData(" + row.PackageID + ")' disabled>SAVE</button>"
                         }
                     }
                 ]],
                 rowStyler: function (index, value) {
-                    if (index == 0) return { class: 'filterColumn' }
+                    if (!isEmpty(value.IsFilter)) return { class: 'filterColumn' }
                 },
                 onLoadSuccess: function (data) {
                     $dataGrid.datagrid('insertRow', {
@@ -168,9 +183,12 @@
                         if (!isEmpty(filterValue[key])) param[key] = filterValue[key];
                     });
                 },
-                onBeforeSelect: function () {
-                    return false
-                },
+                onBeforeSelect: selectAction,
+                onBeforeUnselect: selectAction,
+                onCheck: onCheck,
+                onUncheck: onUncheck,
+                onCheckAll: onCheckAll,
+                onUncheckAll: onUncheckAll,
                 view: detailview,
                 detailFormatter: function (index, row) {
                     return '<div id="itemList"></div>';
@@ -206,6 +224,99 @@
                 beforePageTest: "第",
                 afterPageTest: "頁，共 {pages} 頁",
                 displayMsg: "顯示 {from} 到 {to} 筆資料，共 {total} 筆資料"
+            });
+        }
+
+        function selectAction(index, row) {
+            if (selected) {
+                selected = false;
+                return true;
+            }
+
+            return false;
+        }
+
+        function onDataChange(PackageID) {
+            var index = $dataGrid.datagrid("getRowIndex", PackageID);
+            $dataGrid.datagrid('checkRow', index);
+            $("button#btn-save:eq(" + index + ")").removeAttr("disabled");
+        }
+
+        function onSelect(index) {
+            $dataGrid.datagrid('checkRow', index);
+        }
+
+        function onCheck(index, row) {
+            selected = true;
+            $dataGrid.datagrid('selectRow', index);
+        }
+
+        function onUncheck(index, row) {
+            selected = true;
+            $dataGrid.datagrid('unselectRow', index);
+        }
+
+        function onCheckAll(rows) {
+            $dataGrid.datagrid('selectAll');
+        }
+
+        function onUncheckAll(rows) {
+            $dataGrid.datagrid('unselectAll');
+        }
+
+        function SaveData(PackageID) {
+            var data = [];
+            var saveAll = PackageID == undefined;
+
+            if (!loaded) {
+                if (saveAll) {
+                    var rows = $dataGrid.datagrid('getSelections');
+                    for (var i in rows) {
+                        index = $dataGrid.datagrid('getRowIndex', rows[i].PackageID);
+                        if (!$("button#btn-save:eq(" + index + ")").is("[disabled]")) {
+                            data.push(setData(rows[i], index));
+                            $("button#btn-save:eq(" + index + ")").attr("disabled", "disabled");
+                        }
+                    }
+                } else {
+                    var index = $dataGrid.datagrid("getRowIndex", PackageID);
+                    row = $dataGrid.datagrid("getRows")[index];
+                    data.push(setData(row, index));
+                    $("button#btn-save:eq(" + index + ")").attr("disabled", "disabled");
+                }
+
+                if (data.length > 0) {
+                    updateData(data).done(function (response) {
+                        if (response['status']) {
+                            alert("Success!");
+                        } else {
+                            alert(response['message']);
+                        }
+
+                        loaded = false;
+                    });
+                }
+            }
+
+            $dataGrid.datagrid('uncheckAll');
+        }
+
+        function setData(row, index) {
+            return {
+                ID: row.PackageID,
+                OrderID: row.OrderID,
+                Comment: $("input#Comment:eq(" + (index - 1)  + ")").val()
+            }
+        }
+
+        function updateData(data) {
+            loaded = true;
+
+            return $.ajax({
+                url: "@Url.Action("PackageUpdate", "Overview")",
+                type: "post",
+                data: { data: data },
+                dataType: "json"
             });
         }
 
@@ -254,13 +365,16 @@
                 CountryCode: $('.filterColumn .s-countryCode').val(),
                 DeclaredTotal: $('.filterColumn .s-declaredTotal').val(),
                 CurrencyCode: $('.filterColumn .s-currencyCode').val(),
+                PaymentStatus: $('.filterColumn .s-paymentStatus').val(),
                 StatusCode: $('.filterColumn .s-statusCode').val(),
+                Comment: '',
                 ProccessStatus: $('.filterColumn .s-proccessStatusCode').val()
             };
         }
 
         function setFilterColumn(filterValue) {
             return {
+                IsFilter: true,
                 ItemCount: 1,
                 OrderID: "",
                 UserID: "",
@@ -270,7 +384,9 @@
                 ShippingCountry: "<select class='form-control s-countryCode'><option value=''>全部</option>" + setSelectOption(selectOption['CountryCode'], filterValue['CountryCode']) + "</select>",
                 DeclaredTotal: "<input type='text' class='form-control s-declaredTotal' value='" + (!isEmpty(filterValue['DeclaredTotal']) ? filterValue['DeclaredTotal'] : '') + "'>",
                 OrderCurrencyCode: "<select class='form-control s-currencyCode'><option value=''>全部</option>" + setSelectOption(selectOption['CurrencyCode'], filterValue['CurrencyCode']) + "</select>",
+                PaymentStatus: "<select class='form-control s-paymentStatus'><option value=''>全部</option>" + setSelectOption(selectOption['PaymentStatus'], filterValue['PaymentStatus']) + "</select>",
                 StatusCode: "<select class='form-control s-statusCode'><option value=''>全部</option>" + setSelectOption(selectOption['StatusCode'], filterValue['StatusCode']) + "</select>",
+                Comment: "",
                 ProccessStatus: "<select class='form-control s-proccessStatusCode'><option value=''>全部</option>" + setSelectOption(selectOption['ProccessStatusCode'], filterValue['ProccessStatus']) + "</select>",
             };
         }
