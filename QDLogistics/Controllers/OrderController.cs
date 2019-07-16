@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using CarrierApi.Sendle;
-using CarrierApi.Winit;
+using CarrierApi.Winit_Old;
 using ClosedXML.Excel;
 using DirectLineApi.IDS;
 using Ionic.Zip;
@@ -584,7 +584,7 @@ namespace QDLogistics.Controllers
                                     {
                                         track.SetOrder(data.order, data.package);
                                         outboundOrderListData trackData = trackList.First(t => t.sellerOrderNo == data.order.OrderID.ToString());
-                                        result = track.Track(trackData.warehouseId, trackData.documentNo, trackData.trackingNo);
+                                        result = track.Track(trackData.trackingNo);
 
                                         if (string.IsNullOrEmpty(data.package.TrackingNumber) && !string.IsNullOrEmpty(trackData.trackingNo))
                                         {

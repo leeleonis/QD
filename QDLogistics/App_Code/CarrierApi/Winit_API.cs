@@ -7,7 +7,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Web;
 
-namespace CarrierApi.Winit
+namespace CarrierApi.Winit_Old
 {
     public class Winit_API : IDisposable
     {

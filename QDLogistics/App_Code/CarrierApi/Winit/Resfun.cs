@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace CarrierApi.Winit
+namespace CarrierApi.Winit_Old
 {
     public class Resfun
     {

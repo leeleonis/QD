@@ -36,7 +36,7 @@ namespace QDLogistics.Controllers
 
             SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
 
-            Orders order = db.Orders.Find(5624510);
+            Orders order = db.Orders.Find(5627557);
             OrderData orderData = SCWS.Get_OrderData(order.OrderID);
             Order SC_order = orderData.Order;
         }
@@ -266,11 +266,12 @@ namespace QDLogistics.Controllers
             var result = ship.Dispatch();
         }
 
-        public void Check_Winit()
+        public void Check_Winit(int OrderID)
         {
             using (Winit_API winitAPI = new Winit_API())
             {
-               var warehoouse = winitAPI.GetWarehouses();
+                var package = db.Packages.First(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID));
+                var track = winitAPI.GetOrderTrack(package.TrackingNumber);
             }
         }
 
@@ -529,12 +530,12 @@ namespace QDLogistics.Controllers
             //var cancel = Sendle.Cancel(result.order_id);
         }
 
-        public void Track_Test(string BoxID)
+        public void Track_Test(int OrderID)
         {
-            Box box = db.Box.Find(BoxID);
-            CarrierAPI api = db.ShippingMethod.Find(box.FirstMileMethod).Carriers.CarrierAPI;
-            TrackOrder track = new TrackOrder();
-            var result = track.Track(box, api);
+            var package = db.Packages.First(p => p.OrderID.Value.Equals(OrderID));
+            CarrierAPI api = package.Method.Carriers.CarrierAPI;
+            TrackOrder track = new TrackOrder(package);
+            var result = track.Track(package.TrackingNumber);
         }
 
         private void StarTrack_Test(int OrderID)

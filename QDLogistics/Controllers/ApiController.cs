@@ -817,7 +817,7 @@ namespace QDLogistics.Controllers
 
                 int? intNull = null;
                 TimeZoneConvert TimeZoneConvert = new TimeZoneConvert();
-                var PaymentDate = order.Payments.OrderByDescending(p => p.AuditDate.Value).FirstOrDefault(p => p.IsEnable.Value && p.PaymentStatus.Value.Equals((int)PaymentStatus.Cleared))?.AuditDate;
+                var PaymentDate = !order.PaymentDate.Equals(DateTime.MinValue) ? order.PaymentDate : order.Payments.OrderByDescending(p => p.AuditDate.Value).FirstOrDefault(p => p.IsEnable.Value && p.PaymentStatus.Value.Equals((int)PaymentStatus.Cleared))?.AuditDate;
                 var ShipDate = order.Packages.FirstOrDefault(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.已出貨) && !p.ShipDate.Equals(DateTime.MinValue))?.ShipDate;
                 var Address = order.Addresses;
                 result.data = new
@@ -833,7 +833,7 @@ namespace QDLogistics.Controllers
                     OrderStatus = order.StatusCode,
                     OrderDate = TimeZoneConvert.InitDateTime(order.TimeOfOrder.Value, EnumData.TimeZone.EST).Utc,
                     PaymentStatus = order.PaymentStatus.Value,
-                    PaymentDate = TimeZoneConvert.InitDateTime(order.PaymentDate ?? PaymentDate.Value, EnumData.TimeZone.EST).Utc,
+                    PaymentDate = PaymentDate.HasValue ? TimeZoneConvert.InitDateTime(PaymentDate.Value, EnumData.TimeZone.EST).Utc : PaymentDate,
                     FulfilledDate =  ShipDate.HasValue ? TimeZoneConvert.InitDateTime(ShipDate.Value, EnumData.TimeZone.EST).Utc : ShipDate,
                     BuyerNote = order.Instructions,
                     Comment = string.Join("\r\n", order.Packages.Where(p => p.IsEnable.Value && !string.IsNullOrEmpty(p.Comment)).Select(p => p.Comment)),

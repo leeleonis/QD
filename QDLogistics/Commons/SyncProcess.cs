@@ -133,8 +133,9 @@ namespace QDLogistics.Commons
                 Check_Payment(paymentDatas, SC_Orders.SelectMany(o => o.Payments).ToList());
                 Orders.SaveChanges();
 
+                int[] PackageIDs = SC_Orders.SelectMany(o => o.Items).Select(i => i.PackageID).Distinct().ToArray();
                 List<Packages> packageDatas = orderDatas.SelectMany(o => o.Packages.Where(p => p.IsEnable.Equals(true))).ToList();
-                Check_Package(packageDatas, SC_Orders.SelectMany(o => o.Packages).ToList());
+                Check_Package(packageDatas, SC_Orders.SelectMany(o => o.Packages).Where(p => PackageIDs.Contains(p.ID)).ToList());
                 Orders.SaveChanges();
 
                 List<Items> itemDatas = packageDatas.SelectMany(p => p.Items.Where(i => i.IsEnable.Equals(true))).ToList();
@@ -240,9 +241,10 @@ namespace QDLogistics.Commons
 
                     Check_Payment(orderData.Payments.Where(p => p.IsEnable.Equals(true)).ToList(), orderDetail.Payments.ToList());
 
-                    Check_Package(orderData.Packages.Where(p => p.IsEnable.Equals(true)).ToList(), orderDetail.Packages.ToList());
+                    int[] PackageIDs = orderDetail.Items.Select(i => i.PackageID).ToArray();
+                    Check_Package(orderData.Packages.Where(p => p.IsEnable.Equals(true)).ToList(), orderDetail.Packages.Where(p => PackageIDs.Contains(p.ID)).ToList());
 
-                    Check_Item(orderData.Packages.Where(p => p.IsEnable.Equals(true)).SelectMany(p => p.Items.Where(i => i.IsEnable.Equals(true))).ToList(), orderDetail.Items.ToList());
+                    Check_Item(orderData.Items.Where(i => i.IsEnable.Equals(true)).ToList(), orderDetail.Items.ToList());
 
                     if (orderData.Packages.All(p => p.IsEnable.Value && !p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨) && !p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.保留中)))
                     {

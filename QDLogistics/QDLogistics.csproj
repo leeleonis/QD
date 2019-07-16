@@ -279,6 +279,7 @@
   <ItemGroup>
     <Compile Include="App_Code\CarrierApi\DHL\DHLService.cs" />
     <Compile Include="App_Code\CarrierApi\DHL\DHL_API.cs" />
+    <Compile Include="App_Code\CarrierApi\NewWinit_API.cs" />
     <Compile Include="App_Code\CarrierApi\Sendle_API.cs" />
     <Compile Include="App_Code\DirectLineApi\IDS\IDS_Track.cs" />
     <Compile Include="App_Code\DirectLineApi\IDS\ApiData.cs" />

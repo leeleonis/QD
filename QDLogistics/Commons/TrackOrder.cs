@@ -4,6 +4,7 @@ using CarrierApi.Sendle;
 using CarrierApi.Winit;
 using QDLogistics.FedExTrackService;
 using QDLogistics.Models;
+using QDLogistics.OrderService;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,17 +42,19 @@ namespace QDLogistics.Commons
             carrierData = packageData.Method?.Carriers;
         }
 
-        public TrackResult Track()
+        public TrackResult Track(string trackingNo = null)
         {
             TrackResult result = new TrackResult();
 
             try
             {
-                if (orderData.Payments.Any())
+                var paymentDate = orderData.PaymentDate;
+                if (orderData.PaymentDate == null || orderData.PaymentDate.Equals(DateTime.MinValue))
                 {
-                    result.PaymentDate = time_zone.InitDateTime(orderData.Payments.First().AuditDate.Value, EnumData.TimeZone.EST).Utc;
+                    paymentDate = orderData.Payments.FirstOrDefault(p => p.PaymentStatus.Value.Equals((int)PaymentStatus.Cleared))?.AuditDate;
                 }
-                
+                result.PaymentDate = time_zone.InitDateTime(paymentDate.Value, EnumData.TimeZone.EST).Utc;
+
                 if (carrierData == null) throw new Exception("Not found carrier!");
 
                 switch (carrierData.CarrierAPI.Type.Value)
@@ -65,49 +68,9 @@ namespace QDLogistics.Commons
                     case (byte)EnumData.CarrierType.Sendle:
                         result = Sendle_Track(carrierData.CarrierAPI, packageData.TrackingNumber);
                         break;
-                }
-            }
-            catch (Exception e)
-            {
-                throw new Exception(orderData.OrderID + " - " + e.Message);
-            }
-
-            return result;
-        }
-
-        public TrackResult Track(string warehouseID, string outboundNum, string trackingNum = "")
-        {
-            TrackResult result = new TrackResult();
-
-            try
-            {
-                if (orderData.Payments.Any())
-                {
-                    result.PaymentDate = time_zone.InitDateTime(orderData.Payments.First().AuditDate.Value, EnumData.TimeZone.EST).Utc;
-                }
-
-                Winit_API winit = new Winit_API();
-                Received track = winit.Tracking(warehouseID, outboundNum, trackingNum);
-
-                if (track.code != "0") throw new Exception(track.msg);
-
-                trackData[] Winit_EventList = track.data.ToObject<trackData[]>();
-
-                if (Winit_EventList.Any())
-                {
-                    if (Winit_EventList.Any(e => e.status == "DIC"))
-                    {
-                        result.PickupDate = Winit_EventList.First(e => e.status == "DIC").scandateTime.ToUniversalTime();
-                        result.DeliveryStatus = (int)OrderService.DeliveryStatusType.Intransit;
-                    }
-
-                    result.DeliveryNote = Winit_EventList.Select(e => e.scandateTime.ToString() + " " + e.trackingmess).Last();
-
-                    if (Winit_EventList.Any(e => e.status == "DLC"))
-                    {
-                        result.DeliveryDate = Winit_EventList.First(e => e.status == "DLC").scandateTime.ToUniversalTime();
-                        result.DeliveryStatus = (int)OrderService.DeliveryStatusType.Delivered;
-                    }
+                    case (byte)EnumData.CarrierType.Winit:
+                        result = Winit_Track(carrierData.CarrierAPI, trackingNo ?? packageData.TrackingNumber);
+                        break;
                 }
             }
             catch (Exception e)
@@ -238,6 +201,38 @@ namespace QDLogistics.Commons
                 }
 
                 result.DeliveryNote = Sendle_Result.tracking_events.Select(e => e.scan_time.ToString() + " " + e.description).Last();
+            }
+
+            return result;
+        }
+
+
+        public TrackResult Winit_Track(CarrierAPI api, string trackingNum)
+        {
+            TrackResult result = new TrackResult();
+
+            Winit_API winit = new Winit_API();
+            OrderTrack track = winit.GetOrderTrack(trackingNum);
+
+            if (winit.ResultError != null) throw new Exception(winit.ResultError.msg);
+
+            var Winit_EventList = track.trace.ToList();
+
+            if (Winit_EventList.Any())
+            {
+                if (Winit_EventList.Any(e => e.eventCode == "DIC"))
+                {
+                    result.PickupDate = Winit_EventList.First(e => e.eventCode == "DIC").date;
+                    result.DeliveryStatus = (int)OrderService.DeliveryStatusType.Intransit;
+                }
+
+                result.DeliveryNote = Winit_EventList.OrderBy(e => e.date).Select(e => e.date + " " + e.eventDescription).Last();
+
+                if (Winit_EventList.Any(e => e.eventCode == "DLC"))
+                {
+                    result.DeliveryDate = Winit_EventList.First(e => e.eventCode == "DLC").date;
+                    result.DeliveryStatus = (int)OrderService.DeliveryStatusType.Delivered;
+                }
             }
 
             return result;

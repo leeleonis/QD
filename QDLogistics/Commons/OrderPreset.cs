@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using CarrierApi.Winit_Old;
+using Newtonsoft.Json;
 using QDLogistics.Models;
 using QDLogistics.Models.Repositiry;
 using QDLogistics.OrderService;
@@ -286,8 +287,8 @@ namespace QDLogistics.Commons
 
                                 if (!string.IsNullOrEmpty(package.WinitNo))
                                 {
-                                    CarrierApi.Winit.Winit_API winit = new CarrierApi.Winit.Winit_API(package.Method.Carriers.CarrierAPI);
-                                    CarrierApi.Winit.Received received = winit.Void(package.WinitNo);
+                                    Winit_API winit = new Winit_API(package.Method.Carriers.CarrierAPI);
+                                    Received received = winit.Void(package.WinitNo);
                                     package.WinitNo = null;
                                 }
 
