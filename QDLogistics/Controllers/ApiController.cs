@@ -842,9 +842,13 @@ namespace QDLogistics.Controllers
                     {
                         SCID = p.ID,
                         Status = p.PaymentStatus,
-                        Date = p.AuditDate,
+                        Date = TimeZoneConvert.InitDateTime(p.AuditDate.Value, EnumData.TimeZone.EST).Utc,
                         Gateway = p.PaymentMethod.Value,
-                        TotalValue = p.Amount,
+                        TotalValue = order.SubTotal,
+                        ShippingCharge = order.ShippingTotal,
+                        InsuranceCharge = order.InsuranceTotal,
+                        GrandTotal = order.GrandTotal,
+                        PaymentTotal = p.Amount,
                         TransactionID = p.TransactionReferenceNumber
                     }).ToList(),
 
@@ -854,25 +858,27 @@ namespace QDLogistics.Controllers
                         AddressLine1 = Address.StreetLine1,
                         AddressLine2 = Address.StreetLine2,
                         Address.City,
-                        State = Address.StateCode,
+                        State = Address.StateName,
                         Postcode = Address.PostalCode,
                         Address.CountryCode,
-                        Address.CountryName
+                        Address.CountryName,
+                        Address.PhoneNumber,
+                        Address.EmailAddress
                     } },
 
                     Packages = order.Packages.Where(p => p.IsEnable.Value).Select(p => new
                     {
                         SCID = p.ID,
                         CarrierBox = p.BoxID,
-                        ShippingMethod = p.ShippingMethod.Value,
-                        Exprot = p.Export.Value,
-                        ExportMethod = p.ExportMethod.Value,
+                        ShippingMethod = p.ShippingMethod ?? 0,
+                        Exprot = p.Export ?? 0,
+                        ExportMethod = p.ExportMethod ?? 0,
                         ExportValue = p.DeclaredTotal,
                         ExportCurrency = order.OrderCurrencyCode.Value,
                         UploadTracking = p.UploadTracking,
                         Tracking = p.TrackingNumber,
-                        DLExport = p.Export.Value,
-                        DLExportMethod = p.ExportMethod.Value,
+                        DLExport = p.Export ?? 0,
+                        DLExportMethod = p.ExportMethod ?? 0,
                         DLExportValue = p.DLDeclaredTotal,
                         DLExportCurrency = p.DLCurrency,
                         DLUploadTracking = p.UploadTracking,

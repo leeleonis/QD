@@ -32,6 +32,7 @@ namespace QDLogistics.Models
         public Nullable<System.DateTime> TimeOfOrder { get; set; }
         public Nullable<decimal> SubTotal { get; set; }
         public Nullable<decimal> ShippingTotal { get; set; }
+        public Nullable<decimal> InsuranceTotal { get; set; }
         public Nullable<decimal> OrderDiscountsTotal { get; set; }
         public Nullable<decimal> GrandTotal { get; set; }
         public Nullable<int> StatusCode { get; set; }

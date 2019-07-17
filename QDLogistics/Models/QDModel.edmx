@@ -274,14 +274,20 @@
           <Property Name="TimeOfOrder" Type="datetime2" Precision="7" />
           <Property Name="SubTotal" Type="decimal" Precision="18" Scale="2" />
           <Property Name="ShippingTotal" Type="decimal" Precision="18" Scale="2" />
+          <Property Name="InsuranceTotal" Type="decimal" Precision="18" Scale="2" />
           <Property Name="OrderDiscountsTotal" Type="decimal" Precision="18" Scale="2" />
           <Property Name="GrandTotal" Type="decimal" Precision="18" Scale="2" />
+          <Property Name="PaypalFeeTotal" Type="decimal" Precision="18" Scale="2" />
+          <Property Name="PostingFeeTotal" Type="decimal" Precision="18" Scale="2" />
+          <Property Name="FinalValueTotal" Type="decimal" Precision="18" Scale="2" />
+          <Property Name="TaxRate" Type="decimal" Precision="18" Scale="2" />
+          <Property Name="TaxTotal" Type="decimal" Precision="18" Scale="2" />
+          <Property Name="FinalShippingFee" Type="decimal" Precision="18" Scale="2" />
           <Property Name="StatusCode" Type="int" />
           <Property Name="PaymentStatus" Type="int" />
           <Property Name="PaymentDate" Type="datetime2" Precision="7" />
           <Property Name="ShippingStatus" Type="int" />
           <Property Name="ShipDate" Type="datetime2" Precision="7" />
-          <Property Name="FinalShippingFee" Type="decimal" Precision="18" Scale="2" />
           <Property Name="ShippingAddress" Type="int" />
           <Property Name="OrderCurrencyCode" Type="int" />
           <Property Name="OrderSource" Type="int" />
@@ -298,14 +304,9 @@
           <Property Name="PackageType" Type="nvarchar" MaxLength="50" />
           <Property Name="StationID" Type="int" />
           <Property Name="CustomerServiceStatus" Type="int" />
-          <Property Name="TaxRate" Type="decimal" Precision="18" Scale="2" />
-          <Property Name="TaxTotal" Type="decimal" Precision="18" Scale="2" />
           <Property Name="GoogleOrderNumber" Type="nvarchar" MaxLength="50" />
           <Property Name="IsInDispute" Type="bit" />
           <Property Name="DisputeStartedOn" Type="datetime2" Precision="7" />
-          <Property Name="PaypalFeeTotal" Type="decimal" Precision="18" Scale="2" />
-          <Property Name="PostingFeeTotal" Type="decimal" Precision="18" Scale="2" />
-          <Property Name="FinalValueTotal" Type="decimal" Precision="18" Scale="2" />
           <Property Name="OrderItemCount" Type="int" />
           <Property Name="OrderQtyTotal" Type="int" />
           <Property Name="ShippingWeightTotalOz" Type="int" />
@@ -1346,6 +1347,7 @@
           <Property Name="TimeOfOrder" Type="DateTime" Precision="7" />
           <Property Name="SubTotal" Type="Decimal" Precision="18" Scale="2" />
           <Property Name="ShippingTotal" Type="Decimal" Precision="18" Scale="2" />
+          <Property Name="InsuranceTotal" Type="Decimal" Precision="18" Scale="2" />
           <Property Name="OrderDiscountsTotal" Type="Decimal" Precision="18" Scale="2" />
           <Property Name="GrandTotal" Type="Decimal" Precision="18" Scale="2" />
           <Property Name="StatusCode" Type="Int32" />
@@ -2314,6 +2316,7 @@
           <EntitySetMapping Name="Orders">
             <EntityTypeMapping TypeName="QDLogisticsModel.Orders">
               <MappingFragment StoreEntitySet="Orders">
+                <ScalarProperty Name="InsuranceTotal" ColumnName="InsuranceTotal" />
                 <ScalarProperty Name="PaymentDate" ColumnName="PaymentDate" />
                 <ScalarProperty Name="SyncOn" ColumnName="SyncOn" />
                 <ScalarProperty Name="Instructions" ColumnName="Instructions" />

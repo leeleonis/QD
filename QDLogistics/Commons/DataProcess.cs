@@ -172,10 +172,6 @@ namespace QDLogistics.Commons
             order.UserName = orderDetail.UserName.Trim();
             order.SiteCode = (int)orderDetail.SiteCode;
             order.TimeOfOrder = orderDetail.TimeOfOrder;
-            order.SubTotal = orderDetail.SubTotal;
-            order.ShippingTotal = orderDetail.ShippingTotal;
-            order.OrderDiscountsTotal = orderDetail.OrderDiscountsTotal;
-            order.GrandTotal = orderDetail.GrandTotal;
             order.PaymentStatus = (int)orderDetail.PaymentStatus;
             order.ShippingStatus = (int)orderDetail.ShippingStatus;
             order.ShipDate = orderDetail.ShipDate;
@@ -192,14 +188,9 @@ namespace QDLogistics.Commons
             order.PackageType = orderDetail.PackageType.Trim();
             order.StationID = orderDetail.StationID;
             order.CustomerServiceStatus = (int)orderDetail.CustomerServiceStatus;
-            order.TaxRate = orderDetail.TaxRate;
-            order.TaxTotal = orderDetail.TaxTotal;
             order.GoogleOrderNumber = orderDetail.GoogleOrderNumber.Trim();
             order.IsInDispute = orderDetail.IsInDispute;
             order.DisputeStartedOn = orderDetail.DisputeStartedOn;
-            order.PaypalFeeTotal = orderDetail.PaypalFeeTotal;
-            order.PostingFeeTotal = orderDetail.PostingFeeTotal;
-            order.FinalValueTotal = orderDetail.FinalValueTotal;
             order.OrderItemCount = orderDetail.OrderItemsCount;
             order.OrderQtyTotal = orderDetail.OrderQtyTotal;
             order.ShippingWeightTotalOz = orderDetail.ShippingWeightTotalOz;
@@ -210,6 +201,17 @@ namespace QDLogistics.Commons
             order.ShippedBy = orderDetail.ShippedBy;
             order.Instructions = orderDetail.Instructions;
             order.PaymentDate = orderDetail.PaymentDate;
+
+            order.SubTotal = orderDetail.SubTotal;
+            order.ShippingTotal = orderDetail.ShippingTotal;
+            order.InsuranceTotal = orderDetail.InsuranceTotal;
+            order.GrandTotal = orderDetail.GrandTotal;
+            order.OrderDiscountsTotal = orderDetail.OrderDiscountsTotal;
+            order.TaxRate = orderDetail.TaxRate;
+            order.TaxTotal = orderDetail.TaxTotal;
+            order.PaypalFeeTotal = orderDetail.PaypalFeeTotal;
+            order.PostingFeeTotal = orderDetail.PostingFeeTotal;
+            order.FinalValueTotal = orderDetail.FinalValueTotal;
 
             if (!order.Packages.Any(p => p.ProcessStatus == (int)EnumData.ProcessStatus.待出貨))
             {
@@ -285,12 +287,6 @@ namespace QDLogistics.Commons
             item.BackOrderQty = itemDetail.BackOrderQty;
             item.UnitPrice = itemDetail.PricePerCase;
             item.Weight = itemDetail.Weight;
-
-            if (item.Packages == null)
-            {
-                item.DeclaredValue = item.DeclaredValue.Equals(0) ? itemDetail.PricePerCase : item.DeclaredValue;
-                item.DLDeclaredValue = item.DLDeclaredValue.Equals(0) ? itemDetail.PricePerCase : item.DLDeclaredValue;
-            }
 
             if (item.Packages == null || item.Packages.ProcessStatus.Equals((int)EnumData.ProcessStatus.已出貨))
             {
