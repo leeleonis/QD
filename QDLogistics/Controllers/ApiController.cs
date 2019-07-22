@@ -818,7 +818,7 @@ namespace QDLogistics.Controllers
                 int? intNull = null;
                 TimeZoneConvert TimeZoneConvert = new TimeZoneConvert();
                 var PaymentDate = !order.PaymentDate.Equals(DateTime.MinValue) ? order.PaymentDate : order.Payments.OrderByDescending(p => p.AuditDate.Value).FirstOrDefault(p => p.IsEnable.Value && p.PaymentStatus.Value.Equals((int)PaymentStatus.Cleared))?.AuditDate;
-                var ShipDate = order.Packages.FirstOrDefault(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.已出貨) && !p.ShipDate.Equals(DateTime.MinValue))?.ShipDate;
+                var ShipDate = order.Packages.FirstOrDefault(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.已出貨) && !p.ShipDate.Equals(DateTime.MinValue))?.ShipDate ?? order.ShipDate;
                 var Address = order.Addresses;
                 result.data = new
                 {
@@ -844,11 +844,11 @@ namespace QDLogistics.Controllers
                         Status = p.PaymentStatus,
                         Date = TimeZoneConvert.InitDateTime(p.AuditDate.Value, EnumData.TimeZone.EST).Utc,
                         Gateway = p.PaymentMethod.Value,
-                        TotalValue = order.SubTotal,
-                        ShippingCharge = order.ShippingTotal,
-                        InsuranceCharge = order.InsuranceTotal,
-                        GrandTotal = order.GrandTotal,
-                        PaymentTotal = p.Amount,
+                        TotalValue = order.SubTotal ?? 0,
+                        ShippingCharge = order.ShippingTotal ?? 0,
+                        InsuranceCharge = order.InsuranceTotal ?? 0,
+                        GrandTotal = order.GrandTotal ?? 0,
+                        PaymentTotal = p.Amount ?? 0,
                         TransactionID = p.TransactionReferenceNumber
                     }).ToList(),
 

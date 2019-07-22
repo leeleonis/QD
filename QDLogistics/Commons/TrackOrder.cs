@@ -49,11 +49,11 @@ namespace QDLogistics.Commons
             try
             {
                 var paymentDate = orderData.PaymentDate;
-                if (orderData.PaymentDate == null || orderData.PaymentDate.Equals(DateTime.MinValue))
+                if (!orderData.PaymentDate.HasValue || orderData.PaymentDate.Equals(DateTime.MinValue))
                 {
-                    paymentDate = orderData.Payments.FirstOrDefault(p => p.PaymentStatus.Value.Equals((int)PaymentStatus.Cleared))?.AuditDate;
+                    paymentDate = orderData.Payments?.FirstOrDefault(p => p.PaymentStatus.Value.Equals((int)PaymentStatus.Cleared))?.AuditDate;
                 }
-                result.PaymentDate = time_zone.InitDateTime(paymentDate.Value, EnumData.TimeZone.EST).Utc;
+                result.PaymentDate = paymentDate.HasValue && !paymentDate.Equals(DateTime.MinValue) ? time_zone.InitDateTime(paymentDate.Value, EnumData.TimeZone.EST).Utc : paymentDate;
 
                 if (carrierData == null) throw new Exception("Not found carrier!");
 
@@ -216,14 +216,14 @@ namespace QDLogistics.Commons
 
             if (winit.ResultError != null) throw new Exception(winit.ResultError.msg);
 
-            var Winit_EventList = track.trace.ToList();
-
-            if (Winit_EventList.Any())
+            if (track != null)
             {
+                var Winit_EventList = track.trace.ToList();
+
                 if (Winit_EventList.Any(e => e.eventCode == "DIC"))
                 {
                     result.PickupDate = Winit_EventList.First(e => e.eventCode == "DIC").date;
-                    result.DeliveryStatus = (int)OrderService.DeliveryStatusType.Intransit;
+                    result.DeliveryStatus = (int)DeliveryStatusType.Intransit;
                 }
 
                 result.DeliveryNote = Winit_EventList.OrderBy(e => e.date).Select(e => e.date + " " + e.eventDescription).Last();
@@ -231,7 +231,7 @@ namespace QDLogistics.Commons
                 if (Winit_EventList.Any(e => e.eventCode == "DLC"))
                 {
                     result.DeliveryDate = Winit_EventList.First(e => e.eventCode == "DLC").date;
-                    result.DeliveryStatus = (int)OrderService.DeliveryStatusType.Delivered;
+                    result.DeliveryStatus = (int)DeliveryStatusType.Delivered;
                 }
             }
 
@@ -243,10 +243,10 @@ namespace QDLogistics.Commons
     {
         public TrackResult()
         {
-            DeliveryStatus = (int)OrderService.DeliveryStatusType.UnShipped;
+            DeliveryStatus = (int)DeliveryStatusType.UnShipped;
         }
 
-        public DateTime PaymentDate { get; set; }
+        public DateTime? PaymentDate { get; set; }
         public DateTime? PickupDate { get; set; }
         public DateTime? DeliveryDate { get; set; }
         public int DeliveryStatus { get; set; }
@@ -255,9 +255,9 @@ namespace QDLogistics.Commons
         {
             get
             {
-                if(!PaymentDate.Equals(DateTime.MinValue) && PickupDate.HasValue)
+                if(PaymentDate.HasValue && !PaymentDate.Equals(DateTime.MinValue) && PickupDate.HasValue)
                 {
-                    return PickupDate.Value - PaymentDate;
+                    return PickupDate.Value - PaymentDate.Value;
                 }
 
                 return TimeSpan.Zero;

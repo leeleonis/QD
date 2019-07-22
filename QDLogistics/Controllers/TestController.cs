@@ -268,10 +268,15 @@ namespace QDLogistics.Controllers
 
         public void Check_Winit(int OrderID)
         {
-            using (Winit_API winitAPI = new Winit_API())
+            var package = db.Packages.First(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID));
+            Winit_API winitAPI2 = new Winit_API();
+            var data2 = winitAPI2.GetOutboundOrderData(package.WinitNo);
+            TrackOrder track = new TrackOrder(package);
+            var result = track.Track(data2.trackingNum);
+            using (CarrierApi.Winit_Old.Winit_API winitAPI = new CarrierApi.Winit_Old.Winit_API(package.Method.Carriers.CarrierAPI))
             {
-                var package = db.Packages.First(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID));
-                var track = winitAPI.GetOrderTrack(package.TrackingNumber);
+                //CarrierApi.Winit_Old.outboundOrderListResult data = winitAPI.Order(package.WinitNo).data.ToObject<CarrierApi.Winit_Old.outboundOrderListResult>();
+                CarrierApi.Winit_Old.Received trackData = winitAPI.Tracking(data2.warehouseId.ToString(), package.WinitNo, data2.trackingNum);
             }
         }
 
@@ -339,10 +344,9 @@ namespace QDLogistics.Controllers
 
         public void Box_Test(string boxID)
         {
-            SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
-            ShipProcess shipProcess = new ShipProcess(SCWS);
-            var boxList = db.Box.Where(b => b.IsEnable && b.MainBox.Equals(boxID)).OrderBy(b => b.Create_at).ToList();
-            ShipResult boxResult = shipProcess.Dispatch(boxList);
+            var box = db.Box.Find(boxID);
+            TrackOrder track = new TrackOrder();
+            var result = track.Track(box, db.ShippingMethod.Find(box.FirstMileMethod).Carriers.CarrierAPI);
         }
 
         private void Excel_Test(int OrderID)

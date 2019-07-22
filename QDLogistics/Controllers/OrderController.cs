@@ -545,23 +545,21 @@ namespace QDLogistics.Controllers
                             HttpSessionStateBase session = (HttpSessionStateBase)Session;
                             MyHelp.Log("Orders", null, "追蹤Winit訂單", session);
 
-                            Winit_API winit = new Winit_API();
+                            var winit = new CarrierApi.Winit.Winit_API();
+                            var winitWarehouseIDs = db.Warehouses.AsNoTracking().Where(w => w.IsEnable.Value & w.IsSellable.Value && !w.WinitWarehouseID.Equals("0")).ToDictionary(w => w.ID, w => w.WinitWarehouseID);
 
-                            Received searchOrder = null;
-                            List<outboundOrderListData> trackList = new List<outboundOrderListData>();
+                            var trackList = new List<CarrierApi.Winit.OutboundOrderData>();
                             int page = 1, size = 100, total = 0;
 
                             do
                             {
-                                searchOrder = winit.SearchOrder(page.ToString(), size.ToString(), 14);
+                                var searchResult = winit.GetOutboundOrderDatas(page.ToString(), size.ToString(), 14);
 
-                                if (searchOrder.code != "0") throw new Exception(searchOrder.msg);
+                                if (searchResult == null) throw new Exception(winit.ResultError.msg);
 
-                                outboundOrderListResult result = searchOrder.data.ToObject<outboundOrderListResult>();
+                                if (total == 0) total = searchResult.total;
 
-                                if (total == 0) total = result.total;
-
-                                trackList.AddRange(result.list.ToList());
+                                trackList.AddRange(searchResult.list.ToList());
                             } while (page++ * size < total);
 
                             if (trackList.Any())
@@ -583,7 +581,7 @@ namespace QDLogistics.Controllers
                                     foreach (var data in dataList)
                                     {
                                         track.SetOrder(data.order, data.package);
-                                        outboundOrderListData trackData = trackList.First(t => t.sellerOrderNo == data.order.OrderID.ToString());
+                                        var trackData = trackList.First(t => t.sellerOrderNo.Equals(data.order.OrderID.ToString()));
                                         result = track.Track(trackData.trackingNo);
 
                                         if (string.IsNullOrEmpty(data.package.TrackingNumber) && !string.IsNullOrEmpty(trackData.trackingNo))
@@ -591,13 +589,13 @@ namespace QDLogistics.Controllers
                                             data.package.TrackingNumber = trackData.trackingNo;
                                             data.package.ProcessStatus = (int)EnumData.ProcessStatus.已出貨;
 
-                                            ShippingMethod method = ShippingMethod.GetAll(true).FirstOrDefault(m => m.MethodType == int.Parse(trackData.deliverywayId));
+                                            ShippingMethod method = db.ShippingMethod.FirstOrDefault(m => m.MethodType.Value.Equals(trackData.deliverywayId));
                                             if (method != null)
                                             {
                                                 data.package.ShippingMethod = method.ID;
                                             }
 
-                                            int warehouseId = winit.warehouseIDs.First(w => w.Value == trackData.warehouseId).Key;
+                                            int warehouseId = winitWarehouseIDs.First(w => w.Value.Equals(trackData.warehouseId.ToString())).Key;
                                             foreach (Items item in data.package.Items.ToArray())
                                             {
                                                 item.ShipFromWarehouseID = warehouseId;
@@ -625,7 +623,15 @@ namespace QDLogistics.Controllers
 
                                         foreach (int packageID in uploadTracking)
                                         {
-                                            error.Add(Sync.Update_Tracking(db.Packages.Find(packageID)));
+                                            try
+                                            {
+
+                                                error.Add(Sync.Update_Tracking(db.Packages.Find(packageID)));
+                                            }
+                                            catch(Exception ex)
+                                            {
+                                                error.Add(ex.InnerException?.Message ?? ex.Message);
+                                            }
                                         }
 
                                         if (error.Any(e => !string.IsNullOrEmpty(e)))

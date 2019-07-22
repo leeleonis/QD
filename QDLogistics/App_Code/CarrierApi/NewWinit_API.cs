@@ -604,6 +604,129 @@ namespace CarrierApi.Winit
     }
     #endregion
 
+    #region 出庫訂單資料
+
+    public class OutboundOrderItemList
+    {
+        public string itemCode { get; set; }
+    }
+
+    public class OutboundOrderMerchandiseList
+    {
+        public string productCode { get; set; }
+        public string ebayBuyerID { get; set; }
+        public string ebayItemID { get; set; }
+        public string specification { get; set; }
+        public List<OutboundOrderItemList> itemList { get; set; }
+        public int productNum { get; set; }
+        public string ebaySellerID { get; set; }
+        public string ebayTransactionID { get; set; }
+    }
+
+    public class OutboundOrderPackageList
+    {
+        public string isOperateByWinit { get; set; }
+        public DateTime? outboundDate { get; set; }
+        public List<string> trackingNos { get; set; }
+        public decimal? weight { get; set; }
+        public DateTime? transactionDate { get; set; }
+        public string actualFinishTime { get; set; }
+        public string scheduledFinishTime { get; set; }
+        public List<OutboundOrderMerchandiseList> merchandiseList { get; set; }
+        public string serviceCompleteTime { get; set; }
+        public string ontimeStatus { get; set; }
+        public string reasonForVoid { get; set; }
+        public string serviceStandardTime { get; set; }
+        public string packageNum { get; set; }
+        public string status { get; set; }
+    }
+
+    public class OutboundOrderData
+    {
+        public string winitTrackingNo { get; set; }
+        public string zipCode { get; set; }
+        public DateTime? outboundDate { get; set; }
+        public string phoneNum { get; set; }
+        public int deliverywayId { get; set; }
+        public string insuranceType { get; set; }
+        public string ebayName { get; set; }
+        public string isShareOrder { get; set; }
+        public string emailAddress { get; set; }
+        public string eBaySellerID { get; set; }
+        public decimal? deliveryCosts { get; set; }
+        public decimal? chargeableWeight { get; set; }
+        public string outboundOrderNum { get; set; }
+        public string recipientName { get; set; }
+        public string state { get; set; }
+        public string isRepeat { get; set; }
+        public DateTime? orderedTime { get; set; }
+        public string eBayItemID { get; set; }
+        public decimal? weight { get; set; }
+        public decimal? rebateFeeCosts { get; set; }
+        public decimal? estimateVolume { get; set; }
+        public List<OutboundOrderPackageList> packageList { get; set; }
+        public string storageOntime { get; set; }
+        public decimal? estimateWeight { get; set; }
+        public decimal? volume { get; set; }
+        public string scheduledFinishTime { get; set; }
+        public string ontimeStatus { get; set; }
+        public string serviceCompleteTime { get; set; }
+        public string trackingNum { get; set; }
+        public string handlingfeeCode { get; set; }
+        public int warehouseId { get; set; }
+        public int? cToBpartnerId { get; set; }
+        public string serviceStandardTime { get; set; }
+        public string eBayBuyerID { get; set; }
+        public string winitProductCode { get; set; }
+        public string countryName { get; set; }
+        public decimal? totalCost { get; set; }
+        public string status { get; set; }
+        public string eBayNo { get; set; }
+        public string eBayValidateResult { get; set; }
+        public string deliveryCompletionStatus { get; set; }
+        public string sellerOrderNo { get; set; }
+        public decimal? handlingFee { get; set; }
+        public string city { get; set; }
+        public int insuranceTypeID { get; set; }
+        public string regionName { get; set; }
+        public int? cFromBpartnerId { get; set; }
+        public string warehouseName { get; set; }
+        public string warehouseCode { get; set; }
+        public decimal rate { get; set; }
+        public string statusName { get; set; }
+        public string deliverywayName { get; set; }
+        public string isEBayOrder { get; set; }
+        public string storeType { get; set; }
+        public int outboundOrderID { get; set; }
+        public string address2 { get; set; }
+        public string address1 { get; set; }
+        public string deliveryCostsCode { get; set; }
+        public string specification { get; set; }
+        public int productNum { get; set; }
+        public string transactionDate { get; set; }
+        public string actualFinishTime { get; set; }
+        public string carrier { get; set; }
+        public string bpName { get; set; }
+        public string productCode { get; set; }
+        public string rebateFeeCostsCode { get; set; }
+        public int? cBpartnerId { get; set; }
+        public string doorplateNumbers { get; set; }
+        public string eBayOrderID { get; set; }
+
+        // 以下為GetOutboundOrderDatas所用 
+        public string documentNo { get; set; }
+        public string trackingNo { get; set; }
+    }
+    #endregion
+
+    public class PageList<T>
+    {
+        public int total { get; set; }
+        public int currentPageSize { get; set; }
+        public int currentPageNum { get; set; }
+        public List<T> list { get; set; }
+    }
+
     public class Winit_API : IDisposable
     {
         private bool disposed = false;
@@ -880,7 +1003,7 @@ namespace CarrierApi.Winit
         /// <returns></returns>
         internal List<EorList> EorList()
         {
-            return GetAPI<List<EorList>>("winit.ups.eorType.queryEorList", new {});
+            return GetAPI<List<EorList>>("winit.ups.eorType.queryEorList", new { });
         }
         /// <summary>
         /// 查詢物流計劃
@@ -900,7 +1023,7 @@ namespace CarrierApi.Winit
         /// <param name="winitProductCode">WINIT產品編碼</param>
         /// <param name="destinationWarehouseCode">目的倉編碼</param>
         /// <returns></returns>
-        internal List<AvailableMerchandise> getAvailableMerchandise( string firstLegType, string winitProductCode, string destinationWarehouseCode)
+        internal List<AvailableMerchandise> getAvailableMerchandise(string firstLegType, string winitProductCode, string destinationWarehouseCode)
         {
             return GetAPI<List<AvailableMerchandise>>("winit.wh.mms.getAvailableMerchandise", new { customerCode = WinitAccountID, firstLegType, winitProductCode, destinationWarehouseCode });
         }
@@ -919,7 +1042,7 @@ namespace CarrierApi.Winit
             return GetAPI<List<VendorInfo>>("winit.ums.getVendorInfo", new { countryCode, vendorType });
         }
 
-        internal PackageLabe printPackageLabe(string orderNo,string labelSize,List<packageNoList> packageNoList)
+        internal PackageLabe printPackageLabe(string orderNo, string labelSize, List<packageNoList> packageNoList)
         {
             return GetAPI<PackageLabe>("winit.wh.inbound.printPackageLabel", new { orderNo, labelSize, packageNoList });
         }
@@ -932,6 +1055,29 @@ namespace CarrierApi.Winit
         internal OrderTrack GetOrderTrack(string trackingNo)
         {
             return GetAPI<OrderTrack[]>("tracking.getOrderVerdorTracking", new { trackingnos = trackingNo }).FirstOrDefault();
+        }
+
+        internal OutboundOrderData GetOutboundOrderData(string outboundOrderNo)
+        {
+            return GetAPI<PageList<OutboundOrderData>>("queryOutboundOrder", new { outboundOrderNum = outboundOrderNo }).list.First();
+        }
+
+        internal PageList<OutboundOrderData> GetOutboundOrderDatas(string pageNum = "1", string pageSize = "100", int days = 7)
+        {
+            TimeZoneConvert timeZone = new TimeZoneConvert();
+            DateTime endDate = timeZone.ConvertDateTime(QDLogistics.Commons.EnumData.TimeZone.TST);
+            DateTime startDate = endDate.AddDays(-days);
+
+            var data = new
+            {
+                dateOrderedStartDate = startDate.ToString("yyyy-MM-dd"),
+                dateOrderedEndDate = endDate.ToString("yyyy-MM-dd"),
+                status = "valid",
+                pageSize = pageSize,
+                pageNum = pageNum
+            };
+
+            return GetAPI<PageList<OutboundOrderData>>("queryOutboundOrderList", data);
         }
     }
 }
