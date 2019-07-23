@@ -58,12 +58,13 @@ namespace QDLogistics.Commons
             List<dynamic> data = new List<dynamic>();
             foreach (Items item in db.Packages.Find(packageID).Items.Where(i => i.IsEnable.Value))
             {
+                var sku = item.ProductID.Split(new char[] { '-' });
                 if (item.SerialNumbers.Any())
                 {
                     data.AddRange(item.SerialNumbers.Select(s => new
                     {
                         OrderID = s.OrderID.Value,
-                        SkuNo = s.ProductID,
+                        SkuNo = sku,
                         SerialsNo = s.SerialNumber,
                         QTY = 1
                     }).ToList());
@@ -73,8 +74,7 @@ namespace QDLogistics.Commons
                     data.Add(new
                     {
                         OrderID = item.OrderID.Value,
-                        SkuNo = item.ProductID,
-                        SerialsNo = "",
+                        SkuNo = sku,
                         QTY = item.Qty.Value
                     });
                 }
@@ -84,22 +84,26 @@ namespace QDLogistics.Commons
             if (!response.status) throw new Exception("PO Error: " + response.message);
         }
 
-        public void WinitRecordShippedOrder(int packageID, List<CarrierApi.Winit.OutboundOrderMerchandiseList> ItemList)
+        public Dictionary<string, List<string>> WinitRecordShippedOrder(int packageID, List<CarrierApi.Winit.OutboundOrderMerchandiseList> ItemList)
         {
             List<dynamic> data = new List<dynamic>();
             foreach (Items item in db.Packages.Find(packageID).Items.Where(i => i.IsEnable.Value))
             {
-                data.Add(new
+                if (ItemList.Any(i => i.productCode.Contains(item.ProductID)))
                 {
-                    OrderID = item.OrderID.Value,
-                    SkuNo = item.ProductID,
-                    WinitItemCode = ItemList.FirstOrDefault(i => i.productCode.Equals(item.ProductID))?.itemList?.Select(i => i.itemCode).ToArray() ?? new string[] { },
-                    QTY = item.Qty.Value
-                });
+                    data.AddRange(ItemList.First(i => i.productCode.Contains(item.ProductID)).itemList.Select(i => new {
+                        OrderID = item.OrderID.Value,
+                        SkuNo = item.ProductID.Split(new char[] { '-' })[0],
+                        SerialsNo = i.itemCode,
+                        QTY = 1
+                    }));
+                }
             }
 
-            Response<object> response = Request<object>("Ajax/ShipmentByOrder", "post", data);
+            Response<Dictionary<string, List<string>>> response = Request<Dictionary<string, List<string>>>("Ajax/ShipmentByOrder", "post", data);
             if (!response.status) throw new Exception("PO Error: " + response.message);
+
+            return response.data;
         }
 
         public void RecordOrderSkuStatement(int OrderID, string State)
@@ -187,6 +191,7 @@ namespace QDLogistics.Commons
         {
             Response<T> response = new Response<T>();
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://internal.qd.com.tw:8080/" + url);
+            //HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://localhost:49920/" + url);
             request.ContentType = "application/json";
             request.Method = method;
             request.ProtocolVersion = HttpVersion.Version10;

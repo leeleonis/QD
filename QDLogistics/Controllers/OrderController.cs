@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using CarrierApi.Sendle;
+using CarrierApi.Winit;
 using CarrierApi.Winit_Old;
 using ClosedXML.Excel;
 using DirectLineApi.IDS;
@@ -225,8 +226,8 @@ namespace QDLogistics.Controllers
 
                                     if (!string.IsNullOrEmpty(package.WinitNo))
                                     {
-                                        Winit_API winit = new Winit_API(package.Method.Carriers.CarrierAPI);
-                                        Received received = winit.Void(package.WinitNo);
+                                        CarrierApi.Winit_Old.Winit_API winit = new CarrierApi.Winit_Old.Winit_API(package.Method.Carriers.CarrierAPI);
+                                        CarrierApi.Winit_Old.Received received = winit.Void(package.WinitNo);
                                         package.WinitNo = null;
                                     }
 
@@ -576,7 +577,7 @@ namespace QDLogistics.Controllers
                                     TrackResult result;
                                     TrackOrder track = new TrackOrder();
 
-                                    List<int> uploadTracking = new List<int>();
+                                    Dictionary<int, List<OutboundOrderMerchandiseList>> uploadTracking = new Dictionary<int, List<OutboundOrderMerchandiseList>>();
 
                                     foreach (var data in dataList)
                                     {
@@ -602,7 +603,7 @@ namespace QDLogistics.Controllers
                                                 Items.Update(item, item.ID);
                                             }
 
-                                            uploadTracking.Add(data.package.ID);
+                                            uploadTracking.Add(data.package.ID, trackData.packageList.SelectMany(p => p.merchandiseList).ToList());
                                         }
 
                                         data.package.WinitNo = trackData.documentNo;
@@ -618,17 +619,42 @@ namespace QDLogistics.Controllers
 
                                     if (uploadTracking.Any())
                                     {
-                                        SyncProcess Sync = new SyncProcess(session);
                                         List<string> error = new List<string>();
 
-                                        foreach (int packageID in uploadTracking)
+                                        StockKeepingUnit stock = new StockKeepingUnit();
+                                        SyncProcess Sync = new SyncProcess(session);
+
+                                        foreach (var uploadPackge in uploadTracking)
                                         {
                                             try
                                             {
+                                                var serials = stock.WinitRecordShippedOrder(uploadPackge.Key, uploadPackge.Value); // 寄送 Winit 出貨記錄
+                                                if (serials.Any())
+                                                {
+                                                    foreach(var item in db.Items.Where(i => i.IsEnable.Value && i.PackageID.Value.Equals(uploadPackge.Key)))
+                                                    {
+                                                        var sku = item.ProductID.Split(new char[] { '-' })[0];
+                                                        if (serials.ContainsKey(sku))
+                                                        {
+                                                            foreach(var serial in serials[sku])
+                                                            {
+                                                                item.SerialNumbers.Add(new SerialNumbers()
+                                                                {
+                                                                    OrderID = item.OrderID,
+                                                                    OrderItemID = item.ID,
+                                                                    ProductID = item.ProductID,
+                                                                    SerialNumber = serial
+                                                                });
+                                                            }
+                                                        }
+                                                    }
 
-                                                error.Add(Sync.Update_Tracking(db.Packages.Find(packageID)));
+                                                    db.SaveChanges();
+                                                }
+
+                                                error.Add(Sync.Update_Tracking(db.Packages.Find(uploadPackge.Key)));
                                             }
-                                            catch(Exception ex)
+                                            catch (Exception ex)
                                             {
                                                 error.Add(ex.InnerException?.Message ?? ex.Message);
                                             }

@@ -288,6 +288,9 @@ namespace QDLogistics.Commons
             item.UnitPrice = itemDetail.PricePerCase;
             item.Weight = itemDetail.Weight;
 
+            item.DeclaredValue = item.DeclaredValue.Equals(0) ? item.UnitPrice.Value : item.DeclaredValue;
+            item.DLDeclaredValue = item.DLDeclaredValue.Equals(0) ? item.UnitPrice.Value : item.DLDeclaredValue;
+
             if (item.Packages == null || item.Packages.ProcessStatus.Equals((int)EnumData.ProcessStatus.已出貨))
             {
                 item.ReturnedToWarehouseID = itemDetail.ReturnedToWarehouseID;

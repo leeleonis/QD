@@ -269,15 +269,10 @@ namespace QDLogistics.Controllers
         public void Check_Winit(int OrderID)
         {
             var package = db.Packages.First(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID));
-            Winit_API winitAPI2 = new Winit_API();
-            var data2 = winitAPI2.GetOutboundOrderData(package.WinitNo);
-            TrackOrder track = new TrackOrder(package);
-            var result = track.Track(data2.trackingNum);
-            using (CarrierApi.Winit_Old.Winit_API winitAPI = new CarrierApi.Winit_Old.Winit_API(package.Method.Carriers.CarrierAPI))
-            {
-                //CarrierApi.Winit_Old.outboundOrderListResult data = winitAPI.Order(package.WinitNo).data.ToObject<CarrierApi.Winit_Old.outboundOrderListResult>();
-                CarrierApi.Winit_Old.Received trackData = winitAPI.Tracking(data2.warehouseId.ToString(), package.WinitNo, data2.trackingNum);
-            }
+            Winit_API winitAPI = new Winit_API();
+            StockKeepingUnit stock = new StockKeepingUnit();
+            var data = winitAPI.GetOutboundOrderData(package.WinitNo);
+            var data2 = stock.WinitRecordShippedOrder(package.ID, data.packageList.SelectMany(p => p.merchandiseList).ToList());
         }
 
         private void Update_Carrier()
