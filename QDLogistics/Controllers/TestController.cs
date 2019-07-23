@@ -37,7 +37,7 @@ namespace QDLogistics.Controllers
             SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
 
             Orders order = db.Orders.Find(5627557);
-            OrderData orderData = SCWS.Get_OrderData(order.OrderID);
+            OrderService.OrderData orderData = SCWS.Get_OrderData(order.OrderID);
             Order SC_order = orderData.Order;
         }
 
@@ -272,7 +272,7 @@ namespace QDLogistics.Controllers
             Winit_API winitAPI = new Winit_API();
             StockKeepingUnit stock = new StockKeepingUnit();
             var data = winitAPI.GetOutboundOrderData(package.WinitNo);
-            var data2 = stock.WinitRecordShippedOrder(package.ID, data.packageList.SelectMany(p => p.merchandiseList).ToList());
+            //var data2 = stock.WinitRecordShippedOrder(package.ID, data.packageList.SelectMany(p => p.merchandiseList).ToList());
         }
 
         private void Update_Carrier()

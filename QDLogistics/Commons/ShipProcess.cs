@@ -9,7 +9,7 @@ using System.Web.Hosting;
 using CarrierApi.DHL;
 using CarrierApi.FedEx;
 using CarrierApi.Sendle;
-using CarrierApi.Winit_Old;
+using CarrierApi.Winit;
 using DirectLineApi.IDS;
 using GemBox.Spreadsheet;
 using iTextSharp.text;
@@ -980,19 +980,18 @@ namespace QDLogistics.Commons
         private ShipResult Winit_Carrier()
         {
             Carriers carrier = package.Method.Carriers;
-            CarrierAPI api = carrier.CarrierAPI;
-            Winit_API winit = new Winit_API(api);
+            Winit_API winit = new Winit_API();
 
             Addresses address = order.Addresses;
 
             try
             {
-                createOutboundOrder_data data = new createOutboundOrder_data()
+                CreateOutboundOrderData data = new CreateOutboundOrderData()
                 {
-                    warehouseID = int.Parse(winit.warehouseIDs[package.Items.First(i => i.IsEnable.Value).ShipFromWarehouseID.Value]),
+                    warehouseID = int.Parse(db.Warehouses.First(w => w.ID.Equals(package.Items.First(i => i.IsEnable.Value).ShipFromWarehouseID)).WinitWarehouseID),
                     eBayOrderID = order.OrderSourceOrderId,
                     repeatable = "Y",
-                    deliveryWayID = package.Method.MethodType.ToString(),
+                    deliveryWayID = package.Method.MethodType.Value,
                     insuranceTypeID = 1000000,
                     sellerOrderNo = order.OrderID.ToString(),
                     recipientName = string.Join(" ", new string[] { address.FirstName, address.MiddleInitial, address.LastName }),
@@ -1006,7 +1005,7 @@ namespace QDLogistics.Commons
                     address2 = address.StreetLine2,
                     isShareOrder = "N",
                     fromBpartnerId = "",
-                    productList = new List<createOutboundInfo_productList>()
+                    productList = new List<OutboundOrderItemList>()
                 };
 
                 string eBaySeller = "qd_us";
@@ -1018,7 +1017,7 @@ namespace QDLogistics.Commons
                 {
                     var skuList = new string[] { "106005549-US", "106005547-US", "106005548-US", "106006218-US", "106018122-US", "106018123-US", "106003214-US", "106003274-US", "106018155-US", "106018124-AU" };
                     string sku = !string.IsNullOrEmpty(suffix) && !item.ProductID.ToLower().Contains(suffix.ToLower()) ? item.ProductID + suffix : item.ProductID;
-                    data.productList.Add(new createOutboundInfo_productList()
+                    data.productList.Add(new OutboundOrderItemList()
                     {
                         eBayBuyerID = order.eBayUserID,
                         eBayItemID = item.eBayItemID,
@@ -1030,12 +1029,12 @@ namespace QDLogistics.Commons
                     });
                 }
 
-                Received result = winit.Create(data);
+                string WinitNo = winit.CreateOutboundOrder(data);
 
-                if (result.code != "0") return new ShipResult(false, result.code + "-" + result.msg);
+                if (winit.ResultError != null) return new ShipResult(false, winit.ResultError.msg);
 
-                createOutboundOrderData outboundOrderData = result.data.ToObject<createOutboundOrderData>();
-                package.WinitNo = outboundOrderData.outboundOrderNum;
+                WinitNo = winit.ConfirmOutboundOrder(WinitNo);
+                package.WinitNo = WinitNo;
                 package.ShippingServiceCode = carrier.Name;
             }
             catch (Exception e)

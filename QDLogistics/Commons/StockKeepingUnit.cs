@@ -6,6 +6,7 @@ using System.Net;
 using System.Web;
 using Newtonsoft.Json;
 using QDLogistics.Models;
+using QDLogistics.OrderService;
 
 namespace QDLogistics.Commons
 {
@@ -15,7 +16,7 @@ namespace QDLogistics.Commons
 
         protected Items itemData;
 
-        #region IDisposable Support
+        private readonly char[] splitChar = new char[] { '-' };
         private bool disposedValue = false; // 偵測多餘的呼叫
 
         public StockKeepingUnit()
@@ -58,7 +59,7 @@ namespace QDLogistics.Commons
             List<dynamic> data = new List<dynamic>();
             foreach (Items item in db.Packages.Find(packageID).Items.Where(i => i.IsEnable.Value))
             {
-                var sku = item.ProductID.Split(new char[] { '-' });
+                var sku = item.ProductID.Split(splitChar)[0];
                 if (item.SerialNumbers.Any())
                 {
                     data.AddRange(item.SerialNumbers.Select(s => new
@@ -75,6 +76,7 @@ namespace QDLogistics.Commons
                     {
                         OrderID = item.OrderID.Value,
                         SkuNo = sku,
+                        SerialsNo = "",
                         QTY = item.Qty.Value
                     });
                 }
@@ -93,7 +95,7 @@ namespace QDLogistics.Commons
                 {
                     data.AddRange(ItemList.First(i => i.productCode.Contains(item.ProductID)).itemList.Select(i => new {
                         OrderID = item.OrderID.Value,
-                        SkuNo = item.ProductID.Split(new char[] { '-' })[0],
+                        SkuNo = item.ProductID.Split(splitChar)[0],
                         SerialsNo = i.itemCode,
                         QTY = 1
                     }));
@@ -112,8 +114,8 @@ namespace QDLogistics.Commons
             DateTime Date = DateTime.UtcNow;
             if (State.Equals("New"))
             {
-                var convertDate = new TimeZoneConvert(order.Payments.FirstOrDefault()?.AuditDate ?? order.TimeOfOrder.Value, EnumData.TimeZone.EST);
-                Date = convertDate.Utc;
+                var paymentDate = order.PaymentDate.HasValue && !order.PaymentDate.Equals(DateTime.MinValue) ? order.PaymentDate : order.Payments.FirstOrDefault(p => p.IsEnable.Value && p.PaymentStatus.Value.Equals((int)PaymentStatus.Cleared))?.AuditDate;
+                Date = new TimeZoneConvert(paymentDate ?? order.TimeOfOrder.Value, EnumData.TimeZone.EST).Utc;
             }
 
             MyHelp.Log("SkuStatement", OrderID, string.Format("State: {0}, Date: {1}", State, Date.ToString("yyyy-MM-dd HH:mm:ss")));
@@ -123,7 +125,7 @@ namespace QDLogistics.Commons
             {
                 OrderID,
                 SCID = i.ShipFromWarehouseID.Value,
-                SkuNo = i.ProductID,
+                SkuNo = i.ProductID.Split(splitChar)[0],
                 Qty = i.Qty.Value,
                 State,
                 Date = Date.ToString("yyyy-MM-dd HH:mm:ss")
@@ -137,6 +139,8 @@ namespace QDLogistics.Commons
 
         public List<SkuData> GetSkuData(string[] IDs)
         {
+            IDs = IDs.Select(id => id.Split(splitChar)[0]).ToArray();
+
             Response<List<SkuData>> response = Request<List<SkuData>>("Ajax/GetSkuData", "post", new { IDs });
 
             return response.data;
@@ -248,7 +252,6 @@ namespace QDLogistics.Commons
             // TODO: 如果上方的完成項已被覆寫，即取消下行的註解狀態。
             // GC.SuppressFinalize(this);
         }
-        #endregion
 
         public class Response<T>
         {

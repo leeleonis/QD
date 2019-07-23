@@ -590,7 +590,7 @@ namespace QDLogistics.Controllers
                                             data.package.TrackingNumber = trackData.trackingNo;
                                             data.package.ProcessStatus = (int)EnumData.ProcessStatus.已出貨;
 
-                                            ShippingMethod method = db.ShippingMethod.FirstOrDefault(m => m.MethodType.Value.Equals(trackData.deliverywayId));
+                                            ShippingMethod method = db.ShippingMethod.FirstOrDefault(m => m.MethodType.Value.Equals(trackData.deliveryWayID));
                                             if (method != null)
                                             {
                                                 data.package.ShippingMethod = method.ID;
@@ -628,15 +628,17 @@ namespace QDLogistics.Controllers
                                         {
                                             try
                                             {
+                                                MyHelp.Log("Inventory", uploadPackge.Key, "Winit 傳送出貨資料至PO系統", session);
+
                                                 var serials = stock.WinitRecordShippedOrder(uploadPackge.Key, uploadPackge.Value); // 寄送 Winit 出貨記錄
                                                 if (serials.Any())
                                                 {
-                                                    foreach(var item in db.Items.Where(i => i.IsEnable.Value && i.PackageID.Value.Equals(uploadPackge.Key)))
+                                                    foreach (var item in db.Items.Where(i => i.IsEnable.Value && i.PackageID.Value.Equals(uploadPackge.Key)))
                                                     {
                                                         var sku = item.ProductID.Split(new char[] { '-' })[0];
                                                         if (serials.ContainsKey(sku))
                                                         {
-                                                            foreach(var serial in serials[sku])
+                                                            foreach (var serial in serials[sku])
                                                             {
                                                                 item.SerialNumbers.Add(new SerialNumbers()
                                                                 {
@@ -651,13 +653,13 @@ namespace QDLogistics.Controllers
 
                                                     db.SaveChanges();
                                                 }
-
-                                                error.Add(Sync.Update_Tracking(db.Packages.Find(uploadPackge.Key)));
                                             }
                                             catch (Exception ex)
                                             {
                                                 error.Add(ex.InnerException?.Message ?? ex.Message);
                                             }
+
+                                            error.Add(Sync.Update_Tracking(db.Packages.Find(uploadPackge.Key)));
                                         }
 
                                         if (error.Any(e => !string.IsNullOrEmpty(e)))

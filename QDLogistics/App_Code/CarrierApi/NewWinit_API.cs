@@ -605,22 +605,25 @@ namespace CarrierApi.Winit
     #endregion
 
     #region 出庫訂單資料
-
     public class OutboundOrderItemList
+    {
+        public string eBayBuyerID { get; set; }
+        public string eBayItemID { get; set; }
+        public string eBaySellerID { get; set; }
+        public string eBayTransactionID { get; set; }
+        public string productCode { get; set; }
+        public string productNum { get; set; }
+        public string specification { get; set; }
+    }
+
+    public class ItemCodeList
     {
         public string itemCode { get; set; }
     }
 
-    public class OutboundOrderMerchandiseList
+    public class OutboundOrderMerchandiseList : OutboundOrderItemList
     {
-        public string productCode { get; set; }
-        public string ebayBuyerID { get; set; }
-        public string ebayItemID { get; set; }
-        public string specification { get; set; }
-        public List<OutboundOrderItemList> itemList { get; set; }
-        public int productNum { get; set; }
-        public string ebaySellerID { get; set; }
-        public string ebayTransactionID { get; set; }
+        public List<ItemCodeList> itemList { get; set; }
     }
 
     public class OutboundOrderPackageList
@@ -641,23 +644,38 @@ namespace CarrierApi.Winit
         public string status { get; set; }
     }
 
-    public class OutboundOrderData
+    public class OrderData
+    {
+        public string address1 { get; set; }
+        public string address2 { get; set; }
+        public string city { get; set; }
+        public int deliveryWayID { get; set; }
+        public string eBayOrderID { get; set; }
+        public string emailAddress { get; set; }
+        public int insuranceTypeID { get; set; }
+        public string phoneNum { get; set; }
+        public string recipientName { get; set; }
+        public string region { get; set; }
+        public string repeatable { get; set; }
+        public string sellerOrderNo { get; set; }
+        public string state { get; set; }
+        public int warehouseID { get; set; }
+        public string zipCode { get; set; }
+        public string isShareOrder { get; set; }
+        public string fromBpartnerId { get; set; }
+    }
+
+    public class OutboundOrderData : OrderData
     {
         public string winitTrackingNo { get; set; }
-        public string zipCode { get; set; }
         public DateTime? outboundDate { get; set; }
-        public string phoneNum { get; set; }
-        public int deliverywayId { get; set; }
         public string insuranceType { get; set; }
         public string ebayName { get; set; }
         public string isShareOrder { get; set; }
-        public string emailAddress { get; set; }
         public string eBaySellerID { get; set; }
         public decimal? deliveryCosts { get; set; }
         public decimal? chargeableWeight { get; set; }
         public string outboundOrderNum { get; set; }
-        public string recipientName { get; set; }
-        public string state { get; set; }
         public string isRepeat { get; set; }
         public DateTime? orderedTime { get; set; }
         public string eBayItemID { get; set; }
@@ -684,10 +702,7 @@ namespace CarrierApi.Winit
         public string eBayNo { get; set; }
         public string eBayValidateResult { get; set; }
         public string deliveryCompletionStatus { get; set; }
-        public string sellerOrderNo { get; set; }
         public decimal? handlingFee { get; set; }
-        public string city { get; set; }
-        public int insuranceTypeID { get; set; }
         public string regionName { get; set; }
         public int? cFromBpartnerId { get; set; }
         public string warehouseName { get; set; }
@@ -698,8 +713,6 @@ namespace CarrierApi.Winit
         public string isEBayOrder { get; set; }
         public string storeType { get; set; }
         public int outboundOrderID { get; set; }
-        public string address2 { get; set; }
-        public string address1 { get; set; }
         public string deliveryCostsCode { get; set; }
         public string specification { get; set; }
         public int productNum { get; set; }
@@ -711,11 +724,15 @@ namespace CarrierApi.Winit
         public string rebateFeeCostsCode { get; set; }
         public int? cBpartnerId { get; set; }
         public string doorplateNumbers { get; set; }
-        public string eBayOrderID { get; set; }
 
         // 以下為GetOutboundOrderDatas所用 
         public string documentNo { get; set; }
         public string trackingNo { get; set; }
+    }
+
+    public class CreateOutboundOrderData : OrderData
+    {
+        public List<OutboundOrderItemList> productList { get; set; }
     }
     #endregion
 
@@ -1073,11 +1090,26 @@ namespace CarrierApi.Winit
                 dateOrderedStartDate = startDate.ToString("yyyy-MM-dd"),
                 dateOrderedEndDate = endDate.ToString("yyyy-MM-dd"),
                 status = "valid",
-                pageSize = pageSize,
-                pageNum = pageNum
+                pageSize,
+                pageNum
             };
 
             return GetAPI<PageList<OutboundOrderData>>("queryOutboundOrderList", data);
+        }
+
+        internal string CreateOutboundOrder(CreateOutboundOrderData orderData)
+        {
+            return GetAPI<dynamic>("createOutboundInfo", orderData).outboundOrderNum;
+        }
+
+        internal string ConfirmOutboundOrder(string outboundOrderNum)
+        {
+            return GetAPI<dynamic>("confirmOutboundOrder", new { outboundOrderNum }).outboundOrderNum;
+        }
+
+        internal string CancelOutboundOrder(string outboundOrderNum)
+        {
+            return GetAPI<dynamic>("voidOutboundOrder", new { outboundOrderNum }).outboundOrderNum;
         }
     }
 }

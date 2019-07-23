@@ -1,5 +1,5 @@
 ﻿using CarrierApi.Sendle;
-using CarrierApi.Winit_Old;
+using CarrierApi.Winit;
 using ClosedXML.Excel;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -505,9 +505,8 @@ namespace QDLogistics.Controllers
                                     case (byte)EnumData.CarrierType.Winit:
                                         if (!string.IsNullOrEmpty(package.WinitNo))
                                         {
-                                            Winit_API winit = new Winit_API(carrier.CarrierAPI);
-                                            Received received = winit.Void(package.WinitNo);
-                                            if (received.code != "0") throw new Exception(received.code + "-" + received.msg);
+                                            Winit_API winit = new Winit_API();
+                                            winit.CancelOutboundOrder(package.WinitNo);
                                             package.WinitNo = null;
                                         }
                                         break;
@@ -1212,7 +1211,7 @@ namespace QDLogistics.Controllers
 
             return Json(new { total = total, rows = dataList }, JsonRequestBehavior.AllowGet);
         }
-        
+
         private string FormatTime(DateTime? dateTime1, DateTime? dateTime2)
         {
             string format = "";
@@ -1523,8 +1522,7 @@ namespace QDLogistics.Controllers
         {
             Winit_API winit = new Winit_API();
 
-            Received result = winit.GetWarehouses();
-            warehouseData[] warehouseList = result.data.ToObject<warehouseData[]>();
+            var warehouseList = winit.WarehouseDataList();
             var WinitWarehouse = warehouseList.Select(w => new { text = w.warehouseName, value = w.warehouseID }).ToList();
             WinitWarehouse.Insert(0, new { text = "無", value = "0" });
 
