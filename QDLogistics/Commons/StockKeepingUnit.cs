@@ -82,7 +82,7 @@ namespace QDLogistics.Commons
                 }
             }
 
-            Response<object> response = Request<object>("Ajax/ShipmentByOrder", "post", data);
+            Response<Dictionary<string, List<string>>> response = Request<Dictionary<string, List<string>>>("Ajax/ShipmentByOrder", "post", data);
             if (!response.status) throw new Exception("PO Error: " + response.message);
         }
 

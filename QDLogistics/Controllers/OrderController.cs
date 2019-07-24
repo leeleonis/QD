@@ -603,7 +603,7 @@ namespace QDLogistics.Controllers
                                                 Items.Update(item, item.ID);
                                             }
 
-                                            uploadTracking.Add(data.package.ID, trackData.packageList.SelectMany(p => p.merchandiseList).ToList());
+                                            uploadTracking.Add(data.package.ID, winit.GetOutboundOrderData(data.package.WinitNo).packageList.SelectMany(p => p.merchandiseList).ToList());
                                         }
 
                                         data.package.WinitNo = trackData.documentNo;

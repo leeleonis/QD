@@ -1710,51 +1710,10 @@ namespace QDLogistics.Controllers
 
                                 try
                                 {
-                                    List<dynamic> data = new List<dynamic>();
-                                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://internal.qd.com.tw:8080/Ajax/ShipmentByOrder");
-                                    request.ContentType = "application/json";
-                                    request.Method = "post";
-                                    //request.ProtocolVersion = HttpVersion.Version10;
-
-                                    foreach (Items item in newPackage.Items.Where(i => i.IsEnable.Value))
+                                    using (StockKeepingUnit stock = new StockKeepingUnit())
                                     {
-                                        if (item.SerialNumbers.Any())
-                                        {
-                                            data.AddRange(item.SerialNumbers.Select(s => new
-                                            {
-                                                OrderID = s.OrderID.Value,
-                                                SkuNo = s.ProductID,
-                                                SerialsNo = s.SerialNumber,
-                                                QTY = 1
-                                            }).ToList());
-                                        }
-                                        else
-                                        {
-                                            data.Add(new
-                                            {
-                                                OrderID = item.OrderID.Value,
-                                                SkuNo = item.ProductID,
-                                                SerialsNo = "",
-                                                QTY = item.Qty.Value
-                                            });
-                                        }
-                                    }
-
-                                    if (data != null)
-                                    {
-                                        using (StreamWriter streamWriter = new StreamWriter(request.GetRequestStream()))
-                                        {
-                                            streamWriter.Write(JsonConvert.SerializeObject(data));
-                                            streamWriter.Flush();
-                                        }
-
-                                        HttpWebResponse httpResponse = (HttpWebResponse)request.GetResponse();
-                                        using (StreamReader streamReader = new StreamReader(httpResponse.GetResponseStream()))
-                                        {
-                                            AjaxResult postResult = JsonConvert.DeserializeObject<AjaxResult>(streamReader.ReadToEnd());
-                                            if (!postResult.status) throw new Exception(postResult.message);
-                                            MyHelp.Log("Inventory", newPackage.OrderID, string.Format("訂單【{0}】傳送出貨資料至PO系統", newPackage.OrderID), Session);
-                                        }
+                                        stock.RecordShippedOrder(newPackage.ID);
+                                        MyHelp.Log("Inventory", newPackage.OrderID, string.Format("訂單【{0}】傳送出貨資料至PO系統", newPackage.OrderID), Session);
                                     }
                                 }
                                 catch (Exception e)

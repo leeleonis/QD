@@ -271,8 +271,11 @@ namespace QDLogistics.Controllers
             var package = db.Packages.First(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID));
             Winit_API winitAPI = new Winit_API();
             StockKeepingUnit stock = new StockKeepingUnit();
-            var data = winitAPI.GetOutboundOrderData(package.WinitNo);
-            //var data2 = stock.WinitRecordShippedOrder(package.ID, data.packageList.SelectMany(p => p.merchandiseList).ToList());
+            var data = winitAPI.GetOutboundOrderDatas();
+            var data2 = winitAPI.GetOutboundOrderData(package.WinitNo);
+            TrackOrder track = new TrackOrder(package);
+            var data3 = data.list.First(d => d.sellerOrderNo.Equals(OrderID.ToString()));
+            var result = track.Track(data3.trackingNo);
         }
 
         private void Update_Carrier()
@@ -605,6 +608,17 @@ namespace QDLogistics.Controllers
 
                 checkPoint = checkPoint.AddDays(1);
             } while (checkPoint.CompareTo(updateDate) < 0);
+        }
+
+        public void ResendShippedOrder()
+        {
+            var stock = new StockKeepingUnit();
+            stock.RecordShippedOrder(db.Packages.First(p => p.IsEnable.Value && p.OrderID.Value.Equals(5630218)).ID);
+        }
+
+        public void ResendOrderStatement()
+        {
+            var OrderIDs = new int[] { 5630183, 5630220, 5630218, 5630187, 5630224, 5630223 };
         }
     }
 }

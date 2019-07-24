@@ -988,7 +988,7 @@ namespace QDLogistics.Commons
             {
                 CreateOutboundOrderData data = new CreateOutboundOrderData()
                 {
-                    warehouseID = int.Parse(db.Warehouses.First(w => w.ID.Equals(package.Items.First(i => i.IsEnable.Value).ShipFromWarehouseID)).WinitWarehouseID),
+                    warehouseID = int.Parse(warehouse.WinitWarehouseID),
                     eBayOrderID = order.OrderSourceOrderId,
                     repeatable = "Y",
                     deliveryWayID = package.Method.MethodType.Value,
