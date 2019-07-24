@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using CarrierApi.Sendle;
 using CarrierApi.Winit;
-using CarrierApi.Winit_Old;
 using ClosedXML.Excel;
 using DirectLineApi.IDS;
 using Ionic.Zip;
@@ -577,36 +576,46 @@ namespace QDLogistics.Controllers
                                     TrackResult result;
                                     TrackOrder track = new TrackOrder();
 
-                                    Dictionary<int, List<OutboundOrderMerchandiseList>> uploadTracking = new Dictionary<int, List<OutboundOrderMerchandiseList>>();
+                                    var uploadTracking = new List<int>();
+                                    var uploadSerials = new Dictionary<int, List<OutboundOrderMerchandiseList>>();
 
                                     foreach (var data in dataList)
                                     {
                                         track.SetOrder(data.order, data.package);
-                                        var trackData = trackList.First(t => t.sellerOrderNo.Equals(data.order.OrderID.ToString()));
+                                        OutboundOrderData trackData = trackList.First(t => t.sellerOrderNo.Equals(data.order.OrderID.ToString()));
                                         result = track.Track(trackData.trackingNo);
 
-                                        if (string.IsNullOrEmpty(data.package.TrackingNumber) && !string.IsNullOrEmpty(trackData.trackingNo))
+                                        if (!string.IsNullOrEmpty(trackData.trackingNo))
                                         {
-                                            data.package.TrackingNumber = trackData.trackingNo;
-                                            data.package.ProcessStatus = (int)EnumData.ProcessStatus.已出貨;
-
-                                            ShippingMethod method = db.ShippingMethod.FirstOrDefault(m => m.MethodType.Value.Equals(trackData.deliveryWayID));
-                                            if (method != null)
+                                            if (string.IsNullOrEmpty(data.package.TrackingNumber))
                                             {
-                                                data.package.ShippingMethod = method.ID;
+                                                data.package.TrackingNumber = trackData.trackingNo;
+                                                data.package.ProcessStatus = (int)EnumData.ProcessStatus.已出貨;
+
+                                                ShippingMethod method = db.ShippingMethod.FirstOrDefault(m => m.MethodType.Value.Equals(trackData.deliveryWayID));
+                                                if (method != null) data.package.ShippingMethod = method.ID;
+
+                                                int warehouseId = winitWarehouseIDs.First(w => w.Value.Equals(trackData.warehouseId.ToString())).Key;
+                                                foreach (Items item in data.package.Items.ToArray())
+                                                {
+                                                    item.ShipFromWarehouseID = warehouseId;
+                                                    Items.Update(item, item.ID);
+                                                }
+
+                                                uploadTracking.Add(data.package.ID);
                                             }
 
-                                            int warehouseId = winitWarehouseIDs.First(w => w.Value.Equals(trackData.warehouseId.ToString())).Key;
-                                            foreach (Items item in data.package.Items.ToArray())
+                                            if (!db.SerialNumbers.Any(s => s.OrderID.Value.Equals(data.order.OrderID)))
                                             {
-                                                item.ShipFromWarehouseID = warehouseId;
-                                                Items.Update(item, item.ID);
-                                            }
+                                                var merchandiseList = winit.GetOutboundOrderData(data.package.WinitNo).packageList.SelectMany(p => p.merchandiseList).ToList();
 
-                                            uploadTracking.Add(data.package.ID, winit.GetOutboundOrderData(data.package.WinitNo).packageList.SelectMany(p => p.merchandiseList).ToList());
+                                                if(merchandiseList.All(m => m.itemList.Any()))
+                                                {
+                                                    uploadSerials.Add(data.package.ID, merchandiseList);
+                                                }
+                                            }
                                         }
 
-                                        data.package.WinitNo = trackData.documentNo;
                                         data.package.ScanDateA = result.PickupDate;
                                         data.package.ArrivalDate = result.DeliveryDate;
                                         data.package.DeliveryStatus = result.DeliveryStatus;
@@ -617,49 +626,61 @@ namespace QDLogistics.Controllers
 
                                     Packages.SaveChanges();
 
-                                    if (uploadTracking.Any())
+                                    if (uploadTracking.Any() || uploadSerials.Any())
                                     {
                                         List<string> error = new List<string>();
 
-                                        StockKeepingUnit stock = new StockKeepingUnit();
-                                        SyncProcess Sync = new SyncProcess(session);
-
-                                        foreach (var uploadPackge in uploadTracking)
+                                        if (uploadTracking.Any())
                                         {
-                                            try
-                                            {
-                                                MyHelp.Log("Inventory", uploadPackge.Key, "Winit 傳送出貨資料至PO系統", session);
+                                            SyncProcess Sync = new SyncProcess(session);
 
-                                                var serials = stock.WinitRecordShippedOrder(uploadPackge.Key, uploadPackge.Value); // 寄送 Winit 出貨記錄
-                                                if (serials.Any())
+                                            foreach (var packageID in uploadTracking)
+                                            {
+                                                error.Add(Sync.Update_Tracking(db.Packages.Find(packageID)));
+                                            }
+
+                                        }
+
+                                        if (uploadSerials.Any())
+                                        {
+                                            using (StockKeepingUnit stock = new StockKeepingUnit())
+                                            {
+                                                foreach (var serials in uploadSerials)
                                                 {
-                                                    foreach (var item in db.Items.Where(i => i.IsEnable.Value && i.PackageID.Value.Equals(uploadPackge.Key)))
+                                                    try
                                                     {
-                                                        var sku = item.ProductID.Split(new char[] { '-' })[0];
-                                                        if (serials.ContainsKey(sku))
+                                                        MyHelp.Log("Inventory", serials.Key, "Winit 傳送出貨資料至PO系統", session);
+
+                                                        var recordResult = stock.WinitRecordShippedOrder(serials.Key, serials.Value); // 寄送 Winit 出貨記錄
+                                                        if (recordResult.Any())
                                                         {
-                                                            foreach (var serial in serials[sku])
+                                                            foreach (var item in db.Items.Where(i => i.IsEnable.Value && i.PackageID.Value.Equals(serials.Key)))
                                                             {
-                                                                item.SerialNumbers.Add(new SerialNumbers()
+                                                                var sku = item.ProductID.Split(new char[] { '-' })[0];
+                                                                if (recordResult.ContainsKey(sku))
                                                                 {
-                                                                    OrderID = item.OrderID,
-                                                                    OrderItemID = item.ID,
-                                                                    ProductID = item.ProductID,
-                                                                    SerialNumber = serial
-                                                                });
+                                                                    foreach (var serial in recordResult[sku])
+                                                                    {
+                                                                        item.SerialNumbers.Add(new SerialNumbers()
+                                                                        {
+                                                                            OrderID = item.OrderID,
+                                                                            OrderItemID = item.ID,
+                                                                            ProductID = item.ProductID,
+                                                                            SerialNumber = serial
+                                                                        });
+                                                                    }
+                                                                }
                                                             }
+
+                                                            db.SaveChanges();
                                                         }
                                                     }
-
-                                                    db.SaveChanges();
+                                                    catch (Exception ex)
+                                                    {
+                                                        error.Add(ex.InnerException?.Message ?? ex.Message);
+                                                    }
                                                 }
                                             }
-                                            catch (Exception ex)
-                                            {
-                                                error.Add(ex.InnerException?.Message ?? ex.Message);
-                                            }
-
-                                            error.Add(Sync.Update_Tracking(db.Packages.Find(uploadPackge.Key)));
                                         }
 
                                         if (error.Any(e => !string.IsNullOrEmpty(e)))

@@ -192,20 +192,16 @@ namespace QDLogistics.Commons
                             {
                                 Skus sku = group.First().Skus;
 
-                                if (sku.ProductName.ToLower().Contains("htc"))
-                                {
-                                    sheet.GetRow(9).GetCell(2).SetCellValue("✔");
-                                    sheet.GetRow(19).GetCell(2).SetCellValue("✔");
-                                }
-                                else
-                                {
-                                    sheet.GetRow(9).GetCell(11).SetCellValue("✔");
-                                    sheet.GetRow(19).GetCell(13).SetCellValue("✔");
-                                }
+                                var isHTC = sku.ProductName.ToLower().Contains("htc");
+                                sheet.GetRow(9).GetCell(2).SetCellValue(isHTC ? "✔" : "");
+                                sheet.GetRow(19).GetCell(2).SetCellValue(isHTC ? "✔" : "");
+                                sheet.GetRow(9).GetCell(11).SetCellValue(isHTC ? "" : "✔");
+                                sheet.GetRow(19).GetCell(13).SetCellValue(isHTC ? "" : "✔");
 
                                 sheet.GetRow(26).GetCell(6).SetCellValue(!string.IsNullOrEmpty(sku.ProductType.ChtName) ? sku.ProductType.ChtName : sku.ProductType.ProductTypeName);
 
                                 sheet.GetRow(28).GetCell(!sku.Brand.Equals(0) ? 8 : 4).SetCellValue("✔");
+                                sheet.GetRow(28).GetCell(!sku.Brand.Equals(0) ? 4 : 8).SetCellValue("");
                                 sheet.GetRow(28).GetCell(11).SetCellValue(sku.Brand.Value > 0 ? sku.Manufacturers.ManufacturerName : "");
 
                                 sheet.GetRow(32).GetCell(9).SetCellValue(group.Sum(i => i.Qty.Value * i.DeclaredValue).ToString("N"));

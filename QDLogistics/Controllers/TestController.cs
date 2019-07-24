@@ -276,6 +276,7 @@ namespace QDLogistics.Controllers
             TrackOrder track = new TrackOrder(package);
             var data3 = data.list.First(d => d.sellerOrderNo.Equals(OrderID.ToString()));
             var result = track.Track(data3.trackingNo);
+            var result2 = stock.WinitRecordShippedOrder(package.ID, data2.packageList.SelectMany(p => p.merchandiseList).ToList());
         }
 
         private void Update_Carrier()
