@@ -1030,6 +1030,13 @@ namespace QDLogistics.Commons
                 if (winit.ResultError != null) return new ShipResult(false, winit.ResultError.msg);
 
                 WinitNo = winit.ConfirmOutboundOrder(WinitNo);
+
+                if (winit.ResultError != null)
+                {
+                    winit.CancelOutboundOrder(WinitNo);
+                    return new ShipResult(false, winit.ResultError.msg);
+                }
+
                 package.WinitNo = WinitNo;
                 package.ShippingServiceCode = carrier.Name;
             }

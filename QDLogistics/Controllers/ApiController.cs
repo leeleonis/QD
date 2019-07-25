@@ -834,7 +834,7 @@ namespace QDLogistics.Controllers
                     OrderDate = TimeZoneConvert.InitDateTime(order.TimeOfOrder.Value, EnumData.TimeZone.EST).Utc,
                     PaymentStatus = order.PaymentStatus.Value,
                     PaymentDate = PaymentDate.HasValue ? TimeZoneConvert.InitDateTime(PaymentDate.Value, EnumData.TimeZone.EST).Utc : PaymentDate,
-                    FulfilledDate =  ShipDate.HasValue ? TimeZoneConvert.InitDateTime(ShipDate.Value, EnumData.TimeZone.EST).Utc : ShipDate,
+                    FulfilledDate =  ShipDate.HasValue && !ShipDate.Equals(DateTime.MinValue) ? TimeZoneConvert.InitDateTime(ShipDate.Value, EnumData.TimeZone.EST).Utc : ShipDate,
                     BuyerNote = order.Instructions,
                     Comment = string.Join("\r\n", order.Packages.Where(p => p.IsEnable.Value && !string.IsNullOrEmpty(p.Comment)).Select(p => p.Comment)),
 

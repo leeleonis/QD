@@ -1099,17 +1099,17 @@ namespace CarrierApi.Winit
 
         internal string CreateOutboundOrder(CreateOutboundOrderData orderData)
         {
-            return GetAPI<dynamic>("createOutboundInfo", orderData).outboundOrderNum;
+            return GetAPI<dynamic>("createOutboundInfo", orderData)?.outboundOrderNum ?? "";
         }
 
         internal string ConfirmOutboundOrder(string outboundOrderNum)
         {
-            return GetAPI<dynamic>("confirmOutboundOrder", new { outboundOrderNum }).outboundOrderNum;
+            return GetAPI<dynamic>("confirmOutboundOrder", new { outboundOrderNum })?.outboundOrderNum ?? outboundOrderNum;
         }
 
         internal string CancelOutboundOrder(string outboundOrderNum)
         {
-            return GetAPI<dynamic>("voidOutboundOrder", new { outboundOrderNum }).outboundOrderNum;
+            return GetAPI<dynamic>("voidOutboundOrder", new { outboundOrderNum })?.outboundOrderNum ?? outboundOrderNum;
         }
     }
 }

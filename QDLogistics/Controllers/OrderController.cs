@@ -609,7 +609,7 @@ namespace QDLogistics.Controllers
                                             {
                                                 var merchandiseList = winit.GetOutboundOrderData(data.package.WinitNo).packageList.SelectMany(p => p.merchandiseList).ToList();
 
-                                                if(merchandiseList.All(m => m.itemList.Any()))
+                                                if(merchandiseList != null && merchandiseList.All(m => m.itemList != null))
                                                 {
                                                     uploadSerials.Add(data.package.ID, merchandiseList);
                                                 }
@@ -645,12 +645,14 @@ namespace QDLogistics.Controllers
                                         {
                                             using (StockKeepingUnit stock = new StockKeepingUnit())
                                             {
+                                                string UserName = MyHelp.get_session("ApiUserName", session, "tim@weypro.com").ToString();
+                                                string Password = MyHelp.get_session("ApiPassword", session, "timfromweypro").ToString();
+                                                SC_WebService SCWS = new SC_WebService(UserName, Password);
+
                                                 foreach (var serials in uploadSerials)
                                                 {
                                                     try
                                                     {
-                                                        MyHelp.Log("Inventory", serials.Key, "Winit 傳送出貨資料至PO系統", session);
-
                                                         var recordResult = stock.WinitRecordShippedOrder(serials.Key, serials.Value); // 寄送 Winit 出貨記錄
                                                         if (recordResult.Any())
                                                         {
@@ -669,10 +671,13 @@ namespace QDLogistics.Controllers
                                                                             SerialNumber = serial
                                                                         });
                                                                     }
+
+                                                                    SCWS.Update_ItemSerialNumber(item.ID, recordResult[sku].ToArray());
                                                                 }
                                                             }
 
                                                             db.SaveChanges();
+                                                            MyHelp.Log("Inventory", serials.Key, "Winit 傳送出貨資料至PO系統成功", session);
                                                         }
                                                     }
                                                     catch (Exception ex)
