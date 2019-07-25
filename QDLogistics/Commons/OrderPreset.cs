@@ -96,7 +96,7 @@ namespace QDLogistics.Commons
                             case 3: //Declare Value
                                 subTotal = itemList.Sum(i => i.UnitPrice.Value * i.Qty.Value);
                                 package.DeclaredTotal = preset.ValueType.Equals(0) ? subTotal * preset.Value / 100 : preset.Value;
-                                if(itemList.Sum(i => i.Qty.Value).Equals(1))
+                                if (itemList.Sum(i => i.Qty.Value).Equals(1))
                                 {
                                     Items item = itemList.First();
                                     item.DeclaredValue = package.DeclaredTotal;
@@ -154,7 +154,7 @@ namespace QDLogistics.Commons
                 Packages.Update(package, package.ID);
                 Packages.SaveChanges();
 
-                if (needDispatch) Dispatch(package);
+                if (needDispatch && Order.StatusCode.Equals(OrderStatusCode.InProcess) && Order.PaymentStatus.Equals(OrderPaymentStatus1.Charged)) Dispatch(package);
             }
         }
 
@@ -234,7 +234,7 @@ namespace QDLogistics.Commons
                                     if (result.Status)
                                     {
                                         MyHelp.Log("Orders", packageData.OrderID, "訂單提交完成", session);
-                                        
+
                                         if (packageData.Items.First(i => i.IsEnable.Value).ShipWarehouses.Name.Equals("TWN"))
                                         {
                                             int[] itemIDs = packageData.Items.Where(i => i.IsEnable.Value).Select(i => i.ID).ToArray();

@@ -211,6 +211,8 @@ namespace QDLogistics.Commons
         {
             TrackResult result = new TrackResult();
 
+            if (string.IsNullOrEmpty(trackingNum)) return result;
+
             Winit_API winit = new Winit_API();
             OrderTrack track = winit.GetOrderTrack(trackingNum);
 

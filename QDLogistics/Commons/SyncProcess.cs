@@ -99,10 +99,7 @@ namespace QDLogistics.Commons
                         orderList.Add(orderData);
                         SC_SerialNumbers.AddRange(order.Serials);
 
-                        if (orderStateInfo.StatusCode.Equals(OrderStatusCode.InProcess) && orderStateInfo.PaymentStatus.Equals(OrderPaymentStatus1.Charged))
-                        {
-                            presetList.Add(orderData.OrderID);
-                        }
+                        presetList.Add(orderData.OrderID);
                     }
                     else
                     {
@@ -482,7 +479,7 @@ namespace QDLogistics.Commons
                 Order SC_order = orderData.Order;
                 Package SC_package = SC_order.Packages.FirstOrDefault(p => p.ID.Equals(package.ID));
 
-                if(SC_package == null)
+                if (SC_package == null)
                 {
                     MyHelp.Log("Packages", package.ID, "Not find package on SC website!", Session);
 
@@ -513,7 +510,7 @@ namespace QDLogistics.Commons
                     if (package.Method.Carriers == null) throw new Exception("Not find carrir");
                     carrier = package.Method.Carriers.Name;
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     MyHelp.Log("Packages", package.ID, e.Message, Session);
                     carrier = db.ShippingMethod.Find(package.ShippingMethod.Value).Carriers.Name;
@@ -522,7 +519,7 @@ namespace QDLogistics.Commons
 
                 if (db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.OrderID.Value.Equals(package.OrderID.Value)).All(p => p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.已出貨)))
                 {
-                    if(SCWS.Update_OrderShippingStatus(SC_order, carrier))
+                    if (SCWS.Update_OrderShippingStatus(SC_order, carrier))
                     {
                         var updatePackage = db.Packages.Find(package.ID);
                         updatePackage.WorkDays = 0;

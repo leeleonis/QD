@@ -545,153 +545,135 @@ namespace QDLogistics.Controllers
                             HttpSessionStateBase session = (HttpSessionStateBase)Session;
                             MyHelp.Log("Orders", null, "追蹤Winit訂單", session);
 
-                            var winit = new CarrierApi.Winit.Winit_API();
+                            var winit = new Winit_API();
                             var winitWarehouseIDs = db.Warehouses.AsNoTracking().Where(w => w.IsEnable.Value & w.IsSellable.Value && !w.WinitWarehouseID.Equals("0")).ToDictionary(w => w.ID, w => w.WinitWarehouseID);
 
-                            var trackList = new List<CarrierApi.Winit.OutboundOrderData>();
-                            int page = 1, size = 100, total = 0;
+                            var WinitShippingMethod = db.CarrierAPI.AsNoTracking().Where(api => api.IsEnable && api.Type.Value.Equals((byte)EnumData.CarrierType.Winit))
+                                .SelectMany(api => api.Carriers.Where(c => c.IsEnable)).SelectMany(c => c.ShippingMethod.Where(s => s.IsEnable)).Select(s => s.ID).Distinct().ToArray();
+                            var OrderFilter = db.Orders.AsNoTracking().Where(o => o.StatusCode.Value.Equals((int)OrderStatusCode.InProcess));
+                            var PackageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && !p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.訂單管理) && !p.DeliveryStatus.Value.Equals((int)DeliveryStatusType.Delivered) && WinitShippingMethod.Contains(p.ShippingMethod.Value));
+                            var dataList = OrderFilter.Join(PackageFilter, o => o.OrderID, p => p.OrderID.Value, (order, package) => new { order, package }).ToList();
 
-                            do
+                            if (dataList.Any())
                             {
-                                var searchResult = winit.GetOutboundOrderDatas(page.ToString(), size.ToString(), 14);
+                                TrackResult result;
+                                TrackOrder track = new TrackOrder();
 
-                                if (searchResult == null) throw new Exception(winit.ResultError.msg);
+                                var uploadTracking = new List<int>();
+                                var uploadSerials = new Dictionary<int, List<OutboundOrderMerchandiseList>>();
 
-                                if (total == 0) total = searchResult.total;
-
-                                trackList.AddRange(searchResult.list.ToList());
-                            } while (page++ * size < total);
-
-                            if (trackList.Any())
-                            {
-                                string[] OrderIDs = trackList.Select(track => track.sellerOrderNo).ToArray();
-                                var WinitShippingMethod = db.CarrierAPI.AsNoTracking().Where(api => api.IsEnable && api.Type.Value.Equals((byte)EnumData.CarrierType.Winit))
-                                    .SelectMany(api => api.Carriers.Where(c => c.IsEnable)).SelectMany(c => c.ShippingMethod.Where(s => s.IsEnable)).Select(s => s.ID).Distinct().ToArray();
-                                var OrderFilter = db.Orders.AsNoTracking().Where(o => OrderIDs.Contains(o.OrderID.ToString()));
-                                var PackageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && !p.DeliveryStatus.Value.Equals((int)DeliveryStatusType.Delivered) && WinitShippingMethod.Contains(p.ShippingMethod.Value));
-                                var dataList = OrderFilter.Join(PackageFilter, o => o.OrderID, p => p.OrderID.Value, (order, package) => new { order, package }).ToList();
-
-                                if (dataList.Any())
+                                foreach (var data in dataList)
                                 {
-                                    TrackResult result;
-                                    TrackOrder track = new TrackOrder();
+                                    OutboundOrderData trackData = winit.GetOutboundOrderData(data.package.WinitNo);
+                                    track.SetOrder(data.order, data.package);
+                                    result = track.Track(trackData.trackingNum);
 
-                                    var uploadTracking = new List<int>();
-                                    var uploadSerials = new Dictionary<int, List<OutboundOrderMerchandiseList>>();
-
-                                    foreach (var data in dataList)
+                                    if (!string.IsNullOrEmpty(trackData.trackingNum))
                                     {
-                                        track.SetOrder(data.order, data.package);
-                                        OutboundOrderData trackData = trackList.First(t => t.sellerOrderNo.Equals(data.order.OrderID.ToString()));
-                                        result = track.Track(trackData.trackingNo);
-
-                                        if (!string.IsNullOrEmpty(trackData.trackingNo))
+                                        if (string.IsNullOrEmpty(data.package.TrackingNumber))
                                         {
-                                            if (string.IsNullOrEmpty(data.package.TrackingNumber))
+                                            data.package.TrackingNumber = trackData.trackingNum;
+                                            data.package.ProcessStatus = (int)EnumData.ProcessStatus.已出貨;
+
+                                            ShippingMethod method = db.ShippingMethod.FirstOrDefault(m => m.MethodType.Value.Equals(trackData.deliveryWayID));
+                                            if (method != null) data.package.ShippingMethod = method.ID;
+
+                                            int warehouseId = winitWarehouseIDs.First(w => w.Value.Equals(trackData.warehouseId.ToString())).Key;
+                                            foreach (Items item in data.package.Items.ToArray())
                                             {
-                                                data.package.TrackingNumber = trackData.trackingNo;
-                                                data.package.ProcessStatus = (int)EnumData.ProcessStatus.已出貨;
-
-                                                ShippingMethod method = db.ShippingMethod.FirstOrDefault(m => m.MethodType.Value.Equals(trackData.deliveryWayID));
-                                                if (method != null) data.package.ShippingMethod = method.ID;
-
-                                                int warehouseId = winitWarehouseIDs.First(w => w.Value.Equals(trackData.warehouseId.ToString())).Key;
-                                                foreach (Items item in data.package.Items.ToArray())
-                                                {
-                                                    item.ShipFromWarehouseID = warehouseId;
-                                                    Items.Update(item, item.ID);
-                                                }
-
-                                                uploadTracking.Add(data.package.ID);
+                                                item.ShipFromWarehouseID = warehouseId;
+                                                Items.Update(item, item.ID);
                                             }
 
-                                            if (!db.SerialNumbers.Any(s => s.OrderID.Value.Equals(data.order.OrderID)))
-                                            {
-                                                var merchandiseList = winit.GetOutboundOrderData(data.package.WinitNo).packageList.SelectMany(p => p.merchandiseList).ToList();
-
-                                                if(merchandiseList != null && merchandiseList.All(m => m.itemList != null))
-                                                {
-                                                    uploadSerials.Add(data.package.ID, merchandiseList);
-                                                }
-                                            }
+                                            uploadTracking.Add(data.package.ID);
                                         }
 
-                                        data.package.ScanDateA = result.PickupDate;
-                                        data.package.ArrivalDate = result.DeliveryDate;
-                                        data.package.DeliveryStatus = result.DeliveryStatus;
-                                        data.package.DeliveryNote = result.DeliveryNote;
+                                        if (!db.SerialNumbers.Any(s => s.OrderID.Value.Equals(data.order.OrderID)))
+                                        {
+                                            var merchandiseList = trackData.packageList.SelectMany(p => p.merchandiseList).ToList();
 
-                                        Packages.Update(data.package, data.package.ID);
+                                            if (merchandiseList != null && merchandiseList.All(m => m.itemList != null))
+                                            {
+                                                uploadSerials.Add(data.package.ID, merchandiseList);
+                                            }
+                                        }
                                     }
 
-                                    Packages.SaveChanges();
+                                    data.package.ScanDateA = result.PickupDate;
+                                    data.package.ArrivalDate = result.DeliveryDate;
+                                    data.package.DeliveryStatus = result.DeliveryStatus;
+                                    data.package.DeliveryNote = result.DeliveryNote;
 
-                                    if (uploadTracking.Any() || uploadSerials.Any())
+                                    Packages.Update(data.package, data.package.ID);
+                                }
+
+                                Packages.SaveChanges();
+
+                                if (uploadTracking.Any() || uploadSerials.Any())
+                                {
+                                    List<string> error = new List<string>();
+
+                                    if (uploadTracking.Any())
                                     {
-                                        List<string> error = new List<string>();
+                                        SyncProcess Sync = new SyncProcess(session);
 
-                                        if (uploadTracking.Any())
+                                        foreach (var packageID in uploadTracking)
                                         {
-                                            SyncProcess Sync = new SyncProcess(session);
-
-                                            foreach (var packageID in uploadTracking)
-                                            {
-                                                error.Add(Sync.Update_Tracking(db.Packages.Find(packageID)));
-                                            }
-
+                                            error.Add(Sync.Update_Tracking(db.Packages.Find(packageID)));
                                         }
 
-                                        if (uploadSerials.Any())
+                                    }
+
+                                    if (uploadSerials.Any())
+                                    {
+                                        using (StockKeepingUnit stock = new StockKeepingUnit())
                                         {
-                                            using (StockKeepingUnit stock = new StockKeepingUnit())
+                                            string UserName = MyHelp.get_session("ApiUserName", session, "tim@weypro.com").ToString();
+                                            string Password = MyHelp.get_session("ApiPassword", session, "timfromweypro").ToString();
+                                            SC_WebService SCWS = new SC_WebService(UserName, Password);
+
+                                            foreach (var serials in uploadSerials)
                                             {
-                                                string UserName = MyHelp.get_session("ApiUserName", session, "tim@weypro.com").ToString();
-                                                string Password = MyHelp.get_session("ApiPassword", session, "timfromweypro").ToString();
-                                                SC_WebService SCWS = new SC_WebService(UserName, Password);
-
-                                                foreach (var serials in uploadSerials)
+                                                try
                                                 {
-                                                    try
+                                                    var recordResult = stock.WinitRecordShippedOrder(serials.Key, serials.Value); // 寄送 Winit 出貨記錄
+                                                    if (recordResult.Any())
                                                     {
-                                                        var recordResult = stock.WinitRecordShippedOrder(serials.Key, serials.Value); // 寄送 Winit 出貨記錄
-                                                        if (recordResult.Any())
+                                                        foreach (var item in db.Items.Where(i => i.IsEnable.Value && i.PackageID.Value.Equals(serials.Key)))
                                                         {
-                                                            foreach (var item in db.Items.Where(i => i.IsEnable.Value && i.PackageID.Value.Equals(serials.Key)))
+                                                            var sku = item.ProductID.Split(new char[] { '-' })[0];
+                                                            if (recordResult.ContainsKey(sku))
                                                             {
-                                                                var sku = item.ProductID.Split(new char[] { '-' })[0];
-                                                                if (recordResult.ContainsKey(sku))
+                                                                foreach (var serial in recordResult[sku])
                                                                 {
-                                                                    foreach (var serial in recordResult[sku])
+                                                                    item.SerialNumbers.Add(new SerialNumbers()
                                                                     {
-                                                                        item.SerialNumbers.Add(new SerialNumbers()
-                                                                        {
-                                                                            OrderID = item.OrderID,
-                                                                            OrderItemID = item.ID,
-                                                                            ProductID = item.ProductID,
-                                                                            SerialNumber = serial
-                                                                        });
-                                                                    }
-
-                                                                    SCWS.Update_ItemSerialNumber(item.ID, recordResult[sku].ToArray());
+                                                                        OrderID = item.OrderID,
+                                                                        OrderItemID = item.ID,
+                                                                        ProductID = item.ProductID,
+                                                                        SerialNumber = serial
+                                                                    });
                                                                 }
-                                                            }
 
-                                                            db.SaveChanges();
-                                                            MyHelp.Log("Inventory", serials.Key, "Winit 傳送出貨資料至PO系統成功", session);
+                                                                SCWS.Update_ItemSerialNumber(item.ID, recordResult[sku].ToArray());
+                                                            }
                                                         }
+
+                                                        db.SaveChanges();
+                                                        MyHelp.Log("Inventory", serials.Key, "Winit 傳送出貨資料至PO系統成功", session);
                                                     }
-                                                    catch (Exception ex)
-                                                    {
-                                                        error.Add(ex.InnerException?.Message ?? ex.Message);
-                                                    }
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    error.Add(ex.InnerException?.Message ?? ex.Message);
                                                 }
                                             }
                                         }
+                                    }
 
-                                        if (error.Any(e => !string.IsNullOrEmpty(e)))
-                                        {
-                                            message = string.Join("; ", error.Where(e => !string.IsNullOrEmpty(e)));
-                                        }
+                                    if (error.Any(e => !string.IsNullOrEmpty(e)))
+                                    {
+                                        message = string.Join("; ", error.Where(e => !string.IsNullOrEmpty(e)));
                                     }
                                 }
                             }
