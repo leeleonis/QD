@@ -545,13 +545,17 @@ namespace QDLogistics.Controllers
                             HttpSessionStateBase session = (HttpSessionStateBase)Session;
                             MyHelp.Log("Orders", null, "追蹤Winit訂單", session);
 
+                            var date30ago = DateTime.Now.AddDays(-30);
+                            MyHelp.Log("WinitTrack",null, string.Format("開始追踨日期 {0} 以後的Winit訂單", date30ago.ToString()), session);
+                            date30ago = MyHelp.DateTimeWithZone(date30ago, false);
+
                             var winit = new Winit_API();
                             var winitWarehouseIDs = db.Warehouses.AsNoTracking().Where(w => w.IsEnable.Value & w.IsSellable.Value && !w.WinitWarehouseID.Equals("0")).ToDictionary(w => w.ID, w => w.WinitWarehouseID);
 
                             var WinitShippingMethod = db.CarrierAPI.AsNoTracking().Where(api => api.IsEnable && api.Type.Value.Equals((byte)EnumData.CarrierType.Winit))
                                 .SelectMany(api => api.Carriers.Where(c => c.IsEnable)).SelectMany(c => c.ShippingMethod.Where(s => s.IsEnable)).Select(s => s.ID).Distinct().ToArray();
-                            var OrderFilter = db.Orders.AsNoTracking().Where(o => o.StatusCode.Value.Equals((int)OrderStatusCode.InProcess));
-                            var PackageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && !p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.訂單管理) && !p.DeliveryStatus.Value.Equals((int)DeliveryStatusType.Delivered) && WinitShippingMethod.Contains(p.ShippingMethod.Value));
+                            var OrderFilter = db.Orders.AsNoTracking().Where(o => o.TimeOfOrder.Value >= date30ago);
+                            var PackageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && !p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.訂單管理) && !string.IsNullOrEmpty(p.WinitNo) && !p.DeliveryStatus.Value.Equals((int)DeliveryStatusType.Delivered) && WinitShippingMethod.Contains(p.ShippingMethod.Value));
                             var dataList = OrderFilter.Join(PackageFilter, o => o.OrderID, p => p.OrderID.Value, (order, package) => new { order, package }).ToList();
 
                             if (dataList.Any())
@@ -677,11 +681,6 @@ namespace QDLogistics.Controllers
                                     }
                                 }
                             }
-                        }
-                        catch (DbEntityValidationException ex)
-                        {
-                            var errorMessages = ex.EntityValidationErrors.SelectMany(x => x.ValidationErrors).Select(x => x.ErrorMessage);
-                            message = string.Join("; ", errorMessages);
                         }
                         catch (Exception e)
                         {
@@ -902,17 +901,12 @@ namespace QDLogistics.Controllers
                     }, Session));
                 }
             }
-            catch (DbEntityValidationException ex)
-            {
-                var errorMessages = ex.EntityValidationErrors.SelectMany(x => x.ValidationErrors).Select(x => x.ErrorMessage);
-                return Content(JsonConvert.SerializeObject(new { status = false, message = string.Join("; ", errorMessages) }), "appllication/json");
-            }
             catch (Exception e)
             {
-                return Content(JsonConvert.SerializeObject(new { status = false, message = e.Message }), "appllication/json");
+                return Json(new { status = false, message = e.Message }, JsonRequestBehavior.AllowGet);
             }
 
-            return Content(JsonConvert.SerializeObject(new { status = true, message = "提單追踨開始執行!" }), "appllication/json");
+            return Json(new { status = true, message = "提單追踨開始執行!" }, JsonRequestBehavior.AllowGet);
         }
 
         public ActionResult GetSelectOption(List<string> optionType)

@@ -224,7 +224,7 @@ namespace QDLogistics.Commons
 
                 if (Winit_EventList.Any(e => e.eventCode == "DIC"))
                 {
-                    result.PickupDate = Winit_EventList.First(e => e.eventCode == "DIC").date;
+                    result.PickupDate = Winit_EventList.FirstOrDefault(e => e.eventCode == "DIC")?.date;
                     result.DeliveryStatus = (int)DeliveryStatusType.Intransit;
                 }
 
@@ -232,7 +232,7 @@ namespace QDLogistics.Commons
 
                 if (Winit_EventList.Any(e => e.eventCode == "DLC"))
                 {
-                    result.DeliveryDate = Winit_EventList.First(e => e.eventCode == "DLC").date;
+                    result.DeliveryDate = Winit_EventList.FirstOrDefault(e => e.eventCode == "DLC")?.date;
                     result.DeliveryStatus = (int)DeliveryStatusType.Delivered;
                 }
             }

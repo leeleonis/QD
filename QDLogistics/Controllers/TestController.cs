@@ -614,9 +614,22 @@ namespace QDLogistics.Controllers
             stock.RecordShippedOrder(db.Packages.First(p => p.IsEnable.Value && p.OrderID.Value.Equals(5630164)).ID);
         }
 
-        public void ResendOrderStatement()
+        public void RemoveSkuSerials()
         {
-            var OrderIDs = new int[] { 5630183, 5630220, 5630218, 5630187, 5630224, 5630223 };
+            SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
+
+            var OrderIDs = new int[] { 5621104,5621818,5625517,5625904,5627254,5627582,5627251,5627791,5627896,5628108,5628214,5628229,5628292,
+5628479,5628610,5628674,5628788,5628884,5628960,5628986,5629002,5629186,5629187,5629218,5629316,5629461,
+5629491,5629492,5629643,5629734,5630029,5630045,5630087,5630247,5630367,5630397,5630471,5630488,5630504,
+5630565,5630715,5630763,5630794,5630821,5630889,5630890,5630904,5630907,5630974,5630975,5630177 };
+
+            foreach(var item in db.Items.Where(i => OrderIDs.Contains(i.OrderID.Value)))
+            {
+                SCWS.Delete_ItemSerials(item.OrderID.Value, item.ID);
+                db.SerialNumbers.RemoveRange(item.SerialNumbers);
+            }
+
+            db.SaveChanges();
         }
     }
 }
