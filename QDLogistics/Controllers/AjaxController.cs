@@ -612,7 +612,8 @@ namespace QDLogistics.Controllers
                 .OrderBy(data => data.package.Qty).OrderBy(data => data.order.TimeOfOrder).OrderByDescending(data => data.order.RushOrder).ToList();
 
             string[] productIDs = ProductList.Select(p => p.pick.ProductID).Distinct().ToArray();
-            var productList = ProductList.Select(p => p.pick).GroupBy(p => p.ProductID).ToDictionary(group => group.Key.ToString(), group => group.ToDictionary(p => p.ItemID.ToString()));
+            var productList = ProductList.Select(p => p.pick.SetTracking(p.package.TrackingNumber))
+                .GroupBy(p => p.ProductID).ToDictionary(group => group.Key.ToString(), group => group.ToDictionary(p => p.ItemID.ToString()));
 
             List<StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
             using (StockKeepingUnit stock = new StockKeepingUnit())

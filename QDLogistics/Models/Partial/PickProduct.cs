@@ -57,5 +57,12 @@ namespace QDLogistics.Models
             this.Weight = weight;
             return this;
         }
+
+        public string Tracking { get; set; }
+        public PickProduct SetTracking(string tracking)
+        {
+            this.Tracking = tracking;
+            return this;
+        }
     }
 }

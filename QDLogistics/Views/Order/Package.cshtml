@@ -66,17 +66,18 @@
                 <div class="hidden">
                     <div id="win-pick" class="easyui-window" title="撿貨單" style="width:800px;height:500px;padding:5px;"
                          data-options="iconCls:'icon-save',collapsible:false,minimizable:false,maximizable:false,closed:true,draggable:false,resizable:false,modal:true"></div>
-                    <div id="dialog-serial" class="easyui-dialog" title="請輸入產品序號/品號" data-options="iconCls:'icon-edit',closed:true,resizable:false,onBeforeClose:ProductSerialData.Reset_Serial" style="width:1000px;top:200px;">
+                    <div id="dialog-serial" class="easyui-dialog" title="請輸入產品序號/品號" data-options="iconCls:'icon-edit',closed:true,resizable:false,onBeforeClose:ProductSerialData.Reset_Serial" style="width:1200px;top:200px;">
                         <div data-options="region:'center'">
                             <table id="table-pickup" class="easyui-datagrid" style="width:100%;" data-options="onBeforeSelect:function(){return false;}">
                                 <thead>
                                     <tr>
                                         <th data-options="field:'OrderID',width:'10%',align:'center'">訂單</th>
                                         <th data-options="field:'ProductID',width:'10%',align:'center'">SKU</th>
-                                        <th data-options="field:'ProductName',width:'44%',align:'center'">品名</th>
-                                        <th data-options="field:'UPC',width:'15%',align:'center'">UPC</th>
-                                        <th data-options="field:'SerialNumber',width:'15%',align:'center'">序號</th>
-                                        <th data-options="field:'Picked',width:'5%',align:'center'"></th>
+                                        <th data-options="field:'ProductName',width:'40%',align:'center'">品名</th>
+                                        <th data-options="field:'UPC',width:'12%',align:'center'">UPC</th>
+                                        <th data-options="field:'SerialNumber',width:'12%',align:'center'">序號</th>
+                                        <th data-options="field:'TrackingNumber',width:'13%',align:'center'">提單號碼</th>
+                                        <th data-options="field:'Picked',width:'3%',align:'center'"></th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
@@ -449,7 +450,6 @@
             function findOrderChange(orderID){
                 if(orderChangeList.length > 0){
                     var orderFilter = orderChangeList.filter(function(order) {
-                        console.log(order['OrderID']);
                         return (order['OrderID'] == orderID) && (order['Status'] == 1);
                     });
 
@@ -552,7 +552,8 @@
 
                     for(var i=1; i <= product.Qty; i++){
                         data.rows.push({
-                            IsPicked: product.IsPicked, OrderID: product.OrderID, PackageID: product.PackageID, ProductID: product.ProductID, ProductName: product.ProductName, UPC: product.UPC, SerialNumber: (i <= product.QtyPicked ? serialNumber[i-1] : ""),
+                            IsPicked: product.IsPicked, OrderID: product.OrderID, PackageID: product.PackageID, ProductID: product.ProductID, ProductName: product.ProductName,
+                            UPC: product.UPC, SerialNumber: (i <= product.QtyPicked ? serialNumber[i - 1] : ""), TrackingNumber: product.Tracking,
                             Picked: "<img src='../content/img/" + (i <= product.QtyPicked ? "checked" : "error") + ".png' runat='server' style='width: auto; height: 15px;'>"});
                         data.total++;
                     }

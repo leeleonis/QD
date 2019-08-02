@@ -43,8 +43,7 @@ namespace QDLogistics.Controllers
 
         public void CheckDHL(int OrderID)
         {
-            IRepository<Orders> Orders = new GenericRepository<Orders>(db);
-            Orders order = Orders.Get(OrderID);
+            Orders order = db.Orders.Find(OrderID);
             TrackOrder track = new TrackOrder(order, order.Packages.First(p => p.IsEnable.Value));
             TrackResult result = track.Track();
         }
@@ -333,9 +332,9 @@ namespace QDLogistics.Controllers
         {
             Packages package = db.Packages.AsNoTracking().First(p => p.OrderID.Value.Equals(OrderID));
 
-            IDS_Track IDS = new IDS_Track(package.Method.Carriers.CarrierAPI);
-            //var result = IDS.CreateOrder(package);
-            var label = IDS.GetTrackingNumber(package.TrackingNumber);
+            IDS_API IDS = new IDS_API(package.Method.Carriers.CarrierAPI);
+            var result = IDS.GetTrackingNumber(package);
+            //var label = IDS.GetTrackingNumber(package.TrackingNumber);
         }
 
         public void Box_Test(string boxID)
@@ -608,28 +607,74 @@ namespace QDLogistics.Controllers
             } while (checkPoint.CompareTo(updateDate) < 0);
         }
 
-        public void ResendShippedOrder()
+        public void ResendShippedOrder(int day)
         {
+            string UserName = MyHelp.get_session("ApiUserName", Session, "tim@weypro.com").ToString();
+            string Password = MyHelp.get_session("ApiPassword", Session, "timfromweypro").ToString();
+
+            var dateAgo = DateTime.Now.AddDays((0-day));
+            dateAgo = MyHelp.DateTimeWithZone(dateAgo, false);
+
+            var SCWS = new SC_WebService(UserName, Password);
             var stock = new StockKeepingUnit();
-            stock.RecordShippedOrder(db.Packages.First(p => p.IsEnable.Value && p.OrderID.Value.Equals(5630164)).ID);
+            var winit = new Winit_API();
+            var winitWarehouseIDs = db.Warehouses.AsNoTracking().Where(w => w.IsEnable.Value & w.IsSellable.Value && !w.WinitWarehouseID.Equals("0")).ToDictionary(w => w.ID, w => w.WinitWarehouseID);
+
+            var WinitShippingMethod = db.CarrierAPI.AsNoTracking().Where(api => api.IsEnable && api.Type.Value.Equals((byte)EnumData.CarrierType.Winit))
+                .SelectMany(api => api.Carriers.Where(c => c.IsEnable)).SelectMany(c => c.ShippingMethod.Where(s => s.IsEnable)).Select(s => s.ID).Distinct().ToArray();
+            var OrderFilter = db.Orders.Where(o => o.TimeOfOrder.Value >= dateAgo);
+            var PackageFilter = db.Packages.Where(p => p.IsEnable.Value && !p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.訂單管理) && !string.IsNullOrEmpty(p.WinitNo) && WinitShippingMethod.Contains(p.ShippingMethod.Value));
+            var dataList = OrderFilter.Join(PackageFilter, o => o.OrderID, p => p.OrderID.Value, (order, package) => new { order, package }).ToList();
+
+            foreach(var data in dataList)
+            {
+                if(!data.package.Items.Where(i => i.IsEnable.Value).Any(i => i.SerialNumbers.Any()))
+                {
+                    var winitData = winit.GetOutboundOrderData(data.package.WinitNo);
+                    var merchandiseList = winitData.packageList.SelectMany(p => p.merchandiseList).ToList();
+                    if (merchandiseList != null && merchandiseList.All(m => m.itemList != null))
+                    {
+                        try
+                        {
+                            var recordResult = stock.WinitRecordShippedOrder(data.package.ID, merchandiseList);
+                            if (recordResult.Any())
+                            {
+                                foreach (var item in data.package.Items.Where(i => i.IsEnable.Value))
+                                {
+                                    var sku = item.ProductID.Split(new char[] { '-' })[0];
+                                    if (recordResult.ContainsKey(sku))
+                                    {
+                                        foreach (var serial in recordResult[sku])
+                                        {
+                                            item.SerialNumbers.Add(new SerialNumbers()
+                                            {
+                                                OrderID = item.OrderID,
+                                                OrderItemID = item.ID,
+                                                ProductID = item.ProductID,
+                                                SerialNumber = serial
+                                            });
+                                        }
+
+                                        Response.Write(string.Format("訂單【{0}】記錄成功：{1}<br />", data.order.OrderID, string.Join("、", recordResult[sku].ToArray())));
+                                    }
+                                }
+
+                                db.SaveChanges();
+                            }
+                        }
+                        catch (Exception ex) {
+                            Response.Write(string.Format("訂單【{0}】記錄失敗：{1}<br />", data.order.OrderID, ex.InnerException?.Message ?? ex.Message));
+                        }
+                    }
+                }
+            }
         }
 
-        public void RemoveSkuSerials()
+        public ActionResult GetSkuOriginCountry()
         {
-            SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
+            var result = db.Skus.AsNoTracking().Where(s => !s.Origin.Equals("CN")).GroupBy(s => s.Origin, s => s.Sku).ToDictionary(g => g.Key, g => g.ToArray());
 
-            var OrderIDs = new int[] { 5621104,5621818,5625517,5625904,5627254,5627582,5627251,5627791,5627896,5628108,5628214,5628229,5628292,
-5628479,5628610,5628674,5628788,5628884,5628960,5628986,5629002,5629186,5629187,5629218,5629316,5629461,
-5629491,5629492,5629643,5629734,5630029,5630045,5630087,5630247,5630367,5630397,5630471,5630488,5630504,
-5630565,5630715,5630763,5630794,5630821,5630889,5630890,5630904,5630907,5630974,5630975,5630177 };
-
-            foreach(var item in db.Items.Where(i => OrderIDs.Contains(i.OrderID.Value)))
-            {
-                SCWS.Delete_ItemSerials(item.OrderID.Value, item.ID);
-                db.SerialNumbers.RemoveRange(item.SerialNumbers);
-            }
-
-            db.SaveChanges();
+            return Json(result, JsonRequestBehavior.AllowGet);
         }
     }
 }

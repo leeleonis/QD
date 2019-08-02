@@ -265,7 +265,8 @@ namespace QDLogistics.Controllers
                 {
                     string[] productIDs = ProductList.Select(p => p.pick.ProductID).Distinct().ToArray();
                     Dictionary<string, bool> skuList = db.Skus.AsNoTracking().Where(s => s.IsEnable.Value && productIDs.Contains(s.Sku)).ToDictionary(s => s.Sku, s => s.Battery.HasValue ? s.Battery.Value : false);
-                    var productList = ProductList.Select(p => p.pick.SetBattery(skuList[p.pick.ProductID])).GroupBy(p => p.ProductID).ToDictionary(group => group.Key.ToString(), group => group.ToDictionary(p => p.ItemID.ToString()));
+                    var productList = ProductList.Select(p => p.pick.SetBattery(skuList[p.pick.ProductID]).SetTracking(p.package.TrackingNumber))
+                        .GroupBy(p => p.ProductID).ToDictionary(group => group.Key.ToString(), group => group.ToDictionary(p => p.ItemID.ToString()));
 
                     var pickupCompare = DateTime.UtcNow.AddHours(-12);
                     var shippedItem = db.PickProduct.AsNoTracking().Where(p => p.IsEnable && productIDs.Contains(p.ProductID) && p.PickUpDate.Value.CompareTo(pickupCompare) >= 0).Select(p => p.ItemID).ToArray();
