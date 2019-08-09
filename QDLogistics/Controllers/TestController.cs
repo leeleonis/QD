@@ -36,7 +36,7 @@ namespace QDLogistics.Controllers
 
             SC_WebService SCWS = new SC_WebService(Session["ApiUserName"].ToString(), Session["ApiPassword"].ToString());
 
-            Orders order = db.Orders.Find(5627557);
+            Orders order = db.Orders.Find(5622262);
             OrderService.OrderData orderData = SCWS.Get_OrderData(order.OrderID);
             Order SC_order = orderData.Order;
         }

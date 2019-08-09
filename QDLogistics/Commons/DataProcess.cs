@@ -260,6 +260,15 @@ namespace QDLogistics.Commons
                     {
                         package.TrackingNumber = packageDetail.TrackingNumber.Trim();
                     }
+
+                    if (!packageDetail.ShipDate.Equals(DateTime.MinValue))
+                    {
+                        package.ProcessStatus = (byte)EnumData.ProcessStatus.已出貨;
+                        if (package.ShipDate.Equals(DateTime.MinValue))
+                        {
+                            package.ShipDate = packageDetail.ShipDate;
+                        }
+                    }
                 }
             }
 

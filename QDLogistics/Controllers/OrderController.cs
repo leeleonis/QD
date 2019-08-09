@@ -546,7 +546,7 @@ namespace QDLogistics.Controllers
                             MyHelp.Log("Orders", null, "追蹤Winit訂單", session);
 
                             var date30ago = DateTime.Now.AddDays(-30);
-                            MyHelp.Log("WinitTrack",null, string.Format("開始追踨日期 {0} 以後的Winit訂單", date30ago.ToString()), session);
+                            MyHelp.Log("WinitTrack", null, string.Format("開始追踨日期 {0} 以後的Winit訂單", date30ago.ToString()), session);
                             date30ago = MyHelp.DateTimeWithZone(date30ago, false);
 
                             var winit = new Winit_API();
@@ -719,6 +719,8 @@ namespace QDLogistics.Controllers
                                 List<DirectLineLabel> remindList = new List<DirectLineLabel>();
                                 DateTime today = new TimeZoneConvert().ConvertDateTime(EnumData.TimeZone.EST);
 
+                                var IDS_HK = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable && m.DirectLine.Equals(1)).Select(m => m.ID).ToList();
+                                var DS_Warehouse = db.Warehouses.AsNoTracking().Where(w => w.IsEnable.Value && w.WarehouseType.Value.Equals((int)WarehouseTypeType.DropShip)).Select(w => w.ID).ToArray();
                                 //var directLineList = db.DirectLine.AsNoTracking().Where(d => d.IsEnable).ToList();
                                 foreach (DirectLineLabel label in labelList)
                                 {
@@ -751,14 +753,15 @@ namespace QDLogistics.Controllers
                                                 }
                                             }
 
-                                            DateTime paymentDate = order.Payments.FirstOrDefault()?.AuditDate.Value ?? order.TimeOfOrder.Value;
+                                            DateTime paymentDate = order.PaymentDate ?? order.Payments.FirstOrDefault(p => p.PaymentStatus.Equals((int)PaymentStatus.Cleared))?.AuditDate ?? order.TimeOfOrder.Value;
 
-                                            int checkDays = package.Items.First(i => i.IsEnable.Value).ShipWarehouses.WarehouseType.Value.Equals((int)WarehouseTypeType.DropShip) ? 2 : 3;
+                                            int checkDays = IDS_HK.Contains(package.ShippingMethod.Value) || package.Items.Any(i => i.IsEnable.Value && DS_Warehouse.Contains(i.ShipFromWarehouseID.Value)) ? 2 : 3;
 
                                             paymentDate = paymentDate.AddDays(checkDays);
                                             if (paymentDate.DayOfWeek == DayOfWeek.Saturday) paymentDate = paymentDate.AddDays(2);
                                             if (paymentDate.DayOfWeek == DayOfWeek.Sunday) paymentDate = paymentDate.AddDays(1);
 
+                                            MyHelp.Log("Orders", package.OrderID, string.Format("檢查訂單【{0}】的付款日期是否已過{1}天", package.OrderID, checkDays), session);
                                             if (DateTime.Compare(today, paymentDate) > 0)
                                             {
                                                 if (string.IsNullOrEmpty(package.TrackingNumber))
