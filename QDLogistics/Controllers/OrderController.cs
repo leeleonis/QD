@@ -577,7 +577,6 @@ namespace QDLogistics.Controllers
                                         if (string.IsNullOrEmpty(data.package.TrackingNumber))
                                         {
                                             data.package.TrackingNumber = trackData.trackingNum;
-                                            data.package.ProcessStatus = (int)EnumData.ProcessStatus.已出貨;
 
                                             ShippingMethod method = db.ShippingMethod.FirstOrDefault(m => m.MethodType.Value.Equals(trackData.deliveryWayID));
                                             if (method != null) data.package.ShippingMethod = method.ID;
@@ -588,8 +587,6 @@ namespace QDLogistics.Controllers
                                                 item.ShipFromWarehouseID = warehouseId;
                                                 Items.Update(item, item.ID);
                                             }
-
-                                            uploadTracking.Add(data.package.ID);
                                         }
 
                                         if (!db.SerialNumbers.Any(s => s.OrderID.Value.Equals(data.order.OrderID)))
@@ -598,6 +595,12 @@ namespace QDLogistics.Controllers
 
                                             if (merchandiseList != null && merchandiseList.All(m => m.itemList != null))
                                             {
+                                                if (!data.package.ProcessStatus.Equals((int)EnumData.ProcessStatus.已出貨))
+                                                {
+                                                    data.package.ProcessStatus = (int)EnumData.ProcessStatus.已出貨;
+                                                    uploadTracking.Add(data.package.ID);
+                                                }
+
                                                 uploadSerials.Add(data.package.ID, merchandiseList);
                                             }
                                         }

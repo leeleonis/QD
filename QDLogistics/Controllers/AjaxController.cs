@@ -1190,6 +1190,7 @@ namespace QDLogistics.Controllers
                         Comment = !string.IsNullOrEmpty(data.package.Comment) ? data.package.Comment : "",
                         SerialNumber = data.itemCount == 1 ? (serialOfItem.ContainsKey(data.item.ID) ? serialOfItem[data.item.ID] : "None") : "Multi",
                         TrackingNumber = data.package.TrackingNumber,
+                        UploadTracking = data.package.UploadTracking ? "Yes" : "No",
                         WorkDays = data.package.WorkDays,
                         FirstMilePickupDate = TimeZoneConvert.DateTimeToString(data.package.FirstMilePickupDate, EnumData.TimeZone.UTC, TimeZone),
                         FirstMileArrivalDate = TimeZoneConvert.DateTimeToString(data.package.FirstMileArrivalDate, EnumData.TimeZone.UTC, TimeZone),
