@@ -29,6 +29,7 @@ namespace QDLogistics.Models.Object
         public Nullable<int> Source { get; set; }
         public string UserID { get { return this.UserIDField; } set { this.UserIDField = !string.IsNullOrEmpty(value) ? value.Trim() : value; } }
         public string Tracking { get { return this.TrackingField; } set { this.TrackingField = !string.IsNullOrEmpty(value) ? value.Trim() : value; } }
+        public Nullable<bool> UploadTracking { get; set; }
         public string Serial { get { return this.SerialField; } set { this.SerialField = !string.IsNullOrEmpty(value) ? value.Trim() : value; } }
         public string Comment { get; set; }
         public string SupplierComment { get; set; }

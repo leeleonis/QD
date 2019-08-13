@@ -1086,6 +1086,7 @@ namespace QDLogistics.Controllers
                 var PackageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && p.ProcessStatus == (byte)EnumData.ProcessStatus.已出貨);
                 if (filter.MethodID.HasValue) PackageFilter = PackageFilter.Where(p => p.ShippingMethod.Value.Equals(filter.MethodID.Value));
                 if (!string.IsNullOrWhiteSpace(filter.Tracking)) PackageFilter = PackageFilter.Where(p => p.TrackingNumber.Equals(filter.Tracking));
+                if (filter.UploadTracking.HasValue) PackageFilter = PackageFilter.Where(p => p.UploadTracking.Equals(filter.UploadTracking.Value));
                 if (filter.Export.HasValue) PackageFilter = PackageFilter.Where(p => p.Export.Value.Equals(filter.Export.Value));
                 if (filter.ExportMethod.HasValue) PackageFilter = PackageFilter.Where(p => p.ExportMethod.Value.Equals(filter.Export.Value));
                 if (!filter.PickUpDateFrom.Equals(new DateTime()))

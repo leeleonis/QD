@@ -140,7 +140,7 @@
 
         $(function () {
             var data = {
-                optionType: ['CountryCode', 'Warehouse', 'Method', 'Export', 'ExportMethod', 'StatusCode']
+                optionType: ['CountryCode', 'Warehouse', 'Method', 'Export', 'ExportMethod', 'StatusCode', 'UploadTracking']
             };
             ajaxUrl("@Url.Action("getSelectOption", "order")", 'post', data).done(function (response) {
                 if (response['status']) {
@@ -328,7 +328,7 @@
                             return href != '' ? "<a href='" + href + "' target='_blank'>" + value + "</a>" : value;
                         }
                     },
-                    { field: "UploadTracking", title: "Tracking upload", width: 70, align: "center", sortable: false },
+                    { field: "UploadTracking", title: "Tracking<br />Upload", width: 80, align: "center", sortable: false },
                     { field: "WorkDays", title: "Work Days<br />工作天數", width: 100, align: "center", sortable: false },
                     { field: "FirstMilePickupDate", title: "First Mile<br />Pickup Date", width: 120, align: "center", sortable: false },
                     { field: "FirstMileArrivalDate", title: "First Mile<br />Arrival Date", width: 120, align: "center", sortable: false },
@@ -382,7 +382,6 @@
                     }
                 },
                 onBeforeLoad: function (param) {
-                    console.log(filterValue);
                     Object.keys(filterValue).forEach(function (key) {
                         if (!isEmpty(filterValue[key])) param[key] = filterValue[key];
                     });
@@ -517,6 +516,7 @@
                 ExportMethod: $('.filterColumn .s-exportMethod').val(),
                 Serial: $('.filterColumn .s-serialNumber').val(),
                 Tracking: $('.filterColumn .s-trackingNumber').val(),
+                UploadTracking: $('.filterColumn .s-upload').val(),
 
                 SourceID: $('#input-sourceID').val(),
                 Source: $('#select-channel').val(),
@@ -540,7 +540,8 @@
                 Export: "<select class='form-control s-export'><option value=''>全部</option>" + setSelectOption(selectOption['Export'], filterValue['Export']) + "</select>",
                 ExportMethod: "<select class='form-control s-exportMethod'><option value=''>全部</option>" + setSelectOption(selectOption['ExportMethod'], filterValue['ExportMethod']) + "</select>",
                 SerialNumber: "<input type='text' class='form-control s-serialNumber' value='" + (!isEmpty(filterValue['Serial']) ? filterValue['Serial'] : '') + "'>",
-                TrackingNumber: "<input type='text' class='form-control s-trackingNumber' value='" + (!isEmpty(filterValue['Tracking']) ? filterValue['Tracking'] : '') + "'>"
+                TrackingNumber: "<input type='text' class='form-control s-trackingNumber' value='" + (!isEmpty(filterValue['Tracking']) ? filterValue['Tracking'] : '') + "'>",
+                UploadTracking: "<select class='form-control s-upload'><option value=''>全部</option>" + setSelectOption(selectOption['UploadTracking'], filterValue['UploadTracking']) + "</select>"
             };
         }
 

@@ -947,6 +947,9 @@ namespace QDLogistics.Controllers
                         case "ExportMethod":
                             optionList.Add(type, Enum.GetValues(typeof(EnumData.ExportMethod)).Cast<EnumData.ExportMethod>().Select(e => new { text = e.ToString(), value = (byte)e }).ToArray());
                             break;
+                        case "UploadTracking":
+                            optionList.Add(type, Enum.GetValues(typeof(EnumData.YesNo)).Cast<EnumData.YesNo>().Select(e => new { text = e.ToString(), value = ((byte)e).Equals(1) ? bool.TrueString : bool.FalseString }).ToArray());
+                            break;
                     }
                 }
 
