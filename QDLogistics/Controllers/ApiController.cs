@@ -836,6 +836,7 @@ namespace QDLogistics.Controllers
                     PaymentStatus = order.PaymentStatus.Value,
                     PaymentDate = PaymentDate.HasValue ? TimeZoneConvert.InitDateTime(PaymentDate.Value, EnumData.TimeZone.EST).Utc : PaymentDate,
                     FulfilledDate =  ShipDate.HasValue && !ShipDate.Equals(DateTime.MinValue) ? TimeZoneConvert.InitDateTime(ShipDate.Value, EnumData.TimeZone.EST).Utc : ShipDate,
+                    RMAID = order.Packages.FirstOrDefault(p => p.IsEnable.Value && p.RMAId.HasValue)?.RMAId,
                     BuyerNote = order.Instructions,
                     Comment = string.Join("\r\n", order.Packages.Where(p => p.IsEnable.Value && !string.IsNullOrEmpty(p.Comment)).Select(p => p.Comment)),
 
@@ -882,11 +883,11 @@ namespace QDLogistics.Controllers
                         DLExportMethod = p.ExportMethod ?? 0,
                         DLExportValue = p.DLDeclaredTotal,
                         DLExportCurrency = p.DLCurrency,
-                        DLUploadTracking = p.UploadTracking,
                         DLTracking = p.Box?.TrackingNumber,
                         ShipWarehouse = p.Items.First(i => i.IsEnable.Value).ShipFromWarehouseID.Value,
                         ReturnWarehouse = p.Items.First(i => i.IsEnable.Value).ReturnedToWarehouseID.Value,
-                        ShippingStatus = p.ProcessStatus
+                        ShippingStatus = p.ProcessStatus,
+                        FulfillmentDate = p.ShipDate.HasValue && !p.ShipDate.Equals(DateTime.MinValue) ? p.ShipDate : null
                     }).ToList(),
 
                     Items = order.Items.Where(i => i.IsEnable.Value).Select(i => new

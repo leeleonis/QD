@@ -213,7 +213,7 @@ namespace QDLogistics.Commons
             order.PostingFeeTotal = orderDetail.PostingFeeTotal;
             order.FinalValueTotal = orderDetail.FinalValueTotal;
 
-            if (!order.Packages.Any(p => p.ProcessStatus == (int)EnumData.ProcessStatus.待出貨))
+            if (!order.Packages.Any(p => p.ProcessStatus.Equals((int)EnumData.ProcessStatus.待出貨)))
             {
                 if (order.Packages.Any() && orderDetail.StatusCode.Equals(OrderStatusCode.Completed))
                 {
@@ -263,9 +263,9 @@ namespace QDLogistics.Commons
 
                     if (!packageDetail.ShipDate.Equals(DateTime.MinValue))
                     {
-                        package.ProcessStatus = (byte)EnumData.ProcessStatus.已出貨;
                         if (package.ShipDate.Equals(DateTime.MinValue))
                         {
+                            package.ProcessStatus = (byte)EnumData.ProcessStatus.已出貨;
                             package.ShipDate = packageDetail.ShipDate;
                         }
                     }

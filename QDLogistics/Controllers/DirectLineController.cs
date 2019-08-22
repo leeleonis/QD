@@ -1732,7 +1732,7 @@ namespace QDLogistics.Controllers
                         }
                         catch (Exception e)
                         {
-                            if(newOrder != null)
+                            if (newOrder != null)
                             {
                                 db.SerialNumbers.RemoveRange(db.SerialNumbers.Where(s => s.OrderID.Value.Equals(newOrder.OrderID)).ToList());
                                 db.SaveChanges();
@@ -2176,6 +2176,7 @@ namespace QDLogistics.Controllers
                         if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
 
                         var path = Path.Combine(filePath, "AirWaybill.pdf");
+                        if (System.IO.File.Exists(path)) System.IO.File.Delete(path);
                         file.SaveAs(path);
 
                         MyHelp.Log("DL_Upload", file.FileName, null, Session);
