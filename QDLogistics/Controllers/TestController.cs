@@ -19,6 +19,7 @@ using QDLogistics.Models;
 using QDLogistics.Models.Repositiry;
 using QDLogistics.OrderService;
 using SellerCloud_WebService;
+using Newtonsoft.Json;
 
 namespace QDLogistics.Controllers
 {
@@ -269,7 +270,7 @@ namespace QDLogistics.Controllers
         {
             var package = db.Packages.First(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID));
             Winit_API winitAPI = new Winit_API();
-            var data2 = winitAPI.GetOutboundOrderDatas("1", "1000", 30).list.FirstOrDefault(o => o.sellerOrderNo.Equals(OrderID.ToString()));
+            var data2 = winitAPI.GetOutboundOrderData(package.WinitNo);
             TrackOrder track = new TrackOrder(package);
             var result = track.Track(package.TrackingNumber);
             //var result2 = stock.WinitRecordShippedOrder(package.ID, data2.packageList.SelectMany(p => p.merchandiseList).ToList());
@@ -334,6 +335,8 @@ namespace QDLogistics.Controllers
 
             IDS_API IDS = new IDS_API(package.Method.Carriers.CarrierAPI);
             var result = IDS.GetTrackingNumber(package);
+            IDS_Track Track = new IDS_Track(package.Method.Carriers.CarrierAPI);
+            var result2 = Track.GetTrackingNumber(result);
             //var label = IDS.GetTrackingNumber(package.TrackingNumber);
         }
 
@@ -670,11 +673,32 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public ActionResult GetSkuOriginCountry()
+        public void OrderShipped()
         {
-            var result = db.Skus.AsNoTracking().Where(s => !s.Origin.Equals("CN")).GroupBy(s => s.Origin, s => s.Sku).ToDictionary(g => g.Key, g => g.ToArray());
+            var recordResult = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>("{\"106005548\": [\"358815103113436\"],\"106005547\": [\"358815103132048\"]}");
+            foreach (var item in db.Items.Where(i => i.IsEnable.Value && i.PackageID.Value.Equals(775761)))
+            {
+                var sku = item.ProductID.Split(new char[] { '-' })[0];
+                if (recordResult.ContainsKey(sku))
+                {
+                    foreach (var serial in recordResult[sku])
+                    {
+                        item.SerialNumbers.Add(new SerialNumbers()
+                        {
+                            OrderID = item.OrderID,
+                            OrderItemID = item.ID,
+                            ProductID = item.ProductID,
+                            SerialNumber = serial
+                        });
+                    }
+                }
+                else
+                {
+                    MyHelp.Log("Inventory", 775761, string.Format("Winit 出貨資料未找到SKU【{0}】", item.ProductID));
+                }
+            }
 
-            return Json(result, JsonRequestBehavior.AllowGet);
+            db.SaveChanges();
         }
     }
 }

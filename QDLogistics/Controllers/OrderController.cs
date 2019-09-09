@@ -662,7 +662,18 @@ namespace QDLogistics.Controllers
                                                                     });
                                                                 }
 
-                                                                SCWS.Update_ItemSerialNumber(item.ID, recordResult[sku].ToArray());
+                                                                try
+                                                                {
+                                                                    SCWS.Update_ItemSerialNumber(item.ID, recordResult[sku].ToArray());
+                                                                }
+                                                                catch (Exception ex)
+                                                                {
+                                                                    error.Add("SC Error：" + ex.InnerException?.Message ?? ex.Message);
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                MyHelp.Log("Inventory", serials.Key, string.Format("Winit 出貨資料未找到SKU【{0}】", item.ProductID), session);
                                                             }
                                                         }
 
