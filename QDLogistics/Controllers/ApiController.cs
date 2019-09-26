@@ -878,7 +878,7 @@ namespace QDLogistics.Controllers
                         ExportValue = p.DeclaredTotal,
                         ExportCurrency = order.OrderCurrencyCode.Value,
                         UploadTracking = p.UploadTracking,
-                        Tracking = p.TrackingNumber,
+                        Tracking = string.IsNullOrEmpty(p.TrackingNumber) ? null : p.TrackingNumber,
                         DLExport = p.Export ?? 0,
                         DLExportMethod = p.ExportMethod ?? 0,
                         DLExportValue = p.DLDeclaredTotal,

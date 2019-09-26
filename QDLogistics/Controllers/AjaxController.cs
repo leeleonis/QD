@@ -506,7 +506,8 @@ namespace QDLogistics.Controllers
                                         if (!string.IsNullOrEmpty(package.WinitNo))
                                         {
                                             Winit_API winit = new Winit_API();
-                                            winit.CancelOutboundOrder(package.WinitNo);
+                                            var winitOrder = winit.GetOutboundOrderData(package.WinitNo);
+                                            if (!winitOrder.status.Equals("VO")) throw new Exception(string.Format("Winit：訂單【{0}】- {1} 提單尚未取消，請先手動取消!", package.OrderID, package.WinitNo));
                                             package.WinitNo = null;
                                         }
                                         break;

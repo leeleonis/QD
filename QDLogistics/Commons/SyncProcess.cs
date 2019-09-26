@@ -443,10 +443,10 @@ namespace QDLogistics.Commons
 
             // Old serialNumber data
             var oldSerialNumber = serialNumberDatas.Except(serialNumberList).ToList();
-            foreach (SerialNumbers serialNumber in oldSerialNumber)
-            {
-                SerialNumbers.Delete(serialNumber);
-            }
+            //foreach (SerialNumbers serialNumber in oldSerialNumber)
+            //{
+            //    SerialNumbers.Delete(serialNumber);
+            //}
 
             // Update serialNumber data
             var updateSerialNumber = serialNumberDatas.Except(oldSerialNumber).Except(serialNumberList, new SerialNumberComparer()).ToList();

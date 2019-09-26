@@ -615,7 +615,7 @@ namespace QDLogistics.Controllers
             string UserName = MyHelp.get_session("ApiUserName", Session, "tim@weypro.com").ToString();
             string Password = MyHelp.get_session("ApiPassword", Session, "timfromweypro").ToString();
 
-            var dateAgo = DateTime.Now.AddDays((0-day));
+            var dateAgo = DateTime.Now.AddDays((0 - day));
             dateAgo = MyHelp.DateTimeWithZone(dateAgo, false);
 
             var SCWS = new SC_WebService(UserName, Password);
@@ -629,9 +629,9 @@ namespace QDLogistics.Controllers
             var PackageFilter = db.Packages.Where(p => p.IsEnable.Value && !p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.訂單管理) && !string.IsNullOrEmpty(p.WinitNo) && WinitShippingMethod.Contains(p.ShippingMethod.Value));
             var dataList = OrderFilter.Join(PackageFilter, o => o.OrderID, p => p.OrderID.Value, (order, package) => new { order, package }).ToList();
 
-            foreach(var data in dataList)
+            foreach (var data in dataList)
             {
-                if(!data.package.Items.Where(i => i.IsEnable.Value).Any(i => i.SerialNumbers.Any()))
+                if (!data.package.Items.Where(i => i.IsEnable.Value).Any(i => i.SerialNumbers.Any()))
                 {
                     var winitData = winit.GetOutboundOrderData(data.package.WinitNo);
                     var merchandiseList = winitData.packageList.SelectMany(p => p.merchandiseList).ToList();
@@ -665,7 +665,8 @@ namespace QDLogistics.Controllers
                                 db.SaveChanges();
                             }
                         }
-                        catch (Exception ex) {
+                        catch (Exception ex)
+                        {
                             Response.Write(string.Format("訂單【{0}】記錄失敗：{1}<br />", data.order.OrderID, ex.InnerException?.Message ?? ex.Message));
                         }
                     }
@@ -675,30 +676,16 @@ namespace QDLogistics.Controllers
 
         public void OrderShipped()
         {
-            var recordResult = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>("{\"106005548\": [\"358815103113436\"],\"106005547\": [\"358815103132048\"]}");
-            foreach (var item in db.Items.Where(i => i.IsEnable.Value && i.PackageID.Value.Equals(775761)))
+            var OrderIDs = new int[] { 5669723, 5668705, 5671982, 5671655, 5670812, 5670810, 5669969, 5669923, 5671639, 5671987, 5671041, 5671607, 5670787 };
+            var BoxIDs = new string[] { "IDS-20190917-A", "IDS (US)-20190917-A", "IDS (US)-20190917-B" };
+            var packageList = db.Packages.Where(p => p.IsEnable.Value && (OrderIDs.Contains(p.OrderID.Value) || BoxIDs.Contains(p.BoxID))).ToList();
+            using (var stock = new StockKeepingUnit())
             {
-                var sku = item.ProductID.Split(new char[] { '-' })[0];
-                if (recordResult.ContainsKey(sku))
+                foreach(var package in packageList)
                 {
-                    foreach (var serial in recordResult[sku])
-                    {
-                        item.SerialNumbers.Add(new SerialNumbers()
-                        {
-                            OrderID = item.OrderID,
-                            OrderItemID = item.ID,
-                            ProductID = item.ProductID,
-                            SerialNumber = serial
-                        });
-                    }
-                }
-                else
-                {
-                    MyHelp.Log("Inventory", 775761, string.Format("Winit 出貨資料未找到SKU【{0}】", item.ProductID));
+                    stock.RecordShippedOrder(package.ID);
                 }
             }
-
-            db.SaveChanges();
         }
     }
 }

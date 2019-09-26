@@ -1267,7 +1267,7 @@ namespace QDLogistics.Controllers
                 foreach (Packages package in box.Packages.Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.待出貨)).ToList())
                 {
                     DirectLineLabel label = package.Label;
-                    OrderService.OrderData order = SCWS.Get_OrderData(package.OrderID.Value);
+                    OrderData order = SCWS.Get_OrderData(package.OrderID.Value);
                     if (CheckOrderStatus(package, order.Order))
                     {
                         if (label.Status.Equals((byte)EnumData.LabelStatus.正常))
@@ -2345,7 +2345,7 @@ namespace QDLogistics.Controllers
                         if (directLine == null) throw new Exception("找不到 Direct Line!");
 
                         var labelList = db.DirectLineLabel.Where(l => l.IsEnable && l.Status.Equals((byte)EnumData.LabelStatus.正常))
-                            .Join(db.Box.AsNoTracking().Where(b => b.IsEnable && b.DirectLine.Equals(directLine.ID) && !b.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.未發貨)), l => l.BoxID, b => b.BoxID, (l, b) => l).ToList();
+                            .Join(db.Box.AsNoTracking().Where(b => b.IsEnable && b.DirectLine.Equals(directLine.ID)), l => l.BoxID, b => b.BoxID, (l, b) => l).ToList();
                         if (labelList.Any())
                         {
                             MyHelp.Log("Box", null, string.Format("開始追蹤 {0} 訂單", DL), session);
@@ -2357,7 +2357,6 @@ namespace QDLogistics.Controllers
                                 if (!label.Packages.Any()) throw new Exception("沒有找到 Package!");
 
                                 var package = label.Packages.First();
-                                var order = package.Orders;
                                 var SC_Order = SCWS.Get_OrderData(label.OrderID).Order;
 
                                 if (package.Orders.StatusCode.Value.Equals((int)SC_Order.StatusCode) && package.Orders.PaymentStatus.Value.Equals((int)SC_Order.PaymentStatus))
@@ -2382,31 +2381,43 @@ namespace QDLogistics.Controllers
 
                                     if (!string.IsNullOrEmpty(package.TrackingNumber))
                                     {
-                                        MyHelp.Log("Orders ", label.OrderID, string.Format(string.Format("{0} 訂單【{1}】SC 更新", DL, label.OrderID)), session);
-
-                                        ThreadTask syncTask = new ThreadTask(string.Format("{0} 訂單【{1}】SC 更新", DL, label.OrderID));
-                                        syncTask.AddWork(factory.StartNew(() =>
+                                        if (package.ProcessStatus.Equals((byte)EnumData.ProcessStatus.已出貨))
                                         {
-                                            syncTask.Start();
-                                            SyncProcess sync = new SyncProcess(session);
-                                            return sync.Update_Tracking(db.Packages.Find(package.ID));
-                                        }));
+                                            MyHelp.Log("Orders ", label.OrderID, string.Format(string.Format("{0} 訂單【{1}】SC 更新", DL, label.OrderID)), session);
 
-                                        using (CaseLog CaseLog = new CaseLog(package, session))
-                                        {
-                                            if (CaseLog.CaseExit(EnumData.CaseEventType.UpdateTracking))
+                                            ThreadTask syncTask = new ThreadTask(string.Format("{0} 訂單【{1}】SC 更新", DL, label.OrderID));
+                                            syncTask.AddWork(factory.StartNew(() =>
                                             {
-                                                CaseLog.TrackingResponse();
+                                                syncTask.Start();
+                                                SyncProcess sync = new SyncProcess(session);
+                                                return sync.Update_Tracking(db.Packages.Find(package.ID));
+                                            }));
+
+                                            using (CaseLog CaseLog = new CaseLog(package, session))
+                                            {
+                                                if (CaseLog.CaseExit(EnumData.CaseEventType.UpdateTracking))
+                                                {
+                                                    CaseLog.TrackingResponse();
+                                                }
+                                            }
+
+                                            label.Status = (byte)EnumData.LabelStatus.完成;
+                                        }
+                                        else
+                                        {
+                                            var SC_package = SC_Order.Packages.First(p => p.ID.Equals(package.ID));
+                                            if (string.IsNullOrEmpty(SC_package.TrackingNumber))
+                                            {
+                                                SCWS.Update_PackageShippingStatus(SC_package, package.TrackingNumber, package.Method.Carriers.Name);
                                             }
                                         }
-
-                                        label.Status = (byte)EnumData.LabelStatus.完成;
                                     }
                                 }
                                 else
                                 {
                                     MyHelp.Log("Box ", label.BoxID, string.Format(string.Format("訂單【{0}】資料狀態異常", label.OrderID)), session);
 
+                                    var order = package.Orders;
                                     order.StatusCode = (int)SC_Order.StatusCode;
                                     order.PaymentStatus = (int)SC_Order.PaymentStatus;
                                     label.Status = (byte)EnumData.LabelStatus.鎖定中;

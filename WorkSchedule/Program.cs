@@ -36,13 +36,17 @@ namespace WorkSchedule
 
             if (min.Equals(0))
             {
-                RequestJob(Host, "DirectLine/TrackDirectLine", new Dictionary<string, object>() { { "DL", "IDS (US)" } });
                 RequestJob(PO_Host, "Ajax/CheckTracking", null);
             }
 
             if (min.Equals(0) || min.Equals(30))
             {
                 RequestJob(Host, "DirectLine/CheckBoxStatus", null);
+            }
+
+            if (hour.Equals(6) && (min.Equals(45) || min.Equals(50) || min.Equals(55)))
+            {
+                RequestJob(Host, "DirectLine/TrackDirectLine", new Dictionary<string, object>() { { "DL", "IDS (US)" } });
             }
 
             if((hour.Equals(3) || hour.Equals(8)) && min.Equals(55))

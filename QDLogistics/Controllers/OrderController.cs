@@ -668,7 +668,7 @@ namespace QDLogistics.Controllers
                                                                 }
                                                                 catch (Exception ex)
                                                                 {
-                                                                    error.Add("SC Error：" + ex.InnerException?.Message ?? ex.Message);
+                                                                    error.Add("SC Error：" + (ex.InnerException?.Message ?? ex.Message));
                                                                 }
                                                             }
                                                             else
