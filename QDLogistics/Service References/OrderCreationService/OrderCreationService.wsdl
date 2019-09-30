@@ -183,7 +183,7 @@
           <s:element minOccurs="1" maxOccurs="1" name="OverStock_OrderDownloadDateLimitEnabled" type="s:boolean" />
           <s:element minOccurs="0" maxOccurs="1" name="Invoice_ForWholeSalePluginID" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="Invoice_OrderFormPluginID" type="s:string" />
-          <s:element minOccurs="1" maxOccurs="1" name="AmazonDefaultIsAmazonEnabled" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="Invoice_OrderFormWordToPDFFileName" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="Invoice_InvoicePrintingType" type="tns:Invoice_InvoicePrintingTypeType" />
           <s:element minOccurs="0" maxOccurs="1" name="Invoice_CustomInvoicePluginID" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="EnableEBayPricesControl" type="s:boolean" />
@@ -565,6 +565,8 @@
           <s:element minOccurs="1" maxOccurs="1" name="NewEggDotComEnableSettlementDownlaod" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="OverStockImportOrdersAsUnPaid" type="s:boolean" />
           <s:element minOccurs="0" maxOccurs="1" name="DoNotApplyEbaySubsidyOnSites" type="tns:ArrayOfString" />
+          <s:element minOccurs="1" maxOccurs="1" name="ebayPaymentFeePercent" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="UpdateProductSitePriceBasedOnAmazonPrice" type="s:boolean" />
         </s:sequence>
       </s:complexType>
       <s:simpleType name="WebsiteProductViewURLValueTypeType">
@@ -1348,6 +1350,7 @@
           <s:enumeration value="Cdiscount" />
           <s:enumeration value="GoogleExpress" />
           <s:enumeration value="Yahoo" />
+          <s:enumeration value="StripeBankAccount" />
         </s:restriction>
       </s:simpleType>
       <s:simpleType name="CreditCardType">
@@ -1497,6 +1500,7 @@
           <s:enumeration value="GrouponGateway" />
           <s:enumeration value="SBN" />
           <s:enumeration value="GoogleExpress" />
+          <s:enumeration value="Target_Plus" />
         </s:restriction>
       </s:simpleType>
       <s:simpleType name="OrderShippingStatus">
@@ -2657,6 +2661,9 @@
           <s:element minOccurs="1" maxOccurs="1" name="HomeDepotPrice" type="s:decimal" />
           <s:element minOccurs="0" maxOccurs="1" name="HomeDepotListingID" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="HomeDepotBackOrderDays" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="HomeDepotEnableDefaultQty" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="HomeDepotDefaultQty" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="HomeDepotDefaultQtyUseDefault" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="HouzzEnabled" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="HouzzProductId" type="s:long" />
           <s:element minOccurs="0" maxOccurs="1" name="HouzzMerchantSKU" type="s:string" />
@@ -3223,6 +3230,7 @@
           <s:element minOccurs="1" maxOccurs="1" name="WebsiteSafetyQtyUseDefault" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="WebsiteDefaultQty" type="s:int" />
           <s:element minOccurs="1" maxOccurs="1" name="WebsiteDefaultQtyUseDefault" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="WebsiteDefaultQtyEnabled" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="BDC_CouponEndDate" type="s:dateTime" />
           <s:element minOccurs="1" maxOccurs="1" name="BDC_CouponStartDate" type="s:dateTime" />
           <s:element minOccurs="1" maxOccurs="1" name="BDC_CouponAmount" type="s:decimal" />
@@ -3887,6 +3895,45 @@
           <s:element minOccurs="0" maxOccurs="1" name="HouzzColor" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="GoogleExpressSurfacesAcrossGoogleEnabled" type="s:boolean" />
           <s:element minOccurs="0" maxOccurs="1" name="GoogleExpressSurfacesAcrossGoogleIntention" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="GoogleExpressListingExpirationDate" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="GoogleExpressAutoRelistProductEnabled" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="GoogleExpressAgeGroup" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="GoogleExpressGender" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="GoogleExpressColor" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="GoogleExpressDefaultQty" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="GoogleExpressDefaultQtyUseDefault" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="GoogleExpressEnableDefaultQty" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="MinSellingPriceForAmazon" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="MaxSellingPriceForAmazon" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="EnableMinMaxSellingPriceForAmazon" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="WayfairEnableCompositeWood" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="WayfairCompositeWoodOption" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="DisconnectFromInventoryBedBathAndBeyond" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="TargetPlusEnabled" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="TargetPlusMerchantSKU" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TargetPlusSpecificTitle" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TargetPlusDescription" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="TargetPlusCategory" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="TargetPlusTaxCode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TargetPlusImportDesignation" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TargetPlusHazardousIndicator" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TargetPlusElectronicIndicator" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TargetPlusBatteriesInstalledOrIncluded" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="TargetPlusIncludeProp65" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="GoogleExpressCondition" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="GoogleExpressSizeSystem" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="GoogleExpressSizeType" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="GoogleExpressSizes" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="AmazonInventoryMaxQtyUseDefault" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="TargetPlusPrice" type="s:decimal" />
+          <s:element minOccurs="1" maxOccurs="1" name="TargetPlusPriceUseDefault" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="TargetPlusListingID" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="TargetPlusEnableDefaultQty" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="TargetPlusDefaultQty" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="TargetPlusDefaultQtyUseDefault" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="TargetPlusSafetyQty" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="TargetPlusSafetyQtyUseDefault" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="TargetPlusListingStatus" type="s:string" />
         </s:sequence>
       </s:complexType>
       <s:simpleType name="MagentoProductVisibilityType">
@@ -4033,11 +4080,13 @@
       </s:simpleType>
       <s:simpleType name="NewEggDotComItemCondition">
         <s:restriction base="s:string">
+          <s:enumeration value="Unknown" />
           <s:enumeration value="New" />
           <s:enumeration value="Refurbished" />
           <s:enumeration value="UsedLikeNew" />
           <s:enumeration value="UsedVeryGood" />
           <s:enumeration value="UsedGood" />
+          <s:enumeration value="UsedAcceptable" />
         </s:restriction>
       </s:simpleType>
       <s:simpleType name="ListingDuration">
@@ -4593,6 +4642,7 @@
           <s:element minOccurs="1" maxOccurs="1" name="EnableIPBasedLoginFilter" type="s:boolean" />
           <s:element minOccurs="0" maxOccurs="1" name="TaxExemptType" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="Supervisor" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="ConstantContactID" type="s:string" />
         </s:sequence>
       </s:complexType>
       <s:simpleType name="OrderSearchDateRange">
@@ -6311,6 +6361,7 @@
           <s:enumeration value="Cdiscount" />
           <s:enumeration value="GoogleExpress" />
           <s:enumeration value="Yahoo" />
+          <s:enumeration value="StripeBankAccount" />
         </s:restriction>
       </s:simpleType>
       <s:simpleType name="CreditCardType">
@@ -6608,6 +6659,7 @@
           <s:element minOccurs="1" maxOccurs="1" name="ShippingLabelThirdPartyStatus" type="s7:ShippingLabelThirdPartyStatusType" />
           <s:element minOccurs="0" maxOccurs="1" name="FulfillmentOption" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="IsTaxCollectedByMarketplace" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="WayfairRequestedPickupDate" type="s:dateTime" />
           <s:element minOccurs="0" maxOccurs="1" name="ShippingItems" type="s7:ArrayOfOrderItem" />
         </s:sequence>
       </s:complexType>
@@ -6720,6 +6772,7 @@
           <s:enumeration value="APC" />
           <s:enumeration value="RRDonnelley" />
           <s:enumeration value="DHLeCAPI" />
+          <s:enumeration value="AmazonAPI" />
         </s:restriction>
       </s:simpleType>
       <s:simpleType name="AddressVerifiedStatusType">
@@ -7316,6 +7369,7 @@
           <s:enumeration value="GrouponGateway" />
           <s:enumeration value="SBN" />
           <s:enumeration value="GoogleExpress" />
+          <s:enumeration value="Target_Plus" />
         </s:restriction>
       </s:simpleType>
       <s:complexType name="ArrayOfOrderNote">
@@ -7718,6 +7772,7 @@
           <s:element minOccurs="1" maxOccurs="1" name="EstimatedDeliveryDate" type="s:dateTime" />
           <s:element minOccurs="1" maxOccurs="1" name="ShippedVerifiedBy" type="s:int" />
           <s:element minOccurs="1" maxOccurs="1" name="ShippedVerifiedOn" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="IsDeliveryStatusDisconncted" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="ForSingleItem" type="s:boolean" />
         </s:sequence>
       </s:complexType>

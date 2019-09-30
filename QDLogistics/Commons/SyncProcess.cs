@@ -81,7 +81,7 @@ namespace QDLogistics.Commons
                 List<OrderSerialNumber> SC_SerialNumbers = new List<OrderSerialNumber>();
 
                 int[] ignoreOrderIDs = new int[] { };
-                foreach (OrderStateInfo orderStateInfo in SC_OrderStateInfoList.Where(o => o.DropShipStatus == DropShipStatusType1.None && !ignoreOrderIDs.Contains(o.ID)))
+                foreach (OrderStateInfo orderStateInfo in SC_OrderStateInfoList.Where(o => o.DropShipStatus == DropShipStatusType2.None && !ignoreOrderIDs.Contains(o.ID)))
                 {
                     OrderData order = SCWS.Get_OrderData(orderStateInfo.ID);
                     SC_Orders.Add(order.Order);
@@ -145,7 +145,7 @@ namespace QDLogistics.Commons
                 Check_Serial(serialNumberDatas, SC_SerialNumbers);
                 Orders.SaveChanges();
 
-                foreach (OrderStateInfo orderStateInfo in SC_OrderStateInfoList.Where(o => o.DropShipStatus != DropShipStatusType1.None))
+                foreach (OrderStateInfo orderStateInfo in SC_OrderStateInfoList.Where(o => o.DropShipStatus != DropShipStatusType2.None))
                 {
                     if (orderList.Any(o => o.OrderID.Equals(orderStateInfo.ID)))
                     {
@@ -226,7 +226,7 @@ namespace QDLogistics.Commons
                     Orders.SaveChanges();
                 }
 
-                if (orderStateInfo.DropShipStatus == DropShipStatusType1.None)
+                if (orderStateInfo.DropShipStatus == DropShipStatusType2.None)
                 {
                     OrderData order = SCWS.Get_OrderData(OrderID);
                     orderData.eBayUserID = order.User.eBayUserID;

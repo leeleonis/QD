@@ -507,7 +507,19 @@ namespace QDLogistics.Controllers
                                         {
                                             Winit_API winit = new Winit_API();
                                             var winitOrder = winit.GetOutboundOrderData(package.WinitNo);
-                                            if (!winitOrder.status.Equals("VO")) throw new Exception(string.Format("Winit：訂單【{0}】- {1} 提單尚未取消，請先手動取消!", package.OrderID, package.WinitNo));
+                                            switch (winitOrder.state)
+                                            {
+                                                case "CF":
+                                                case "CFI":
+                                                    winit.CancelOutboundOrder(package.WinitNo);
+                                                    break;
+                                                case "PKI":
+                                                case "PKC":
+                                                case "PAC":
+                                                    throw new Exception(string.Format("Winit：訂單【{0}】- {1} 提單已在出貨中，請人工至WINIT取消!", package.OrderID, package.WinitNo));
+                                                case "VO":
+                                                    break;
+                                            }
                                             package.WinitNo = null;
                                         }
                                         break;
