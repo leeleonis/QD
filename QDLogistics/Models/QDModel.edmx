@@ -436,6 +436,7 @@
           <Property Name="Battery" Type="bit" />
           <Property Name="Weight" Type="int" Nullable="false" />
           <Property Name="WeightType" Type="tinyint" Nullable="false" />
+          <Property Name="CheckSkuStock" Type="bit" />
         </EntityType>
         <EntityType Name="ProductType">
           <Key>
@@ -503,6 +504,7 @@
           <Property Name="ServiceCode" Type="nvarchar" MaxLength="150" Nullable="false" />
           <Property Name="ServiceName" Type="nvarchar" MaxLength="150" />
           <Property Name="ShippingMethod" Type="int" />
+          <Property Name="ShippingTime" Type="int" Nullable="false" />
         </EntityType>
         <EntityType Name="ShippingMethod">
           <Key>
@@ -1820,6 +1822,7 @@
           <Property Name="ShippingMethod" Type="Int32" />
           <NavigationProperty Name="Orders" Relationship="QDLogisticsModel.FK_Orders_Services" FromRole="Services" ToRole="Orders" />
           <NavigationProperty Name="Method" Relationship="QDLogisticsModel.FK_Services_Carriers" FromRole="Services" ToRole="ShippingMethod" />
+          <Property Name="ShippingTime" Type="Int32" Nullable="false" />
         </EntityType>
         <Association Name="FK_Orders_Services">
           <End Type="QDLogisticsModel.Services" Role="Services" Multiplicity="0..1" />
@@ -1865,6 +1868,7 @@
           <Property Name="Battery" Type="Boolean" />
           <Property Name="Weight" Type="Int32" Nullable="false" />
           <Property Name="WeightType" Type="Byte" Nullable="false" />
+          <Property Name="CheckSkuStock" Type="Boolean" />
         </EntityType>
         <EntityType Name="Carriers">
           <Key>
@@ -2590,6 +2594,7 @@
           <EntitySetMapping Name="Services">
             <EntityTypeMapping TypeName="QDLogisticsModel.Services">
               <MappingFragment StoreEntitySet="Services">
+                <ScalarProperty Name="ShippingTime" ColumnName="ShippingTime" />
                 <ScalarProperty Name="ShippingMethod" ColumnName="ShippingMethod" />
                 <ScalarProperty Name="ServiceName" ColumnName="ServiceName" />
                 <ScalarProperty Name="ServiceCode" ColumnName="ServiceCode" />
@@ -2600,6 +2605,7 @@
           <EntitySetMapping Name="Preset">
             <EntityTypeMapping TypeName="QDLogisticsModel.Preset">
               <MappingFragment StoreEntitySet="Preset">
+                <ScalarProperty Name="CheckSkuStock" ColumnName="CheckSkuStock" />
                 <ScalarProperty Name="Battery" ColumnName="Battery" />
                 <ScalarProperty Name="Brand" ColumnName="Brand" />
                 <ScalarProperty Name="ProductType" ColumnName="ProductType" />

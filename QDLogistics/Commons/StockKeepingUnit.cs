@@ -180,6 +180,14 @@ namespace QDLogistics.Commons
             return response.data.Value;
         }
 
+        public int CheckInventory()
+        {
+            var SkuID = itemData.ProductID.Split(new char['-'])[0];
+            int? response = SimpleRequest<int?>("Ajax/CheckSkuInventory", "post", new { SkuID, SCID = itemData.ShipFromWarehouseID.Value });
+
+            return response ?? 0;
+        }
+
         public int CreateRMA(int OrderID, int ReturnWarehouseID)
         {
             Response<int?> response = Request<int?>("Ajax/CreateALLRMA", "post", new { OrderID, ReturnWarehouseID });
@@ -213,6 +221,34 @@ namespace QDLogistics.Commons
                 using (StreamReader streamReader = new StreamReader(httpResponse.GetResponseStream()))
                 {
                     response = JsonConvert.DeserializeObject<Response<T>>(streamReader.ReadToEnd());
+                }
+            }
+
+            return response;
+        }
+
+        private T SimpleRequest<T>(string url, string method = "post", object data = null) where T : new()
+        {
+            T response = new T { };
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://internal.qd.com.tw:8080/" + url);
+            //HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://localhost:49920/" + url);
+            request.ContentType = "application/json";
+            request.Method = method;
+            request.ProtocolVersion = HttpVersion.Version10;
+
+            if (data != null)
+            {
+                using (StreamWriter streamWriter = new StreamWriter(request.GetRequestStream()))
+                {
+                    var json = JsonConvert.SerializeObject(data);
+                    streamWriter.Write(json);
+                    streamWriter.Flush();
+                }
+
+                HttpWebResponse httpResponse = (HttpWebResponse)request.GetResponse();
+                using (StreamReader streamReader = new StreamReader(httpResponse.GetResponseStream()))
+                {
+                    response = JsonConvert.DeserializeObject<T>(streamReader.ReadToEnd());
                 }
             }
 

@@ -487,7 +487,7 @@ namespace QDLogistics.Controllers
 
                         try
                         {
-                            if (package.ProcessStatus.Equals((int)EnumData.ProcessStatus.已出貨))
+                            if (!string.IsNullOrEmpty(package.BoxID) || package.ProcessStatus.Equals((int)EnumData.ProcessStatus.已出貨))
                             {
                                 CaseLog caseLog = new CaseLog((HttpSessionStateBase)Session);
                                 caseLog.OrderInit(package);
@@ -1764,7 +1764,8 @@ namespace QDLogistics.Controllers
                 {
                     service.ServiceCode,
                     service.ServiceName,
-                    service.ShippingMethod
+                    service.ShippingMethod,
+                    service.ShippingTime
                 }));
             }
 
@@ -1783,6 +1784,7 @@ namespace QDLogistics.Controllers
                 if (service != null)
                 {
                     service.ShippingMethod = sData.ShippingMethod;
+                    service.ShippingTime = sData.ShippingTime;
                     Services.Update(service);
                 }
 

@@ -58,6 +58,11 @@ namespace WorkSchedule
             {
                 RequestJob(PO_Host, "Test/DoSkuSync", null);
             }
+
+            if(hour.Equals(19) && min.Equals(0))
+            {
+                RequestJob(PO_Host, "Ajax/WarehouseInventory", null);
+            }
         }
 
         private static void RequestJob(string host, string url, Dictionary<string, object> parameters)

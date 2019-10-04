@@ -48,5 +48,6 @@ namespace QDLogistics.Models
         public Nullable<bool> Battery { get; set; }
         public int Weight { get; set; }
         public byte WeightType { get; set; }
+        public Nullable<bool> CheckSkuStock { get; set; }
     }
 }

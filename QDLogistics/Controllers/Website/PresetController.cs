@@ -116,7 +116,8 @@ namespace QDLogistics.Controllers.Website
                     warehouseList = db.Warehouses.AsNoTracking().Where(w => w.IsEnable.Value && w.IsSellable.Value).OrderByDescending(w => w.IsDefault.Value).OrderBy(w => w.ID).ToDictionary(w => w.ID.ToString(), w => w.Name),
                     productTypeList = db.ProductType.AsNoTracking().Where(t => t.IsEnable && t.CompanyID.Equals(163)).OrderBy(t => t.ProductTypeName).ToDictionary(t => t.ID.ToString(), t => t.ProductTypeName),
                     brandList = db.Manufacturers.AsNoTracking().Where(b => b.IsEnable.Value && b.CompanyID.Value.Equals(163)).OrderBy(b => b.ManufacturerName).ToDictionary(b => b.ID.ToString(), b => b.ManufacturerName),
-                    battery = new Dictionary<string, string>() { { "1", "Yes" }, { "0", "No" } }
+                    battery = new Dictionary<string, string>() { { "1", "Yes" }, { "0", "No" } },
+                    checkStock = new Dictionary<string, string>() { { "1", "Yes" }, { "0", "No" } }
                 };
             }
             catch (Exception e)
@@ -205,6 +206,9 @@ namespace QDLogistics.Controllers.Website
                     case 18:
                         results = MyHelp.SetOrder(results, p => p.Weight, dir);
                         break;
+                    case 19:
+                        results = MyHelp.SetOrder(results, p => p.CheckSkuStock, dir);
+                        break;
                     default:
                         results = MyHelp.SetOrder(results, p => p.Id, "asc");
                         break;
@@ -242,6 +246,7 @@ namespace QDLogistics.Controllers.Website
                         brand = preset.Brand,
                         battery = preset.Battery,
                         weight = preset.Weight,
+                        checkStock = preset.CheckSkuStock,
                         weightType = preset.WeightType,
                         warehouse = preset.WarehouseID,
                         shippingMethod = preset.MethodID

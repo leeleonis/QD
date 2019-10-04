@@ -231,9 +231,9 @@ namespace SellerCloud_WebService
             return OS_SellerCloud.Orders_UpdateStatus(OS_AuthHeader, OS_Options, OrderID, (QDLogistics.OrderService.OrderStatusCode)StatusCode);
         }
 
-        public bool Update_OrderShippingStatus(QDLogistics.OrderService.Order order, string Carrier = "", string Service = "")
+        public bool Update_OrderShippingStatus(QDLogistics.OrderService.Order order, string Carrier = "")
         {
-            return OS_SellerCloud.Orders_UpdateShippingStatusOrder(OS_AuthHeader, OS_Options, order.ID, Carrier, Service, order.StationID, order.ShippingLocationID, false);
+            return OS_SellerCloud.Orders_UpdateShippingStatusOrder(OS_AuthHeader, OS_Options, order.ID, Carrier, order.ShippingServiceSelected, order.StationID, order.ShippingLocationID, false);
         }
 
         public bool Update_OrderUnShip(int OrderID)

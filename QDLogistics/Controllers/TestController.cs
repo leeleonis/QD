@@ -674,16 +674,15 @@ namespace QDLogistics.Controllers
             }
         }
 
-        public void OrderShipped()
+        public void CheckOrderStock(int OrderID)
         {
-            var OrderIDs = new int[] { 5669723, 5668705, 5671982, 5671655, 5670812, 5670810, 5669969, 5669923, 5671639, 5671987, 5671041, 5671607, 5670787 };
-            var BoxIDs = new string[] { "IDS-20190917-A", "IDS (US)-20190917-A", "IDS (US)-20190917-B" };
-            var packageList = db.Packages.Where(p => p.IsEnable.Value && (OrderIDs.Contains(p.OrderID.Value) || BoxIDs.Contains(p.BoxID))).ToList();
             using (var stock = new StockKeepingUnit())
             {
-                foreach(var package in packageList)
+                var amount = 0;
+                foreach(var item in db.Items.Where(i => i.IsEnable.Value && i.OrderID.Value.Equals(OrderID)))
                 {
-                    stock.RecordShippedOrder(package.ID);
+                    stock.SetItemData(item.ID);
+                    amount = stock.CheckInventory();
                 }
             }
         }

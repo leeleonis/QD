@@ -180,7 +180,6 @@ namespace QDLogistics.Commons
             order.OrderSourceOrderId = orderDetail.OrderSourceOrderId.Trim();
             order.OrderSourceOrderTotal = orderDetail.OrderSourceOrderTotal;
             order.eBaySalesRecordNumber = orderDetail.eBaySellingManagerSalesRecordNumber.Trim();
-            order.ShippingServiceSelected = orderDetail.ShippingServiceSelected;
             order.InvoicePrinted = orderDetail.InvoicePrinted;
             order.InvoicePrintedDate = orderDetail.InvoicePrintedDate;
             order.ShippingCarrier = orderDetail.ShippingCarrier.Trim();
@@ -212,6 +211,11 @@ namespace QDLogistics.Commons
             order.PaypalFeeTotal = orderDetail.PaypalFeeTotal;
             order.PostingFeeTotal = orderDetail.PostingFeeTotal;
             order.FinalValueTotal = orderDetail.FinalValueTotal;
+
+            if (string.IsNullOrEmpty(order.ShippingServiceSelected))
+            {
+                order.ShippingServiceSelected = orderDetail.ShippingServiceSelected;
+            }
 
             if (!order.Packages.Any(p => p.ProcessStatus.Equals((int)EnumData.ProcessStatus.待出貨)))
             {

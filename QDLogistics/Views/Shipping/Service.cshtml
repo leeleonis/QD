@@ -125,6 +125,11 @@
                             return "<select class='form-control input-sm' id='MethodID-" + index + "' onchange='onSelect(" + index + ")'>" + getSelectOption(MethodOption, value) + "</select>";
                         }
                     }, {
+                        field: "ShippingTime", title: "Shipping Time", width: "10%", align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            return "<input type='text' class='form-control input-sm' id='ShippingTime-" + index + "' value='" + value + "' onchange='onSelect(" + index + ")'>";
+                        }
+                    }, {
                         field: "save", title: "<button type='button' class='btn btn-default btn-sm' onclick='saveData()'>SAVE</button>", width: "60", sortable: false,
                         formatter: function (value, row, index) {
                             return "<button type='button' class='btn btn-default btn-sm' id='btn-" + index + "' onclick='saveData(" + index + ")' disabled>SAVE</button>"
@@ -199,7 +204,8 @@
         function setData(row, index) {
             return {
                 ServiceCode: row.ServiceCode,
-                ShippingMethod: $("#MethodID-" + index).val()
+                ShippingMethod: $("#MethodID-" + index).val(),
+                ShippingTime: $("#ShippingTime-" + index).val()
             }
         }
 

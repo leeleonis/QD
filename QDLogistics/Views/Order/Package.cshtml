@@ -429,12 +429,12 @@
                     if(isEmpty(gb_OrderID) || isEmpty(gb_PackageID)) orderLocked(pData.OrderID, pData.PackageID);
 
                     if(product.data.IsPicked){
-                        var file = fileList[pData.PackageID];
+                        //var file = fileList[pData.PackageID];
                         var needPick = Object.keys(order[pData.PackageID]).map(itemID => order[pData.PackageID][itemID]).filter(product => !product.data.IsPicked);
 
                         if(needPick.length == 0){
                             if(!findOrderChange(pData.OrderID)){
-                                print($.param({ fileName: file['fileName'], filePath: file['filePath'], amount: file['amount'], printerName: file['printerName'] }, true));
+                                //print($.param({ fileName: file['fileName'], filePath: file['filePath'], amount: file['amount'], printerName: file['printerName'] }, true));
                                 updatePicked(pData, order, false);
                                 //orderLocked();
                             }
@@ -474,8 +474,10 @@
                 var url = '@Url.Action("updatePicked", "ajax")';
                 ajaxData(url, 'post', { picked: picked, serial: serial }).done(function(response){
                     if(response['status']) {
-                        if(retry) error('訂單【' + gb_OrderID + '】更新失敗，資料已重新寄送!');
-                        orderLocked();
+                        if (retry) error('訂單【' + gb_OrderID + '】更新失敗，資料已重新寄送!');
+
+                        var file = fileList[pData.PackageID];
+                        print($.param({ fileName: file['fileName'], filePath: file['filePath'], amount: file['amount'], printerName: file['printerName'] }, true));
                     } else {
                         alert(response['message']);
                     }

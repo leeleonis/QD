@@ -335,7 +335,20 @@ namespace QDLogistics.Commons
             bool battery = !preset.Battery.HasValue || skuList.Any(s => s.Battery.Value.Equals(preset.Battery.Value));
             bool weight = preset.Weight.Equals(0) || Compare(preset.WeightType, preset.Weight, itemList.Sum(i => i.Qty * (SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight)).Value);
 
-            return total && country && state && zipCodeFrom && zipCodeTo && company && source && method && sku && suffix && productType && brand && battery && weight;
+            bool checkStock = !preset.CheckSkuStock.HasValue;
+            if (!checkStock)
+            {
+                using (StockKeepingUnit stock = new StockKeepingUnit())
+                {
+                    foreach(Items item in itemList)
+                    {
+                        stock.SetItemData(item.ID);
+                        checkStock &= (stock.CheckInventory() > 0);
+                    }
+                }
+            }
+
+            return total && country && state && zipCodeFrom && zipCodeTo && company && source && method && sku && suffix && productType && brand && battery && weight && checkStock;
         }
 
         private bool Compare(byte type, decimal compare, decimal value)

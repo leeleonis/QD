@@ -70,6 +70,7 @@
                                             <th width="100" class="text-center">Brand</th>
                                             <th width="100" class="text-center">Battery</th>
                                             <th width="150" class="text-center">Item shipping weight</th>
+                                            <th width="100" class="text-center">Check Inventory</th>
                                             <th width="" class="text-center">功能</th>
                                         </tr>
                                     </thead>
@@ -85,7 +86,7 @@
 @section pagespecific {
     <script type="text/javascript">
         var $Table;
-        var countryList, stateList, companyList, sourceList, methodList, warehouseList, productTypeList, brandList, battery;
+        var countryList, stateList, companyList, sourceList, methodList, warehouseList, productTypeList, brandList, battery, stock;
 
         $(document).ready(function () {
             var url = '@Url.RouteUrl("website", new {controller = "preset", action = "ajaxOption"})';
@@ -100,6 +101,7 @@
                     productTypeList = response.data.productTypeList;
                     brandList = response.data.brandList;
                     battery = response.data.battery;
+                    stock = response.data.checkStock;
                 }
 
                 dataInit();
@@ -239,6 +241,11 @@
                             return setNumberType('weight', row.id, data, row.weightType);
                         }
                     }, {
+                        data: "checkStock", render: function (data, type, row, meta) {
+                            var id = 'stock-' + row.id;
+                            return "<select class='form-control' id='" + id + "'><option value=''>不選擇</option>" + setSelectOption(stock, !isEmpty(data) ? (data ? '1' : '0') : null) + "</select>";
+                        }
+                    }, {
                         data: "action", orderable: false, render: function (data, type, row, meta) {
                             var saveBtn = "<button class='btn btn-default' onclick='saveData(" + row.id + ");'><i class='fa fa-save'></i><span class='hidden-mobile'> Save</span></button>";
                             var deleteBtn = "<button class='btn btn-danger' onclick='deleteData(" + row.id + ");'><i class='glyphicon glyphicon-trash'></i><span class='hidden-mobile'> Delete</span></button>";
@@ -369,7 +376,8 @@
                 Weight: checkValue($('#weight-' + id).val(), true),
                 WeightType: checkValue($('#weightType-' + id).val(), true),
                 WarehouseID: checkValue($('.DTFC_Cloned #warehouse-' + id).val(), true),
-                MethodID: checkValue($('.DTFC_Cloned #methodID-' + id).val(), true)
+                MethodID: checkValue($('.DTFC_Cloned #methodID-' + id).val(), true),
+                CheckSkuStock: !isEmpty($('#stock-' + id).val()) ? $('#stock-' + id).val() == '1' : null
             };
             ajaxData(url, 'post', data).done(function (response) {
                 if (response['status']) {
