@@ -55,7 +55,7 @@ namespace QDLogistics.Commons
 
             MyHelp.Log("Orders", Order.OrderID, string.Format("訂單下載 - 預設訂單【{0}】資料", Order.OrderID), Session);
 
-            foreach (Packages package in Order.Packages.Where(p => p.IsEnable.Value).ToList())
+            foreach (Packages package in Order.Packages.Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.訂單管理)).ToList())
             {
                 bool needDispatch = false;
                 decimal subTotal = 0;
@@ -147,7 +147,7 @@ namespace QDLogistics.Commons
                                 break;
                         }
 
-                        needDispatch = needDispatch || preset.IsDispatch;
+                        needDispatch = preset.IsDispatch;
                     }
                 }
 
@@ -343,7 +343,7 @@ namespace QDLogistics.Commons
                     foreach(Items item in itemList)
                     {
                         stock.SetItemData(item.ID);
-                        checkStock &= (stock.CheckInventory() > 0);
+                        checkStock &= (stock.CheckInventory() >= item.Qty);
                     }
                 }
             }

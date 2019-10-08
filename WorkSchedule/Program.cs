@@ -59,9 +59,14 @@ namespace WorkSchedule
                 RequestJob(PO_Host, "Test/DoSkuSync", null);
             }
 
-            if(hour.Equals(19) && min.Equals(0))
+            if((hour.Equals(19) || hour.Equals(23)) && min.Equals(0))
             {
                 RequestJob(PO_Host, "Ajax/WarehouseInventory", null);
+            }
+
+            if ((hour.Equals(7) || hour.Equals(19)) && min.Equals(30))
+            {
+                RequestJob(Host, "Order/CheckWinitOrder", null);
             }
         }
 

@@ -22,6 +22,7 @@ using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Validation;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Hosting;
@@ -1305,6 +1306,193 @@ namespace QDLogistics.Controllers
             return Json(result, JsonRequestBehavior.AllowGet);
         }
 
+        public ActionResult CheckWinitOrder()
+        {
+            AjaxResult result = new AjaxResult();
+
+            try
+            {
+                AjaxResult SummaryResult;
+                var OrderIDs = db.Orders.Where(o => o.StatusCode.Value.Equals((int)OrderStatusCode.InProcess) && o.PaymentStatus.Value.Equals((int)OrderPaymentStatus.Charged) && o.CompanyID.Value.Equals(163) && o.OrderSource.Value.Equals(1))
+                    .Join(db.Packages.Where(p => p.IsEnable.Value && p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.訂單管理)), o => o.OrderID, p => p.OrderID.Value, (order, package) => order)
+                    .Join(db.Addresses.Where(a => a.IsEnable.Value && a.CountryCode.Equals("US")), o => o.ShippingAddress.Value, a => a.Id, (o, a) => o.OrderID).Distinct().ToArray();
+
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://internal.qd.com.tw:8080/Ajax/GetOrderSummary");
+                request.ContentType = "application/json";
+                request.Method = "post";
+                request.ProtocolVersion = HttpVersion.Version10;
+
+                using (StreamWriter streamWriter = new StreamWriter(request.GetRequestStream()))
+                {
+                    var json = JsonConvert.SerializeObject(OrderIDs);
+                    streamWriter.Write(json);
+                    streamWriter.Flush();
+                }
+
+                HttpWebResponse httpResponse = (HttpWebResponse)request.GetResponse();
+                using (StreamReader streamReader = new StreamReader(httpResponse.GetResponseStream()))
+                {
+                    SummaryResult = JsonConvert.DeserializeObject<AjaxResult>(streamReader.ReadToEnd());
+                }
+
+                if (!SummaryResult.status) throw new Exception(SummaryResult.message);
+
+                // { ID, SCID, ShippingTime, DispatchTime, RushOrder }
+                List<dynamic> OrderSummary = JsonConvert.DeserializeObject<List<dynamic>>(SummaryResult.data.ToString());
+                OrderSummary = OrderSummary.OrderByDescending(o => o.RushOrder).OrderBy(o => o.DispatchTime).OrderBy(o => o.ShippingTime + o.DispatchTime).ToList();
+
+                using (OrderPreset preset = new OrderPreset(Session))
+                {
+                    foreach (int OrderID in OrderSummary.Select(o => o.SCID))
+                    {
+                        preset.Init(OrderID);
+                        preset.Save();
+
+                        foreach (var package in db.Packages.Where(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID)))
+                        {
+                            if (package.Method.Carriers.CarrierAPI.Type.Value.Equals((byte)EnumData.CarrierType.Winit))
+                            {
+                                Dispatch(package.ID);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MyHelp.Log("Orders", null, ex.InnerException?.Message ?? ex.Message, Session);
+                result.SetError(ex.InnerException?.Message ?? ex.Message);
+            }
+
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
+
+        private void Dispatch(int PackageID)
+        {
+            var package = db.Packages.Find(PackageID);
+            var order = package.Orders;
+            if (order.StatusCode.Value.Equals((int)OrderStatusCode.InProcess) && order.PaymentStatus.Equals((int)OrderPaymentStatus.Charged))
+            {
+                ThreadTask threadTask = new ThreadTask(string.Format("訂單下載 - 自動提交訂單【{0}】至待出貨區", order.OrderID), Session);
+                MyHelp.Log("Orders", package.ID, string.Format("訂單下載 - 自動提交訂單【{0}】至待出貨區", order.OrderID), Session);
+
+                package.ProcessStatus = (int)EnumData.ProcessStatus.鎖定中;
+                db.SaveChanges();
+
+                try
+                {
+                    SC_WebService SCWS = new SC_WebService("tim@weypro.com", "timfromweypro");
+
+                    if (!SCWS.Is_login) throw new Exception("SC is not login");
+
+                    OrderStateInfo SC_orderInfo = SCWS.Get_OrderStatus(order.OrderID);
+
+                    if (order.PaymentStatus.Value.Equals((int)SC_orderInfo.PaymentStatus))
+                    {
+                        ShipProcess shipProcess = new ShipProcess(SCWS);
+
+                        MyHelp.Log("Orders", package.ID, "提交至待出貨區", Session);
+
+                        /***** 上傳Item出貨倉 *****/
+                        var SC_order = SCWS.Get_OrderData(order.OrderID).Order;
+                        var SC_items = SC_order.Items.Where(i => i.PackageID.Equals(package.ID)).ToArray();
+                        foreach (var item in SC_items)
+                        {
+                            if (!db.Skus.AsNoTracking().Any(s => s.Sku.Equals(item.ProductID))) throw new Exception(string.Format("系統尚未有品號 {0} 資料!", item.ProductID));
+
+                            item.ShipFromWareHouseID = package.Items.First(i => i.IsEnable == true && i.ID == item.ID).ShipFromWarehouseID.Value;
+                            SCWS.Update_OrderItem(SC_items.First(i => i.ID.Equals(item.ID)));
+                        }
+                        MyHelp.Log("Orders", package.ID, "更新訂單包裹的出貨倉", Session);
+
+                        /***** 更新客戶地址 *****/
+                        var address = SC_order.ShippingAddress;
+                        DataProcess.SetAddressData(order.Addresses, address, SC_order.BillingAddress);
+
+                        /***** 檢查運送國家 *****/
+                        if (!string.IsNullOrEmpty(package.Method.CountryData))
+                        {
+                            var countryData = JsonConvert.DeserializeObject<Dictionary<string, bool>>(package.Method.CountryData);
+                            if (!countryData.ContainsKey(order.Addresses.CountryCode.ToUpper()))
+                            {
+                                throw new Exception(string.Format("訂單【{0}】國家名稱不合，請重新確認", order.OrderID));
+                            }
+
+                            if (!countryData[order.Addresses.CountryCode.ToUpper()])
+                            {
+                                throw new Exception(string.Format("訂單【{0}】不可寄送至國家{1}", order.OrderID, order.Addresses.CountryName));
+                            }
+                        }
+
+                        shipProcess.Init(package);
+                        var result = shipProcess.Dispatch();
+
+                        if (result.Status)
+                        {
+                            MyHelp.Log("Orders", order.OrderID, "訂單提交完成", Session);
+
+                            if (package.Items.First(i => i.IsEnable.Value).ShipWarehouses.Name.Equals("TWN"))
+                            {
+                                int[] itemIDs = package.Items.Where(i => i.IsEnable.Value).Select(i => i.ID).ToArray();
+                                List<PickProduct> pickList = db.PickProduct.Where(p => itemIDs.Contains(p.ItemID.Value)).ToList();
+                                foreach (Items item in package.Items.Where(i => i.IsEnable == true))
+                                {
+                                    PickProduct pick = pickList.FirstOrDefault(pk => pk.ItemID == item.ID);
+
+                                    if (pick != null)
+                                    {
+                                        pick.IsEnable = true;
+                                        pick.IsPicked = false;
+                                        pick.IsMail = false;
+                                        pick.QtyPicked = 0;
+                                        DataProcess.setPickProductData(pick, item);
+                                    }
+                                    else
+                                    {
+                                        pick = new PickProduct() { IsEnable = true };
+                                        DataProcess.setPickProductData(pick, item);
+                                        db.PickProduct.Add(pick);
+                                    }
+                                }
+                            }
+
+                            package.ProcessStatus = (int)EnumData.ProcessStatus.待出貨;
+                        }
+                        else
+                        {
+                            throw new Exception(result.Message);
+                        }
+                    }
+                    else
+                    {
+                        order.StatusCode = (int)OrderStatusCode.OnHold;
+                        throw new Exception("Payment status is different");
+                    }
+
+                    db.SaveChanges();
+                }
+                catch (Exception e)
+                {
+                    if (!string.IsNullOrEmpty(package.WinitNo))
+                    {
+                        Winit_API winit = new Winit_API();
+                        winit.CancelOutboundOrder(package.WinitNo);
+                        if (winit.ResultError != null)
+                        {
+                            MyHelp.Log("Orders", package.ID, string.Format("Winit：訂單【{0}】- {1} 提單取消失敗，{2}", order.OrderID, package.WinitNo, winit.ResultError.msg), Session);
+                        }
+                        package.WinitNo = null;
+                    }
+
+                    package.ProcessStatus = (int)EnumData.ProcessStatus.訂單管理;
+                    db.SaveChanges();
+
+                    MyHelp.Log("Orders", package.ID, string.Format("訂單【{0}】提交失敗", order.OrderID), Session);
+                }
+            }
+        }
+
         public class AjaxResult
         {
             public bool status { get; set; }
@@ -1316,6 +1504,12 @@ namespace QDLogistics.Controllers
                 this.status = true;
                 this.message = null;
                 this.data = null;
+            }
+
+            public void SetError(string msg)
+            {
+                status = false;
+                message = msg;
             }
         }
     }

@@ -839,6 +839,7 @@ namespace QDLogistics.Controllers
                     RMAID = order.Packages.FirstOrDefault(p => p.IsEnable.Value && p.RMAId.HasValue)?.RMAId,
                     BuyerNote = order.Instructions,
                     Comment = string.Join("\r\n", order.Packages.Where(p => p.IsEnable.Value && !string.IsNullOrEmpty(p.Comment)).Select(p => p.Comment)),
+                    ShippingTime = order.Services?.ShippingTime ?? 0,
 
                     Payments = order.Payments.Where(p => p.IsEnable.Value).Select(p => new
                     {

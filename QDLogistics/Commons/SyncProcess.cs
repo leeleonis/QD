@@ -174,6 +174,7 @@ namespace QDLogistics.Commons
                                 try
                                 {
                                     Stock.RecordOrderSkuStatement(OrderID, "New");
+                                    Stock.OrderSyncPush(OrderID);
                                 }
                                 catch (Exception e)
                                 {

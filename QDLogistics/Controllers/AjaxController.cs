@@ -512,6 +512,10 @@ namespace QDLogistics.Controllers
                                                 case "CF":
                                                 case "CFI":
                                                     winit.CancelOutboundOrder(package.WinitNo);
+                                                    if(winit.ResultError != null)
+                                                    {
+                                                        throw new Exception(string.Format("Winit：訂單【{0}】- {1} 提單取消失敗，{2}", package.OrderID, package.WinitNo, winit.ResultError.msg));
+                                                    }
                                                     break;
                                                 case "PKI":
                                                 case "PKC":

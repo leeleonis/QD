@@ -270,9 +270,9 @@ namespace QDLogistics.Controllers
         {
             var package = db.Packages.First(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID));
             Winit_API winitAPI = new Winit_API();
-            var data2 = winitAPI.GetOutboundOrderData(package.WinitNo);
-            TrackOrder track = new TrackOrder(package);
-            var result = track.Track(package.TrackingNumber);
+            var data2 = winitAPI.CancelOutboundOrder("WO2110106267");
+            //TrackOrder track = new TrackOrder(package);
+            //var result = track.Track(package.TrackingNumber);
             //var result2 = stock.WinitRecordShippedOrder(package.ID, data2.packageList.SelectMany(p => p.merchandiseList).ToList());
         }
 

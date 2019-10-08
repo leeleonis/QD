@@ -199,6 +199,11 @@ namespace QDLogistics.Commons
             return response.data.Value;
         }
 
+        public void OrderSyncPush(int OrderID)
+        {
+            Request<object>("Ajax/SyncOrderData?OrderID=" + OrderID, "get");
+        }
+
         private Response<T> Request<T>(string url, string method = "post", object data = null) where T : new()
         {
             Response<T> response = new Response<T>();
