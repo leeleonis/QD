@@ -507,7 +507,7 @@ namespace QDLogistics.Controllers
                                         {
                                             Winit_API winit = new Winit_API();
                                             var winitOrder = winit.GetOutboundOrderData(package.WinitNo);
-                                            switch (winitOrder.state)
+                                            switch (winitOrder.status)
                                             {
                                                 case "CF":
                                                 case "CFI":

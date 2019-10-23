@@ -165,6 +165,7 @@
                         type: 'post',
                         data: { packageIDs: packageIDs }
                     }).done(function () {
+                        alert('已成功執行!');
                         $dataGrid.datagrid("clearChecked");
                         $dataGrid.datagrid('reload')
                     });

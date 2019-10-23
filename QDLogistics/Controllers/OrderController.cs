@@ -1339,7 +1339,7 @@ namespace QDLogistics.Controllers
 
                 // { ID, SCID, ShippingTime, DispatchTime, RushOrder }
                 List<dynamic> OrderSummary = JsonConvert.DeserializeObject<List<dynamic>>(SummaryResult.data.ToString());
-                OrderSummary = OrderSummary.OrderByDescending(o => o.RushOrder).OrderBy(o => o.DispatchTime).OrderBy(o => o.ShippingTime + o.DispatchTime).ToList();
+                OrderSummary = OrderSummary.OrderByDescending(o => (int)o.RushOrder).OrderBy(o => (int)o.DispatchTime).OrderBy(o => ((int)o.ShippingTime + (int)o.DispatchTime)).ToList();
 
                 using (OrderPreset preset = new OrderPreset(Session))
                 {
@@ -1360,7 +1360,7 @@ namespace QDLogistics.Controllers
             }
             catch (Exception ex)
             {
-                MyHelp.Log("Orders", null, ex.InnerException?.Message ?? ex.Message, Session);
+                MyHelp.Log("WinitOrders", null, ex.InnerException?.Message ?? ex.Message, Session);
                 result.SetError(ex.InnerException?.Message ?? ex.Message);
             }
 

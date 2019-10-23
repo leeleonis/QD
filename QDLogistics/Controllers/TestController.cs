@@ -20,6 +20,7 @@ using QDLogistics.Models.Repositiry;
 using QDLogistics.OrderService;
 using SellerCloud_WebService;
 using Newtonsoft.Json;
+using System.Web;
 
 namespace QDLogistics.Controllers
 {
@@ -270,7 +271,7 @@ namespace QDLogistics.Controllers
         {
             var package = db.Packages.First(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID));
             Winit_API winitAPI = new Winit_API();
-            var data2 = winitAPI.CancelOutboundOrder("WO2110106267");
+            var data2 = winitAPI.CancelOutboundOrder("WO2145568602");
             //TrackOrder track = new TrackOrder(package);
             //var result = track.Track(package.TrackingNumber);
             //var result2 = stock.WinitRecordShippedOrder(package.ID, data2.packageList.SelectMany(p => p.merchandiseList).ToList());
@@ -685,6 +686,12 @@ namespace QDLogistics.Controllers
                     amount = stock.CheckInventory();
                 }
             }
+        }
+
+        public void UpdatePurchaseOrder(int PackageID)
+        {
+            SyncProcess Sync = new SyncProcess(Session);
+            Sync.Update_PurchaseOrder(PackageID);
         }
     }
 }

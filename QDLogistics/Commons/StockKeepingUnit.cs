@@ -201,7 +201,11 @@ namespace QDLogistics.Commons
 
         public void OrderSyncPush(int OrderID)
         {
-            Request<object>("Ajax/SyncOrderData?OrderID=" + OrderID, "get");
+            MyHelp.Log("SkuStatement", OrderID, "Sync Push");
+
+            Response<object> response = Request<object>("Ajax/SyncOrderData?OrderID=" + OrderID, "get");
+
+            if (!response.status) throw new Exception("PO Error：" + response.message);
         }
 
         private Response<T> Request<T>(string url, string method = "post", object data = null) where T : new()
@@ -221,12 +225,12 @@ namespace QDLogistics.Commons
                     streamWriter.Write(json);
                     streamWriter.Flush();
                 }
+            }
 
-                HttpWebResponse httpResponse = (HttpWebResponse)request.GetResponse();
-                using (StreamReader streamReader = new StreamReader(httpResponse.GetResponseStream()))
-                {
-                    response = JsonConvert.DeserializeObject<Response<T>>(streamReader.ReadToEnd());
-                }
+            HttpWebResponse httpResponse = (HttpWebResponse)request.GetResponse();
+            using (StreamReader streamReader = new StreamReader(httpResponse.GetResponseStream()))
+            {
+                response = JsonConvert.DeserializeObject<Response<T>>(streamReader.ReadToEnd());
             }
 
             return response;
@@ -249,12 +253,12 @@ namespace QDLogistics.Commons
                     streamWriter.Write(json);
                     streamWriter.Flush();
                 }
+            }
 
-                HttpWebResponse httpResponse = (HttpWebResponse)request.GetResponse();
-                using (StreamReader streamReader = new StreamReader(httpResponse.GetResponseStream()))
-                {
-                    response = JsonConvert.DeserializeObject<T>(streamReader.ReadToEnd());
-                }
+            HttpWebResponse httpResponse = (HttpWebResponse)request.GetResponse();
+            using (StreamReader streamReader = new StreamReader(httpResponse.GetResponseStream()))
+            {
+                response = JsonConvert.DeserializeObject<T>(streamReader.ReadToEnd());
             }
 
             return response;
