@@ -551,7 +551,7 @@ namespace QDLogistics.Controllers
             var result = ship.Dispatch();
         }
 
-        private void SkuData_Test(int OrderID)
+        public void SkuData_Test(int OrderID)
         {
             try
             {
@@ -627,7 +627,7 @@ namespace QDLogistics.Controllers
             var WinitShippingMethod = db.CarrierAPI.AsNoTracking().Where(api => api.IsEnable && api.Type.Value.Equals((byte)EnumData.CarrierType.Winit))
                 .SelectMany(api => api.Carriers.Where(c => c.IsEnable)).SelectMany(c => c.ShippingMethod.Where(s => s.IsEnable)).Select(s => s.ID).Distinct().ToArray();
             var OrderFilter = db.Orders.Where(o => o.TimeOfOrder.Value >= dateAgo);
-            var PackageFilter = db.Packages.Where(p => p.IsEnable.Value && !p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.訂單管理) && !string.IsNullOrEmpty(p.WinitNo) && WinitShippingMethod.Contains(p.ShippingMethod.Value));
+            var PackageFilter = db.Packages.Where(p => p.ID.Equals(828842) && p.IsEnable.Value && !p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.訂單管理) && !string.IsNullOrEmpty(p.WinitNo) && WinitShippingMethod.Contains(p.ShippingMethod.Value));
             var dataList = OrderFilter.Join(PackageFilter, o => o.OrderID, p => p.OrderID.Value, (order, package) => new { order, package }).ToList();
 
             foreach (var data in dataList)
@@ -680,7 +680,7 @@ namespace QDLogistics.Controllers
             using (var stock = new StockKeepingUnit())
             {
                 var amount = 0;
-                foreach(var item in db.Items.Where(i => i.IsEnable.Value && i.OrderID.Value.Equals(OrderID)))
+                foreach (var item in db.Items.Where(i => i.IsEnable.Value && i.OrderID.Value.Equals(OrderID)))
                 {
                     stock.SetItemData(item.ID);
                     amount = stock.CheckInventory();

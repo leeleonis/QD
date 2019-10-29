@@ -207,7 +207,7 @@ namespace QDLogistics.Controllers
                 Dictionary<string, Skus> SkuList = db.Skus.AsNoTracking().Where(s => s.IsEnable.Value && ProductIDs.Contains(s.Sku)).ToDictionary(s => s.Sku, s => s);
                 Dictionary<int, string> MethodList = db.ShippingMethod.AsNoTracking().Where(m => m.IsEnable).ToDictionary(m => m.ID, m => m.Name);
 
-                List<StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
+                Dictionary<string, StockKeepingUnit.SkuData> SkuData;
                 using (StockKeepingUnit stock = new StockKeepingUnit())
                 {
                     SkuData = stock.GetSkuData(ProductIDs);
@@ -220,7 +220,7 @@ namespace QDLogistics.Controllers
                     UPC = SkuList[p.item.ProductID].UPC,
                     SkuList[p.item.ProductID].ProductName,
                     Qty = p.item.Qty,
-                    Weight = (SkuData.Any(s => s.Sku.Equals(p.item.ProductID)) ? SkuData.First(s => s.Sku.Equals(p.item.ProductID)).Weight : SkuList[p.item.ProductID].ShippingWeight),
+                    Weight = SkuData[p.item.ProductID]?.Weight ?? SkuList[p.item.ProductID].ShippingWeight,
                     ShippingMethod = MethodList[p.package.ShippingMethod.Value],
                     Country = p.order.ShippingCountry,
                     Export = Enum.GetName(typeof(EnumData.Export), p.package.Export),

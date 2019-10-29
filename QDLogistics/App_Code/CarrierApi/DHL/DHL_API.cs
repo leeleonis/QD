@@ -186,10 +186,10 @@ namespace CarrierApi.DHL
             decimal weight = shipment.Shipper.CountryCode.Equals("US") ? 453 : 1000;
             WeightUnit weightUnit = shipment.Shipper.CountryCode.Equals("US") ? WeightUnit.L : WeightUnit.K;
 
-            List<StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
+            Dictionary<string, StockKeepingUnit.SkuData> SkuData;
             using (StockKeepingUnit stock = new StockKeepingUnit())
             {
-                var IDs = package.Items.Where(i => i.IsEnable.Value).Select(i => i.ProductID).ToArray();
+                var IDs = package.Items.Where(i => i.IsEnable.Value).Select(i => i.ProductID).Distinct().ToArray();
                 SkuData = stock.GetSkuData(IDs);
             }
 
@@ -198,7 +198,7 @@ namespace CarrierApi.DHL
             {
                 PackageType = PackageType.YP,
                 PackageTypeSpecified = true,
-                Weight = package.Items.Sum(i => i.Qty.Value * ((decimal)(SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight) / weight)),
+                Weight = package.Items.Sum(i => i.Qty.Value * ((decimal)(SkuData[i.ProductID]?.Weight ?? i.Skus.ShippingWeight) / weight)),
                 WeightSpecified = true,
                 PieceContents = package.Items.First(i => i.IsEnable.Equals(true)).Skus.ProductType.ProductTypeName
                 });
@@ -262,8 +262,8 @@ namespace CarrierApi.DHL
                     QuantityUnit = QuantityUnit.PCS,
                     Description = i.Skus.ProductType.ProductTypeName,
                     Value = (float)i.DeclaredValue,
-                    Weight = new ExportLineItemWeight() { Weight = (decimal)(SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight) / weight, WeightUnit = weightUnit },
-                    GrossWeight = new ExportLineItemGrossWeight() { Weight = (decimal)(SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight) / weight, WeightSpecified = true, WeightUnit = weightUnit, WeightUnitSpecified = true },
+                    Weight = new ExportLineItemWeight() { Weight = (decimal)(SkuData[i.ProductID]?.Weight ?? i.Skus.ShippingWeight) / weight, WeightUnit = weightUnit },
+                    GrossWeight = new ExportLineItemGrossWeight() { Weight = (decimal)(SkuData[i.ProductID]?.Weight ?? i.Skus.ShippingWeight) / weight, WeightSpecified = true, WeightUnit = weightUnit, WeightUnitSpecified = true },
                     ManufactureCountryCode = i.Skus.Origin
                 }).ToArray()
             };
@@ -336,8 +336,8 @@ namespace CarrierApi.DHL
             WeightUnit weightUnit = shipment.Shipper.CountryCode.Equals("US") ? WeightUnit.L : WeightUnit.K;
 
             List<Items> itemList = box.Packages.Where(p => p.IsEnable.Value).SelectMany(p => p.Items.Where(i => i.IsEnable.Value)).ToList();
-            
-            List<StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
+
+            Dictionary<string, StockKeepingUnit.SkuData> SkuData;
             using (StockKeepingUnit stock = new StockKeepingUnit())
             {
                 var IDs = itemList.Where(i => i.IsEnable.Value).Select(i => i.ProductID).Distinct().ToArray();
@@ -349,7 +349,7 @@ namespace CarrierApi.DHL
             {
                 PackageType = PackageType.YP,
                 PackageTypeSpecified = true,
-                Weight = itemList.Sum(i => i.Qty.Value * ((decimal)(SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight) / weight)),
+                Weight = itemList.Sum(i => i.Qty.Value * ((decimal)(SkuData[i.ProductID]?.Weight ?? i.Skus.ShippingWeight) / weight)),
                 WeightSpecified = true,
                 PieceContents = itemList.First().Skus.ProductType.ProductTypeName
             });
@@ -412,8 +412,8 @@ namespace CarrierApi.DHL
                     QuantityUnit = QuantityUnit.PCS,
                     Description = i.Skus.ProductType.ProductTypeName + " - " + i.Skus.ProductName,
                     Value = (float)i.UnitPrice.Value,
-                    Weight = new ExportLineItemWeight() { Weight = (decimal)(SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight) / weight, WeightUnit = weightUnit },
-                    GrossWeight = new ExportLineItemGrossWeight() { Weight = (decimal)(SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight) / weight, WeightSpecified = true, WeightUnit = weightUnit, WeightUnitSpecified = true },
+                    Weight = new ExportLineItemWeight() { Weight = (decimal)(SkuData[i.ProductID]?.Weight ?? i.Skus.ShippingWeight) / weight, WeightUnit = weightUnit },
+                    GrossWeight = new ExportLineItemGrossWeight() { Weight = (decimal)(SkuData[i.ProductID]?.Weight ?? i.Skus.ShippingWeight) / weight, WeightSpecified = true, WeightUnit = weightUnit, WeightUnitSpecified = true },
                     ManufactureCountryCode = i.Skus.Origin
                 }).ToArray()
             };

@@ -309,12 +309,12 @@ namespace QDLogistics.Commons
             List<Skus> skuList = itemList.Select(i => i.Skus).ToList();
 
             int zipCode;
-            List<StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
+            Dictionary<string, StockKeepingUnit.SkuData> SkuData = new Dictionary<string, StockKeepingUnit.SkuData>();
             if (!preset.Weight.Equals(0))
             {
                 using (StockKeepingUnit stock = new StockKeepingUnit())
                 {
-                    var IDs = itemList.Select(i => i.ProductID).ToArray();
+                    var IDs = itemList.Select(i => i.ProductID).Distinct().ToArray();
                     SkuData = stock.GetSkuData(IDs);
                 }
             }
@@ -333,7 +333,7 @@ namespace QDLogistics.Commons
             bool productType = preset.ProductType.Equals(0) || skuList.Any(s => s.ProductTypeID.Value.Equals(preset.ProductType));
             bool brand = preset.ProductType.Equals(0) || skuList.Any(s => s.Brand.Value.Equals(preset.Brand));
             bool battery = !preset.Battery.HasValue || skuList.Any(s => s.Battery.Value.Equals(preset.Battery.Value));
-            bool weight = preset.Weight.Equals(0) || Compare(preset.WeightType, preset.Weight, itemList.Sum(i => i.Qty * (SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight)).Value);
+            bool weight = preset.Weight.Equals(0) || Compare(preset.WeightType, preset.Weight, itemList.Sum(i => i.Qty * (SkuData.ContainsKey(i.ProductID) ? SkuData[i.ProductID].Weight : i.Skus.ShippingWeight)).Value);
 
             bool checkStock = !preset.CheckSkuStock.HasValue;
             if (!checkStock)

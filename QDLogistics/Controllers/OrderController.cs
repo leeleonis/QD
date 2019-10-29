@@ -559,6 +559,7 @@ namespace QDLogistics.Controllers
                             var PackageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && !p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.訂單管理) && !string.IsNullOrEmpty(p.WinitNo) && !p.DeliveryStatus.Value.Equals((int)DeliveryStatusType.Delivered) && WinitShippingMethod.Contains(p.ShippingMethod.Value));
                             var dataList = OrderFilter.Join(PackageFilter, o => o.OrderID, p => p.OrderID.Value, (order, package) => new { order, package }).ToList();
 
+                            dataList = dataList.Where(d => d.order.OrderID.Equals(5709259)).ToList();
                             if (dataList.Any())
                             {
                                 TrackResult result;
@@ -590,7 +591,8 @@ namespace QDLogistics.Controllers
                                             }
                                         }
 
-                                        if (!db.SerialNumbers.Any(s => s.OrderID.Value.Equals(data.order.OrderID)))
+                                        var itemIDs = data.package.Items.Select(i => i.ID).ToArray();
+                                        if (!db.SerialNumbers.Any(s => s.OrderID.Value.Equals(data.order.OrderID) && itemIDs.Contains(s.OrderItemID)))
                                         {
                                             var merchandiseList = trackData.packageList.SelectMany(p => p.merchandiseList).ToList();
 
@@ -1152,7 +1154,7 @@ namespace QDLogistics.Controllers
                                                     decimal declaredTotal = package.DeclaredTotal;
                                                     List<Items> itemList = package.Items.Where(i => i.IsEnable.Value).ToList();
 
-                                                    List<StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
+                                                    Dictionary<string, StockKeepingUnit.SkuData> SkuData;
                                                     using (StockKeepingUnit stock = new StockKeepingUnit())
                                                     {
                                                         var IDs = itemList.Where(i => i.IsEnable.Value).Select(i => i.ProductID).Distinct().ToArray();
@@ -1173,10 +1175,10 @@ namespace QDLogistics.Controllers
                                                             FedEx_sheet.GetRow(rowIndex).GetCell(1).SetCellValue(country.OriginName);
                                                             string productName = item.Skus.ProductType.ProductTypeName + " - " + item.Skus.ProductName;
                                                             FedEx_sheet.GetRow(rowIndex).GetCell(4).SetCellValue(productName);
-                                                            FedEx_sheet.GetRow(rowIndex).GetCell(5).SetCellValue((SkuData.Any(s => s.Sku.Equals(item.ProductID)) ? SkuData.First(s => s.Sku.Equals(item.ProductID)).HSCode : item.Skus.ProductType.HSCode));
+                                                            FedEx_sheet.GetRow(rowIndex).GetCell(5).SetCellValue((SkuData.ContainsKey(item.ProductID) ? SkuData[item.ProductID].HSCode : item.Skus.ProductType.HSCode));
                                                             FedEx_sheet.GetRow(rowIndex).GetCell(8).SetCellValue(item.Qty.Value);
                                                             FedEx_sheet.GetRow(rowIndex).GetCell(9).SetCellValue("pieces");
-                                                            FedEx_sheet.GetRow(rowIndex).GetCell(10).SetCellValue(item.Qty * ((double)(SkuData.Any(s => s.Sku.Equals(item.ProductID)) ? SkuData.First(s => s.Sku.Equals(item.ProductID)).Weight : item.Skus.ShippingWeight) / 1000) + "kg");
+                                                            FedEx_sheet.GetRow(rowIndex).GetCell(10).SetCellValue(item.Qty * ((double)(SkuData.ContainsKey(item.ProductID) ? SkuData[item.ProductID].Weight : item.Skus.ShippingWeight) / 1000) + "kg");
                                                             FedEx_sheet.GetRow(rowIndex).GetCell(11).SetCellValue(item.DeclaredValue.ToString("N"));
                                                             FedEx_sheet.GetRow(rowIndex).GetCell(16).SetCellValue((item.DeclaredValue * item.Qty.Value).ToString("N"));
                                                             FedEx_sheet.GetRow(rowIndex).HeightInPoints = (productName.Length / 30 + 1) * FedEx_sheet.DefaultRowHeight / 20;

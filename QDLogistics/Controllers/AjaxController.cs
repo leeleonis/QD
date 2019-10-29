@@ -632,10 +632,10 @@ namespace QDLogistics.Controllers
             var productList = ProductList.Select(p => p.pick.SetTracking(p.package.TrackingNumber))
                 .GroupBy(p => p.ProductID).ToDictionary(group => group.Key.ToString(), group => group.ToDictionary(p => p.ItemID.ToString()));
 
-            List<StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
+            Dictionary<string, StockKeepingUnit.SkuData> SkuData;
             using (StockKeepingUnit stock = new StockKeepingUnit())
             {
-                SkuData = stock.GetSkuData(productIDs);
+                SkuData = stock.GetSkuData(productIDs.Select(p => p).ToArray());
             }
 
             var pickupCompare = DateTime.UtcNow.AddHours(-12);
@@ -656,7 +656,7 @@ namespace QDLogistics.Controllers
 
             var fileList = ProductList.Select(p => p.package).Distinct().ToDictionary(p => p.ID.ToString(), p => getFileData(p));
 
-            result.data = new { productList, groupList, serialList, fileList, SkuData };
+            result.data = new { productList, groupList, serialList, fileList, SkuData = SkuData.Select(s => s.Value).ToList() };
 
             return Json(result, JsonRequestBehavior.AllowGet);
         }

@@ -71,10 +71,10 @@ namespace CarrierApi.FedEx
                 }
             };
 
-            List<StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
+            Dictionary<string, StockKeepingUnit.SkuData> SkuData;
             using (StockKeepingUnit stock = new StockKeepingUnit())
             {
-                var IDs = package.Items.Where(i => i.IsEnable.Value).Select(i => i.ProductID).ToArray();
+                var IDs = package.Items.Where(i => i.IsEnable.Value).Select(i => i.ProductID).Distinct().ToArray();
                 SkuData = stock.GetSkuData(IDs);
             }
 
@@ -88,7 +88,7 @@ namespace CarrierApi.FedEx
                 Weight = new QDLogistics.FedExShipService.Weight()
                 {
                     Units = address.CountryCode.Equals("US") ? QDLogistics.FedExShipService.WeightUnits.LB : QDLogistics.FedExShipService.WeightUnits.KG,
-                    Value = package.Items.Where(i => i.IsEnable.Equals(true)).Sum(i => i.Qty.Value * ((decimal)(SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight) / (request.RequestedShipment.Shipper.Address.CountryCode.Equals("US") ? 453 : 1000)))
+                    Value = package.Items.Where(i => i.IsEnable.Equals(true)).Sum(i => i.Qty.Value * ((decimal)(SkuData[i.ProductID]?.Weight ?? i.Skus.ShippingWeight) / (request.RequestedShipment.Shipper.Address.CountryCode.Equals("US") ? 453 : 1000)))
                 },
                 Quantity = 1,
                 QuantityUnits = "EA",
@@ -214,7 +214,7 @@ namespace CarrierApi.FedEx
             var itemLineList = new List<RequestedPackageLineItem>();
             QDLogistics.FedExShipService.Money customsValue;
 
-            List<StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
+            Dictionary<string, StockKeepingUnit.SkuData> SkuData;
             using (StockKeepingUnit stock = new StockKeepingUnit())
             {
                 var allPackages = boxList.SelectMany(b => b.Packages.Where(p => p.IsEnable.Value)).ToList();
@@ -235,7 +235,7 @@ namespace CarrierApi.FedEx
                     Weight = new QDLogistics.FedExShipService.Weight()
                     {
                         Units = request.RequestedShipment.Shipper.Address.CountryCode.Equals("US") ? QDLogistics.FedExShipService.WeightUnits.LB : QDLogistics.FedExShipService.WeightUnits.KG,
-                        Value = itemList.Sum(i => i.Qty.Value * ((decimal)(SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight) / (request.RequestedShipment.Shipper.Address.CountryCode.Equals("US") ? 453 : 1000)))
+                        Value = itemList.Sum(i => i.Qty.Value * ((decimal)(SkuData[i.ProductID]?.Weight ?? i.Skus.ShippingWeight) / (request.RequestedShipment.Shipper.Address.CountryCode.Equals("US") ? 453 : 1000)))
                     },
                     Quantity = 1,
                     QuantityUnits = "EA",

@@ -137,11 +137,9 @@ namespace QDLogistics.Commons
             if (!response.status) throw new Exception("PO Error: " + response.message);
         }
 
-        public List<SkuData> GetSkuData(string[] IDs)
+        public Dictionary<string, SkuData> GetSkuData(string[] IDs)
         {
-            IDs = IDs.Select(id => id.Split(splitChar)[0]).ToArray();
-
-            Response<List<SkuData>> response = Request<List<SkuData>>("Ajax/GetSkuData", "post", new { IDs });
+            Response<Dictionary<string, SkuData>> response = Request<Dictionary<string, SkuData>>("Ajax/GetSkuData", "post", new { IDs });
 
             return response.data;
         }
@@ -212,7 +210,7 @@ namespace QDLogistics.Commons
         {
             Response<T> response = new Response<T>();
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://internal.qd.com.tw:8080/" + url);
-            //HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://localhost:49920/" + url);
+            //HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://localhost:59290/" + url);
             request.ContentType = "application/json";
             request.Method = method;
             request.ProtocolVersion = HttpVersion.Version10;

@@ -93,12 +93,6 @@ namespace DirectLineApi.IDS
                 }
 
                 List<Items> itemList = package.Items.Where(i => i.IsEnable.Value).ToList();
-                List<StockKeepingUnit.SkuData> SkuData;
-                using (StockKeepingUnit stock = new StockKeepingUnit())
-                {
-                    var IDs = package.Items.Where(i => i.IsEnable.Value).Select(i => i.ProductID).ToArray();
-                    SkuData = stock.GetSkuData(IDs);
-                }
 
                 var orderData = new OrderData()
                 {

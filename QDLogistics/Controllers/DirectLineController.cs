@@ -414,7 +414,7 @@ namespace QDLogistics.Controllers
                     .GroupJoin(db.Items.AsNoTracking().Where(i => i.IsEnable.Value), p => p.ID, i => i.PackageID, (p, i) => new { package = p, items = i.ToList() })
                     .GroupBy(data => data.package.BoxID).ToDictionary(group => group.Key, group => group.SelectMany(data => data.items).ToList());
 
-                List<StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
+                Dictionary<string, StockKeepingUnit.SkuData> SkuData;
                 using (StockKeepingUnit stock = new StockKeepingUnit())
                 {
                     var IDs = itemGroup.SelectMany(g => g.Value).Select(i => i.ProductID).Distinct().ToArray();
@@ -440,7 +440,7 @@ namespace QDLogistics.Controllers
                     WarehouseFrom = warehouseName.ContainsKey(data.WarehouseFrom) ? warehouseName[data.WarehouseFrom] : "",
                     WarehouseTO = warehouseName.ContainsKey(data.WarehouseTo) ? warehouseName[data.WarehouseTo] : "",
                     BoxQty = data.BoxNo,
-                    TotalWeight = itemGroup.Any(i => i.Key.Equals(data.BoxID)) ? itemGroup[data.BoxID].Sum(i => i.Qty * ((float)(SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight) / 1000)) : 0,
+                    TotalWeight = itemGroup.Any(i => i.Key.Equals(data.BoxID)) ? itemGroup[data.BoxID].Sum(i => i.Qty * ((decimal)(SkuData[i.ProductID]?.Weight ?? i.Skus.ShippingWeight) / 1000)) : 0,
                     data.WITID,
                     data.DirectLine,
                     Method = data.FirstMileMethod,
@@ -483,20 +483,20 @@ namespace QDLogistics.Controllers
 
                 DirectLine directLine = db.DirectLine.Find(results.First().package.Method.DirectLine);
 
-                string[] skuList = results.Select(data => data.item.ProductID).ToArray();
-                List<StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
+                Dictionary<string, StockKeepingUnit.SkuData> SkuData;
                 using (StockKeepingUnit stock = new StockKeepingUnit())
                 {
-                    SkuData = stock.GetSkuData(skuList);
+                    SkuData = stock.GetSkuData(results.Select(data => data.item.ProductID).Distinct().ToArray());
                 }
+
                 dataList.AddRange(results.Select(data => new
                 {
                     PackageID = data.package.ID,
                     ProductID = data.itemCount == 1 ? data.item.ProductID : "Multi",
-                    ProductName = data.itemCount == 1 ? (SkuData.Any(s => s.Sku.Equals(data.item.ProductID)) ? SkuData.First(s => s.Sku.Equals(data.item.ProductID)).Name : data.item.Skus.ProductName) : "Multi",
+                    ProductName = data.itemCount == 1 ? (SkuData[data.item.ProductID]?.Name ?? data.item.Skus.ProductName) : "Multi",
                     SentQty = data.itemCount,
                     ReceivedQty = 0,
-                    Weight = data.items.Sum(i => (SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight) * (float)i.Qty.Value / 1000),
+                    Weight = data.items.Sum(i => (SkuData[i.ProductID]?.Weight ?? i.Skus.ShippingWeight) * (float)i.Qty.Value / 1000),
                     data.order.OrderID,
                     Serial = data.item.SerialNumbers.Any() ? (data.itemCount == 1 ? data.item.SerialNumbers.First().SerialNumber : "Multi") : "找不到",
                     Tracking = data.package.TrackingNumber,
@@ -867,14 +867,13 @@ namespace QDLogistics.Controllers
                 .GroupBy(pick => pick.ProductID).ToDictionary(group => group.Key.ToString(), group => group.ToDictionary(p => p.ItemID.Value.ToString()));
 
             string[] productIDs = productList.Select(p => p.Key).Distinct().ToArray();
-            List<StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
+            Dictionary<string, StockKeepingUnit.SkuData> SkuData;
             using (StockKeepingUnit stock = new StockKeepingUnit())
             {
                 SkuData = stock.GetSkuData(productIDs);
                 foreach (var group in productList)
-                    if (SkuData.Any(s => s.Sku.Equals(group.Key)))
                         foreach (var pick in group.Value.Select(p => p.Value))
-                            pick.SetWeight(SkuData.First(s => s.Sku.Equals(pick.ProductID)).Weight);
+                            pick.SetWeight(SkuData[pick.ProductID].Weight);
             }
             var pickupCompare = DateTime.UtcNow.AddHours(-12);
             var shippedItem = db.PickProduct.AsNoTracking().Where(p => p.IsEnable && productIDs.Contains(p.ProductID) && p.PickUpDate.Value.CompareTo(pickupCompare) >= 0).Select(p => p.ItemID).ToArray();
@@ -917,7 +916,7 @@ namespace QDLogistics.Controllers
                 }
 
                 decimal totalValue = 0, totalWeight = 0;
-                List<StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
+                Dictionary<string, StockKeepingUnit.SkuData> SkuData;
                 List<Packages> packageList = db.Box.Where(b => b.IsEnable && b.MainBox.Equals(box.MainBox)).SelectMany(b => b.Packages.Where(p => p.IsEnable.Value)).ToList();
                 if (packageList.Any())
                 {
@@ -939,20 +938,20 @@ namespace QDLogistics.Controllers
                                 data.pick.OrderID,
                                 data.pick.PackageID,
                                 data.pick.ProductID,
-                                ProductName = SkuData.Any(s => s.Sku.Equals(data.pick.ProductID)) ? SkuData.First(s => s.Sku.Equals(data.pick.ProductID)).Name : data.pick.ProductName,
+                                ProductName = SkuData[data.pick.ProductID]?.Name ?? data.pick.ProductName,
                                 data.item.SerialNumbers.Skip(i).FirstOrDefault()?.SerialNumber,
                                 data.package.TagNo,
                                 data.package.Label.Note,
                                 data.package.Method.InBox,
                                 data.item.DeclaredValue,
-                                Weight = SkuData.Any(s => s.Sku.Equals(data.pick.ProductID)) ? SkuData.First(s => s.Sku.Equals(data.pick.ProductID)).Weight : data.item.Skus.ShippingWeight,
+                                Weight = SkuData[data.pick.ProductID]?.Weight ?? data.item.Skus.ShippingWeight,
                                 IsBattery = data.item.Skus.Battery ?? false,
                             });
                         }
                     }
 
                     totalValue = dataList.Sum(data => data.package.DeclaredTotal);
-                    totalWeight = dataList.Sum(data => (SkuData.Any(s => s.Sku.Equals(data.pick.ProductID)) ? SkuData.First(s => s.Sku.Equals(data.pick.ProductID)).Weight : data.item.Skus.ShippingWeight) * data.pick.Qty.Value);
+                    totalWeight = dataList.Sum(data => (SkuData[data.pick.ProductID]?.Weight ?? data.item.Skus.ShippingWeight) * data.pick.Qty.Value);
                 }
 
                 result.data = new
@@ -2057,7 +2056,7 @@ namespace QDLogistics.Controllers
                                                 }
                                             }
 
-                                            List<StockKeepingUnit.SkuData> SkuData = new List<StockKeepingUnit.SkuData>();
+                                            Dictionary<string, StockKeepingUnit.SkuData> SkuData;
                                             using (StockKeepingUnit stock = new StockKeepingUnit())
                                             {
                                                 var IDs = itemList.Select(i => i.ProductID).Distinct().ToArray();
@@ -2090,7 +2089,7 @@ namespace QDLogistics.Controllers
                                                         sheet.GetRow(rowIndex).GetCell(0).SetCellValue(No++);
                                                         sheet.GetRow(rowIndex).GetCell(1).SetCellValue(item.Packages.TagNo);
                                                         sheet.GetRow(rowIndex).GetCell(3).SetCellValue("reqular");
-                                                        sheet.GetRow(rowIndex).GetCell(4).SetCellValue(itemGroup.Sum(i => (SkuData.Any(s => s.Sku.Equals(i.ProductID)) ? SkuData.First(s => s.Sku.Equals(i.ProductID)).Weight : i.Skus.ShippingWeight) * i.Qty.Value));
+                                                        sheet.GetRow(rowIndex).GetCell(4).SetCellValue(itemGroup.Sum(i => (SkuData[i.ProductID]?.Weight ?? i.Skus.ShippingWeight) * i.Qty.Value));
                                                         sheet.GetRow(rowIndex).GetCell(5).SetCellValue("10*10*5 CM");
                                                         sheet.GetRow(rowIndex).GetCell(6).SetCellValue("FeDex");
                                                         sheet.GetRow(rowIndex).GetCell(7).SetCellValue("will update");
