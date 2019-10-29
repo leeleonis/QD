@@ -244,6 +244,7 @@ namespace QDLogistics.Controllers
                         jo.Add("Sku", sku.Sku);
                         jo.Add("ProductName", sku.ProductName);
                         jo.Add("UPC", sku.UPC);
+                        jo.Add("Origin", sku.Origin);
                         jo.Add("Brand", sku.Brand.Value);
                         jo.Add("Battery", sku.Battery.Value);
                         jo.Add("Export", sku.Export.Value);
@@ -891,6 +892,7 @@ namespace QDLogistics.Controllers
             excelFile.AddMapping<Skus>(s => s.Weight, "Weight");
             excelFile.AddMapping<Skus>(s => s.ShippingWeight, "ShippingWeight");
             excelFile.AddMapping<Skus>(s => s.UPC, "UPC");
+            excelFile.AddMapping<Skus>(s => s.UPC, "Origin");
             var excelContent = excelFile.Worksheet<Skus>("品號");
 
             int errorCount = 0;
@@ -910,6 +912,7 @@ namespace QDLogistics.Controllers
                 sku.Weight = row.Weight;
                 sku.ShippingWeight = row.ShippingWeight;
                 sku.UPC = row.UPC;
+                sku.Origin = row.Origin;
 
                 //if (string.IsNullOrWhiteSpace(row.Sku)) errorMessage.Append("Sku - 不可空白.");
 
