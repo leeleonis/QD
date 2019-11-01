@@ -486,7 +486,7 @@ namespace QDLogistics.Controllers
                 Dictionary<string, StockKeepingUnit.SkuData> SkuData;
                 using (StockKeepingUnit stock = new StockKeepingUnit())
                 {
-                    SkuData = stock.GetSkuData(results.Select(data => data.item.ProductID).Distinct().ToArray());
+                    SkuData = stock.GetSkuData(results.SelectMany(data => data.items).Select(i => i.ProductID).Distinct().ToArray());
                 }
 
                 dataList.AddRange(results.Select(data => new
@@ -502,7 +502,7 @@ namespace QDLogistics.Controllers
                     Tracking = data.package.TrackingNumber,
                     LabelID = GetLabelLink(directLine.Abbreviation, data),
                     data.order.StatusCode
-                }));
+                }).ToList());
             }
 
             return Json(new { total, rows = dataList }, JsonRequestBehavior.AllowGet);

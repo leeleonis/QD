@@ -366,7 +366,7 @@ namespace QDLogistics.Commons
             }
             catch (Exception e)
             {
-                string msg = e.InnerException != null && !string.IsNullOrEmpty(e.InnerException.Message) ? e.InnerException.Message : e.Message;
+                string msg = e.InnerException?.Message ?? e.Message;
 
                 throw new Exception(string.Format("訂單【{0}】建立RMA失敗! - {1}", orderData.OrderID, msg));
             }

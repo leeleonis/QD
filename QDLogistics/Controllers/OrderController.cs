@@ -559,7 +559,6 @@ namespace QDLogistics.Controllers
                             var PackageFilter = db.Packages.AsNoTracking().Where(p => p.IsEnable.Value && !p.ProcessStatus.Equals((byte)EnumData.ProcessStatus.訂單管理) && !string.IsNullOrEmpty(p.WinitNo) && !p.DeliveryStatus.Value.Equals((int)DeliveryStatusType.Delivered) && WinitShippingMethod.Contains(p.ShippingMethod.Value));
                             var dataList = OrderFilter.Join(PackageFilter, o => o.OrderID, p => p.OrderID.Value, (order, package) => new { order, package }).ToList();
 
-                            dataList = dataList.Where(d => d.order.OrderID.Equals(5709259)).ToList();
                             if (dataList.Any())
                             {
                                 TrackResult result;
@@ -1350,7 +1349,7 @@ namespace QDLogistics.Controllers
                         preset.Init(OrderID);
                         preset.Save();
 
-                        foreach (var package in db.Packages.Where(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID)))
+                        foreach (var package in db.Packages.Where(p => p.IsEnable.Value && p.OrderID.Value.Equals(OrderID)).ToList())
                         {
                             if (package.Method.Carriers.CarrierAPI.Type.Value.Equals((byte)EnumData.CarrierType.Winit))
                             {
@@ -1376,8 +1375,8 @@ namespace QDLogistics.Controllers
             var order = package.Orders;
             if (order.StatusCode.Value.Equals((int)OrderStatusCode.InProcess) && order.PaymentStatus.Equals((int)OrderPaymentStatus.Charged))
             {
-                ThreadTask threadTask = new ThreadTask(string.Format("訂單下載 - 自動提交訂單【{0}】至待出貨區", order.OrderID), Session);
-                MyHelp.Log("Orders", package.ID, string.Format("訂單下載 - 自動提交訂單【{0}】至待出貨區", order.OrderID), Session);
+                ThreadTask threadTask = new ThreadTask(string.Format("Winit訂單 - 自動提交訂單【{0}】至待出貨區", order.OrderID), Session);
+                MyHelp.Log("Orders", package.ID, string.Format("Winit訂單 - 自動提交訂單【{0}】至待出貨區", order.OrderID), Session);
 
                 package.ProcessStatus = (int)EnumData.ProcessStatus.鎖定中;
                 db.SaveChanges();
@@ -1490,7 +1489,7 @@ namespace QDLogistics.Controllers
                     package.ProcessStatus = (int)EnumData.ProcessStatus.訂單管理;
                     db.SaveChanges();
 
-                    MyHelp.Log("Orders", package.ID, string.Format("訂單【{0}】提交失敗", order.OrderID), Session);
+                    MyHelp.Log("Orders", package.ID, string.Format("訂單【{0}】提交失敗 - {1}", order.OrderID, e.InnerException?.Message ?? e.Message), Session);
                 }
             }
         }

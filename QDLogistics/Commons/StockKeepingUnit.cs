@@ -194,6 +194,8 @@ namespace QDLogistics.Commons
 
             if (!response.data.HasValue) throw new Exception("沒有取得 RMA ID!");
 
+            if (!string.IsNullOrEmpty(response.message)) MyHelp.Log("CreateRMA", OrderID, response.message);
+
             return response.data.Value;
         }
 

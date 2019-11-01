@@ -338,6 +338,7 @@ namespace QDLogistics.Commons
             bool checkStock = !preset.CheckSkuStock.HasValue;
             if (!checkStock)
             {
+                checkStock = true;
                 using (StockKeepingUnit stock = new StockKeepingUnit())
                 {
                     foreach(Items item in itemList)
