@@ -671,7 +671,6 @@ namespace CarrierApi.Winit
         public DateTime? outboundDate { get; set; }
         public string insuranceType { get; set; }
         public string ebayName { get; set; }
-        public string isShareOrder { get; set; }
         public string eBaySellerID { get; set; }
         public decimal? deliveryCosts { get; set; }
         public decimal? chargeableWeight { get; set; }

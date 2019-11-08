@@ -705,7 +705,7 @@ namespace QDLogistics.Commons
                     case "ECOF":
                         receiveMails = MailList["ECOF"];
                         string oldLabelID = string.Format("{0}-{1}-{2}", packageData.Items.First(i => i.IsEnable.Value).ProductID, packageData.OrderID, packageData.TrackingNumber);
-                        mailTitle = string.Format("Quality Deals Reship inventory for <Label ID1>", oldLabelID);
+                        mailTitle = string.Format("Quality Deals Reship inventory for <{0}>", oldLabelID);
                         mailBody = CreateResendShipmentMailBody(directLine.Abbreviation, confirmDate, eventData, newPackage);
 
                         if (!MyHelp.Mail_Send(sendMail, receiveMails, ccMails, mailTitle, mailBody, true, null, null, false))

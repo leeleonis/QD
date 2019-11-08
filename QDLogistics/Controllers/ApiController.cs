@@ -825,7 +825,7 @@ namespace QDLogistics.Controllers
                 {
                     IsRush = order.RushOrder,
                     OrderParent = order.ParentOrderID.HasValue && !order.ParentOrderID.Equals(0) ? order.ParentOrderID.Value : intNull,
-                    OrderSourceID = order.OrderSourceOrderId,
+                    OrderSourceID = !string.IsNullOrEmpty(order.OrderSourceOrderId) ? order.OrderSourceOrderId : db.Orders.Find(order.ParentOrderID ?? 0)?.OrderSourceOrderId,
                     SCID = order.OrderID,
                     Company = order.CompanyID,
                     Channel = order.OrderSource,

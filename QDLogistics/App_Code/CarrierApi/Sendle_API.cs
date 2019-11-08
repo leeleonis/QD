@@ -179,10 +179,6 @@ namespace CarrierApi.Sendle
                     }
                 }
             }
-            catch (Exception e)
-            {
-                throw e;
-            }
 
             return JsonConvert.DeserializeObject<T>(result);
         }

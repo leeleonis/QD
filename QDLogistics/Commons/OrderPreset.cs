@@ -25,6 +25,7 @@ namespace QDLogistics.Commons
         private Dictionary<string, int> MethodOfService;
 
         public TaskFactory Factory;
+        private bool disposed = false;
         private HttpSessionStateBase Session;
 
         public OrderPreset(HttpSessionStateBase session) : this(session, null) { }
@@ -335,7 +336,7 @@ namespace QDLogistics.Commons
             bool battery = !preset.Battery.HasValue || skuList.Any(s => s.Battery.Value.Equals(preset.Battery.Value));
             bool weight = preset.Weight.Equals(0) || Compare(preset.WeightType, preset.Weight, itemList.Sum(i => i.Qty * (SkuData.ContainsKey(i.ProductID) ? SkuData[i.ProductID].Weight : i.Skus.ShippingWeight)).Value);
 
-            bool checkStock = !preset.CheckSkuStock.HasValue;
+            bool checkStock = !(preset.CheckSkuStock ?? false);
             if (!checkStock)
             {
                 checkStock = true;
@@ -378,6 +379,27 @@ namespace QDLogistics.Commons
             return compareResult;
         }
 
-        public void Dispose() { }
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed) return;
+
+            if (disposing)
+            {
+                if (Orders != null) Orders.Dispose();
+                if (Packages != null) Packages.Dispose();
+                if (Items != null) Items.Dispose();
+                if (Preset != null) Preset.Dispose();
+            }
+
+            db = null;
+            Session = null;
+            disposed = true;
+        }
     }
 }
