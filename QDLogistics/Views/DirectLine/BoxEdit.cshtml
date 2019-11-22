@@ -67,6 +67,11 @@
         </div>
     </section>
 </div>
+<div class="hidden">
+    <div id="dialog-box" class="easyui-dialog" title="請輸入移至的BOX" data-options="iconCls:'icon-edit',closed:true,draggable:false,resizable:false,onClose:function(){$boxInput.val('');}" style="width:200px;">
+        <input type="text" class="form-control" id="input-box" />
+    </div>
+</div>
 @section pagespecific {
     <script src="~/scripts/jquery.easyui-1.4.3.min.js"></script>
     <script src="~/scripts/datagrid-detailview.js"></script>
@@ -74,6 +79,7 @@
     <script type="text/javascript">
         var pager, pageSize = 100, selectOption;
         var $dataGrid;
+        var $boxDialog = $('#dialog-box'), $boxInput = $('#input-box');
 
         $(function () {
             var data = { optionType: ['StatusCode'] };
@@ -105,7 +111,6 @@
                     { field: "ProductID", title: "SKU", width: 150, align: "center", sortable: false },
                     { field: "ProductName", title: "Product Name", width: 400, align: "center", sortable: false },
                     { field: "SentQty", title: "Sent QTY", width: 100, align: "center", sortable: false },
-                    { field: "ReceivedQty", title: "Received QTY", width: 100, align: "center", sortable: false },
                     { field: "Weight", title: "Weight(each)", width: 100, align: "center", sortable: false },
                     { field: "OrderID", title: "Order ID", width: 120, align: "center", sortable: false },
                     { field: "Serial", title: "Serial", width: 200, align: "center", sortable: false },
@@ -120,6 +125,11 @@
                         field: "CaseLink", width: 100, align: "center", sortable: false,
                         formatter: function (value, row, index) {
                             return "<a href='@Url.Action("index", "caseEvent")?OrderID=" + row.OrderID + "' target='_blank'>CaseEvent</a>";
+                        }
+                    }, {
+                        field: "Move", width: 100, align: "center", sortable: false,
+                        formatter: function (value, row, index) {
+                            return "<button type='button' class='btn btn-default btn-sm' onclick='MoveToBox(" + row.PackageID + ")'>Move</button>";
                         }
                     }
                 ]],
@@ -177,6 +187,30 @@
                 beforePageTest: "第",
                 afterPageTest: "頁，共 {pages} 頁",
                 displayMsg: "顯示 {from} 到 {to} 筆資料，共 {total} 筆資料"
+            });
+        }
+
+        function MoveToBox(packageID) {
+            $boxDialog.dialog('open');
+
+            $boxInput.unbind('keypress');
+            $boxInput.keypress(function (event) {
+                if (event.keyCode == 13) {
+                    if (isEmpty($boxInput.val())) return alert('不可為空!');
+
+                    if (confirm('是否確定要移至 ' + $boxInput.val())) {
+                        var url = '@Url.Action("MoveToBox", "DirectLine")';
+                        getOption(url, 'post', { PackageID: packageID, BoxID: $boxInput.val() }).done(function (response) {
+                            if (response.status) {
+                                alert('Success');
+                                $dataGrid.datagrid('reload');
+                            } else {
+                                alert(response.message);
+                            }
+                        });
+                        $boxDialog.dialog('close');
+                    }
+                }
             });
         }
 

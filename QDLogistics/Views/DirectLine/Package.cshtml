@@ -742,24 +742,22 @@
             }
 
             function showLogistic(sku) {
-                var data = SkuData.filter(data => data.Sku == sku);
-                if (data.length > 0) {
-                    if (data[0].ImagePath.length > 0) {
-                        $('#sku-pic').html('');
-                        $.each(data[0].ImagePath, function (i, fileName) {
-                            $('#sku-pic').append($('<img>').height(150).attr('src', 'http://internal.qd.com.tw:8080/Uploads/' + fileName));
-                        });
-                    }
-                    $('#sku-name').html(data[0].Sku + '-' + data[0].Name);
-                    $('#width-mm').html(data[0].Width);
-                    $('#width-inch').html((data[0].Width * 0.0393700787).toFixed(2));
-                    $('#length-mm').html(data[0].Length);
-                    $('#length-inch').html((data[0].Length * 0.0393700787).toFixed(2));
-                    $('#height-mm').html(data[0].Height);
-                    $('#height-inch').html((data[0].Height * 0.0393700787).toFixed(2));
-                    $('#weight-g').html(data[0].Weight);
-                    $('#weight-lb').html((data[0].Weight * 0.00220462262).toFixed(2));
+                var data = SkuData[sku];
+                if (data.ImagePath.length > 0) {
+                    $('#sku-pic').html('');
+                    $.each(data.ImagePath, function (i, fileName) {
+                        $('#sku-pic').append($('<img>').height(150).attr('src', 'http://internal.qd.com.tw:8080/Uploads/' + fileName));
+                    });
                 }
+                $('#sku-name').html(data.Sku + '-' + data.Name);
+                $('#width-mm').html(data.Width);
+                $('#width-inch').html((data.Width * 0.0393700787).toFixed(2));
+                $('#length-mm').html(data.Length);
+                $('#length-inch').html((data.Length * 0.0393700787).toFixed(2));
+                $('#height-mm').html(data.Height);
+                $('#height-inch').html((data.Height * 0.0393700787).toFixed(2));
+                $('#weight-g').html(data.Weight);
+                $('#weight-lb').html((data.Weight * 0.00220462262).toFixed(2));
             }
 
             // 加入至已出貨訂單清單

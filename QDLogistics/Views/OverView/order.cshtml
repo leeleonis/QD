@@ -101,7 +101,7 @@
                         formatter: function (value, row, index) {
                             if (!isEmpty(value)) {
                                 if (row.ParentOrderID != 0) {
-                                    var url = value + "(<a href='http://internal.qd.com.tw:8080/Order/Edit/" + row.ParentOrderID + "' target='_blank'>" + row.ParentOrderID + "</a> - <a href='https://dm.cwa.sellercloud.com/Orders/Orders_details.aspx?id=" + row.ParentOrderID + "' target='_blank'>SC</a>)"
+                                    var url = "<a href='http://internal.qd.com.tw:8080/Order/Edit/" + value + "' target='_blank'>" + value + "</a>(<a href='http://internal.qd.com.tw:8080/Order/Edit/" + row.ParentOrderID + "' target='_blank'>" + row.ParentOrderID + "</a> - <a href='https://dm.cwa.sellercloud.com/Orders/Orders_details.aspx?id=" + row.ParentOrderID + "' target='_blank'>SC</a>)"
                                 } else {
                                     var url = "<a href='http://internal.qd.com.tw:8080/Order/Edit/" + value + "' target='_blank'>" + value + "</a> - <a href='https://dm.cwa.sellercloud.com/Orders/Orders_details.aspx?id=" + value + "' target='_blank'>SC</a>";
                                 }

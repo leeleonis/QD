@@ -495,7 +495,6 @@ namespace QDLogistics.Controllers
                     ProductID = data.itemCount == 1 ? data.item.ProductID : "Multi",
                     ProductName = data.itemCount == 1 ? (SkuData[data.item.ProductID]?.Name ?? data.item.Skus.ProductName) : "Multi",
                     SentQty = data.itemCount,
-                    ReceivedQty = 0,
                     Weight = data.items.Sum(i => (SkuData[i.ProductID]?.Weight ?? i.Skus.ShippingWeight) * (float)i.Qty.Value / 1000),
                     data.order.OrderID,
                     Serial = data.item.SerialNumbers.Any() ? (data.itemCount == 1 ? data.item.SerialNumbers.First().SerialNumber : "Multi") : "找不到",
@@ -530,6 +529,43 @@ namespace QDLogistics.Controllers
                     break;
             }
             return link;
+        }
+
+        public ActionResult MoveToBox(int PackageID, string BoxID)
+        {
+            AjaxResult result = new AjaxResult();
+
+            try
+            {
+                var package = db.Packages.Find(PackageID);
+
+                if (package == null) throw new Exception("Not found order!");
+
+                var newBox = db.Box.Find(BoxID);
+
+                if (newBox == null) throw new Exception("Not found " + BoxID + " !");
+
+                if (package.Box.ShippingStatus != newBox.ShippingStatus)
+                {
+                    if (package.Box.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.未發貨)) throw new Exception(package.BoxID + " 尚未封箱!");
+
+                    if (newBox.ShippingStatus.Equals((byte)EnumData.DirectLineStatus.未發貨)) throw new Exception(BoxID + " 尚未封箱!");
+                }
+
+                if(!db.DirectLineLabel.Any(l => l.BoxID.Equals(package.BoxID) && !l.PackageID.Equals(package.ID)))
+                {
+                    package.Box.ShippingStatus = (byte)EnumData.DirectLineStatus.取消;
+                }
+                package.BoxID = package.Label.BoxID = BoxID;
+                db.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                result.status = false;
+                result.message = ex.InnerException?.Message ?? ex.Message;
+            }
+
+            return Json(result, JsonRequestBehavior.AllowGet);
         }
 
         public ActionResult GetCancelData(CancelFilter filter, int page = 1, int rows = 100)
@@ -872,8 +908,8 @@ namespace QDLogistics.Controllers
             {
                 SkuData = stock.GetSkuData(productIDs);
                 foreach (var group in productList)
-                        foreach (var pick in group.Value.Select(p => p.Value))
-                            pick.SetWeight(SkuData[pick.ProductID].Weight);
+                    foreach (var pick in group.Value.Select(p => p.Value))
+                        pick.SetWeight(SkuData[pick.ProductID].Weight);
             }
             var pickupCompare = DateTime.UtcNow.AddHours(-12);
             var shippedItem = db.PickProduct.AsNoTracking().Where(p => p.IsEnable && productIDs.Contains(p.ProductID) && p.PickUpDate.Value.CompareTo(pickupCompare) >= 0).Select(p => p.ItemID).ToArray();

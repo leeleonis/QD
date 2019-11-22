@@ -79,7 +79,7 @@ namespace QDLogistics.Commons
             Update_Log(EnumData.TaskStatus.執行失敗);
         }
 
-        private void Update_Log(EnumData.TaskStatus status)
+        public void Update_Log(EnumData.TaskStatus status)
         {
             lock (TaskScheduler)
             {
